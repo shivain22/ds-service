@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.5.xsd">
+    <!--
+        Added the constraints for entity AidasObjectProperty.
+    -->
+    <changeSet id="20211021123407-2" author="jhipster">
+
+        <addForeignKeyConstraint baseColumnNames="aidas_object_id"
+                                 baseTableName="aidas_object_property"
+                                 constraintName="fk_aidas_object_property__aidas_object_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="aidas_object"/>
+
+        <addForeignKeyConstraint baseColumnNames="aidas_properties_id"
+                                 baseTableName="aidas_object_property"
+                                 constraintName="fk_aidas_object_property__aidas_properties_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="aidas_properties"/>
+    </changeSet>
+</databaseChangeLog>

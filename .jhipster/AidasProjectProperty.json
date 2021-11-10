@@ -1,0 +1,40 @@
+{
+  "microservicePath": "../ainnotate-service",
+  "microserviceName": "ainnotateservice",
+  "clientRootFolder": "ainnotateservice",
+  "databaseType": "sql",
+  "fields": [
+    {
+      "fieldName": "name",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "description",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "value",
+      "fieldType": "String"
+    }
+  ],
+  "relationships": [
+    {
+      "relationshipName": "aidasProject",
+      "otherEntityName": "aidasProject",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": ["required"],
+      "otherEntityField": "name"
+    },
+    {
+      "relationshipName": "aidasProperties",
+      "otherEntityName": "aidasProperties",
+      "relationshipType": "many-to-one",
+      "otherEntityField": "name"
+    }
+  ],
+  "service": "no",
+  "readOnly": false,
+  "pagination": "pagination",
+  "name": "AidasProjectProperty",
+  "changelogDate": "20211021123244"
+}

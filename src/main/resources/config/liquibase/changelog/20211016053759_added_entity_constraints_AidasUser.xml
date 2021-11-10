@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.5.xsd">
+    <!--
+        Added the constraints for entity AidasUser.
+    -->
+    <changeSet id="20211016053759-2" author="jhipster">
+
+        <addForeignKeyConstraint baseColumnNames="aidas_organisation_id"
+                                 baseTableName="aidas_user"
+                                 constraintName="fk_aidas_user__aidas_organisation_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="aidas_organisation"/>
+
+        <addForeignKeyConstraint baseColumnNames="aidas_customer_id"
+                                 baseTableName="aidas_user"
+                                 constraintName="fk_aidas_user__aidas_customer_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="aidas_customer"/>
+
+        <addForeignKeyConstraint baseColumnNames="aidas_vendor_id"
+                                 baseTableName="aidas_user"
+                                 constraintName="fk_aidas_user__aidas_vendor_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="aidas_vendor"/>
+    </changeSet>
+</databaseChangeLog>

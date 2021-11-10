@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.5.xsd">
+    <!--
+        Added the constraints for entity AidasUpload.
+    -->
+    <changeSet id="20211016054047-2" author="jhipster">
+
+        <addForeignKeyConstraint baseColumnNames="aidas_user_id"
+                                 baseTableName="aidas_upload"
+                                 constraintName="fk_aidas_upload__aidas_user_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="aidas_user"/>
+
+        <addForeignKeyConstraint baseColumnNames="aidas_object_id"
+                                 baseTableName="aidas_upload"
+                                 constraintName="fk_aidas_upload__aidas_object_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="aidas_object"/>
+    </changeSet>
+</databaseChangeLog>

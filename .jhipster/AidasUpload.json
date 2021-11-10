@@ -1,0 +1,39 @@
+{
+  "microserviceName": "ainnotateservice",
+  "clientRootFolder": "ainnotateservice",
+  "databaseType": "sql",
+  "fields": [
+    {
+      "fieldName": "name",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "minlength", "maxlength"],
+      "fieldValidateRulesMinlength": "3",
+      "fieldValidateRulesMaxlength": "500"
+    },
+    {
+      "fieldName": "dateUploaded",
+      "fieldType": "ZonedDateTime"
+    }
+  ],
+  "relationships": [
+    {
+      "relationshipName": "aidasUser",
+      "otherEntityName": "aidasUser",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": ["required"],
+      "otherEntityField": "firstName"
+    },
+    {
+      "relationshipName": "aidasObject",
+      "otherEntityName": "aidasObject",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": ["required"],
+      "otherEntityField": "name"
+    }
+  ],
+  "service": "no",
+  "readOnly": false,
+  "pagination": "pagination",
+  "name": "AidasUpload",
+  "changelogDate": "20211016054047"
+}
