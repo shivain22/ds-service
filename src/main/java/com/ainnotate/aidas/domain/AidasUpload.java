@@ -38,6 +38,9 @@ public class AidasUpload implements Serializable {
     @Column(name = "status_modified_date")
     private ZonedDateTime statusModifiedDate;
 
+    @Column(name = "reject_reason")
+    private String rejectReason;
+
     @ManyToOne(optional = false)
     @NotNull
     @JsonIgnoreProperties(value = { "aidasOrganisation", "aidasCustomer", "aidasVendor" }, allowSetters = true)
@@ -119,6 +122,19 @@ public class AidasUpload implements Serializable {
         this.statusModifiedDate = statusModifiedDate;
     }
 
+    public String getRejectReason() {
+        return this.rejectReason;
+    }
+
+    public AidasUpload rejectReason(String rejectReason) {
+        this.setRejectReason(rejectReason);
+        return this;
+    }
+
+    public void setRejectReason(String rejectReason) {
+        this.rejectReason = rejectReason;
+    }
+
     public AidasUser getAidasUser() {
         return this.aidasUser;
     }
@@ -186,6 +202,7 @@ public class AidasUpload implements Serializable {
             ", dateUploaded='" + getDateUploaded() + "'" +
             ", status='" + getStatus() + "'" +
             ", statusModifiedDate='" + getStatusModifiedDate() + "'" +
+            ", rejectReason='" + getRejectReason() + "'" +
             "}";
     }
 }

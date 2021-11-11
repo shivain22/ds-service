@@ -153,6 +153,9 @@ public class AidasUploadResource {
                 if (aidasUpload.getStatusModifiedDate() != null) {
                     existingAidasUpload.setStatusModifiedDate(aidasUpload.getStatusModifiedDate());
                 }
+                if (aidasUpload.getRejectReason() != null) {
+                    existingAidasUpload.setRejectReason(aidasUpload.getRejectReason());
+                }
 
                 return existingAidasUpload;
             })

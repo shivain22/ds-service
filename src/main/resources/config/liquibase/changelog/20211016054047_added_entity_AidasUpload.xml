@@ -26,6 +26,9 @@
             <column name="status_modified_date" type="${datetimeType}">
                 <constraints nullable="true" />
             </column>
+            <column name="reject_reason" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
             <column name="aidas_user_id" type="bigint">
                 <constraints nullable="false" />
             </column>
@@ -62,6 +65,7 @@
             <column name="date_uploaded" type="date"/>
             <column name="status" type="boolean"/>
             <column name="status_modified_date" type="date"/>
+            <column name="reject_reason" type="string"/>
             <column name="aidas_user_id" type="numeric"/>
             <column name="aidas_object_id" type="numeric"/>
             <!-- jhipster-needle-liquibase-add-loadcolumn - JHipster (and/or extensions) can add load columns here -->

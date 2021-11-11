@@ -58,6 +58,9 @@ class AidasUploadResourceIT {
     private static final ZonedDateTime DEFAULT_STATUS_MODIFIED_DATE = ZonedDateTime.ofInstant(Instant.ofEpochMilli(0L), ZoneOffset.UTC);
     private static final ZonedDateTime UPDATED_STATUS_MODIFIED_DATE = ZonedDateTime.now(ZoneId.systemDefault()).withNano(0);
 
+    private static final String DEFAULT_REJECT_REASON = "AAAAAAAAAA";
+    private static final String UPDATED_REJECT_REASON = "BBBBBBBBBB";
+
     private static final String ENTITY_API_URL = "/api/aidas-uploads";
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
     private static final String ENTITY_SEARCH_API_URL = "/api/_search/aidas-uploads";
@@ -95,7 +98,8 @@ class AidasUploadResourceIT {
             .name(DEFAULT_NAME)
             .dateUploaded(DEFAULT_DATE_UPLOADED)
             .status(DEFAULT_STATUS)
-            .statusModifiedDate(DEFAULT_STATUS_MODIFIED_DATE);
+            .statusModifiedDate(DEFAULT_STATUS_MODIFIED_DATE)
+            .rejectReason(DEFAULT_REJECT_REASON);
         // Add required entity
         AidasUser aidasUser;
         if (TestUtil.findAll(em, AidasUser.class).isEmpty()) {
@@ -130,7 +134,8 @@ class AidasUploadResourceIT {
             .name(UPDATED_NAME)
             .dateUploaded(UPDATED_DATE_UPLOADED)
             .status(UPDATED_STATUS)
-            .statusModifiedDate(UPDATED_STATUS_MODIFIED_DATE);
+            .statusModifiedDate(UPDATED_STATUS_MODIFIED_DATE)
+            .rejectReason(UPDATED_REJECT_REASON);
         // Add required entity
         AidasUser aidasUser;
         if (TestUtil.findAll(em, AidasUser.class).isEmpty()) {
@@ -181,6 +186,7 @@ class AidasUploadResourceIT {
         assertThat(testAidasUpload.getDateUploaded()).isEqualTo(DEFAULT_DATE_UPLOADED);
         assertThat(testAidasUpload.getStatus()).isEqualTo(DEFAULT_STATUS);
         assertThat(testAidasUpload.getStatusModifiedDate()).isEqualTo(DEFAULT_STATUS_MODIFIED_DATE);
+        assertThat(testAidasUpload.getRejectReason()).isEqualTo(DEFAULT_REJECT_REASON);
 
         // Validate the AidasUpload in Elasticsearch
         verify(mockAidasUploadSearchRepository, times(1)).save(testAidasUpload);
@@ -249,7 +255,8 @@ class AidasUploadResourceIT {
             .andExpect(jsonPath("$.[*].name").value(hasItem(DEFAULT_NAME)))
             .andExpect(jsonPath("$.[*].dateUploaded").value(hasItem(sameInstant(DEFAULT_DATE_UPLOADED))))
             .andExpect(jsonPath("$.[*].status").value(hasItem(DEFAULT_STATUS.booleanValue())))
-            .andExpect(jsonPath("$.[*].statusModifiedDate").value(hasItem(sameInstant(DEFAULT_STATUS_MODIFIED_DATE))));
+            .andExpect(jsonPath("$.[*].statusModifiedDate").value(hasItem(sameInstant(DEFAULT_STATUS_MODIFIED_DATE))))
+            .andExpect(jsonPath("$.[*].rejectReason").value(hasItem(DEFAULT_REJECT_REASON)));
     }
 
     @Test
@@ -267,7 +274,8 @@ class AidasUploadResourceIT {
             .andExpect(jsonPath("$.name").value(DEFAULT_NAME))
             .andExpect(jsonPath("$.dateUploaded").value(sameInstant(DEFAULT_DATE_UPLOADED)))
             .andExpect(jsonPath("$.status").value(DEFAULT_STATUS.booleanValue()))
-            .andExpect(jsonPath("$.statusModifiedDate").value(sameInstant(DEFAULT_STATUS_MODIFIED_DATE)));
+            .andExpect(jsonPath("$.statusModifiedDate").value(sameInstant(DEFAULT_STATUS_MODIFIED_DATE)))
+            .andExpect(jsonPath("$.rejectReason").value(DEFAULT_REJECT_REASON));
     }
 
     @Test
@@ -293,7 +301,8 @@ class AidasUploadResourceIT {
             .name(UPDATED_NAME)
             .dateUploaded(UPDATED_DATE_UPLOADED)
             .status(UPDATED_STATUS)
-            .statusModifiedDate(UPDATED_STATUS_MODIFIED_DATE);
+            .statusModifiedDate(UPDATED_STATUS_MODIFIED_DATE)
+            .rejectReason(UPDATED_REJECT_REASON);
 
         restAidasUploadMockMvc
             .perform(
@@ -312,6 +321,7 @@ class AidasUploadResourceIT {
         assertThat(testAidasUpload.getDateUploaded()).isEqualTo(UPDATED_DATE_UPLOADED);
         assertThat(testAidasUpload.getStatus()).isEqualTo(UPDATED_STATUS);
         assertThat(testAidasUpload.getStatusModifiedDate()).isEqualTo(UPDATED_STATUS_MODIFIED_DATE);
+        assertThat(testAidasUpload.getRejectReason()).isEqualTo(UPDATED_REJECT_REASON);
 
         // Validate the AidasUpload in Elasticsearch
         verify(mockAidasUploadSearchRepository).save(testAidasUpload);
@@ -423,6 +433,7 @@ class AidasUploadResourceIT {
         assertThat(testAidasUpload.getDateUploaded()).isEqualTo(UPDATED_DATE_UPLOADED);
         assertThat(testAidasUpload.getStatus()).isEqualTo(UPDATED_STATUS);
         assertThat(testAidasUpload.getStatusModifiedDate()).isEqualTo(UPDATED_STATUS_MODIFIED_DATE);
+        assertThat(testAidasUpload.getRejectReason()).isEqualTo(DEFAULT_REJECT_REASON);
     }
 
     @Test
@@ -441,7 +452,8 @@ class AidasUploadResourceIT {
             .name(UPDATED_NAME)
             .dateUploaded(UPDATED_DATE_UPLOADED)
             .status(UPDATED_STATUS)
-            .statusModifiedDate(UPDATED_STATUS_MODIFIED_DATE);
+            .statusModifiedDate(UPDATED_STATUS_MODIFIED_DATE)
+            .rejectReason(UPDATED_REJECT_REASON);
 
         restAidasUploadMockMvc
             .perform(
@@ -460,6 +472,7 @@ class AidasUploadResourceIT {
         assertThat(testAidasUpload.getDateUploaded()).isEqualTo(UPDATED_DATE_UPLOADED);
         assertThat(testAidasUpload.getStatus()).isEqualTo(UPDATED_STATUS);
         assertThat(testAidasUpload.getStatusModifiedDate()).isEqualTo(UPDATED_STATUS_MODIFIED_DATE);
+        assertThat(testAidasUpload.getRejectReason()).isEqualTo(UPDATED_REJECT_REASON);
     }
 
     @Test
@@ -573,6 +586,7 @@ class AidasUploadResourceIT {
             .andExpect(jsonPath("$.[*].name").value(hasItem(DEFAULT_NAME)))
             .andExpect(jsonPath("$.[*].dateUploaded").value(hasItem(sameInstant(DEFAULT_DATE_UPLOADED))))
             .andExpect(jsonPath("$.[*].status").value(hasItem(DEFAULT_STATUS.booleanValue())))
-            .andExpect(jsonPath("$.[*].statusModifiedDate").value(hasItem(sameInstant(DEFAULT_STATUS_MODIFIED_DATE))));
+            .andExpect(jsonPath("$.[*].statusModifiedDate").value(hasItem(sameInstant(DEFAULT_STATUS_MODIFIED_DATE))))
+            .andExpect(jsonPath("$.[*].rejectReason").value(hasItem(DEFAULT_REJECT_REASON)));
     }
 }

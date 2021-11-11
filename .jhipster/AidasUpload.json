@@ -21,6 +21,10 @@
     {
       "fieldName": "statusModifiedDate",
       "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "rejectReason",
+      "fieldType": "String"
     }
   ],
   "relationships": [
