@@ -102,6 +102,7 @@ class AidasProjectGatlingTest extends Simulation {
             .body(StringBody("""{
                 "name":"SAMPLE_TEXT"
                 , "description":"SAMPLE_TEXT"
+                , "projectType":"SAMPLE_TEXT"
                 }""")).asJson
             .check(status.is(201))
             .check(headerRegex("Location", "(.*)").saveAs("new_aidasProject_url"))).exitHereIfFailed

@@ -41,6 +41,11 @@ public class AidasUser implements Serializable {
     @Column(name = "locked", nullable = false)
     private Boolean locked;
 
+    @NotNull
+    @Size(min = 5, max = 20)
+    @Column(name = "password", length = 20, nullable = false)
+    private String password;
+
     @ManyToOne
     private AidasOrganisation aidasOrganisation;
 
@@ -118,6 +123,19 @@ public class AidasUser implements Serializable {
         this.locked = locked;
     }
 
+    public String getPassword() {
+        return this.password;
+    }
+
+    public AidasUser password(String password) {
+        this.setPassword(password);
+        return this;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
     public AidasOrganisation getAidasOrganisation() {
         return this.aidasOrganisation;
     }
@@ -185,6 +203,7 @@ public class AidasUser implements Serializable {
             ", lastName='" + getLastName() + "'" +
             ", email='" + getEmail() + "'" +
             ", locked='" + getLocked() + "'" +
+            ", password='" + getPassword() + "'" +
             "}";
     }
 }

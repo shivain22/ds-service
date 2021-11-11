@@ -46,6 +46,9 @@ class AidasProjectResourceIT {
     private static final String DEFAULT_DESCRIPTION = "AAAAAAAAAA";
     private static final String UPDATED_DESCRIPTION = "BBBBBBBBBB";
 
+    private static final String DEFAULT_PROJECT_TYPE = "AAAAAAAAAA";
+    private static final String UPDATED_PROJECT_TYPE = "BBBBBBBBBB";
+
     private static final String ENTITY_API_URL = "/api/aidas-projects";
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
     private static final String ENTITY_SEARCH_API_URL = "/api/_search/aidas-projects";
@@ -79,7 +82,10 @@ class AidasProjectResourceIT {
      * if they test an entity which requires the current entity.
      */
     public static AidasProject createEntity(EntityManager em) {
-        AidasProject aidasProject = new AidasProject().name(DEFAULT_NAME).description(DEFAULT_DESCRIPTION);
+        AidasProject aidasProject = new AidasProject()
+            .name(DEFAULT_NAME)
+            .description(DEFAULT_DESCRIPTION)
+            .projectType(DEFAULT_PROJECT_TYPE);
         // Add required entity
         AidasCustomer aidasCustomer;
         if (TestUtil.findAll(em, AidasCustomer.class).isEmpty()) {
@@ -100,7 +106,10 @@ class AidasProjectResourceIT {
      * if they test an entity which requires the current entity.
      */
     public static AidasProject createUpdatedEntity(EntityManager em) {
-        AidasProject aidasProject = new AidasProject().name(UPDATED_NAME).description(UPDATED_DESCRIPTION);
+        AidasProject aidasProject = new AidasProject()
+            .name(UPDATED_NAME)
+            .description(UPDATED_DESCRIPTION)
+            .projectType(UPDATED_PROJECT_TYPE);
         // Add required entity
         AidasCustomer aidasCustomer;
         if (TestUtil.findAll(em, AidasCustomer.class).isEmpty()) {
@@ -139,6 +148,7 @@ class AidasProjectResourceIT {
         AidasProject testAidasProject = aidasProjectList.get(aidasProjectList.size() - 1);
         assertThat(testAidasProject.getName()).isEqualTo(DEFAULT_NAME);
         assertThat(testAidasProject.getDescription()).isEqualTo(DEFAULT_DESCRIPTION);
+        assertThat(testAidasProject.getProjectType()).isEqualTo(DEFAULT_PROJECT_TYPE);
 
         // Validate the AidasProject in Elasticsearch
         verify(mockAidasProjectSearchRepository, times(1)).save(testAidasProject);
@@ -205,7 +215,8 @@ class AidasProjectResourceIT {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(aidasProject.getId().intValue())))
             .andExpect(jsonPath("$.[*].name").value(hasItem(DEFAULT_NAME)))
-            .andExpect(jsonPath("$.[*].description").value(hasItem(DEFAULT_DESCRIPTION)));
+            .andExpect(jsonPath("$.[*].description").value(hasItem(DEFAULT_DESCRIPTION)))
+            .andExpect(jsonPath("$.[*].projectType").value(hasItem(DEFAULT_PROJECT_TYPE)));
     }
 
     @Test
@@ -221,7 +232,8 @@ class AidasProjectResourceIT {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(aidasProject.getId().intValue()))
             .andExpect(jsonPath("$.name").value(DEFAULT_NAME))
-            .andExpect(jsonPath("$.description").value(DEFAULT_DESCRIPTION));
+            .andExpect(jsonPath("$.description").value(DEFAULT_DESCRIPTION))
+            .andExpect(jsonPath("$.projectType").value(DEFAULT_PROJECT_TYPE));
     }
 
     @Test
@@ -243,7 +255,7 @@ class AidasProjectResourceIT {
         AidasProject updatedAidasProject = aidasProjectRepository.findById(aidasProject.getId()).get();
         // Disconnect from session so that the updates on updatedAidasProject are not directly saved in db
         em.detach(updatedAidasProject);
-        updatedAidasProject.name(UPDATED_NAME).description(UPDATED_DESCRIPTION);
+        updatedAidasProject.name(UPDATED_NAME).description(UPDATED_DESCRIPTION).projectType(UPDATED_PROJECT_TYPE);
 
         restAidasProjectMockMvc
             .perform(
@@ -260,6 +272,7 @@ class AidasProjectResourceIT {
         AidasProject testAidasProject = aidasProjectList.get(aidasProjectList.size() - 1);
         assertThat(testAidasProject.getName()).isEqualTo(UPDATED_NAME);
         assertThat(testAidasProject.getDescription()).isEqualTo(UPDATED_DESCRIPTION);
+        assertThat(testAidasProject.getProjectType()).isEqualTo(UPDATED_PROJECT_TYPE);
 
         // Validate the AidasProject in Elasticsearch
         verify(mockAidasProjectSearchRepository).save(testAidasProject);
@@ -366,6 +379,7 @@ class AidasProjectResourceIT {
         AidasProject testAidasProject = aidasProjectList.get(aidasProjectList.size() - 1);
         assertThat(testAidasProject.getName()).isEqualTo(UPDATED_NAME);
         assertThat(testAidasProject.getDescription()).isEqualTo(DEFAULT_DESCRIPTION);
+        assertThat(testAidasProject.getProjectType()).isEqualTo(DEFAULT_PROJECT_TYPE);
     }
 
     @Test
@@ -380,7 +394,7 @@ class AidasProjectResourceIT {
         AidasProject partialUpdatedAidasProject = new AidasProject();
         partialUpdatedAidasProject.setId(aidasProject.getId());
 
-        partialUpdatedAidasProject.name(UPDATED_NAME).description(UPDATED_DESCRIPTION);
+        partialUpdatedAidasProject.name(UPDATED_NAME).description(UPDATED_DESCRIPTION).projectType(UPDATED_PROJECT_TYPE);
 
         restAidasProjectMockMvc
             .perform(
@@ -397,6 +411,7 @@ class AidasProjectResourceIT {
         AidasProject testAidasProject = aidasProjectList.get(aidasProjectList.size() - 1);
         assertThat(testAidasProject.getName()).isEqualTo(UPDATED_NAME);
         assertThat(testAidasProject.getDescription()).isEqualTo(UPDATED_DESCRIPTION);
+        assertThat(testAidasProject.getProjectType()).isEqualTo(UPDATED_PROJECT_TYPE);
     }
 
     @Test
@@ -508,6 +523,7 @@ class AidasProjectResourceIT {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(aidasProject.getId().intValue())))
             .andExpect(jsonPath("$.[*].name").value(hasItem(DEFAULT_NAME)))
-            .andExpect(jsonPath("$.[*].description").value(hasItem(DEFAULT_DESCRIPTION)));
+            .andExpect(jsonPath("$.[*].description").value(hasItem(DEFAULT_DESCRIPTION)))
+            .andExpect(jsonPath("$.[*].projectType").value(hasItem(DEFAULT_PROJECT_TYPE)));
     }
 }

@@ -102,6 +102,8 @@ class AidasPropertiesGatlingTest extends Simulation {
             .body(StringBody("""{
                 "name":"SAMPLE_TEXT"
                 , "value":"SAMPLE_TEXT"
+                , "systemProperty":null
+                , "optional":null
                 }""")).asJson
             .check(status.is(201))
             .check(headerRegex("Location", "(.*)").saveAs("new_aidasProperties_url"))).exitHereIfFailed

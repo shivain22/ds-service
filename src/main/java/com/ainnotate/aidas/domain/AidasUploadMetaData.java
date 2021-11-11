@@ -1,19 +1,19 @@
 package com.ainnotate.aidas.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.io.Serializable;
 import javax.persistence.*;
-import javax.validation.constraints.*;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 /**
- * A AidasProperties.
+ * A AidasUploadMetaData.
  */
 @Entity
-@Table(name = "aidas_properties")
+@Table(name = "aidas_upload_meta_data")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-@org.springframework.data.elasticsearch.annotations.Document(indexName = "aidasproperties")
-public class AidasProperties implements Serializable {
+@org.springframework.data.elasticsearch.annotations.Document(indexName = "aidasuploadmetadata")
+public class AidasUploadMetaData implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -22,23 +22,15 @@ public class AidasProperties implements Serializable {
     @Column(name = "id")
     private Long id;
 
-    @NotNull
-    @Size(min = 3, max = 100)
-    @Column(name = "name", length = 100, nullable = false, unique = true)
+    @Column(name = "name")
     private String name;
 
-    @NotNull
-    @Size(min = 3, max = 100)
-    @Column(name = "value", length = 100, nullable = false, unique = true)
+    @Column(name = "value")
     private String value;
 
-    @NotNull
-    @Column(name = "system_property", nullable = false)
-    private Boolean systemProperty;
-
-    @NotNull
-    @Column(name = "optional", nullable = false)
-    private Boolean optional;
+    @ManyToOne
+    @JsonIgnoreProperties(value = { "aidasUser", "aidasObject" }, allowSetters = true)
+    private AidasUpload aidasUpload;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -46,7 +38,7 @@ public class AidasProperties implements Serializable {
         return this.id;
     }
 
-    public AidasProperties id(Long id) {
+    public AidasUploadMetaData id(Long id) {
         this.setId(id);
         return this;
     }
@@ -59,7 +51,7 @@ public class AidasProperties implements Serializable {
         return this.name;
     }
 
-    public AidasProperties name(String name) {
+    public AidasUploadMetaData name(String name) {
         this.setName(name);
         return this;
     }
@@ -72,7 +64,7 @@ public class AidasProperties implements Serializable {
         return this.value;
     }
 
-    public AidasProperties value(String value) {
+    public AidasUploadMetaData value(String value) {
         this.setValue(value);
         return this;
     }
@@ -81,30 +73,17 @@ public class AidasProperties implements Serializable {
         this.value = value;
     }
 
-    public Boolean getSystemProperty() {
-        return this.systemProperty;
+    public AidasUpload getAidasUpload() {
+        return this.aidasUpload;
     }
 
-    public AidasProperties systemProperty(Boolean systemProperty) {
-        this.setSystemProperty(systemProperty);
+    public void setAidasUpload(AidasUpload aidasUpload) {
+        this.aidasUpload = aidasUpload;
+    }
+
+    public AidasUploadMetaData aidasUpload(AidasUpload aidasUpload) {
+        this.setAidasUpload(aidasUpload);
         return this;
-    }
-
-    public void setSystemProperty(Boolean systemProperty) {
-        this.systemProperty = systemProperty;
-    }
-
-    public Boolean getOptional() {
-        return this.optional;
-    }
-
-    public AidasProperties optional(Boolean optional) {
-        this.setOptional(optional);
-        return this;
-    }
-
-    public void setOptional(Boolean optional) {
-        this.optional = optional;
     }
 
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
@@ -114,10 +93,10 @@ public class AidasProperties implements Serializable {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof AidasProperties)) {
+        if (!(o instanceof AidasUploadMetaData)) {
             return false;
         }
-        return id != null && id.equals(((AidasProperties) o).id);
+        return id != null && id.equals(((AidasUploadMetaData) o).id);
     }
 
     @Override
@@ -129,12 +108,10 @@ public class AidasProperties implements Serializable {
     // prettier-ignore
     @Override
     public String toString() {
-        return "AidasProperties{" +
+        return "AidasUploadMetaData{" +
             "id=" + getId() +
             ", name='" + getName() + "'" +
             ", value='" + getValue() + "'" +
-            ", systemProperty='" + getSystemProperty() + "'" +
-            ", optional='" + getOptional() + "'" +
             "}";
     }
 }

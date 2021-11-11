@@ -51,6 +51,9 @@ class AidasUserResourceIT {
     private static final Boolean DEFAULT_LOCKED = false;
     private static final Boolean UPDATED_LOCKED = true;
 
+    private static final String DEFAULT_PASSWORD = "AAAAAAAAAA";
+    private static final String UPDATED_PASSWORD = "BBBBBBBBBB";
+
     private static final String ENTITY_API_URL = "/api/aidas-users";
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
     private static final String ENTITY_SEARCH_API_URL = "/api/_search/aidas-users";
@@ -88,7 +91,8 @@ class AidasUserResourceIT {
             .firstName(DEFAULT_FIRST_NAME)
             .lastName(DEFAULT_LAST_NAME)
             .email(DEFAULT_EMAIL)
-            .locked(DEFAULT_LOCKED);
+            .locked(DEFAULT_LOCKED)
+            .password(DEFAULT_PASSWORD);
         return aidasUser;
     }
 
@@ -103,7 +107,8 @@ class AidasUserResourceIT {
             .firstName(UPDATED_FIRST_NAME)
             .lastName(UPDATED_LAST_NAME)
             .email(UPDATED_EMAIL)
-            .locked(UPDATED_LOCKED);
+            .locked(UPDATED_LOCKED)
+            .password(UPDATED_PASSWORD);
         return aidasUser;
     }
 
@@ -134,6 +139,7 @@ class AidasUserResourceIT {
         assertThat(testAidasUser.getLastName()).isEqualTo(DEFAULT_LAST_NAME);
         assertThat(testAidasUser.getEmail()).isEqualTo(DEFAULT_EMAIL);
         assertThat(testAidasUser.getLocked()).isEqualTo(DEFAULT_LOCKED);
+        assertThat(testAidasUser.getPassword()).isEqualTo(DEFAULT_PASSWORD);
 
         // Validate the AidasUser in Elasticsearch
         verify(mockAidasUserSearchRepository, times(1)).save(testAidasUser);
@@ -233,6 +239,28 @@ class AidasUserResourceIT {
 
     @Test
     @Transactional
+    void checkPasswordIsRequired() throws Exception {
+        int databaseSizeBeforeTest = aidasUserRepository.findAll().size();
+        // set the field null
+        aidasUser.setPassword(null);
+
+        // Create the AidasUser, which fails.
+
+        restAidasUserMockMvc
+            .perform(
+                post(ENTITY_API_URL)
+                    .with(csrf())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(TestUtil.convertObjectToJsonBytes(aidasUser))
+            )
+            .andExpect(status().isBadRequest());
+
+        List<AidasUser> aidasUserList = aidasUserRepository.findAll();
+        assertThat(aidasUserList).hasSize(databaseSizeBeforeTest);
+    }
+
+    @Test
+    @Transactional
     void getAllAidasUsers() throws Exception {
         // Initialize the database
         aidasUserRepository.saveAndFlush(aidasUser);
@@ -246,7 +274,8 @@ class AidasUserResourceIT {
             .andExpect(jsonPath("$.[*].firstName").value(hasItem(DEFAULT_FIRST_NAME)))
             .andExpect(jsonPath("$.[*].lastName").value(hasItem(DEFAULT_LAST_NAME)))
             .andExpect(jsonPath("$.[*].email").value(hasItem(DEFAULT_EMAIL)))
-            .andExpect(jsonPath("$.[*].locked").value(hasItem(DEFAULT_LOCKED.booleanValue())));
+            .andExpect(jsonPath("$.[*].locked").value(hasItem(DEFAULT_LOCKED.booleanValue())))
+            .andExpect(jsonPath("$.[*].password").value(hasItem(DEFAULT_PASSWORD)));
     }
 
     @Test
@@ -264,7 +293,8 @@ class AidasUserResourceIT {
             .andExpect(jsonPath("$.firstName").value(DEFAULT_FIRST_NAME))
             .andExpect(jsonPath("$.lastName").value(DEFAULT_LAST_NAME))
             .andExpect(jsonPath("$.email").value(DEFAULT_EMAIL))
-            .andExpect(jsonPath("$.locked").value(DEFAULT_LOCKED.booleanValue()));
+            .andExpect(jsonPath("$.locked").value(DEFAULT_LOCKED.booleanValue()))
+            .andExpect(jsonPath("$.password").value(DEFAULT_PASSWORD));
     }
 
     @Test
@@ -286,7 +316,12 @@ class AidasUserResourceIT {
         AidasUser updatedAidasUser = aidasUserRepository.findById(aidasUser.getId()).get();
         // Disconnect from session so that the updates on updatedAidasUser are not directly saved in db
         em.detach(updatedAidasUser);
-        updatedAidasUser.firstName(UPDATED_FIRST_NAME).lastName(UPDATED_LAST_NAME).email(UPDATED_EMAIL).locked(UPDATED_LOCKED);
+        updatedAidasUser
+            .firstName(UPDATED_FIRST_NAME)
+            .lastName(UPDATED_LAST_NAME)
+            .email(UPDATED_EMAIL)
+            .locked(UPDATED_LOCKED)
+            .password(UPDATED_PASSWORD);
 
         restAidasUserMockMvc
             .perform(
@@ -305,6 +340,7 @@ class AidasUserResourceIT {
         assertThat(testAidasUser.getLastName()).isEqualTo(UPDATED_LAST_NAME);
         assertThat(testAidasUser.getEmail()).isEqualTo(UPDATED_EMAIL);
         assertThat(testAidasUser.getLocked()).isEqualTo(UPDATED_LOCKED);
+        assertThat(testAidasUser.getPassword()).isEqualTo(UPDATED_PASSWORD);
 
         // Validate the AidasUser in Elasticsearch
         verify(mockAidasUserSearchRepository).save(testAidasUser);
@@ -413,6 +449,7 @@ class AidasUserResourceIT {
         assertThat(testAidasUser.getLastName()).isEqualTo(UPDATED_LAST_NAME);
         assertThat(testAidasUser.getEmail()).isEqualTo(UPDATED_EMAIL);
         assertThat(testAidasUser.getLocked()).isEqualTo(DEFAULT_LOCKED);
+        assertThat(testAidasUser.getPassword()).isEqualTo(DEFAULT_PASSWORD);
     }
 
     @Test
@@ -427,7 +464,12 @@ class AidasUserResourceIT {
         AidasUser partialUpdatedAidasUser = new AidasUser();
         partialUpdatedAidasUser.setId(aidasUser.getId());
 
-        partialUpdatedAidasUser.firstName(UPDATED_FIRST_NAME).lastName(UPDATED_LAST_NAME).email(UPDATED_EMAIL).locked(UPDATED_LOCKED);
+        partialUpdatedAidasUser
+            .firstName(UPDATED_FIRST_NAME)
+            .lastName(UPDATED_LAST_NAME)
+            .email(UPDATED_EMAIL)
+            .locked(UPDATED_LOCKED)
+            .password(UPDATED_PASSWORD);
 
         restAidasUserMockMvc
             .perform(
@@ -446,6 +488,7 @@ class AidasUserResourceIT {
         assertThat(testAidasUser.getLastName()).isEqualTo(UPDATED_LAST_NAME);
         assertThat(testAidasUser.getEmail()).isEqualTo(UPDATED_EMAIL);
         assertThat(testAidasUser.getLocked()).isEqualTo(UPDATED_LOCKED);
+        assertThat(testAidasUser.getPassword()).isEqualTo(UPDATED_PASSWORD);
     }
 
     @Test
@@ -559,6 +602,7 @@ class AidasUserResourceIT {
             .andExpect(jsonPath("$.[*].firstName").value(hasItem(DEFAULT_FIRST_NAME)))
             .andExpect(jsonPath("$.[*].lastName").value(hasItem(DEFAULT_LAST_NAME)))
             .andExpect(jsonPath("$.[*].email").value(hasItem(DEFAULT_EMAIL)))
-            .andExpect(jsonPath("$.[*].locked").value(hasItem(DEFAULT_LOCKED.booleanValue())));
+            .andExpect(jsonPath("$.[*].locked").value(hasItem(DEFAULT_LOCKED.booleanValue())))
+            .andExpect(jsonPath("$.[*].password").value(hasItem(DEFAULT_PASSWORD)));
     }
 }

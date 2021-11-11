@@ -31,6 +31,9 @@ public class AidasProject implements Serializable {
     @Column(name = "description")
     private String description;
 
+    @Column(name = "project_type")
+    private String projectType;
+
     @ManyToOne(optional = false)
     @NotNull
     @JsonIgnoreProperties(value = { "aidasOrganisation" }, allowSetters = true)
@@ -77,6 +80,19 @@ public class AidasProject implements Serializable {
         this.description = description;
     }
 
+    public String getProjectType() {
+        return this.projectType;
+    }
+
+    public AidasProject projectType(String projectType) {
+        this.setProjectType(projectType);
+        return this;
+    }
+
+    public void setProjectType(String projectType) {
+        this.projectType = projectType;
+    }
+
     public AidasCustomer getAidasCustomer() {
         return this.aidasCustomer;
     }
@@ -116,6 +132,7 @@ public class AidasProject implements Serializable {
             "id=" + getId() +
             ", name='" + getName() + "'" +
             ", description='" + getDescription() + "'" +
+            ", projectType='" + getProjectType() + "'" +
             "}";
     }
 }

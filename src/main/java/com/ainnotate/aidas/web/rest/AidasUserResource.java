@@ -8,6 +8,7 @@ import com.ainnotate.aidas.repository.search.AidasUserSearchRepository;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -15,6 +16,18 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import javax.ws.rs.core.Response;
+
+import org.keycloak.OAuth2Constants;
+import org.keycloak.admin.client.CreatedResponseUtil;
+import org.keycloak.admin.client.Keycloak;
+import org.keycloak.admin.client.KeycloakBuilder;
+import org.keycloak.admin.client.resource.RealmResource;
+import org.keycloak.admin.client.resource.UserResource;
+import org.keycloak.admin.client.resource.UsersResource;
+import org.keycloak.representations.idm.CredentialRepresentation;
+import org.keycloak.representations.idm.RoleRepresentation;
+import org.keycloak.representations.idm.UserRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -153,6 +166,9 @@ public class AidasUserResource {
                 if (aidasUser.getLocked() != null) {
                     existingAidasUser.setLocked(aidasUser.getLocked());
                 }
+                if (aidasUser.getPassword() != null) {
+                    existingAidasUser.setPassword(aidasUser.getPassword());
+                }
 
                 return existingAidasUser;
             })
@@ -227,5 +243,46 @@ public class AidasUserResource {
         Page<AidasUser> page = aidasUserSearchRepository.search(query, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    public void addUserToKeyCloak(AidasUser aidasUser) {
+        String serverUrl = "https://auth.ainnotate.com/auth";
+        String realm = "master";
+        String clientId = "admin-cli";
+        Keycloak keycloak = KeycloakBuilder.builder()
+            .serverUrl(serverUrl)
+            .realm(realm) //
+            .grantType(OAuth2Constants.PASSWORD)
+            .clientId(clientId)
+            .username("admin")
+            .password("admin")
+            .build();
+
+        UserRepresentation user = new UserRepresentation();
+        user.setEnabled(true);
+        user.setUsername(aidasUser.getFirstName());
+        user.setFirstName(aidasUser.getFirstName());
+        user.setLastName(aidasUser.getLastName());
+        user.setEmail(aidasUser.getEmail());
+        //user.setAttributes(Collections.singletonMap("origin", Arrays.asList("demo")));
+
+        RealmResource realmResource = keycloak.realm("jhipster");
+        UsersResource usersRessource = realmResource.users();
+
+        Response response = usersRessource.create(user);
+        String userId = CreatedResponseUtil.getCreatedId(response);
+
+        System.out.printf("User created with userId: %s%n", userId);
+
+        CredentialRepresentation passwordCred = new CredentialRepresentation();
+        passwordCred.setTemporary(false);
+        passwordCred.setType(CredentialRepresentation.PASSWORD);
+        passwordCred.setValue("test");
+        UserResource userResource = usersRessource.get(userId);
+        userResource.resetPassword(passwordCred);
+        RoleRepresentation userRealmRole = realmResource.roles().get("ROLE_USER").toRepresentation();
+        userResource.roles().realmLevel().add(Arrays.asList(userRealmRole));
+
+
     }
 }

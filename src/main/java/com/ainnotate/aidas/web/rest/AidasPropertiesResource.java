@@ -151,6 +151,12 @@ public class AidasPropertiesResource {
                 if (aidasProperties.getValue() != null) {
                     existingAidasProperties.setValue(aidasProperties.getValue());
                 }
+                if (aidasProperties.getSystemProperty() != null) {
+                    existingAidasProperties.setSystemProperty(aidasProperties.getSystemProperty());
+                }
+                if (aidasProperties.getOptional() != null) {
+                    existingAidasProperties.setOptional(aidasProperties.getOptional());
+                }
 
                 return existingAidasProperties;
             })

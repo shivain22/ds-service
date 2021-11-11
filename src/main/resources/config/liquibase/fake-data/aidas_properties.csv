@@ -1,11 +1,11 @@
-id;name;value
-1;Shirt;neural-net circuit portals
-2;withdrawal;Plastic Iowa structure
-3;salmon Saudi;rich Consultant
-4;Avon Island;Avon SQL
-5;Brand Bacon middleware;XSS
-6;matrix Reverse-engineered;index Dynamic Steel
-7;Tools orange;Uzbekistan Berkshire
-8;synthesizing Plastic Colorado;Central Operations up
-9;networks paradigms bifurcated;Pizza orchestrate
-10;Kip;productize
+id;name;value;system_property;optional
+1;Shirt;neural-net circuit portals;false;true
+2;Human dynamic;Dalasi;true;false
+3;Massachusetts;Phased Representative generate;true;false
+4;Island relationships;SQL;true;true
+5;Avon;calculating;true;true
+6;XSS;matrix Reverse-engineered;true;true
+7;Chief infrastructures;web-readiness microchip;false;false
+8;Communications solutions;generate set Soft;true;false
+9;Operations up Administrator;paradigms;false;false
+10;Islands Berkshire bypassing;primary Configuration;false;true

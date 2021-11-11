@@ -147,6 +147,9 @@ public class AidasProjectResource {
                 if (aidasProject.getDescription() != null) {
                     existingAidasProject.setDescription(aidasProject.getDescription());
                 }
+                if (aidasProject.getProjectType() != null) {
+                    existingAidasProject.setProjectType(aidasProject.getProjectType());
+                }
 
                 return existingAidasProject;
             })

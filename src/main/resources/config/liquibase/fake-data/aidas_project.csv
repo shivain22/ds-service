@@ -1,11 +1,11 @@
-id;name;description;aidas_customer_id
-1;supply-chains Creative;orchestration programming;1
-2;rich Micronesia quantifying;flexibility cross-media;2
-3;deposit Baby Regional;human-resource parse Islands;3
-4;Paradigm system Electronics;cyan Granite COM;4
-5;Realigned;Cambridgeshire users Centralized;5
-6;invoice Future Dakota;sexy invoice;6
-7;optical;Avon XML;7
-8;Islands deposit;ubiquitous;8
-9;Business-focused;help-desk service-desk Sausages;9
-10;interfaces;generating Handmade;10
+id;name;description;project_type;aidas_customer_id
+1;supply-chains Creative;orchestration programming;rich Micronesia quantifying;1
+2;flexibility cross-media;deposit Baby Regional;human-resource parse Islands;2
+3;Paradigm system Electronics;cyan Granite COM;Realigned;3
+4;Cambridgeshire users Centralized;invoice Future Dakota;sexy invoice;4
+5;optical;Avon XML;Islands deposit;5
+6;ubiquitous;Business-focused;help-desk service-desk Sausages;6
+7;interfaces;generating Handmade;online Shilling;7
+8;AGP Loan;deposit Moldova Chips;Administrator;8
+9;Senior;lavender morph;Computers generating;9
+10;overriding Toys Dynamic;Germany;silver;10

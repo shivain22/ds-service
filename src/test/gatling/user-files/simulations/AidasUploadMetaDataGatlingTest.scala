@@ -7,9 +7,9 @@ import org.slf4j.LoggerFactory
 import scala.concurrent.duration._
 
 /**
- * Performance test for the AidasUser entity.
+ * Performance test for the AidasUploadMetaData entity.
  */
-class AidasUserGatlingTest extends Simulation {
+class AidasUploadMetaDataGatlingTest extends Simulation {
 
     val context: LoggerContext = LoggerFactory.getILoggerFactory.asInstanceOf[LoggerContext]
     // Log all HTTP requests
@@ -45,7 +45,7 @@ class AidasUserGatlingTest extends Simulation {
         "Upgrade-Insecure-Requests" -> "1"
     )
 
-    val scn = scenario("Test the AidasUser entity")
+    val scn = scenario("Test the AidasUploadMetaData entity")
         .exec(http("First unauthenticated request")
         .get("/api/account")
         .headers(headers_http)
@@ -91,32 +91,29 @@ class AidasUserGatlingTest extends Simulation {
         .check(status.is(200)))
         .pause(10)
         .repeat(2) {
-            exec(http("Get all aidasUsers")
-            .get("/services/ainnotateservice/api/aidas-users")
+            exec(http("Get all aidasUploadMetaData")
+            .get("/services/ainnotateservice/api/aidas-upload-meta-data")
             .headers(headers_http_authenticated)
             .check(status.is(200)))
             .pause(10 seconds, 20 seconds)
-            .exec(http("Create new aidasUser")
-            .post("/services/ainnotateservice/api/aidas-users")
+            .exec(http("Create new aidasUploadMetaData")
+            .post("/services/ainnotateservice/api/aidas-upload-meta-data")
             .headers(headers_http_authenticated)
             .body(StringBody("""{
-                "firstName":"SAMPLE_TEXT"
-                , "lastName":"SAMPLE_TEXT"
-                , "email":"SAMPLE_TEXT"
-                , "locked":null
-                , "password":"SAMPLE_TEXT"
+                "name":"SAMPLE_TEXT"
+                , "value":"SAMPLE_TEXT"
                 }""")).asJson
             .check(status.is(201))
-            .check(headerRegex("Location", "(.*)").saveAs("new_aidasUser_url"))).exitHereIfFailed
+            .check(headerRegex("Location", "(.*)").saveAs("new_aidasUploadMetaData_url"))).exitHereIfFailed
             .pause(10)
             .repeat(5) {
-                exec(http("Get created aidasUser")
-                .get("/services/ainnotateservice${new_aidasUser_url}")
+                exec(http("Get created aidasUploadMetaData")
+                .get("/services/ainnotateservice${new_aidasUploadMetaData_url}")
                 .headers(headers_http_authenticated))
                 .pause(10)
             }
-            .exec(http("Delete created aidasUser")
-            .delete("/services/ainnotateservice${new_aidasUser_url}")
+            .exec(http("Delete created aidasUploadMetaData")
+            .delete("/services/ainnotateservice${new_aidasUploadMetaData_url}")
             .headers(headers_http_authenticated))
             .pause(10)
         }

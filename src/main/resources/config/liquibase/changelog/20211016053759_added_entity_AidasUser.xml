@@ -26,6 +26,9 @@
             <column name="locked" type="boolean">
                 <constraints nullable="false" />
             </column>
+            <column name="password" type="varchar(20)">
+                <constraints nullable="false" />
+            </column>
             <column name="aidas_organisation_id" type="bigint">
                 <constraints nullable="true" />
             </column>
@@ -60,6 +63,7 @@
             <column name="last_name" type="string"/>
             <column name="email" type="string"/>
             <column name="locked" type="boolean"/>
+            <column name="password" type="string"/>
             <!-- jhipster-needle-liquibase-add-loadcolumn - JHipster (and/or extensions) can add load columns here -->
         </loadData>
     </changeSet>

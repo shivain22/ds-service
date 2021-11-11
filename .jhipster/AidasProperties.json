@@ -16,6 +16,16 @@
       "fieldValidateRules": ["required", "unique", "minlength", "maxlength"],
       "fieldValidateRulesMinlength": "3",
       "fieldValidateRulesMaxlength": "100"
+    },
+    {
+      "fieldName": "systemProperty",
+      "fieldType": "Boolean",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "optional",
+      "fieldType": "Boolean",
+      "fieldValidateRules": ["required"]
     }
   ],
   "relationships": [],

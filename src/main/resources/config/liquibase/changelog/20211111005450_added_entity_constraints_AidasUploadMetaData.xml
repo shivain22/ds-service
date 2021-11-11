@@ -4,14 +4,14 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.5.xsd">
     <!--
-        Added the constraints for entity AidasVendor.
+        Added the constraints for entity AidasUploadMetaData.
     -->
-    <changeSet id="20211016052352-2" author="jhipster">
+    <changeSet id="20211111005450-2" author="jhipster">
 
-        <addForeignKeyConstraint baseColumnNames="aidas_organisation_id"
-                                 baseTableName="aidas_vendor"
-                                 constraintName="fk_aidas_vendor__aidas_organisation_id"
+        <addForeignKeyConstraint baseColumnNames="aidas_upload_id"
+                                 baseTableName="aidas_upload_meta_data"
+                                 constraintName="fk_aidas_upload_meta_data__aidas_upload_id"
                                  referencedColumnNames="id"
-                                 referencedTableName="aidas_organisation"/>
+                                 referencedTableName="aidas_upload"/>
     </changeSet>
 </databaseChangeLog>

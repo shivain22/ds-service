@@ -45,6 +45,12 @@ class AidasPropertiesResourceIT {
     private static final String DEFAULT_VALUE = "AAAAAAAAAA";
     private static final String UPDATED_VALUE = "BBBBBBBBBB";
 
+    private static final Boolean DEFAULT_SYSTEM_PROPERTY = false;
+    private static final Boolean UPDATED_SYSTEM_PROPERTY = true;
+
+    private static final Boolean DEFAULT_OPTIONAL = false;
+    private static final Boolean UPDATED_OPTIONAL = true;
+
     private static final String ENTITY_API_URL = "/api/aidas-properties";
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
     private static final String ENTITY_SEARCH_API_URL = "/api/_search/aidas-properties";
@@ -78,7 +84,11 @@ class AidasPropertiesResourceIT {
      * if they test an entity which requires the current entity.
      */
     public static AidasProperties createEntity(EntityManager em) {
-        AidasProperties aidasProperties = new AidasProperties().name(DEFAULT_NAME).value(DEFAULT_VALUE);
+        AidasProperties aidasProperties = new AidasProperties()
+            .name(DEFAULT_NAME)
+            .value(DEFAULT_VALUE)
+            .systemProperty(DEFAULT_SYSTEM_PROPERTY)
+            .optional(DEFAULT_OPTIONAL);
         return aidasProperties;
     }
 
@@ -89,7 +99,11 @@ class AidasPropertiesResourceIT {
      * if they test an entity which requires the current entity.
      */
     public static AidasProperties createUpdatedEntity(EntityManager em) {
-        AidasProperties aidasProperties = new AidasProperties().name(UPDATED_NAME).value(UPDATED_VALUE);
+        AidasProperties aidasProperties = new AidasProperties()
+            .name(UPDATED_NAME)
+            .value(UPDATED_VALUE)
+            .systemProperty(UPDATED_SYSTEM_PROPERTY)
+            .optional(UPDATED_OPTIONAL);
         return aidasProperties;
     }
 
@@ -118,6 +132,8 @@ class AidasPropertiesResourceIT {
         AidasProperties testAidasProperties = aidasPropertiesList.get(aidasPropertiesList.size() - 1);
         assertThat(testAidasProperties.getName()).isEqualTo(DEFAULT_NAME);
         assertThat(testAidasProperties.getValue()).isEqualTo(DEFAULT_VALUE);
+        assertThat(testAidasProperties.getSystemProperty()).isEqualTo(DEFAULT_SYSTEM_PROPERTY);
+        assertThat(testAidasProperties.getOptional()).isEqualTo(DEFAULT_OPTIONAL);
 
         // Validate the AidasProperties in Elasticsearch
         verify(mockAidasPropertiesSearchRepository, times(1)).save(testAidasProperties);
@@ -195,6 +211,50 @@ class AidasPropertiesResourceIT {
 
     @Test
     @Transactional
+    void checkSystemPropertyIsRequired() throws Exception {
+        int databaseSizeBeforeTest = aidasPropertiesRepository.findAll().size();
+        // set the field null
+        aidasProperties.setSystemProperty(null);
+
+        // Create the AidasProperties, which fails.
+
+        restAidasPropertiesMockMvc
+            .perform(
+                post(ENTITY_API_URL)
+                    .with(csrf())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(TestUtil.convertObjectToJsonBytes(aidasProperties))
+            )
+            .andExpect(status().isBadRequest());
+
+        List<AidasProperties> aidasPropertiesList = aidasPropertiesRepository.findAll();
+        assertThat(aidasPropertiesList).hasSize(databaseSizeBeforeTest);
+    }
+
+    @Test
+    @Transactional
+    void checkOptionalIsRequired() throws Exception {
+        int databaseSizeBeforeTest = aidasPropertiesRepository.findAll().size();
+        // set the field null
+        aidasProperties.setOptional(null);
+
+        // Create the AidasProperties, which fails.
+
+        restAidasPropertiesMockMvc
+            .perform(
+                post(ENTITY_API_URL)
+                    .with(csrf())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(TestUtil.convertObjectToJsonBytes(aidasProperties))
+            )
+            .andExpect(status().isBadRequest());
+
+        List<AidasProperties> aidasPropertiesList = aidasPropertiesRepository.findAll();
+        assertThat(aidasPropertiesList).hasSize(databaseSizeBeforeTest);
+    }
+
+    @Test
+    @Transactional
     void getAllAidasProperties() throws Exception {
         // Initialize the database
         aidasPropertiesRepository.saveAndFlush(aidasProperties);
@@ -206,7 +266,9 @@ class AidasPropertiesResourceIT {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(aidasProperties.getId().intValue())))
             .andExpect(jsonPath("$.[*].name").value(hasItem(DEFAULT_NAME)))
-            .andExpect(jsonPath("$.[*].value").value(hasItem(DEFAULT_VALUE)));
+            .andExpect(jsonPath("$.[*].value").value(hasItem(DEFAULT_VALUE)))
+            .andExpect(jsonPath("$.[*].systemProperty").value(hasItem(DEFAULT_SYSTEM_PROPERTY.booleanValue())))
+            .andExpect(jsonPath("$.[*].optional").value(hasItem(DEFAULT_OPTIONAL.booleanValue())));
     }
 
     @Test
@@ -222,7 +284,9 @@ class AidasPropertiesResourceIT {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(aidasProperties.getId().intValue()))
             .andExpect(jsonPath("$.name").value(DEFAULT_NAME))
-            .andExpect(jsonPath("$.value").value(DEFAULT_VALUE));
+            .andExpect(jsonPath("$.value").value(DEFAULT_VALUE))
+            .andExpect(jsonPath("$.systemProperty").value(DEFAULT_SYSTEM_PROPERTY.booleanValue()))
+            .andExpect(jsonPath("$.optional").value(DEFAULT_OPTIONAL.booleanValue()));
     }
 
     @Test
@@ -244,7 +308,7 @@ class AidasPropertiesResourceIT {
         AidasProperties updatedAidasProperties = aidasPropertiesRepository.findById(aidasProperties.getId()).get();
         // Disconnect from session so that the updates on updatedAidasProperties are not directly saved in db
         em.detach(updatedAidasProperties);
-        updatedAidasProperties.name(UPDATED_NAME).value(UPDATED_VALUE);
+        updatedAidasProperties.name(UPDATED_NAME).value(UPDATED_VALUE).systemProperty(UPDATED_SYSTEM_PROPERTY).optional(UPDATED_OPTIONAL);
 
         restAidasPropertiesMockMvc
             .perform(
@@ -261,6 +325,8 @@ class AidasPropertiesResourceIT {
         AidasProperties testAidasProperties = aidasPropertiesList.get(aidasPropertiesList.size() - 1);
         assertThat(testAidasProperties.getName()).isEqualTo(UPDATED_NAME);
         assertThat(testAidasProperties.getValue()).isEqualTo(UPDATED_VALUE);
+        assertThat(testAidasProperties.getSystemProperty()).isEqualTo(UPDATED_SYSTEM_PROPERTY);
+        assertThat(testAidasProperties.getOptional()).isEqualTo(UPDATED_OPTIONAL);
 
         // Validate the AidasProperties in Elasticsearch
         verify(mockAidasPropertiesSearchRepository).save(testAidasProperties);
@@ -350,7 +416,7 @@ class AidasPropertiesResourceIT {
         AidasProperties partialUpdatedAidasProperties = new AidasProperties();
         partialUpdatedAidasProperties.setId(aidasProperties.getId());
 
-        partialUpdatedAidasProperties.name(UPDATED_NAME);
+        partialUpdatedAidasProperties.name(UPDATED_NAME).optional(UPDATED_OPTIONAL);
 
         restAidasPropertiesMockMvc
             .perform(
@@ -367,6 +433,8 @@ class AidasPropertiesResourceIT {
         AidasProperties testAidasProperties = aidasPropertiesList.get(aidasPropertiesList.size() - 1);
         assertThat(testAidasProperties.getName()).isEqualTo(UPDATED_NAME);
         assertThat(testAidasProperties.getValue()).isEqualTo(DEFAULT_VALUE);
+        assertThat(testAidasProperties.getSystemProperty()).isEqualTo(DEFAULT_SYSTEM_PROPERTY);
+        assertThat(testAidasProperties.getOptional()).isEqualTo(UPDATED_OPTIONAL);
     }
 
     @Test
@@ -381,7 +449,11 @@ class AidasPropertiesResourceIT {
         AidasProperties partialUpdatedAidasProperties = new AidasProperties();
         partialUpdatedAidasProperties.setId(aidasProperties.getId());
 
-        partialUpdatedAidasProperties.name(UPDATED_NAME).value(UPDATED_VALUE);
+        partialUpdatedAidasProperties
+            .name(UPDATED_NAME)
+            .value(UPDATED_VALUE)
+            .systemProperty(UPDATED_SYSTEM_PROPERTY)
+            .optional(UPDATED_OPTIONAL);
 
         restAidasPropertiesMockMvc
             .perform(
@@ -398,6 +470,8 @@ class AidasPropertiesResourceIT {
         AidasProperties testAidasProperties = aidasPropertiesList.get(aidasPropertiesList.size() - 1);
         assertThat(testAidasProperties.getName()).isEqualTo(UPDATED_NAME);
         assertThat(testAidasProperties.getValue()).isEqualTo(UPDATED_VALUE);
+        assertThat(testAidasProperties.getSystemProperty()).isEqualTo(UPDATED_SYSTEM_PROPERTY);
+        assertThat(testAidasProperties.getOptional()).isEqualTo(UPDATED_OPTIONAL);
     }
 
     @Test
@@ -509,6 +583,8 @@ class AidasPropertiesResourceIT {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(aidasProperties.getId().intValue())))
             .andExpect(jsonPath("$.[*].name").value(hasItem(DEFAULT_NAME)))
-            .andExpect(jsonPath("$.[*].value").value(hasItem(DEFAULT_VALUE)));
+            .andExpect(jsonPath("$.[*].value").value(hasItem(DEFAULT_VALUE)))
+            .andExpect(jsonPath("$.[*].systemProperty").value(hasItem(DEFAULT_SYSTEM_PROPERTY.booleanValue())))
+            .andExpect(jsonPath("$.[*].optional").value(hasItem(DEFAULT_OPTIONAL.booleanValue())));
     }
 }

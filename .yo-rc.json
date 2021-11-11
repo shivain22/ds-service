@@ -40,7 +40,7 @@
     "jwtSecretKey": "ODQ5YWUwOTVhNjk0MWE0MWIxNGI4MjJiMzNlYWE0NmVmMjgyNTQ3OWNmNjUwOTY1MjRkZjUxMzRmYzVhYmQwZDk2MGM4OThkMWZiMGQ2OGRkMzM5NWRhYWMyNzk1ZTdhNGM4NTI3OTEyODM2NGI5NGU5ZjI5MDg2MmQ5MGM1ZTQ=",
     "enableGradleEnterprise": false,
     "languages": ["en", "fr"],
-    "lastLiquibaseTimestamp": 1634819647000,
+    "lastLiquibaseTimestamp": 1636592090000,
     "entities": [
       "AidasOrganisation",
       "AidasCustomer",
@@ -51,7 +51,8 @@
       "AidasUpload",
       "AidasProperties",
       "AidasProjectProperty",
-      "AidasObjectProperty"
+      "AidasObjectProperty",
+      "AidasUploadMetaData"
     ]
   }
 }
