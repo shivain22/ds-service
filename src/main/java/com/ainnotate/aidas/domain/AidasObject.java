@@ -31,6 +31,10 @@ public class AidasObject implements Serializable {
     @Column(name = "description")
     private String description;
 
+    @NotNull
+    @Column(name = "number_of_upload_reqd", nullable = false)
+    private Integer numberOfUploadReqd;
+
     @ManyToOne(optional = false)
     @NotNull
     @JsonIgnoreProperties(value = { "aidasCustomer" }, allowSetters = true)
@@ -77,6 +81,19 @@ public class AidasObject implements Serializable {
         this.description = description;
     }
 
+    public Integer getNumberOfUploadReqd() {
+        return this.numberOfUploadReqd;
+    }
+
+    public AidasObject numberOfUploadReqd(Integer numberOfUploadReqd) {
+        this.setNumberOfUploadReqd(numberOfUploadReqd);
+        return this;
+    }
+
+    public void setNumberOfUploadReqd(Integer numberOfUploadReqd) {
+        this.numberOfUploadReqd = numberOfUploadReqd;
+    }
+
     public AidasProject getAidasProject() {
         return this.aidasProject;
     }
@@ -116,6 +133,7 @@ public class AidasObject implements Serializable {
             "id=" + getId() +
             ", name='" + getName() + "'" +
             ", description='" + getDescription() + "'" +
+            ", numberOfUploadReqd=" + getNumberOfUploadReqd() +
             "}";
     }
 }

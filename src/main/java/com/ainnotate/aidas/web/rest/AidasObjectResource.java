@@ -147,6 +147,9 @@ public class AidasObjectResource {
                 if (aidasObject.getDescription() != null) {
                     existingAidasObject.setDescription(aidasObject.getDescription());
                 }
+                if (aidasObject.getNumberOfUploadReqd() != null) {
+                    existingAidasObject.setNumberOfUploadReqd(aidasObject.getNumberOfUploadReqd());
+                }
 
                 return existingAidasObject;
             })

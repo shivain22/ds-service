@@ -46,6 +46,9 @@ class AidasObjectResourceIT {
     private static final String DEFAULT_DESCRIPTION = "AAAAAAAAAA";
     private static final String UPDATED_DESCRIPTION = "BBBBBBBBBB";
 
+    private static final Integer DEFAULT_NUMBER_OF_UPLOAD_REQD = 1;
+    private static final Integer UPDATED_NUMBER_OF_UPLOAD_REQD = 2;
+
     private static final String ENTITY_API_URL = "/api/aidas-objects";
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
     private static final String ENTITY_SEARCH_API_URL = "/api/_search/aidas-objects";
@@ -79,7 +82,10 @@ class AidasObjectResourceIT {
      * if they test an entity which requires the current entity.
      */
     public static AidasObject createEntity(EntityManager em) {
-        AidasObject aidasObject = new AidasObject().name(DEFAULT_NAME).description(DEFAULT_DESCRIPTION);
+        AidasObject aidasObject = new AidasObject()
+            .name(DEFAULT_NAME)
+            .description(DEFAULT_DESCRIPTION)
+            .numberOfUploadReqd(DEFAULT_NUMBER_OF_UPLOAD_REQD);
         // Add required entity
         AidasProject aidasProject;
         if (TestUtil.findAll(em, AidasProject.class).isEmpty()) {
@@ -100,7 +106,10 @@ class AidasObjectResourceIT {
      * if they test an entity which requires the current entity.
      */
     public static AidasObject createUpdatedEntity(EntityManager em) {
-        AidasObject aidasObject = new AidasObject().name(UPDATED_NAME).description(UPDATED_DESCRIPTION);
+        AidasObject aidasObject = new AidasObject()
+            .name(UPDATED_NAME)
+            .description(UPDATED_DESCRIPTION)
+            .numberOfUploadReqd(UPDATED_NUMBER_OF_UPLOAD_REQD);
         // Add required entity
         AidasProject aidasProject;
         if (TestUtil.findAll(em, AidasProject.class).isEmpty()) {
@@ -139,6 +148,7 @@ class AidasObjectResourceIT {
         AidasObject testAidasObject = aidasObjectList.get(aidasObjectList.size() - 1);
         assertThat(testAidasObject.getName()).isEqualTo(DEFAULT_NAME);
         assertThat(testAidasObject.getDescription()).isEqualTo(DEFAULT_DESCRIPTION);
+        assertThat(testAidasObject.getNumberOfUploadReqd()).isEqualTo(DEFAULT_NUMBER_OF_UPLOAD_REQD);
 
         // Validate the AidasObject in Elasticsearch
         verify(mockAidasObjectSearchRepository, times(1)).save(testAidasObject);
@@ -194,6 +204,28 @@ class AidasObjectResourceIT {
 
     @Test
     @Transactional
+    void checkNumberOfUploadReqdIsRequired() throws Exception {
+        int databaseSizeBeforeTest = aidasObjectRepository.findAll().size();
+        // set the field null
+        aidasObject.setNumberOfUploadReqd(null);
+
+        // Create the AidasObject, which fails.
+
+        restAidasObjectMockMvc
+            .perform(
+                post(ENTITY_API_URL)
+                    .with(csrf())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(TestUtil.convertObjectToJsonBytes(aidasObject))
+            )
+            .andExpect(status().isBadRequest());
+
+        List<AidasObject> aidasObjectList = aidasObjectRepository.findAll();
+        assertThat(aidasObjectList).hasSize(databaseSizeBeforeTest);
+    }
+
+    @Test
+    @Transactional
     void getAllAidasObjects() throws Exception {
         // Initialize the database
         aidasObjectRepository.saveAndFlush(aidasObject);
@@ -205,7 +237,8 @@ class AidasObjectResourceIT {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(aidasObject.getId().intValue())))
             .andExpect(jsonPath("$.[*].name").value(hasItem(DEFAULT_NAME)))
-            .andExpect(jsonPath("$.[*].description").value(hasItem(DEFAULT_DESCRIPTION)));
+            .andExpect(jsonPath("$.[*].description").value(hasItem(DEFAULT_DESCRIPTION)))
+            .andExpect(jsonPath("$.[*].numberOfUploadReqd").value(hasItem(DEFAULT_NUMBER_OF_UPLOAD_REQD)));
     }
 
     @Test
@@ -221,7 +254,8 @@ class AidasObjectResourceIT {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(aidasObject.getId().intValue()))
             .andExpect(jsonPath("$.name").value(DEFAULT_NAME))
-            .andExpect(jsonPath("$.description").value(DEFAULT_DESCRIPTION));
+            .andExpect(jsonPath("$.description").value(DEFAULT_DESCRIPTION))
+            .andExpect(jsonPath("$.numberOfUploadReqd").value(DEFAULT_NUMBER_OF_UPLOAD_REQD));
     }
 
     @Test
@@ -243,7 +277,7 @@ class AidasObjectResourceIT {
         AidasObject updatedAidasObject = aidasObjectRepository.findById(aidasObject.getId()).get();
         // Disconnect from session so that the updates on updatedAidasObject are not directly saved in db
         em.detach(updatedAidasObject);
-        updatedAidasObject.name(UPDATED_NAME).description(UPDATED_DESCRIPTION);
+        updatedAidasObject.name(UPDATED_NAME).description(UPDATED_DESCRIPTION).numberOfUploadReqd(UPDATED_NUMBER_OF_UPLOAD_REQD);
 
         restAidasObjectMockMvc
             .perform(
@@ -260,6 +294,7 @@ class AidasObjectResourceIT {
         AidasObject testAidasObject = aidasObjectList.get(aidasObjectList.size() - 1);
         assertThat(testAidasObject.getName()).isEqualTo(UPDATED_NAME);
         assertThat(testAidasObject.getDescription()).isEqualTo(UPDATED_DESCRIPTION);
+        assertThat(testAidasObject.getNumberOfUploadReqd()).isEqualTo(UPDATED_NUMBER_OF_UPLOAD_REQD);
 
         // Validate the AidasObject in Elasticsearch
         verify(mockAidasObjectSearchRepository).save(testAidasObject);
@@ -366,6 +401,7 @@ class AidasObjectResourceIT {
         AidasObject testAidasObject = aidasObjectList.get(aidasObjectList.size() - 1);
         assertThat(testAidasObject.getName()).isEqualTo(DEFAULT_NAME);
         assertThat(testAidasObject.getDescription()).isEqualTo(UPDATED_DESCRIPTION);
+        assertThat(testAidasObject.getNumberOfUploadReqd()).isEqualTo(DEFAULT_NUMBER_OF_UPLOAD_REQD);
     }
 
     @Test
@@ -380,7 +416,7 @@ class AidasObjectResourceIT {
         AidasObject partialUpdatedAidasObject = new AidasObject();
         partialUpdatedAidasObject.setId(aidasObject.getId());
 
-        partialUpdatedAidasObject.name(UPDATED_NAME).description(UPDATED_DESCRIPTION);
+        partialUpdatedAidasObject.name(UPDATED_NAME).description(UPDATED_DESCRIPTION).numberOfUploadReqd(UPDATED_NUMBER_OF_UPLOAD_REQD);
 
         restAidasObjectMockMvc
             .perform(
@@ -397,6 +433,7 @@ class AidasObjectResourceIT {
         AidasObject testAidasObject = aidasObjectList.get(aidasObjectList.size() - 1);
         assertThat(testAidasObject.getName()).isEqualTo(UPDATED_NAME);
         assertThat(testAidasObject.getDescription()).isEqualTo(UPDATED_DESCRIPTION);
+        assertThat(testAidasObject.getNumberOfUploadReqd()).isEqualTo(UPDATED_NUMBER_OF_UPLOAD_REQD);
     }
 
     @Test
@@ -508,6 +545,7 @@ class AidasObjectResourceIT {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(aidasObject.getId().intValue())))
             .andExpect(jsonPath("$.[*].name").value(hasItem(DEFAULT_NAME)))
-            .andExpect(jsonPath("$.[*].description").value(hasItem(DEFAULT_DESCRIPTION)));
+            .andExpect(jsonPath("$.[*].description").value(hasItem(DEFAULT_DESCRIPTION)))
+            .andExpect(jsonPath("$.[*].numberOfUploadReqd").value(hasItem(DEFAULT_NUMBER_OF_UPLOAD_REQD)));
     }
 }

@@ -102,6 +102,7 @@ class AidasObjectGatlingTest extends Simulation {
             .body(StringBody("""{
                 "name":"SAMPLE_TEXT"
                 , "description":"SAMPLE_TEXT"
+                , "numberOfUploadReqd":"0"
                 }""")).asJson
             .check(status.is(201))
             .check(headerRegex("Location", "(.*)").saveAs("new_aidasObject_url"))).exitHereIfFailed
