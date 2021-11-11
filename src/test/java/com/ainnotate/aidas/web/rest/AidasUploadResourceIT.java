@@ -52,6 +52,12 @@ class AidasUploadResourceIT {
     private static final ZonedDateTime DEFAULT_DATE_UPLOADED = ZonedDateTime.ofInstant(Instant.ofEpochMilli(0L), ZoneOffset.UTC);
     private static final ZonedDateTime UPDATED_DATE_UPLOADED = ZonedDateTime.now(ZoneId.systemDefault()).withNano(0);
 
+    private static final Boolean DEFAULT_STATUS = false;
+    private static final Boolean UPDATED_STATUS = true;
+
+    private static final ZonedDateTime DEFAULT_STATUS_MODIFIED_DATE = ZonedDateTime.ofInstant(Instant.ofEpochMilli(0L), ZoneOffset.UTC);
+    private static final ZonedDateTime UPDATED_STATUS_MODIFIED_DATE = ZonedDateTime.now(ZoneId.systemDefault()).withNano(0);
+
     private static final String ENTITY_API_URL = "/api/aidas-uploads";
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
     private static final String ENTITY_SEARCH_API_URL = "/api/_search/aidas-uploads";
@@ -85,7 +91,11 @@ class AidasUploadResourceIT {
      * if they test an entity which requires the current entity.
      */
     public static AidasUpload createEntity(EntityManager em) {
-        AidasUpload aidasUpload = new AidasUpload().name(DEFAULT_NAME).dateUploaded(DEFAULT_DATE_UPLOADED);
+        AidasUpload aidasUpload = new AidasUpload()
+            .name(DEFAULT_NAME)
+            .dateUploaded(DEFAULT_DATE_UPLOADED)
+            .status(DEFAULT_STATUS)
+            .statusModifiedDate(DEFAULT_STATUS_MODIFIED_DATE);
         // Add required entity
         AidasUser aidasUser;
         if (TestUtil.findAll(em, AidasUser.class).isEmpty()) {
@@ -116,7 +126,11 @@ class AidasUploadResourceIT {
      * if they test an entity which requires the current entity.
      */
     public static AidasUpload createUpdatedEntity(EntityManager em) {
-        AidasUpload aidasUpload = new AidasUpload().name(UPDATED_NAME).dateUploaded(UPDATED_DATE_UPLOADED);
+        AidasUpload aidasUpload = new AidasUpload()
+            .name(UPDATED_NAME)
+            .dateUploaded(UPDATED_DATE_UPLOADED)
+            .status(UPDATED_STATUS)
+            .statusModifiedDate(UPDATED_STATUS_MODIFIED_DATE);
         // Add required entity
         AidasUser aidasUser;
         if (TestUtil.findAll(em, AidasUser.class).isEmpty()) {
@@ -165,6 +179,8 @@ class AidasUploadResourceIT {
         AidasUpload testAidasUpload = aidasUploadList.get(aidasUploadList.size() - 1);
         assertThat(testAidasUpload.getName()).isEqualTo(DEFAULT_NAME);
         assertThat(testAidasUpload.getDateUploaded()).isEqualTo(DEFAULT_DATE_UPLOADED);
+        assertThat(testAidasUpload.getStatus()).isEqualTo(DEFAULT_STATUS);
+        assertThat(testAidasUpload.getStatusModifiedDate()).isEqualTo(DEFAULT_STATUS_MODIFIED_DATE);
 
         // Validate the AidasUpload in Elasticsearch
         verify(mockAidasUploadSearchRepository, times(1)).save(testAidasUpload);
@@ -231,7 +247,9 @@ class AidasUploadResourceIT {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(aidasUpload.getId().intValue())))
             .andExpect(jsonPath("$.[*].name").value(hasItem(DEFAULT_NAME)))
-            .andExpect(jsonPath("$.[*].dateUploaded").value(hasItem(sameInstant(DEFAULT_DATE_UPLOADED))));
+            .andExpect(jsonPath("$.[*].dateUploaded").value(hasItem(sameInstant(DEFAULT_DATE_UPLOADED))))
+            .andExpect(jsonPath("$.[*].status").value(hasItem(DEFAULT_STATUS.booleanValue())))
+            .andExpect(jsonPath("$.[*].statusModifiedDate").value(hasItem(sameInstant(DEFAULT_STATUS_MODIFIED_DATE))));
     }
 
     @Test
@@ -247,7 +265,9 @@ class AidasUploadResourceIT {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(aidasUpload.getId().intValue()))
             .andExpect(jsonPath("$.name").value(DEFAULT_NAME))
-            .andExpect(jsonPath("$.dateUploaded").value(sameInstant(DEFAULT_DATE_UPLOADED)));
+            .andExpect(jsonPath("$.dateUploaded").value(sameInstant(DEFAULT_DATE_UPLOADED)))
+            .andExpect(jsonPath("$.status").value(DEFAULT_STATUS.booleanValue()))
+            .andExpect(jsonPath("$.statusModifiedDate").value(sameInstant(DEFAULT_STATUS_MODIFIED_DATE)));
     }
 
     @Test
@@ -269,7 +289,11 @@ class AidasUploadResourceIT {
         AidasUpload updatedAidasUpload = aidasUploadRepository.findById(aidasUpload.getId()).get();
         // Disconnect from session so that the updates on updatedAidasUpload are not directly saved in db
         em.detach(updatedAidasUpload);
-        updatedAidasUpload.name(UPDATED_NAME).dateUploaded(UPDATED_DATE_UPLOADED);
+        updatedAidasUpload
+            .name(UPDATED_NAME)
+            .dateUploaded(UPDATED_DATE_UPLOADED)
+            .status(UPDATED_STATUS)
+            .statusModifiedDate(UPDATED_STATUS_MODIFIED_DATE);
 
         restAidasUploadMockMvc
             .perform(
@@ -286,6 +310,8 @@ class AidasUploadResourceIT {
         AidasUpload testAidasUpload = aidasUploadList.get(aidasUploadList.size() - 1);
         assertThat(testAidasUpload.getName()).isEqualTo(UPDATED_NAME);
         assertThat(testAidasUpload.getDateUploaded()).isEqualTo(UPDATED_DATE_UPLOADED);
+        assertThat(testAidasUpload.getStatus()).isEqualTo(UPDATED_STATUS);
+        assertThat(testAidasUpload.getStatusModifiedDate()).isEqualTo(UPDATED_STATUS_MODIFIED_DATE);
 
         // Validate the AidasUpload in Elasticsearch
         verify(mockAidasUploadSearchRepository).save(testAidasUpload);
@@ -375,7 +401,10 @@ class AidasUploadResourceIT {
         AidasUpload partialUpdatedAidasUpload = new AidasUpload();
         partialUpdatedAidasUpload.setId(aidasUpload.getId());
 
-        partialUpdatedAidasUpload.dateUploaded(UPDATED_DATE_UPLOADED);
+        partialUpdatedAidasUpload
+            .dateUploaded(UPDATED_DATE_UPLOADED)
+            .status(UPDATED_STATUS)
+            .statusModifiedDate(UPDATED_STATUS_MODIFIED_DATE);
 
         restAidasUploadMockMvc
             .perform(
@@ -392,6 +421,8 @@ class AidasUploadResourceIT {
         AidasUpload testAidasUpload = aidasUploadList.get(aidasUploadList.size() - 1);
         assertThat(testAidasUpload.getName()).isEqualTo(DEFAULT_NAME);
         assertThat(testAidasUpload.getDateUploaded()).isEqualTo(UPDATED_DATE_UPLOADED);
+        assertThat(testAidasUpload.getStatus()).isEqualTo(UPDATED_STATUS);
+        assertThat(testAidasUpload.getStatusModifiedDate()).isEqualTo(UPDATED_STATUS_MODIFIED_DATE);
     }
 
     @Test
@@ -406,7 +437,11 @@ class AidasUploadResourceIT {
         AidasUpload partialUpdatedAidasUpload = new AidasUpload();
         partialUpdatedAidasUpload.setId(aidasUpload.getId());
 
-        partialUpdatedAidasUpload.name(UPDATED_NAME).dateUploaded(UPDATED_DATE_UPLOADED);
+        partialUpdatedAidasUpload
+            .name(UPDATED_NAME)
+            .dateUploaded(UPDATED_DATE_UPLOADED)
+            .status(UPDATED_STATUS)
+            .statusModifiedDate(UPDATED_STATUS_MODIFIED_DATE);
 
         restAidasUploadMockMvc
             .perform(
@@ -423,6 +458,8 @@ class AidasUploadResourceIT {
         AidasUpload testAidasUpload = aidasUploadList.get(aidasUploadList.size() - 1);
         assertThat(testAidasUpload.getName()).isEqualTo(UPDATED_NAME);
         assertThat(testAidasUpload.getDateUploaded()).isEqualTo(UPDATED_DATE_UPLOADED);
+        assertThat(testAidasUpload.getStatus()).isEqualTo(UPDATED_STATUS);
+        assertThat(testAidasUpload.getStatusModifiedDate()).isEqualTo(UPDATED_STATUS_MODIFIED_DATE);
     }
 
     @Test
@@ -534,6 +571,8 @@ class AidasUploadResourceIT {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(aidasUpload.getId().intValue())))
             .andExpect(jsonPath("$.[*].name").value(hasItem(DEFAULT_NAME)))
-            .andExpect(jsonPath("$.[*].dateUploaded").value(hasItem(sameInstant(DEFAULT_DATE_UPLOADED))));
+            .andExpect(jsonPath("$.[*].dateUploaded").value(hasItem(sameInstant(DEFAULT_DATE_UPLOADED))))
+            .andExpect(jsonPath("$.[*].status").value(hasItem(DEFAULT_STATUS.booleanValue())))
+            .andExpect(jsonPath("$.[*].statusModifiedDate").value(hasItem(sameInstant(DEFAULT_STATUS_MODIFIED_DATE))));
     }
 }

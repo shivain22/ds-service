@@ -32,6 +32,12 @@ public class AidasUpload implements Serializable {
     @Column(name = "date_uploaded")
     private ZonedDateTime dateUploaded;
 
+    @Column(name = "status")
+    private Boolean status;
+
+    @Column(name = "status_modified_date")
+    private ZonedDateTime statusModifiedDate;
+
     @ManyToOne(optional = false)
     @NotNull
     @JsonIgnoreProperties(value = { "aidasOrganisation", "aidasCustomer", "aidasVendor" }, allowSetters = true)
@@ -41,6 +47,10 @@ public class AidasUpload implements Serializable {
     @NotNull
     @JsonIgnoreProperties(value = { "aidasProject" }, allowSetters = true)
     private AidasObject aidasObject;
+
+    @ManyToOne
+    @JsonIgnoreProperties(value = { "aidasOrganisation", "aidasCustomer", "aidasVendor" }, allowSetters = true)
+    private AidasUser statusModifiedBy;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -83,6 +93,32 @@ public class AidasUpload implements Serializable {
         this.dateUploaded = dateUploaded;
     }
 
+    public Boolean getStatus() {
+        return this.status;
+    }
+
+    public AidasUpload status(Boolean status) {
+        this.setStatus(status);
+        return this;
+    }
+
+    public void setStatus(Boolean status) {
+        this.status = status;
+    }
+
+    public ZonedDateTime getStatusModifiedDate() {
+        return this.statusModifiedDate;
+    }
+
+    public AidasUpload statusModifiedDate(ZonedDateTime statusModifiedDate) {
+        this.setStatusModifiedDate(statusModifiedDate);
+        return this;
+    }
+
+    public void setStatusModifiedDate(ZonedDateTime statusModifiedDate) {
+        this.statusModifiedDate = statusModifiedDate;
+    }
+
     public AidasUser getAidasUser() {
         return this.aidasUser;
     }
@@ -106,6 +142,19 @@ public class AidasUpload implements Serializable {
 
     public AidasUpload aidasObject(AidasObject aidasObject) {
         this.setAidasObject(aidasObject);
+        return this;
+    }
+
+    public AidasUser getStatusModifiedBy() {
+        return this.statusModifiedBy;
+    }
+
+    public void setStatusModifiedBy(AidasUser aidasUser) {
+        this.statusModifiedBy = aidasUser;
+    }
+
+    public AidasUpload statusModifiedBy(AidasUser aidasUser) {
+        this.setStatusModifiedBy(aidasUser);
         return this;
     }
 
@@ -135,6 +184,8 @@ public class AidasUpload implements Serializable {
             "id=" + getId() +
             ", name='" + getName() + "'" +
             ", dateUploaded='" + getDateUploaded() + "'" +
+            ", status='" + getStatus() + "'" +
+            ", statusModifiedDate='" + getStatusModifiedDate() + "'" +
             "}";
     }
 }

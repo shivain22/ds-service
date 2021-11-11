@@ -147,6 +147,12 @@ public class AidasUploadResource {
                 if (aidasUpload.getDateUploaded() != null) {
                     existingAidasUpload.setDateUploaded(aidasUpload.getDateUploaded());
                 }
+                if (aidasUpload.getStatus() != null) {
+                    existingAidasUpload.setStatus(aidasUpload.getStatus());
+                }
+                if (aidasUpload.getStatusModifiedDate() != null) {
+                    existingAidasUpload.setStatusModifiedDate(aidasUpload.getStatusModifiedDate());
+                }
 
                 return existingAidasUpload;
             })

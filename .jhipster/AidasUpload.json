@@ -13,6 +13,14 @@
     {
       "fieldName": "dateUploaded",
       "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "status",
+      "fieldType": "Boolean"
+    },
+    {
+      "fieldName": "statusModifiedDate",
+      "fieldType": "ZonedDateTime"
     }
   ],
   "relationships": [
@@ -29,6 +37,12 @@
       "relationshipType": "many-to-one",
       "relationshipValidateRules": ["required"],
       "otherEntityField": "name"
+    },
+    {
+      "relationshipName": "statusModifiedBy",
+      "otherEntityName": "aidasUser",
+      "relationshipType": "many-to-one",
+      "otherEntityField": "firstName"
     }
   ],
   "service": "no",

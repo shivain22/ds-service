@@ -19,5 +19,11 @@
                                  constraintName="fk_aidas_upload__aidas_object_id"
                                  referencedColumnNames="id"
                                  referencedTableName="aidas_object"/>
+
+        <addForeignKeyConstraint baseColumnNames="status_modified_by_id"
+                                 baseTableName="aidas_upload"
+                                 constraintName="fk_aidas_upload__status_modified_by_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="aidas_user"/>
     </changeSet>
 </databaseChangeLog>

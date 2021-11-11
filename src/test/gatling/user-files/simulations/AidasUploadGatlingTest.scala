@@ -102,6 +102,8 @@ class AidasUploadGatlingTest extends Simulation {
             .body(StringBody("""{
                 "name":"SAMPLE_TEXT"
                 , "dateUploaded":"2020-01-01T00:00:00.000Z"
+                , "status":null
+                , "statusModifiedDate":"2020-01-01T00:00:00.000Z"
                 }""")).asJson
             .check(status.is(201))
             .check(headerRegex("Location", "(.*)").saveAs("new_aidasUpload_url"))).exitHereIfFailed

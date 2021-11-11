@@ -20,15 +20,25 @@
             <column name="date_uploaded" type="${datetimeType}">
                 <constraints nullable="true" />
             </column>
+            <column name="status" type="boolean">
+                <constraints nullable="true" />
+            </column>
+            <column name="status_modified_date" type="${datetimeType}">
+                <constraints nullable="true" />
+            </column>
             <column name="aidas_user_id" type="bigint">
                 <constraints nullable="false" />
             </column>
             <column name="aidas_object_id" type="bigint">
                 <constraints nullable="false" />
             </column>
+            <column name="status_modified_by_id" type="bigint">
+                <constraints nullable="true" />
+            </column>
             <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here -->
         </createTable>
         <dropDefaultValue tableName="aidas_upload" columnName="date_uploaded" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="aidas_upload" columnName="status_modified_date" columnDataType="${datetimeType}"/>
     </changeSet>
 
     <!-- jhipster-needle-liquibase-add-changeset - JHipster will add changesets here -->
@@ -50,6 +60,8 @@
             <column name="id" type="numeric"/>
             <column name="name" type="string"/>
             <column name="date_uploaded" type="date"/>
+            <column name="status" type="boolean"/>
+            <column name="status_modified_date" type="date"/>
             <column name="aidas_user_id" type="numeric"/>
             <column name="aidas_object_id" type="numeric"/>
             <!-- jhipster-needle-liquibase-add-loadcolumn - JHipster (and/or extensions) can add load columns here -->
