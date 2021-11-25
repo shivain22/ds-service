@@ -15,9 +15,9 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
  * An authority (a security role) used by Spring Security.
  */
 @Entity
-@Table(name = "jhi_authority")
+@Table(name = "aidas_authority")
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-public class Authority implements Serializable {
+public class AidasAuthority implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -40,10 +40,10 @@ public class Authority implements Serializable {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof Authority)) {
+        if (!(o instanceof AidasAuthority)) {
             return false;
         }
-        return Objects.equals(name, ((Authority) o).name);
+        return Objects.equals(name, ((AidasAuthority) o).name);
     }
 
     @Override

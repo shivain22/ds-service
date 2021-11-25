@@ -20,8 +20,14 @@
             <column name="last_name" type="varchar(100)">
                 <constraints nullable="true" />
             </column>
-            <column name="email" type="varchar(100)">
-                <constraints nullable="false" unique="true" uniqueConstraintName="ux_aidas_user__email" />
+            <column name="keycloak_id" type="varchar(200)">
+                <constraints nullable="true" />
+            </column>
+            <column name="email" type="varchar(191)">
+                <constraints unique="true" nullable="true" uniqueConstraintName="ux_aidas_user_email"/>
+            </column>
+            <column name="login" type="varchar(250)">
+                <constraints unique="true" nullable="false" uniqueConstraintName="ux_aidas_user_login"/>
             </column>
             <column name="locked" type="boolean">
                 <constraints nullable="false" />
@@ -29,6 +35,17 @@
             <column name="password" type="varchar(20)">
                 <constraints nullable="false" />
             </column>
+            <column name="image_url" type="varchar(256)"/>
+            <column name="activated" type="boolean" valueBoolean="false">
+                <constraints nullable="false" />
+            </column>
+            <column name="lang_key" type="varchar(10)"/>
+            <column name="created_by" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_date" type="timestamp"/>
+            <column name="last_modified_by" type="varchar(50)"/>
+            <column name="last_modified_date" type="timestamp"/>
             <column name="aidas_organisation_id" type="bigint">
                 <constraints nullable="true" />
             </column>
@@ -40,6 +57,36 @@
             </column>
             <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here -->
         </createTable>
+
+        <createTable tableName="aidas_authority">
+            <column name="name" type="varchar(50)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="aidas_user_aidas_authority">
+            <column name="user_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="authority_name" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey columnNames="user_id, authority_name" tableName="aidas_user_aidas_authority"/>
+
+        <addForeignKeyConstraint baseColumnNames="authority_name"
+                                 baseTableName="aidas_user_aidas_authority"
+                                 constraintName="fk_authority_name"
+                                 referencedColumnNames="name"
+                                 referencedTableName="aidas_authority"/>
+
+        <addForeignKeyConstraint baseColumnNames="user_id"
+                                 baseTableName="aidas_user_aidas_authority"
+                                 constraintName="fk_user_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="aidas_user"/>
+
     </changeSet>
 
     <!-- jhipster-needle-liquibase-add-changeset - JHipster will add changesets here -->

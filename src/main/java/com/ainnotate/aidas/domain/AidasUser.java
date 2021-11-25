@@ -1,11 +1,22 @@
 package com.ainnotate.aidas.domain;
 
+import com.ainnotate.aidas.config.Constants;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.io.Serializable;
+import java.time.Instant;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Set;
 import javax.persistence.*;
 import javax.validation.constraints.*;
+
+import org.apache.commons.lang3.StringUtils;
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 /**
  * A AidasUser.
@@ -14,7 +25,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 @Table(name = "aidas_user")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @org.springframework.data.elasticsearch.annotations.Document(indexName = "aidasuser")
-public class AidasUser implements Serializable {
+public class AidasUser extends AbstractAuditingEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -34,8 +45,13 @@ public class AidasUser implements Serializable {
 
     @NotNull
     @Size(min = 5, max = 100)
-    @Column(name = "email", length = 100, nullable = false, unique = true)
+    @Column(name = "email", length = 200, nullable = false, unique = true)
     private String email;
+
+
+    @Size(min = 5, max = 100)
+    @Column(name = "keycloak_id", length = 200, nullable = false, unique = true)
+    private String keycloakId;
 
     @NotNull
     @Column(name = "locked", nullable = false)
@@ -56,7 +72,43 @@ public class AidasUser implements Serializable {
     @ManyToOne
     private AidasVendor aidasVendor;
 
-    // jhipster-needle-entity-add-field - JHipster will add fields here
+    @NotNull
+    @Column(nullable = false)
+    private boolean activated = false;
+
+    @Size(min = 2, max = 10)
+    @Column(name = "lang_key", length = 10)
+    private String langKey;
+
+    @Size(max = 256)
+    @Column(name = "image_url", length = 256)
+    private String imageUrl;
+
+    @JsonIgnore
+    @ManyToMany
+    @JoinTable(
+        name = "aidas_user_aidas_authority",
+        joinColumns = { @JoinColumn(name = "user_id", referencedColumnName = "id") },
+        inverseJoinColumns = { @JoinColumn(name = "authority_name", referencedColumnName = "name") }
+    )
+    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+    @BatchSize(size = 20)
+    private Set<AidasAuthority> authorities = new HashSet<>();
+
+
+
+    @Size(min = 1, max = 50)
+    @Column(length = 50, unique = true, nullable = false)
+    private String login;
+
+    public String getKeycloakId() {
+        return keycloakId;
+    }
+
+    public void setKeycloakId(String keycloakId) {
+        this.keycloakId = keycloakId;
+    }
+// jhipster-needle-entity-add-field - JHipster will add fields here
 
     public Long getId() {
         return this.id;
@@ -174,8 +226,96 @@ public class AidasUser implements Serializable {
         this.setAidasVendor(aidasVendor);
         return this;
     }
+    public String getLogin() {
+        return login;
+    }
 
+    // Lowercase the login before saving it in database
+    public void setLogin(String login) {
+        this.login = StringUtils.lowerCase(login, Locale.ENGLISH);
+    }
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public boolean isActivated() {
+        return activated;
+    }
+
+    public void setActivated(boolean activated) {
+        this.activated = activated;
+    }
+
+    public String getLangKey() {
+        return langKey;
+    }
+
+    public void setLangKey(String langKey) {
+        this.langKey = langKey;
+    }
+
+    public Set<AidasAuthority> getAuthorities() {
+        return authorities;
+    }
+
+    public void setAuthorities(Set<AidasAuthority> authorities) {
+        this.authorities = authorities;
+    }
+
+    @Column(name = "created_by", nullable = false, length = 50, updatable = false)
+    @JsonIgnore
+    private String createdBy;
+
+    @CreatedDate
+    @Column(name = "created_date", updatable = false)
+    @JsonIgnore
+    private Instant createdDate = Instant.now();
+
+    @Column(name = "last_modified_by", length = 50)
+    @JsonIgnore
+    private String lastModifiedBy;
+
+    @LastModifiedDate
+    @Column(name = "last_modified_date")
+    @JsonIgnore
+    private Instant lastModifiedDate = Instant.now();
+
+    public String getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public Instant getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(Instant createdDate) {
+        this.createdDate = createdDate;
+    }
+
+    public String getLastModifiedBy() {
+        return lastModifiedBy;
+    }
+
+    public void setLastModifiedBy(String lastModifiedBy) {
+        this.lastModifiedBy = lastModifiedBy;
+    }
+
+    public Instant getLastModifiedDate() {
+        return lastModifiedDate;
+    }
+
+    public void setLastModifiedDate(Instant lastModifiedDate) {
+        this.lastModifiedDate = lastModifiedDate;
+    }
 
     @Override
     public boolean equals(Object o) {

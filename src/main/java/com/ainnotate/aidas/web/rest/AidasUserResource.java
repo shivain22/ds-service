@@ -2,16 +2,16 @@ package com.ainnotate.aidas.web.rest;
 
 import static org.elasticsearch.index.query.QueryBuilders.*;
 
+import com.ainnotate.aidas.domain.AidasAuthority;
 import com.ainnotate.aidas.domain.AidasUser;
 import com.ainnotate.aidas.repository.AidasUserRepository;
 import com.ainnotate.aidas.repository.search.AidasUserSearchRepository;
+import com.ainnotate.aidas.security.SecurityUtils;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.time.Instant;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import javax.validation.Valid;
@@ -36,6 +36,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -80,8 +81,10 @@ public class AidasUserResource {
         if (aidasUser.getId() != null) {
             throw new BadRequestAlertException("A new aidasUser cannot already have an ID", ENTITY_NAME, "idexists");
         }
+        addUserToKeyCloak(aidasUser);
         AidasUser result = aidasUserRepository.save(aidasUser);
         aidasUserSearchRepository.save(result);
+        updateUserToKeyCloak(result);
         return ResponseEntity
             .created(new URI("/api/aidas-users/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
@@ -117,6 +120,7 @@ public class AidasUserResource {
 
         AidasUser result = aidasUserRepository.save(aidasUser);
         aidasUserSearchRepository.save(result);
+        updateUserToKeyCloak(result);
         return ResponseEntity
             .ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, aidasUser.getId().toString()))
@@ -221,6 +225,8 @@ public class AidasUserResource {
     @DeleteMapping("/aidas-users/{id}")
     public ResponseEntity<Void> deleteAidasUser(@PathVariable Long id) {
         log.debug("REST request to delete AidasUser : {}", id);
+        AidasUser  aidasUser = aidasUserRepository.getById(id);
+        deleteUserFromKeyCloak(aidasUser);
         aidasUserRepository.deleteById(id);
         aidasUserSearchRepository.deleteById(id);
         return ResponseEntity
@@ -257,32 +263,100 @@ public class AidasUserResource {
             .username("admin")
             .password("admin")
             .build();
-
         UserRepresentation user = new UserRepresentation();
         user.setEnabled(true);
-        user.setUsername(aidasUser.getFirstName());
+        user.setUsername(aidasUser.getEmail());
         user.setFirstName(aidasUser.getFirstName());
         user.setLastName(aidasUser.getLastName());
         user.setEmail(aidasUser.getEmail());
-        //user.setAttributes(Collections.singletonMap("origin", Arrays.asList("demo")));
+        aidasUser.setLogin(aidasUser.getEmail());
+        aidasUser.setCreatedBy(SecurityUtils.getCurrentUserLogin().get());
+        aidasUser.setCreatedDate(Instant.now());
+        aidasUser.setLastModifiedBy(SecurityUtils.getCurrentUserLogin().get());
+        aidasUser.setLastModifiedDate(Instant.now());
+
+        List<String> groups = new ArrayList<>();
+        groups.add("Users");
+        user.setGroups(groups);
 
         RealmResource realmResource = keycloak.realm("jhipster");
         UsersResource usersRessource = realmResource.users();
+        user.setEnabled(true);
+        user.setEmailVerified(true);
 
         Response response = usersRessource.create(user);
+
         String userId = CreatedResponseUtil.getCreatedId(response);
-
-        System.out.printf("User created with userId: %s%n", userId);
-
+        aidasUser.setKeycloakId(userId);
         CredentialRepresentation passwordCred = new CredentialRepresentation();
         passwordCred.setTemporary(false);
         passwordCred.setType(CredentialRepresentation.PASSWORD);
-        passwordCred.setValue("test");
+        passwordCred.setValue(aidasUser.getPassword());
         UserResource userResource = usersRessource.get(userId);
         userResource.resetPassword(passwordCred);
+        userResource.sendVerifyEmail();
         RoleRepresentation userRealmRole = realmResource.roles().get("ROLE_USER").toRepresentation();
+        if(aidasUser.getAidasOrganisation()!=null){
+            userRealmRole = realmResource.roles().get("ROLE_ORG_ADMIN").toRepresentation();
+        }else if (aidasUser.getAidasCustomer()!=null){
+            userRealmRole = realmResource.roles().get("ROLE_CUSTOMER_ADMIN").toRepresentation();
+        }else if(aidasUser.getAidasVendor()!=null){
+            userRealmRole = realmResource.roles().get("ROLE_VENDOR_ADMIN").toRepresentation();
+        }
         userResource.roles().realmLevel().add(Arrays.asList(userRealmRole));
+    }
 
+    public void updateUserToKeyCloak(AidasUser aidasUser) {
+        String serverUrl = "https://auth.ainnotate.com/auth";
+        String realm = "master";
+        String clientId = "admin-cli";
+        Keycloak keycloak = KeycloakBuilder.builder()
+            .serverUrl(serverUrl)
+            .realm(realm) //
+            .grantType(OAuth2Constants.PASSWORD)
+            .clientId(clientId)
+            .username("admin")
+            .password("admin")
+            .build();
+        RealmResource realmResource = keycloak.realm("jhipster");
+        UsersResource usersRessource = realmResource.users();
+        UserResource userResource = usersRessource.get(aidasUser.getKeycloakId());
+        UserRepresentation user = userResource.toRepresentation();
 
+        Map<String,List<String>> userAttrs = new HashMap<>();
+        List<String> userAttrsVals = new ArrayList<>();
+        userAttrsVals.add(String.valueOf(aidasUser.getId()));
+        userAttrs.put("aidas_id",userAttrsVals);
+        user.setAttributes(userAttrs);
+
+        user.setEnabled(true);
+        user.setUsername(aidasUser.getEmail());
+        user.setFirstName(aidasUser.getFirstName());
+        user.setLastName(aidasUser.getLastName());
+        user.setEmail(aidasUser.getEmail());
+        userResource.update(user);
+        CredentialRepresentation passwordCred = new CredentialRepresentation();
+        passwordCred.setTemporary(false);
+        passwordCred.setType(CredentialRepresentation.PASSWORD);
+        passwordCred.setValue(aidasUser.getPassword());
+        userResource.resetPassword(passwordCred);
+        userResource.roles().realmLevel().add(aidasUser.getAuthorities().stream().map(authority -> {return realmResource.roles().get(authority.getName()).toRepresentation();}).collect(Collectors.toList()));
+    }
+
+    private void deleteUserFromKeyCloak(AidasUser aidasUser){
+        String serverUrl = "https://auth.ainnotate.com/auth";
+        String realm = "master";
+        String clientId = "admin-cli";
+        Keycloak keycloak = KeycloakBuilder.builder()
+            .serverUrl(serverUrl)
+            .realm(realm) //
+            .grantType(OAuth2Constants.PASSWORD)
+            .clientId(clientId)
+            .username("admin")
+            .password("admin")
+            .build();
+        RealmResource realmResource = keycloak.realm("jhipster");
+        UsersResource usersRessource = realmResource.users();
+        usersRessource.delete(aidasUser.getKeycloakId());
     }
 }
