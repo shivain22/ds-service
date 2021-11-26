@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
 
 import org.keycloak.OAuth2Constants;
@@ -31,6 +32,7 @@ import org.keycloak.representations.idm.UserRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
@@ -90,6 +92,27 @@ public class AidasUserResource {
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
             .body(result);
     }
+
+
+    /**
+     * {@code POST  /aidas-users/:role} : Update/change current role of the user.
+     *
+     * @param role the role to switch.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new aidasUser, or with status {@code 400 (Bad Request)} if the aidasUser has already an ID.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @PostMapping("/aidas-users/{role}")
+    public ResponseEntity<AidasUser> updateCurrentRole(@Valid @PathVariable String role) throws URISyntaxException {
+        log.debug("REST request to update current role of AidasUser : {}", SecurityUtils.getCurrentUserLogin().get());
+        System.out.println(SecurityUtils.getCurrentUserLogin().get());
+        AidasUser aidasUser  = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        updateCurrentRole(aidasUser,role);
+        return ResponseEntity
+            .created(new URI("/api/aidas-users/" + aidasUser.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, aidasUser.getId().toString()))
+            .body(aidasUser);
+    }
+
 
     /**
      * {@code PUT  /aidas-users/:id} : Updates an existing aidasUser.
@@ -216,6 +239,8 @@ public class AidasUserResource {
         return ResponseUtil.wrapOrNotFound(aidasUser);
     }
 
+
+
     /**
      * {@code DELETE  /aidas-users/:id} : delete the "id" aidasUser.
      *
@@ -250,6 +275,8 @@ public class AidasUserResource {
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
+
+
 
     public void addUserToKeyCloak(AidasUser aidasUser) {
         String serverUrl = "https://auth.ainnotate.com/auth";
@@ -294,7 +321,8 @@ public class AidasUserResource {
         passwordCred.setValue(aidasUser.getPassword());
         UserResource userResource = usersRessource.get(userId);
         userResource.resetPassword(passwordCred);
-        userResource.sendVerifyEmail();
+        //userResource.sendVerifyEmail();
+
         RoleRepresentation userRealmRole = realmResource.roles().get("ROLE_USER").toRepresentation();
         if(aidasUser.getAidasOrganisation()!=null){
             userRealmRole = realmResource.roles().get("ROLE_ORG_ADMIN").toRepresentation();
@@ -358,5 +386,27 @@ public class AidasUserResource {
         RealmResource realmResource = keycloak.realm("jhipster");
         UsersResource usersRessource = realmResource.users();
         usersRessource.delete(aidasUser.getKeycloakId());
+    }
+
+    private void updateCurrentRole(AidasUser aidasUser,String selectedRole){
+        String serverUrl = "https://auth.ainnotate.com/auth";
+        String realm = "master";
+        String clientId = "admin-cli";
+        Keycloak keycloak = KeycloakBuilder.builder()
+            .serverUrl(serverUrl)
+            .realm(realm) //
+            .grantType(OAuth2Constants.PASSWORD)
+            .clientId(clientId)
+            .username("admin")
+            .password("admin")
+            .build();
+        RealmResource realmResource = keycloak.realm("jhipster");
+        UsersResource usersRessource = realmResource.users();
+        UserResource userResource = usersRessource.get(aidasUser.getKeycloakId());
+        UserRepresentation user = userResource.toRepresentation();
+        List<String> userAttrsVals = new ArrayList<>();
+        userAttrsVals.add(selectedRole);
+        user.getAttributes().put("current_role",userAttrsVals);
+        userResource.update(user);
     }
 }
