@@ -142,3 +142,10 @@ jhipster:
 # ===================================================================
 
 # application:
+keycloak:
+  server-url: https://auth.ainnotate.com/auth
+  realm: master
+  client-id: admin-cli
+  client-secret:
+  user-name: admin
+  password: admin

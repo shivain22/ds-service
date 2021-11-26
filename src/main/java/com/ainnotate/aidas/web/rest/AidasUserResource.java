@@ -63,11 +63,14 @@ public class AidasUserResource {
 
     private final AidasUserRepository aidasUserRepository;
 
+    private Keycloak keycloak;
+
     private final AidasUserSearchRepository aidasUserSearchRepository;
 
-    public AidasUserResource(AidasUserRepository aidasUserRepository, AidasUserSearchRepository aidasUserSearchRepository) {
+    public AidasUserResource(AidasUserRepository aidasUserRepository, AidasUserSearchRepository aidasUserSearchRepository, Keycloak keycloak) {
         this.aidasUserRepository = aidasUserRepository;
         this.aidasUserSearchRepository = aidasUserSearchRepository;
+        this.keycloak =  keycloak;
     }
 
     /**
@@ -279,17 +282,7 @@ public class AidasUserResource {
 
 
     public void addUserToKeyCloak(AidasUser aidasUser) {
-        String serverUrl = "https://auth.ainnotate.com/auth";
-        String realm = "master";
-        String clientId = "admin-cli";
-        Keycloak keycloak = KeycloakBuilder.builder()
-            .serverUrl(serverUrl)
-            .realm(realm) //
-            .grantType(OAuth2Constants.PASSWORD)
-            .clientId(clientId)
-            .username("admin")
-            .password("admin")
-            .build();
+
         UserRepresentation user = new UserRepresentation();
         user.setEnabled(true);
         user.setUsername(aidasUser.getEmail());
@@ -335,17 +328,7 @@ public class AidasUserResource {
     }
 
     public void updateUserToKeyCloak(AidasUser aidasUser) {
-        String serverUrl = "https://auth.ainnotate.com/auth";
-        String realm = "master";
-        String clientId = "admin-cli";
-        Keycloak keycloak = KeycloakBuilder.builder()
-            .serverUrl(serverUrl)
-            .realm(realm) //
-            .grantType(OAuth2Constants.PASSWORD)
-            .clientId(clientId)
-            .username("admin")
-            .password("admin")
-            .build();
+
         RealmResource realmResource = keycloak.realm("jhipster");
         UsersResource usersRessource = realmResource.users();
         UserResource userResource = usersRessource.get(aidasUser.getKeycloakId());
@@ -372,34 +355,14 @@ public class AidasUserResource {
     }
 
     private void deleteUserFromKeyCloak(AidasUser aidasUser){
-        String serverUrl = "https://auth.ainnotate.com/auth";
-        String realm = "master";
-        String clientId = "admin-cli";
-        Keycloak keycloak = KeycloakBuilder.builder()
-            .serverUrl(serverUrl)
-            .realm(realm) //
-            .grantType(OAuth2Constants.PASSWORD)
-            .clientId(clientId)
-            .username("admin")
-            .password("admin")
-            .build();
+
         RealmResource realmResource = keycloak.realm("jhipster");
         UsersResource usersRessource = realmResource.users();
         usersRessource.delete(aidasUser.getKeycloakId());
     }
 
     private void updateCurrentRole(AidasUser aidasUser,String selectedRole){
-        String serverUrl = "https://auth.ainnotate.com/auth";
-        String realm = "master";
-        String clientId = "admin-cli";
-        Keycloak keycloak = KeycloakBuilder.builder()
-            .serverUrl(serverUrl)
-            .realm(realm) //
-            .grantType(OAuth2Constants.PASSWORD)
-            .clientId(clientId)
-            .username("admin")
-            .password("admin")
-            .build();
+
         RealmResource realmResource = keycloak.realm("jhipster");
         UsersResource usersRessource = realmResource.users();
         UserResource userResource = usersRessource.get(aidasUser.getKeycloakId());
