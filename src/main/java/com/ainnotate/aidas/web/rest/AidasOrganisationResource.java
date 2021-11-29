@@ -2,9 +2,14 @@ package com.ainnotate.aidas.web.rest;
 
 import static org.elasticsearch.index.query.QueryBuilders.*;
 
+import com.ainnotate.aidas.domain.AidasAuthority;
 import com.ainnotate.aidas.domain.AidasOrganisation;
+import com.ainnotate.aidas.domain.AidasUser;
 import com.ainnotate.aidas.repository.AidasOrganisationRepository;
+import com.ainnotate.aidas.repository.AidasUserRepository;
 import com.ainnotate.aidas.repository.search.AidasOrganisationSearchRepository;
+import com.ainnotate.aidas.security.AidasAuthoritiesConstants;
+import com.ainnotate.aidas.security.SecurityUtils;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -17,12 +22,14 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -49,6 +56,9 @@ public class AidasOrganisationResource {
 
     private final AidasOrganisationSearchRepository aidasOrganisationSearchRepository;
 
+    @Autowired
+    private AidasUserRepository aidasUserRepository;
+
     public AidasOrganisationResource(
         AidasOrganisationRepository aidasOrganisationRepository,
         AidasOrganisationSearchRepository aidasOrganisationSearchRepository
@@ -64,6 +74,7 @@ public class AidasOrganisationResource {
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new aidasOrganisation, or with status {@code 400 (Bad Request)} if the aidasOrganisation has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
+    @Secured(AidasAuthoritiesConstants.ADMIN)
     @PostMapping("/aidas-organisations")
     public ResponseEntity<AidasOrganisation> createAidasOrganisation(@Valid @RequestBody AidasOrganisation aidasOrganisation)
         throws URISyntaxException {
@@ -89,6 +100,7 @@ public class AidasOrganisationResource {
      * or with status {@code 500 (Internal Server Error)} if the aidasOrganisation couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
+    @Secured({AidasAuthoritiesConstants.ADMIN,AidasAuthoritiesConstants.ORG_ADMIN})
     @PutMapping("/aidas-organisations/{id}")
     public ResponseEntity<AidasOrganisation> updateAidasOrganisation(
         @PathVariable(value = "id", required = false) final Long id,
@@ -125,6 +137,7 @@ public class AidasOrganisationResource {
      * or with status {@code 500 (Internal Server Error)} if the aidasOrganisation couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
+    @Secured({AidasAuthoritiesConstants.ADMIN,AidasAuthoritiesConstants.ORG_ADMIN})
     @PatchMapping(value = "/aidas-organisations/{id}", consumes = { "application/json", "application/merge-patch+json" })
     public ResponseEntity<AidasOrganisation> partialUpdateAidasOrganisation(
         @PathVariable(value = "id", required = false) final Long id,
@@ -173,10 +186,18 @@ public class AidasOrganisationResource {
      * @param pageable the pagination information.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of aidasOrganisations in body.
      */
+    @Secured({AidasAuthoritiesConstants.ADMIN,AidasAuthoritiesConstants.ORG_ADMIN})
     @GetMapping("/aidas-organisations")
     public ResponseEntity<List<AidasOrganisation>> getAllAidasOrganisations(Pageable pageable) {
         log.debug("REST request to get a page of AidasOrganisations");
-        Page<AidasOrganisation> page = aidasOrganisationRepository.findAll(pageable);
+        Page<AidasOrganisation> page=null;
+        AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        if(SecurityUtils.getCurrentUserRole().equals(AidasAuthoritiesConstants.ADMIN)) {
+            page = aidasOrganisationRepository.findAll(pageable);
+        }
+        else{
+            page = aidasOrganisationRepository.findAllById(aidasUser.getId(),pageable);
+        }
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
@@ -187,10 +208,15 @@ public class AidasOrganisationResource {
      * @param id the id of the aidasOrganisation to retrieve.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the aidasOrganisation, or with status {@code 404 (Not Found)}.
      */
+    @Secured({AidasAuthoritiesConstants.ADMIN,AidasAuthoritiesConstants.ORG_ADMIN})
     @GetMapping("/aidas-organisations/{id}")
     public ResponseEntity<AidasOrganisation> getAidasOrganisation(@PathVariable Long id) {
         log.debug("REST request to get AidasOrganisation : {}", id);
-        Optional<AidasOrganisation> aidasOrganisation = aidasOrganisationRepository.findById(id);
+        AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        Optional<AidasOrganisation> aidasOrganisation =null;
+        if(aidasUser.getAidasOrganisation()!=null && aidasUser.getAidasOrganisation().getId()==id) {
+            aidasOrganisation = aidasOrganisationRepository.findById(id);
+        }
         return ResponseUtil.wrapOrNotFound(aidasOrganisation);
     }
 
@@ -200,6 +226,7 @@ public class AidasOrganisationResource {
      * @param id the id of the aidasOrganisation to delete.
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
+    @Secured(AidasAuthoritiesConstants.ADMIN)
     @DeleteMapping("/aidas-organisations/{id}")
     public ResponseEntity<Void> deleteAidasOrganisation(@PathVariable Long id) {
         log.debug("REST request to delete AidasOrganisation : {}", id);
@@ -219,6 +246,7 @@ public class AidasOrganisationResource {
      * @param pageable the pagination information.
      * @return the result of the search.
      */
+    @Secured(AidasAuthoritiesConstants.ADMIN)
     @GetMapping("/_search/aidas-organisations")
     public ResponseEntity<List<AidasOrganisation>> searchAidasOrganisations(@RequestParam String query, Pageable pageable) {
         log.debug("REST request to search for a page of AidasOrganisations for query {}", query);

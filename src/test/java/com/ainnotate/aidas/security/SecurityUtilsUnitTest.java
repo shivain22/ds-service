@@ -42,12 +42,12 @@ class SecurityUtilsUnitTest {
     void testGetCurrentUserLoginForOAuth2() {
         SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
         Map<String, Object> claims = new HashMap<>();
-        claims.put("groups", AuthoritiesConstants.USER);
+        claims.put("groups", AidasAuthoritiesConstants.USER);
         claims.put("sub", 123);
         claims.put("preferred_username", "admin");
         OidcIdToken idToken = new OidcIdToken(ID_TOKEN, Instant.now(), Instant.now().plusSeconds(60), claims);
         Collection<GrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority(AuthoritiesConstants.USER));
+        authorities.add(new SimpleGrantedAuthority(AidasAuthoritiesConstants.USER));
         OidcUser user = new DefaultOidcUser(authorities, idToken);
         OAuth2AuthenticationToken auth2AuthenticationToken = new OAuth2AuthenticationToken(user, authorities, "oidc");
         securityContext.setAuthentication(auth2AuthenticationToken);
@@ -61,11 +61,11 @@ class SecurityUtilsUnitTest {
     @Test
     void testExtractAuthorityFromClaims() {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("groups", Arrays.asList(AuthoritiesConstants.ADMIN, AuthoritiesConstants.USER));
+        claims.put("groups", Arrays.asList(AidasAuthoritiesConstants.ADMIN, AidasAuthoritiesConstants.USER));
 
         List<GrantedAuthority> expectedAuthorities = Arrays.asList(
-            new SimpleGrantedAuthority(AuthoritiesConstants.ADMIN),
-            new SimpleGrantedAuthority(AuthoritiesConstants.USER)
+            new SimpleGrantedAuthority(AidasAuthoritiesConstants.ADMIN),
+            new SimpleGrantedAuthority(AidasAuthoritiesConstants.USER)
         );
 
         List<GrantedAuthority> authorities = SecurityUtils.extractAuthorityFromClaims(claims);
@@ -76,11 +76,11 @@ class SecurityUtilsUnitTest {
     @Test
     void testExtractAuthorityFromClaims_NamespacedRoles() {
         Map<String, Object> claims = new HashMap<>();
-        claims.put(SecurityUtils.CLAIMS_NAMESPACE + "roles", Arrays.asList(AuthoritiesConstants.ADMIN, AuthoritiesConstants.USER));
+        claims.put(SecurityUtils.CLAIMS_NAMESPACE + "roles", Arrays.asList(AidasAuthoritiesConstants.ADMIN, AidasAuthoritiesConstants.USER));
 
         List<GrantedAuthority> expectedAuthorities = Arrays.asList(
-            new SimpleGrantedAuthority(AuthoritiesConstants.ADMIN),
-            new SimpleGrantedAuthority(AuthoritiesConstants.USER)
+            new SimpleGrantedAuthority(AidasAuthoritiesConstants.ADMIN),
+            new SimpleGrantedAuthority(AidasAuthoritiesConstants.USER)
         );
 
         List<GrantedAuthority> authorities = SecurityUtils.extractAuthorityFromClaims(claims);
@@ -101,7 +101,7 @@ class SecurityUtilsUnitTest {
     void testAnonymousIsNotAuthenticated() {
         SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
         Collection<GrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority(AuthoritiesConstants.ANONYMOUS));
+        authorities.add(new SimpleGrantedAuthority(AidasAuthoritiesConstants.ANONYMOUS));
         securityContext.setAuthentication(new UsernamePasswordAuthenticationToken("anonymous", "anonymous", authorities));
         SecurityContextHolder.setContext(securityContext);
         boolean isAuthenticated = SecurityUtils.isAuthenticated();
@@ -112,35 +112,35 @@ class SecurityUtilsUnitTest {
     void testHasCurrentUserThisAuthority() {
         SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
         Collection<GrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority(AuthoritiesConstants.USER));
+        authorities.add(new SimpleGrantedAuthority(AidasAuthoritiesConstants.USER));
         securityContext.setAuthentication(new UsernamePasswordAuthenticationToken("user", "user", authorities));
         SecurityContextHolder.setContext(securityContext);
 
-        assertThat(SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.USER)).isTrue();
-        assertThat(SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN)).isFalse();
+        assertThat(SecurityUtils.hasCurrentUserThisAuthority(AidasAuthoritiesConstants.USER)).isTrue();
+        assertThat(SecurityUtils.hasCurrentUserThisAuthority(AidasAuthoritiesConstants.ADMIN)).isFalse();
     }
 
     @Test
     void testHasCurrentUserAnyOfAuthorities() {
         SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
         Collection<GrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority(AuthoritiesConstants.USER));
+        authorities.add(new SimpleGrantedAuthority(AidasAuthoritiesConstants.USER));
         securityContext.setAuthentication(new UsernamePasswordAuthenticationToken("user", "user", authorities));
         SecurityContextHolder.setContext(securityContext);
 
-        assertThat(SecurityUtils.hasCurrentUserAnyOfAuthorities(AuthoritiesConstants.USER, AuthoritiesConstants.ADMIN)).isTrue();
-        assertThat(SecurityUtils.hasCurrentUserAnyOfAuthorities(AuthoritiesConstants.ANONYMOUS, AuthoritiesConstants.ADMIN)).isFalse();
+        assertThat(SecurityUtils.hasCurrentUserAnyOfAuthorities(AidasAuthoritiesConstants.USER, AidasAuthoritiesConstants.ADMIN)).isTrue();
+        assertThat(SecurityUtils.hasCurrentUserAnyOfAuthorities(AidasAuthoritiesConstants.ANONYMOUS, AidasAuthoritiesConstants.ADMIN)).isFalse();
     }
 
     @Test
     void testHasCurrentUserNoneOfAuthorities() {
         SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
         Collection<GrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority(AuthoritiesConstants.USER));
+        authorities.add(new SimpleGrantedAuthority(AidasAuthoritiesConstants.USER));
         securityContext.setAuthentication(new UsernamePasswordAuthenticationToken("user", "user", authorities));
         SecurityContextHolder.setContext(securityContext);
 
-        assertThat(SecurityUtils.hasCurrentUserNoneOfAuthorities(AuthoritiesConstants.USER, AuthoritiesConstants.ADMIN)).isFalse();
-        assertThat(SecurityUtils.hasCurrentUserNoneOfAuthorities(AuthoritiesConstants.ANONYMOUS, AuthoritiesConstants.ADMIN)).isTrue();
+        assertThat(SecurityUtils.hasCurrentUserNoneOfAuthorities(AidasAuthoritiesConstants.USER, AidasAuthoritiesConstants.ADMIN)).isFalse();
+        assertThat(SecurityUtils.hasCurrentUserNoneOfAuthorities(AidasAuthoritiesConstants.ANONYMOUS, AidasAuthoritiesConstants.ADMIN)).isTrue();
     }
 }

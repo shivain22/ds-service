@@ -1,11 +1,10 @@
 package com.ainnotate.aidas.web.rest;
 
-import static org.elasticsearch.index.query.QueryBuilders.*;
-
-import com.ainnotate.aidas.domain.AidasAuthority;
+import com.ainnotate.aidas.config.KeycloakConfig;
 import com.ainnotate.aidas.domain.AidasUser;
 import com.ainnotate.aidas.repository.AidasUserRepository;
 import com.ainnotate.aidas.repository.search.AidasUserSearchRepository;
+import com.ainnotate.aidas.security.AidasAuthoritiesConstants;
 import com.ainnotate.aidas.security.SecurityUtils;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
@@ -13,16 +12,12 @@ import java.net.URISyntaxException;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
 
-import org.keycloak.OAuth2Constants;
 import org.keycloak.admin.client.CreatedResponseUtil;
 import org.keycloak.admin.client.Keycloak;
-import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.admin.client.resource.UsersResource;
@@ -31,14 +26,12 @@ import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -64,6 +57,9 @@ public class AidasUserResource {
     private final AidasUserRepository aidasUserRepository;
 
     private Keycloak keycloak;
+
+    @Autowired
+    private KeycloakConfig keycloakConfig;
 
     private final AidasUserSearchRepository aidasUserSearchRepository;
 
@@ -294,18 +290,14 @@ public class AidasUserResource {
         aidasUser.setCreatedDate(Instant.now());
         aidasUser.setLastModifiedBy(SecurityUtils.getCurrentUserLogin().get());
         aidasUser.setLastModifiedDate(Instant.now());
-
         List<String> groups = new ArrayList<>();
         groups.add("Users");
         user.setGroups(groups);
-
-        RealmResource realmResource = keycloak.realm("jhipster");
+        RealmResource realmResource = keycloak.realm(keycloakConfig.getClientRealm());
         UsersResource usersRessource = realmResource.users();
         user.setEnabled(true);
         user.setEmailVerified(true);
-
         Response response = usersRessource.create(user);
-
         String userId = CreatedResponseUtil.getCreatedId(response);
         aidasUser.setKeycloakId(userId);
         CredentialRepresentation passwordCred = new CredentialRepresentation();
@@ -315,31 +307,27 @@ public class AidasUserResource {
         UserResource userResource = usersRessource.get(userId);
         userResource.resetPassword(passwordCred);
         //userResource.sendVerifyEmail();
-
-        RoleRepresentation userRealmRole = realmResource.roles().get("ROLE_USER").toRepresentation();
+        RoleRepresentation userRealmRole = realmResource.roles().get(AidasAuthoritiesConstants.USER).toRepresentation();
         if(aidasUser.getAidasOrganisation()!=null){
-            userRealmRole = realmResource.roles().get("ROLE_ORG_ADMIN").toRepresentation();
+            userRealmRole = realmResource.roles().get(AidasAuthoritiesConstants.ORG_ADMIN).toRepresentation();
         }else if (aidasUser.getAidasCustomer()!=null){
-            userRealmRole = realmResource.roles().get("ROLE_CUSTOMER_ADMIN").toRepresentation();
+            userRealmRole = realmResource.roles().get(AidasAuthoritiesConstants.CUSTOMER_ADMIN).toRepresentation();
         }else if(aidasUser.getAidasVendor()!=null){
-            userRealmRole = realmResource.roles().get("ROLE_VENDOR_ADMIN").toRepresentation();
+            userRealmRole = realmResource.roles().get(AidasAuthoritiesConstants.VENDOR_ADMIN).toRepresentation();
         }
         userResource.roles().realmLevel().add(Arrays.asList(userRealmRole));
     }
 
     public void updateUserToKeyCloak(AidasUser aidasUser) {
-
-        RealmResource realmResource = keycloak.realm("jhipster");
+        RealmResource realmResource = keycloak.realm(keycloakConfig.getClientRealm());
         UsersResource usersRessource = realmResource.users();
         UserResource userResource = usersRessource.get(aidasUser.getKeycloakId());
         UserRepresentation user = userResource.toRepresentation();
-
         Map<String,List<String>> userAttrs = new HashMap<>();
         List<String> userAttrsVals = new ArrayList<>();
         userAttrsVals.add(String.valueOf(aidasUser.getId()));
         userAttrs.put("aidas_id",userAttrsVals);
         user.setAttributes(userAttrs);
-
         user.setEnabled(true);
         user.setUsername(aidasUser.getEmail());
         user.setFirstName(aidasUser.getFirstName());
@@ -355,15 +343,13 @@ public class AidasUserResource {
     }
 
     private void deleteUserFromKeyCloak(AidasUser aidasUser){
-
-        RealmResource realmResource = keycloak.realm("jhipster");
+        RealmResource realmResource = keycloak.realm(keycloakConfig.getClientRealm());
         UsersResource usersRessource = realmResource.users();
         usersRessource.delete(aidasUser.getKeycloakId());
     }
 
     private void updateCurrentRole(AidasUser aidasUser,String selectedRole){
-
-        RealmResource realmResource = keycloak.realm("jhipster");
+        RealmResource realmResource = keycloak.realm(keycloakConfig.getClientRealm());
         UsersResource usersRessource = realmResource.users();
         UserResource userResource = usersRessource.get(aidasUser.getKeycloakId());
         UserRepresentation user = userResource.toRepresentation();

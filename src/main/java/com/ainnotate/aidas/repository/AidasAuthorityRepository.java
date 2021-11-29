@@ -6,4 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 /**
  * Spring Data JPA repository for the {@link AidasAuthority} entity.
  */
-public interface AidasAuthorityRepository extends JpaRepository<AidasAuthority, String> {}
+public interface AidasAuthorityRepository extends JpaRepository<AidasAuthority, Long> {
+
+    AidasAuthority findByName(String name);
+}

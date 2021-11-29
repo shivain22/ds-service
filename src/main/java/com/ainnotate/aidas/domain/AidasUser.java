@@ -57,8 +57,7 @@ public class AidasUser extends AbstractAuditingEntity implements Serializable {
     @Column(name = "locked", nullable = false)
     private Boolean locked;
 
-    @NotNull
-    @Size(min = 5, max = 20)
+
     @Column(name = "password", length = 20, nullable = false)
     private String password;
 
@@ -84,16 +83,26 @@ public class AidasUser extends AbstractAuditingEntity implements Serializable {
     @Column(name = "image_url", length = 256)
     private String imageUrl;
 
-    @JsonIgnore
+    @ManyToOne
+    private AidasAuthority aidasAuthority;
+
+    public AidasAuthority getAidasAuthority() {
+        return aidasAuthority;
+    }
+
+    public void setAidasAuthority(AidasAuthority aidasAuthority) {
+        this.aidasAuthority = aidasAuthority;
+    }
+
     @ManyToMany
     @JoinTable(
         name = "aidas_user_aidas_authority",
-        joinColumns = { @JoinColumn(name = "user_id", referencedColumnName = "id") },
-        inverseJoinColumns = { @JoinColumn(name = "authority_name", referencedColumnName = "name") }
+        joinColumns = { @JoinColumn(name = "aidas_user_id", referencedColumnName = "id") },
+        inverseJoinColumns = { @JoinColumn(name = "aidas_authority_id", referencedColumnName = "id") }
     )
     @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     @BatchSize(size = 20)
-    private Set<AidasAuthority> authorities = new HashSet<>();
+    private Set<AidasAuthority> aidasAuthorities = new HashSet<>();
 
 
 
@@ -108,6 +117,8 @@ public class AidasUser extends AbstractAuditingEntity implements Serializable {
     public void setKeycloakId(String keycloakId) {
         this.keycloakId = keycloakId;
     }
+
+
 // jhipster-needle-entity-add-field - JHipster will add fields here
 
     public Long getId() {
@@ -259,63 +270,15 @@ public class AidasUser extends AbstractAuditingEntity implements Serializable {
         this.langKey = langKey;
     }
 
-    public Set<AidasAuthority> getAuthorities() {
+    public Set<AidasAuthority> getAidasAuthorities() {
         return authorities;
     }
 
-    public void setAuthorities(Set<AidasAuthority> authorities) {
+    public void setAidasAuthorities(Set<AidasAuthority> authorities) {
         this.authorities = authorities;
     }
 
-    @Column(name = "created_by", nullable = false, length = 50, updatable = false)
-    @JsonIgnore
-    private String createdBy;
 
-    @CreatedDate
-    @Column(name = "created_date", updatable = false)
-    @JsonIgnore
-    private Instant createdDate = Instant.now();
-
-    @Column(name = "last_modified_by", length = 50)
-    @JsonIgnore
-    private String lastModifiedBy;
-
-    @LastModifiedDate
-    @Column(name = "last_modified_date")
-    @JsonIgnore
-    private Instant lastModifiedDate = Instant.now();
-
-    public String getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public Instant getCreatedDate() {
-        return createdDate;
-    }
-
-    public void setCreatedDate(Instant createdDate) {
-        this.createdDate = createdDate;
-    }
-
-    public String getLastModifiedBy() {
-        return lastModifiedBy;
-    }
-
-    public void setLastModifiedBy(String lastModifiedBy) {
-        this.lastModifiedBy = lastModifiedBy;
-    }
-
-    public Instant getLastModifiedDate() {
-        return lastModifiedDate;
-    }
-
-    public void setLastModifiedDate(Instant lastModifiedDate) {
-        this.lastModifiedDate = lastModifiedDate;
-    }
 
     @Override
     public boolean equals(Object o) {

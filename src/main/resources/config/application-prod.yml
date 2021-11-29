@@ -81,7 +81,14 @@ spring:
     locator:
       discovery:
         enabled: true
-
+  keycloak:
+    server-url: https://auth.ainnotate.com/auth
+    realm: master
+    client-id: admin-cli
+    client-secret:
+    user-name: admin
+    password: admin
+    client-realm: jhipster
 # ===================================================================
 # To enable TLS in production, generate a certificate using:
 # keytool -genkey -alias ainnotateservice -storetype PKCS12 -keyalg RSA -keysize 2048 -keystore keystore.p12 -validity 3650
@@ -142,10 +149,4 @@ jhipster:
 # ===================================================================
 
 # application:
-keycloak:
-  server-url: https://auth.ainnotate.com/auth
-  realm: master
-  client-id: admin-cli
-  client-secret:
-  user-name: admin
-  password: admin
+

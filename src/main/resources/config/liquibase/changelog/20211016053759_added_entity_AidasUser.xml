@@ -33,7 +33,7 @@
                 <constraints nullable="false" />
             </column>
             <column name="password" type="varchar(20)">
-                <constraints nullable="false" />
+                <constraints nullable="true" />
             </column>
             <column name="image_url" type="varchar(256)"/>
             <column name="activated" type="boolean" valueBoolean="false">
@@ -58,34 +58,18 @@
             <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here -->
         </createTable>
 
-        <createTable tableName="aidas_authority">
-            <column name="name" type="varchar(50)">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-        </createTable>
+
 
         <createTable tableName="aidas_user_aidas_authority">
-            <column name="user_id" type="bigint">
+            <column name="aidas_user_id" type="bigint">
                 <constraints nullable="false"/>
             </column>
-            <column name="authority_name" type="varchar(50)">
+            <column name="aidas_authority_id" type="bigint">
                 <constraints nullable="false"/>
             </column>
         </createTable>
 
-        <addPrimaryKey columnNames="user_id, authority_name" tableName="aidas_user_aidas_authority"/>
 
-        <addForeignKeyConstraint baseColumnNames="authority_name"
-                                 baseTableName="aidas_user_aidas_authority"
-                                 constraintName="fk_authority_name"
-                                 referencedColumnNames="name"
-                                 referencedTableName="aidas_authority"/>
-
-        <addForeignKeyConstraint baseColumnNames="user_id"
-                                 baseTableName="aidas_user_aidas_authority"
-                                 constraintName="fk_user_id"
-                                 referencedColumnNames="id"
-                                 referencedTableName="aidas_user"/>
 
     </changeSet>
 

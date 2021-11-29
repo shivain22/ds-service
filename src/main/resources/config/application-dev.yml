@@ -90,6 +90,7 @@ spring:
     client-secret:
     user-name: admin
     password: admin
+    client-realm: jhipster
 
 server:
   port: 8081

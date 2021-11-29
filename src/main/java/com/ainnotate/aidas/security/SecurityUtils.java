@@ -4,14 +4,15 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.springframework.security.authentication.AbstractAuthenticationToken;
+import com.ainnotate.aidas.domain.AidasUser;
+import com.ainnotate.aidas.repository.AidasUserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
@@ -24,6 +25,8 @@ public final class SecurityUtils {
 
     private SecurityUtils() {}
 
+    @Autowired
+    AidasUserRepository aidasUserRepository;
     /**
      * Get the login of the current user.
      *
@@ -36,7 +39,7 @@ public final class SecurityUtils {
 
     public static Optional<String> getCurrentUserRole() {
         SecurityContext securityContext = SecurityContextHolder.getContext();
-        return Optional.ofNullable(extractPrincipal(securityContext.getAuthentication()));
+        return Optional.ofNullable(extractCurrentRole(securityContext.getAuthentication()));
     }
 
     private static String extractCurrentRole(Authentication authentication) {
@@ -79,7 +82,7 @@ public final class SecurityUtils {
      */
     public static boolean isAuthenticated() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return authentication != null && getAuthorities(authentication).noneMatch(AuthoritiesConstants.ANONYMOUS::equals);
+        return authentication != null && getAuthorities(authentication).noneMatch(AidasAuthoritiesConstants.ANONYMOUS::equals);
     }
 
     /**

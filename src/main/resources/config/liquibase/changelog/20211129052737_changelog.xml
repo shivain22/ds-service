@@ -1,0 +1,71 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.1.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+    <changeSet author="shiva (generated)" id="1638163672456-7">
+        <addColumn tableName="aidas_user">
+            <column name="aidas_authority_id" type="bigint"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet author="shiva (generated)" id="1638163672456-9">
+        <createTable tableName="aidas_authority">
+            <column name="id" type="bigint"  autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(50)">
+                <constraints unique="true" nullable="false" uniqueConstraintName="ux_aidas_authority_name"/>
+            </column>
+        </createTable>
+        <addPrimaryKey columnNames="aidas_user_id, aidas_authority_id" tableName="aidas_user_aidas_authority"/>
+        <addForeignKeyConstraint baseColumnNames="aidas_authority_id"
+                                 baseTableName="aidas_user_aidas_authority"
+                                 constraintName="fk_aidas_authority_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="aidas_authority"/>
+        <addForeignKeyConstraint baseColumnNames="aidas_user_id"
+                                 baseTableName="aidas_user_aidas_authority"
+                                 constraintName="fk_aidas_user_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="aidas_user"/>
+
+    </changeSet>
+
+    <changeSet author="shiva (generated)" id="1638163672456-11">
+        <addUniqueConstraint columnNames="keycloak_id" constraintName="ux_aidas_user_keycloak" tableName="aidas_user"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1638163672456-12">
+        <createIndex indexName="IX_aidas_authorityPK" tableName="aidas_authority" unique="true">
+            <column name="id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1638163672456-13">
+        <createIndex indexName="IX_null" tableName="aidas_user_aidas_authority" unique="true">
+            <column name="aidas_user_id"/>
+            <column name="aidas_authority_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1638163672456-14">
+        <addForeignKeyConstraint baseColumnNames="aidas_upload_id" baseTableName="aidas_upload_meta_data" constraintName="fk_aidas_upload_aidas_upload_meta" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="aidas_upload" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1638163672456-15">
+        <addForeignKeyConstraint baseColumnNames="aidas_properties_id" baseTableName="aidas_project_property" constraintName="fk_aidas_properties_aidas_project_property" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="aidas_properties" validate="true"/>
+    </changeSet>
+
+    <changeSet author="shiva (generated)" id="1638163672456-18">
+        <addForeignKeyConstraint baseColumnNames="aidas_properties_id" baseTableName="aidas_object_property" constraintName="fk_aidas_properties_aidas_object_property" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="aidas_properties" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1638163672456-19">
+        <addForeignKeyConstraint baseColumnNames="aidas_object_id" baseTableName="aidas_object_property" constraintName="fk_aidas_object_aidas_object_property" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="aidas_object" validate="true"/>
+    </changeSet>
+
+
+
+
+    <changeSet author="shiva (generated)" id="1638163672456-1">
+        <addNotNullConstraint columnDataType="varchar(100)" columnName="email" tableName="aidas_user" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1638163672456-2">
+        <addNotNullConstraint columnDataType="varchar(100)" columnName="keycloak_id" tableName="aidas_user" validate="true"/>
+    </changeSet>
+
+
+</databaseChangeLog>

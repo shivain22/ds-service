@@ -22,6 +22,15 @@ public class KeycloakConfig {
     String clientSecret;
     String userName;
     String password;
+    String clientRealm;
+
+    public String getClientRealm() {
+        return clientRealm;
+    }
+
+    public void setClientRealm(String clientRealm) {
+        this.clientRealm = clientRealm;
+    }
 
     public String getServerUrl() {
         return serverUrl;
