@@ -9,9 +9,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.ainnotate.aidas.IntegrationTest;
-import com.ainnotate.aidas.domain.AidasObject;
 import com.ainnotate.aidas.domain.AidasUpload;
-import com.ainnotate.aidas.domain.AidasUser;
+import com.ainnotate.aidas.domain.AidasUserAidasObjectMapping;
 import com.ainnotate.aidas.repository.AidasUploadRepository;
 import com.ainnotate.aidas.repository.search.AidasUploadSearchRepository;
 import java.time.Instant;
@@ -101,25 +100,15 @@ class AidasUploadResourceIT {
             .statusModifiedDate(DEFAULT_STATUS_MODIFIED_DATE)
             .rejectReason(DEFAULT_REJECT_REASON);
         // Add required entity
-        AidasUser aidasUser;
-        if (TestUtil.findAll(em, AidasUser.class).isEmpty()) {
-            aidasUser = AidasUserResourceIT.createEntity(em);
-            em.persist(aidasUser);
+        AidasUserAidasObjectMapping aidasUserAidasObjectMapping;
+        if (TestUtil.findAll(em, AidasUserAidasObjectMapping.class).isEmpty()) {
+            aidasUserAidasObjectMapping = AidasUserAidasObjectMappingResourceIT.createEntity(em);
+            em.persist(aidasUserAidasObjectMapping);
             em.flush();
         } else {
-            aidasUser = TestUtil.findAll(em, AidasUser.class).get(0);
+            aidasUserAidasObjectMapping = TestUtil.findAll(em, AidasUserAidasObjectMapping.class).get(0);
         }
-        aidasUpload.setAidasUser(aidasUser);
-        // Add required entity
-        AidasObject aidasObject;
-        if (TestUtil.findAll(em, AidasObject.class).isEmpty()) {
-            aidasObject = AidasObjectResourceIT.createEntity(em);
-            em.persist(aidasObject);
-            em.flush();
-        } else {
-            aidasObject = TestUtil.findAll(em, AidasObject.class).get(0);
-        }
-        aidasUpload.setAidasObject(aidasObject);
+        aidasUpload.setAidasUserAidasObjectMapping(aidasUserAidasObjectMapping);
         return aidasUpload;
     }
 
@@ -137,25 +126,15 @@ class AidasUploadResourceIT {
             .statusModifiedDate(UPDATED_STATUS_MODIFIED_DATE)
             .rejectReason(UPDATED_REJECT_REASON);
         // Add required entity
-        AidasUser aidasUser;
-        if (TestUtil.findAll(em, AidasUser.class).isEmpty()) {
-            aidasUser = AidasUserResourceIT.createUpdatedEntity(em);
-            em.persist(aidasUser);
+        AidasUserAidasObjectMapping aidasUserAidasObjectMapping;
+        if (TestUtil.findAll(em, AidasUserAidasObjectMapping.class).isEmpty()) {
+            aidasUserAidasObjectMapping = AidasUserAidasObjectMappingResourceIT.createUpdatedEntity(em);
+            em.persist(aidasUserAidasObjectMapping);
             em.flush();
         } else {
-            aidasUser = TestUtil.findAll(em, AidasUser.class).get(0);
+            aidasUserAidasObjectMapping = TestUtil.findAll(em, AidasUserAidasObjectMapping.class).get(0);
         }
-        aidasUpload.setAidasUser(aidasUser);
-        // Add required entity
-        AidasObject aidasObject;
-        if (TestUtil.findAll(em, AidasObject.class).isEmpty()) {
-            aidasObject = AidasObjectResourceIT.createUpdatedEntity(em);
-            em.persist(aidasObject);
-            em.flush();
-        } else {
-            aidasObject = TestUtil.findAll(em, AidasObject.class).get(0);
-        }
-        aidasUpload.setAidasObject(aidasObject);
+        aidasUpload.setAidasUserAidasObjectMapping(aidasUserAidasObjectMapping);
         return aidasUpload;
     }
 

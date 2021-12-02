@@ -1,6 +1,10 @@
 package com.ainnotate.aidas.repository;
 
+import com.ainnotate.aidas.domain.AidasCustomer;
+import com.ainnotate.aidas.domain.AidasOrganisation;
 import com.ainnotate.aidas.domain.AidasUser;
+import com.ainnotate.aidas.domain.AidasVendor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
@@ -18,5 +22,9 @@ public interface AidasUserRepository extends JpaRepository<AidasUser, Long> {
     Optional<AidasUser> findByLogin(String login);
 
     Optional<AidasUser> findOneByLogin(String login);
+
+    Page<AidasUser> findAllByAidasCustomer(Pageable pageable, AidasCustomer aidasCustomer);
+    Page<AidasUser> findAllByAidasCustomer_AidasOrganisation(Pageable pageable, AidasOrganisation aidasOrganisation);
+    Page<AidasUser> findAllByAidasVendor(Pageable pageable, AidasVendor aidasVendor);
 
 }

@@ -84,30 +84,41 @@ public class IdpUserService {
         UserResource userResource = usersResource.get(aidasUser.getKeycloakId());
         UserRepresentation userRep = userResource.toRepresentation();
         Collection<GrantedAuthority> grantedAuthorities = authToken.getAuthorities();
-        Collection<AidasAuthority> userAuthorities = aidasUser.getAidasAuthorities();
-        Set<AidasAuthority> availableUserAuthorities = new HashSet<>();
+        AidasAuthority currentAidasAuthority=null;
         for(GrantedAuthority ga: grantedAuthorities){
-            if(aidasAuthorityRepository.findByName(ga.getAuthority().trim())==null){
-                AidasAuthority aidasAuthority = new AidasAuthority();
+            AidasAuthority aidasAuthority = aidasAuthorityRepository.findByName(ga.getAuthority().trim());
+            if(aidasAuthority==null){
+                aidasAuthority = new AidasAuthority();
                 aidasAuthority.setName(ga.getAuthority());
                 aidasAuthorityRepository.save(aidasAuthority);
             }
+            aidasUser.getAidasAuthorities().add(aidasAuthority);
+            currentAidasAuthority= aidasAuthority;
         }
-        for(AidasAuthority aa:userAuthorities){
-            AidasAuthority a = aidasAuthorityRepository.findByName(aa.getName());
-            if(a!=null){
-                availableUserAuthorities.add(a);
-            }else{
-                AidasAuthority aidasAuthority = new AidasAuthority();
-                aidasAuthority.setName(aa.getName());
-                aidasAuthorityRepository.save(aidasAuthority);
-                availableUserAuthorities.add(aidasAuthority);
-            }
-        }
-        aidasUser.setAidasAuthorities(availableUserAuthorities);
         aidasUser.setLocked(false);
         aidasUser.setCreatedDate(Instant.now());
         aidasUser.setLastModifiedDate(Instant.now());
+        aidasUser.setCurrentAidasAuthority(currentAidasAuthority);
+        AidasUser result = aidasUserRepository.save(aidasUser);
+        if(userRep.getAttributes()!=null) {
+            List<String> userAttrsVals = new ArrayList<>();
+            userAttrsVals.add(currentAidasAuthority.getName());
+            userRep.getAttributes().put("current_role", userAttrsVals);
+            userAttrsVals = new ArrayList<>();
+            userAttrsVals.add(String.valueOf(result.getId()));
+            userRep.getAttributes().put("aidas_id", userAttrsVals);
+        }
+        else{
+            Map<String,List<String>> userAttrs = new HashMap<>();
+            List<String> userAttrsVals = new ArrayList<>();
+            userAttrsVals.add(currentAidasAuthority.getName());
+            userAttrs.put("current_role",userAttrsVals);
+            userAttrsVals = new ArrayList<>();
+            userAttrsVals.add(String.valueOf(result.getId()));
+            userAttrs.put("aidas_id",userAttrsVals);
+            userRep.setAttributes(userAttrs);
+        }
+        userResource.update(userRep);
         return  aidasUserRepository.save(aidasUser);
     }
 

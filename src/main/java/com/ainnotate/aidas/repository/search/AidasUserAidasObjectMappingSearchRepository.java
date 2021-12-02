@@ -2,7 +2,7 @@ package com.ainnotate.aidas.repository.search;
 
 import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 
-import com.ainnotate.aidas.domain.AidasCustomer;
+import com.ainnotate.aidas.domain.AidasUserAidasObjectMapping;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -15,30 +15,29 @@ import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 
 /**
- * Spring Data Elasticsearch repository for the {@link AidasCustomer} entity.
+ * Spring Data Elasticsearch repository for the {@link AidasUserAidasObjectMapping} entity.
  */
-public interface AidasCustomerSearchRepository
-    extends ElasticsearchRepository<AidasCustomer, Long>, AidasCustomerSearchRepositoryInternal {
+public interface AidasUserAidasObjectMappingSearchRepository
+    extends ElasticsearchRepository<AidasUserAidasObjectMapping, Long>, AidasUserAidasObjectMappingSearchRepositoryInternal {}
+
+interface AidasUserAidasObjectMappingSearchRepositoryInternal {
+    Page<AidasUserAidasObjectMapping> search(String query, Pageable pageable);
 }
 
-interface AidasCustomerSearchRepositoryInternal {
-    Page<AidasCustomer> search(String query, Pageable pageable);
-}
-
-class AidasCustomerSearchRepositoryInternalImpl implements AidasCustomerSearchRepositoryInternal {
+class AidasUserAidasObjectMappingSearchRepositoryInternalImpl implements AidasUserAidasObjectMappingSearchRepositoryInternal {
 
     private final ElasticsearchRestTemplate elasticsearchTemplate;
 
-    AidasCustomerSearchRepositoryInternalImpl(ElasticsearchRestTemplate elasticsearchTemplate) {
+    AidasUserAidasObjectMappingSearchRepositoryInternalImpl(ElasticsearchRestTemplate elasticsearchTemplate) {
         this.elasticsearchTemplate = elasticsearchTemplate;
     }
 
     @Override
-    public Page<AidasCustomer> search(String query, Pageable pageable) {
+    public Page<AidasUserAidasObjectMapping> search(String query, Pageable pageable) {
         NativeSearchQuery nativeSearchQuery = new NativeSearchQuery(queryStringQuery(query));
         nativeSearchQuery.setPageable(pageable);
-        List<AidasCustomer> hits = elasticsearchTemplate
-            .search(nativeSearchQuery, AidasCustomer.class)
+        List<AidasUserAidasObjectMapping> hits = elasticsearchTemplate
+            .search(nativeSearchQuery, AidasUserAidasObjectMapping.class)
             .map(SearchHit::getContent)
             .stream()
             .collect(Collectors.toList());

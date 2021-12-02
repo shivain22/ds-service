@@ -3,6 +3,7 @@ package com.ainnotate.aidas.web.rest;
 import static org.elasticsearch.index.query.QueryBuilders.*;
 
 import com.ainnotate.aidas.domain.AidasAuthority;
+import com.ainnotate.aidas.domain.AidasCustomer;
 import com.ainnotate.aidas.domain.AidasOrganisation;
 import com.ainnotate.aidas.domain.AidasUser;
 import com.ainnotate.aidas.repository.AidasOrganisationRepository;
@@ -13,6 +14,7 @@ import com.ainnotate.aidas.security.SecurityUtils;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -106,6 +108,7 @@ public class AidasOrganisationResource {
         @PathVariable(value = "id", required = false) final Long id,
         @Valid @RequestBody AidasOrganisation aidasOrganisation
     ) throws URISyntaxException {
+        AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to update AidasOrganisation : {}, {}", id, aidasOrganisation);
         if (aidasOrganisation.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -118,6 +121,9 @@ public class AidasOrganisationResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
+        if( (aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null && !aidasUser.getAidasOrganisation().equals(aidasOrganisation) )){
+            throw new BadRequestAlertException("Not Authorised", ENTITY_NAME, "idinvalid");
+        }
         AidasOrganisation result = aidasOrganisationRepository.save(aidasOrganisation);
         aidasOrganisationSearchRepository.save(result);
         return ResponseEntity
@@ -143,6 +149,7 @@ public class AidasOrganisationResource {
         @PathVariable(value = "id", required = false) final Long id,
         @NotNull @RequestBody AidasOrganisation aidasOrganisation
     ) throws URISyntaxException {
+        AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to partial update AidasOrganisation partially : {}, {}", id, aidasOrganisation);
         if (aidasOrganisation.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -154,7 +161,9 @@ public class AidasOrganisationResource {
         if (!aidasOrganisationRepository.existsById(id)) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
-
+        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null && aidasUser.getAidasOrganisation().getId()!=aidasOrganisation.getId() ){
+            throw new BadRequestAlertException("Not Authorised", ENTITY_NAME, "idinvalid");
+        }
         Optional<AidasOrganisation> result = aidasOrganisationRepository
             .findById(aidasOrganisation.getId())
             .map(existingAidasOrganisation -> {
@@ -164,13 +173,11 @@ public class AidasOrganisationResource {
                 if (aidasOrganisation.getDescription() != null) {
                     existingAidasOrganisation.setDescription(aidasOrganisation.getDescription());
                 }
-
                 return existingAidasOrganisation;
             })
             .map(aidasOrganisationRepository::save)
             .map(savedAidasOrganisation -> {
                 aidasOrganisationSearchRepository.save(savedAidasOrganisation);
-
                 return savedAidasOrganisation;
             });
 
@@ -192,11 +199,15 @@ public class AidasOrganisationResource {
         log.debug("REST request to get a page of AidasOrganisations");
         Page<AidasOrganisation> page=null;
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-        if(SecurityUtils.getCurrentUserRole().equals(AidasAuthoritiesConstants.ADMIN)) {
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ADMIN)) {
             page = aidasOrganisationRepository.findAll(pageable);
         }
         else{
-            page = aidasOrganisationRepository.findAllById(aidasUser.getId(),pageable);
+            if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN)){
+                if(aidasUser.getAidasOrganisation()!=null){
+                    page = aidasOrganisationRepository.findAllById(aidasUser.getAidasOrganisation().getId(),pageable);
+                }
+            }
         }
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
@@ -214,7 +225,11 @@ public class AidasOrganisationResource {
         log.debug("REST request to get AidasOrganisation : {}", id);
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         Optional<AidasOrganisation> aidasOrganisation =null;
-        if(aidasUser.getAidasOrganisation()!=null && aidasUser.getAidasOrganisation().getId()==id) {
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN)) {
+            if (aidasUser.getAidasOrganisation() != null && aidasUser.getAidasOrganisation().getId() == id) {
+                aidasOrganisation = aidasOrganisationRepository.findById(id);
+            }
+        }else if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ADMIN)){
             aidasOrganisation = aidasOrganisationRepository.findById(id);
         }
         return ResponseUtil.wrapOrNotFound(aidasOrganisation);
@@ -246,11 +261,21 @@ public class AidasOrganisationResource {
      * @param pageable the pagination information.
      * @return the result of the search.
      */
-    @Secured(AidasAuthoritiesConstants.ADMIN)
+    @Secured({AidasAuthoritiesConstants.ADMIN,AidasAuthoritiesConstants.ORG_ADMIN})
     @GetMapping("/_search/aidas-organisations")
     public ResponseEntity<List<AidasOrganisation>> searchAidasOrganisations(@RequestParam String query, Pageable pageable) {
         log.debug("REST request to search for a page of AidasOrganisations for query {}", query);
+        AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         Page<AidasOrganisation> page = aidasOrganisationSearchRepository.search(query, pageable);
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN)) {
+            Iterator<AidasOrganisation> it = page.getContent().iterator();
+            while(it.hasNext()){
+                AidasOrganisation aidasOrganisation = it.next();
+                if(!aidasOrganisation.equals(aidasUser.getAidasOrganisation())){
+                    it.remove();
+                }
+            }
+        }
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }

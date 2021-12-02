@@ -1,11 +1,15 @@
 package com.ainnotate.aidas.web.rest;
 
 import com.ainnotate.aidas.domain.AidasAuthority;
+import com.ainnotate.aidas.domain.AidasUser;
 import com.ainnotate.aidas.repository.AidasAuthorityRepository;
+import com.ainnotate.aidas.repository.AidasUserRepository;
 import com.ainnotate.aidas.repository.search.AidasAuthoritySearchRepository;
+import com.ainnotate.aidas.security.SecurityUtils;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,6 +32,7 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * REST controller for managing {@link AidasAuthority}.
@@ -43,6 +48,9 @@ public class AidasAuthorityResource {
 
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
+
+    @Autowired
+    private AidasUserRepository aidasUserRepository;
 
     private final AidasAuthorityRepository aidasAuthorityRepository;
 
@@ -181,6 +189,15 @@ public class AidasAuthorityResource {
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
+    @GetMapping("/my-authorities")
+    public ResponseEntity<List<AidasAuthority>> getMyAidasAuthoritys(Pageable pageable) {
+        AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        log.debug("REST request to get a page of AidasAuthoritys");
+        Page<AidasAuthority> page = aidasAuthorityRepository.findAll(pageable);
+        List<AidasAuthority> myAuthorities   = aidasUser.getAidasAuthorities().stream().collect(Collectors.toList());
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return ResponseEntity.ok().headers(headers).body(myAuthorities);
+    }
     /**
      * {@code GET  /aidas-authorities/:id} : get the "id" aidasAuthority.
      *

@@ -29,7 +29,7 @@ public class AidasUploadMetaData implements Serializable {
     private String value;
 
     @ManyToOne
-    @JsonIgnoreProperties(value = { "aidasUser", "aidasObject", "statusModifiedBy" }, allowSetters = true)
+    @JsonIgnoreProperties(value = { "aidasUserAidasObjectMapping" }, allowSetters = true)
     private AidasUpload aidasUpload;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here

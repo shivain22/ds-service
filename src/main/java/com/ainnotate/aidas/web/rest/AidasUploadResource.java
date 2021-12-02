@@ -31,7 +31,7 @@ import tech.jhipster.web.util.PaginationUtil;
 import tech.jhipster.web.util.ResponseUtil;
 
 /**
- * REST controller for managing {@link com.ainnotate.aidas.domain.AidasUpload}.
+ * REST controller for managing {@link AidasUpload}.
  */
 @RestController
 @RequestMapping("/api")

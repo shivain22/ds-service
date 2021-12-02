@@ -43,17 +43,8 @@ public class AidasUpload implements Serializable {
 
     @ManyToOne(optional = false)
     @NotNull
-    @JsonIgnoreProperties(value = { "aidasOrganisation", "aidasCustomer", "aidasVendor" }, allowSetters = true)
-    private AidasUser aidasUser;
-
-    @ManyToOne(optional = false)
-    @NotNull
-    @JsonIgnoreProperties(value = { "aidasProject" }, allowSetters = true)
-    private AidasObject aidasObject;
-
-    @ManyToOne
-    @JsonIgnoreProperties(value = { "aidasOrganisation", "aidasCustomer", "aidasVendor" }, allowSetters = true)
-    private AidasUser statusModifiedBy;
+    @JsonIgnoreProperties(value = { "aidasUser", "aidasObject", "aidasUploads" }, allowSetters = true)
+    private AidasUserAidasObjectMapping aidasUserAidasObjectMapping;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -135,42 +126,16 @@ public class AidasUpload implements Serializable {
         this.rejectReason = rejectReason;
     }
 
-    public AidasUser getAidasUser() {
-        return this.aidasUser;
+    public AidasUserAidasObjectMapping getAidasUserAidasObjectMapping() {
+        return this.aidasUserAidasObjectMapping;
     }
 
-    public void setAidasUser(AidasUser aidasUser) {
-        this.aidasUser = aidasUser;
+    public void setAidasUserAidasObjectMapping(AidasUserAidasObjectMapping aidasUserAidasObjectMapping) {
+        this.aidasUserAidasObjectMapping = aidasUserAidasObjectMapping;
     }
 
-    public AidasUpload aidasUser(AidasUser aidasUser) {
-        this.setAidasUser(aidasUser);
-        return this;
-    }
-
-    public AidasObject getAidasObject() {
-        return this.aidasObject;
-    }
-
-    public void setAidasObject(AidasObject aidasObject) {
-        this.aidasObject = aidasObject;
-    }
-
-    public AidasUpload aidasObject(AidasObject aidasObject) {
-        this.setAidasObject(aidasObject);
-        return this;
-    }
-
-    public AidasUser getStatusModifiedBy() {
-        return this.statusModifiedBy;
-    }
-
-    public void setStatusModifiedBy(AidasUser aidasUser) {
-        this.statusModifiedBy = aidasUser;
-    }
-
-    public AidasUpload statusModifiedBy(AidasUser aidasUser) {
-        this.setStatusModifiedBy(aidasUser);
+    public AidasUpload aidasUserAidasObjectMapping(AidasUserAidasObjectMapping aidasUserAidasObjectMapping) {
+        this.setAidasUserAidasObjectMapping(aidasUserAidasObjectMapping);
         return this;
     }
 

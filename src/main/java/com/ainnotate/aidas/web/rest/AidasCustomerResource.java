@@ -3,11 +3,16 @@ package com.ainnotate.aidas.web.rest;
 import static org.elasticsearch.index.query.QueryBuilders.*;
 
 import com.ainnotate.aidas.domain.AidasCustomer;
+import com.ainnotate.aidas.domain.AidasUser;
 import com.ainnotate.aidas.repository.AidasCustomerRepository;
+import com.ainnotate.aidas.repository.AidasUserRepository;
 import com.ainnotate.aidas.repository.search.AidasCustomerSearchRepository;
+import com.ainnotate.aidas.security.AidasAuthoritiesConstants;
+import com.ainnotate.aidas.security.SecurityUtils;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -18,12 +23,14 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -52,6 +59,9 @@ public class AidasCustomerResource {
 
     private final AidasCustomerSearchRepository aidasCustomerSearchRepository;
 
+    @Autowired
+    private AidasUserRepository aidasUserRepository;
+
     public AidasCustomerResource(
         AidasCustomerRepository aidasCustomerRepository,
         AidasCustomerSearchRepository aidasCustomerSearchRepository
@@ -67,20 +77,29 @@ public class AidasCustomerResource {
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new aidasCustomer, or with status {@code 400 (Bad Request)} if the aidasCustomer has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
+    @Secured({AidasAuthoritiesConstants.ADMIN,AidasAuthoritiesConstants.ORG_ADMIN})
     @PostMapping("/aidas-customers")
     public ResponseEntity<AidasCustomer> createAidasCustomer(@Valid @RequestBody AidasCustomer aidasCustomer) throws URISyntaxException {
+        AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to save AidasCustomer : {}", aidasCustomer);
         HttpServletRequest req = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
 
         if (aidasCustomer.getId() != null) {
             throw new BadRequestAlertException("A new aidasCustomer cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        AidasCustomer result = aidasCustomerRepository.save(aidasCustomer);
-        aidasCustomerSearchRepository.save(result);
-        return ResponseEntity
-            .created(new URI("/api/aidas-customers/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
-            .body(result);
+
+
+        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ADMIN) ||
+            !(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null && aidasUser.getAidasOrganisation().equals(aidasCustomer.getAidasOrganisation()))){
+            AidasCustomer result = aidasCustomerRepository.save(aidasCustomer);
+            aidasCustomerSearchRepository.save(result);
+            return ResponseEntity
+                .created(new URI("/api/aidas-customers/" + result.getId()))
+                .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
+                .body(result);
+        }else{
+            throw new BadRequestAlertException("Not Authorised", ENTITY_NAME, "idinvalid");
+        }
     }
 
     /**
@@ -93,11 +112,13 @@ public class AidasCustomerResource {
      * or with status {@code 500 (Internal Server Error)} if the aidasCustomer couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
+    @Secured({AidasAuthoritiesConstants.ADMIN,AidasAuthoritiesConstants.ORG_ADMIN,AidasAuthoritiesConstants.CUSTOMER_ADMIN})
     @PutMapping("/aidas-customers/{id}")
     public ResponseEntity<AidasCustomer> updateAidasCustomer(
         @PathVariable(value = "id", required = false) final Long id,
         @Valid @RequestBody AidasCustomer aidasCustomer
     ) throws URISyntaxException {
+        AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to update AidasCustomer : {}, {}", id, aidasCustomer);
         if (aidasCustomer.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -109,13 +130,19 @@ public class AidasCustomerResource {
         if (!aidasCustomerRepository.existsById(id)) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
-
-        AidasCustomer result = aidasCustomerRepository.save(aidasCustomer);
-        aidasCustomerSearchRepository.save(result);
-        return ResponseEntity
-            .ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, aidasCustomer.getId().toString()))
-            .body(result);
+        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ADMIN) ||
+            !(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null && aidasUser.getAidasOrganisation().equals(aidasCustomer.getAidasOrganisation()))||
+            !(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN) && aidasUser.getAidasCustomer().equals(aidasCustomer))
+        ){
+            AidasCustomer result = aidasCustomerRepository.save(aidasCustomer);
+            aidasCustomerSearchRepository.save(result);
+            return ResponseEntity
+                .ok()
+                .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, aidasCustomer.getId().toString()))
+                .body(result);
+        }else{
+            throw new BadRequestAlertException("Not Authorised", ENTITY_NAME, "idinvalid");
+        }
     }
 
     /**
@@ -129,11 +156,13 @@ public class AidasCustomerResource {
      * or with status {@code 500 (Internal Server Error)} if the aidasCustomer couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
+    @Secured({AidasAuthoritiesConstants.ADMIN,AidasAuthoritiesConstants.ORG_ADMIN,AidasAuthoritiesConstants.CUSTOMER_ADMIN})
     @PatchMapping(value = "/aidas-customers/{id}", consumes = { "application/json", "application/merge-patch+json" })
     public ResponseEntity<AidasCustomer> partialUpdateAidasCustomer(
         @PathVariable(value = "id", required = false) final Long id,
         @NotNull @RequestBody AidasCustomer aidasCustomer
     ) throws URISyntaxException {
+        AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to partial update AidasCustomer partially : {}, {}", id, aidasCustomer);
         if (aidasCustomer.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
@@ -145,30 +174,37 @@ public class AidasCustomerResource {
         if (!aidasCustomerRepository.existsById(id)) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
+        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ADMIN) ||
+            !(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null && aidasUser.getAidasOrganisation().equals(aidasCustomer.getAidasOrganisation()))||
+            !(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN) && aidasUser.getAidasCustomer().equals(aidasCustomer))
+        ){
+            Optional<AidasCustomer> result = aidasCustomerRepository
+                .findById(aidasCustomer.getId())
+                .map(existingAidasCustomer -> {
+                    if (aidasCustomer.getName() != null) {
+                        existingAidasCustomer.setName(aidasCustomer.getName());
+                    }
+                    if (aidasCustomer.getDescription() != null) {
+                        existingAidasCustomer.setDescription(aidasCustomer.getDescription());
+                    }
 
-        Optional<AidasCustomer> result = aidasCustomerRepository
-            .findById(aidasCustomer.getId())
-            .map(existingAidasCustomer -> {
-                if (aidasCustomer.getName() != null) {
-                    existingAidasCustomer.setName(aidasCustomer.getName());
-                }
-                if (aidasCustomer.getDescription() != null) {
-                    existingAidasCustomer.setDescription(aidasCustomer.getDescription());
-                }
+                    return existingAidasCustomer;
+                })
+                .map(aidasCustomerRepository::save)
+                .map(savedAidasCustomer -> {
+                    aidasCustomerSearchRepository.save(savedAidasCustomer);
 
-                return existingAidasCustomer;
-            })
-            .map(aidasCustomerRepository::save)
-            .map(savedAidasCustomer -> {
-                aidasCustomerSearchRepository.save(savedAidasCustomer);
+                    return savedAidasCustomer;
+                });
 
-                return savedAidasCustomer;
-            });
+            return ResponseUtil.wrapOrNotFound(
+                result,
+                HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, aidasCustomer.getId().toString())
+            );
+        }else{
+            throw new BadRequestAlertException("Not Authorised", ENTITY_NAME, "idinvalid");
+        }
 
-        return ResponseUtil.wrapOrNotFound(
-            result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, aidasCustomer.getId().toString())
-        );
     }
 
     /**
@@ -177,12 +213,23 @@ public class AidasCustomerResource {
      * @param pageable the pagination information.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of aidasCustomers in body.
      */
+    @Secured({AidasAuthoritiesConstants.ADMIN,AidasAuthoritiesConstants.ORG_ADMIN,AidasAuthoritiesConstants.CUSTOMER_ADMIN})
     @GetMapping("/aidas-customers")
     public ResponseEntity<List<AidasCustomer>> getAllAidasCustomers(Pageable pageable) {
+        AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to get a page of AidasCustomers");
-        Page<AidasCustomer> page = aidasCustomerRepository.findAll(pageable);
-        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
-        return ResponseEntity.ok().headers(headers).body(page.getContent());
+
+        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ADMIN)){
+            Page<AidasCustomer> page = aidasCustomerRepository.findAll(pageable);
+            HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+            return ResponseEntity.ok().headers(headers).body(page.getContent());
+        }else if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null) {
+            Page<AidasCustomer> page = aidasCustomerRepository.findAllByAidasOrganisation(pageable,aidasUser.getAidasOrganisation());
+            HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+            return ResponseEntity.ok().headers(headers).body(page.getContent());
+        }else{
+            throw new BadRequestAlertException("Not Authorised", ENTITY_NAME, "idinvalid");
+        }
     }
 
     /**
@@ -191,10 +238,20 @@ public class AidasCustomerResource {
      * @param id the id of the aidasCustomer to retrieve.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the aidasCustomer, or with status {@code 404 (Not Found)}.
      */
+    @Secured({AidasAuthoritiesConstants.ADMIN,AidasAuthoritiesConstants.ORG_ADMIN,AidasAuthoritiesConstants.CUSTOMER_ADMIN})
     @GetMapping("/aidas-customers/{id}")
     public ResponseEntity<AidasCustomer> getAidasCustomer(@PathVariable Long id) {
+        AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        Optional<AidasCustomer> aidasCustomer = aidasCustomerRepository.findById(id);;
         log.debug("REST request to get AidasCustomer : {}", id);
-        Optional<AidasCustomer> aidasCustomer = aidasCustomerRepository.findById(id);
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN) ){
+            aidasCustomer = aidasCustomerRepository.findById(id);
+            if(aidasCustomer.isPresent()){
+                if(!aidasCustomer.get().getAidasOrganisation().equals(aidasUser.getAidasOrganisation())){
+                    throw new BadRequestAlertException("Not Authorised", ENTITY_NAME, "idinvalid");
+                }
+            }
+        }
         return ResponseUtil.wrapOrNotFound(aidasCustomer);
     }
 
@@ -204,15 +261,25 @@ public class AidasCustomerResource {
      * @param id the id of the aidasCustomer to delete.
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
+    @Secured({AidasAuthoritiesConstants.ADMIN,AidasAuthoritiesConstants.ORG_ADMIN})
     @DeleteMapping("/aidas-customers/{id}")
     public ResponseEntity<Void> deleteAidasCustomer(@PathVariable Long id) {
+        AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to delete AidasCustomer : {}", id);
-        aidasCustomerRepository.deleteById(id);
-        aidasCustomerSearchRepository.deleteById(id);
-        return ResponseEntity
-            .noContent()
-            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
-            .build();
+        AidasCustomer aidasCustomer = aidasCustomerRepository.findById(id).get();
+        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ADMIN) ||
+            !(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null && aidasUser.getAidasOrganisation().equals(aidasCustomer.getAidasOrganisation()))||
+            !(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN) && aidasUser.getAidasCustomer().equals(aidasCustomer))
+        ) {
+            aidasCustomerRepository.deleteById(id);
+            aidasCustomerSearchRepository.deleteById(id);
+            return ResponseEntity
+                .noContent()
+                .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
+                .build();
+        }else{
+            throw new BadRequestAlertException("Not Authorised", ENTITY_NAME, "idinvalid");
+        }
     }
 
     /**
@@ -223,10 +290,30 @@ public class AidasCustomerResource {
      * @param pageable the pagination information.
      * @return the result of the search.
      */
+    @Secured({AidasAuthoritiesConstants.ADMIN,AidasAuthoritiesConstants.ORG_ADMIN,AidasAuthoritiesConstants.CUSTOMER_ADMIN})
     @GetMapping("/_search/aidas-customers")
     public ResponseEntity<List<AidasCustomer>> searchAidasCustomers(@RequestParam String query, Pageable pageable) {
+        AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to search for a page of AidasCustomers for query {}", query);
         Page<AidasCustomer> page = aidasCustomerSearchRepository.search(query, pageable);
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null) {
+            Iterator<AidasCustomer> it = page.getContent().iterator();
+            while(it.hasNext()){
+                AidasCustomer aidasCustomer = it.next();
+                if(!aidasCustomer.getAidasOrganisation().equals(aidasUser.getAidasOrganisation())){
+                    it.remove();
+                }
+            }
+        }
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN) && aidasUser.getAidasCustomer()!=null) {
+            Iterator<AidasCustomer> it = page.getContent().iterator();
+            while(it.hasNext()){
+                AidasCustomer aidasCustomer = it.next();
+                if(!aidasCustomer.equals(aidasUser.getAidasCustomer())){
+                    it.remove();
+                }
+            }
+        }
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }

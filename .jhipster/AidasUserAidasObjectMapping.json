@@ -1,0 +1,37 @@
+{
+  "microserviceName": "ainnotateservice",
+  "clientRootFolder": "ainnotateservice",
+  "databaseType": "sql",
+  "fields": [
+    {
+      "fieldName": "dateAssigned",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "status",
+      "fieldType": "Boolean"
+    }
+  ],
+  "relationships": [
+    {
+      "relationshipName": "aidasUser",
+      "otherEntityName": "aidasUser",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": ["required"],
+      "otherEntityField": "firstName"
+    },
+    {
+      "relationshipName": "aidasObject",
+      "otherEntityName": "aidasObject",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": ["required"],
+      "otherEntityField": "name"
+    }
+  ],
+  "service": "no",
+  "readOnly": false,
+  "pagination": "pagination",
+  "name": "AidasUserAidasObjectMapping",
+  "changelogDate": "20211016054047",
+  "entityTableName": "aidas_user_obj_map"
+}
