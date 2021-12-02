@@ -1,7 +1,9 @@
 package com.ainnotate.aidas.web.rest;
 
 import com.ainnotate.aidas.config.KeycloakConfig;
+import com.ainnotate.aidas.domain.AidasAuthority;
 import com.ainnotate.aidas.domain.AidasUser;
+import com.ainnotate.aidas.repository.AidasAuthorityRepository;
 import com.ainnotate.aidas.repository.AidasUserRepository;
 import com.ainnotate.aidas.repository.search.AidasUserSearchRepository;
 import com.ainnotate.aidas.security.AidasAuthoritiesConstants;
@@ -16,6 +18,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.Response;
 
+import com.ainnotate.aidas.web.rest.vm.ManagedUserVM;
 import org.keycloak.admin.client.CreatedResponseUtil;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.RealmResource;
@@ -61,6 +64,9 @@ public class AidasUserResource {
     @Autowired
     private KeycloakConfig keycloakConfig;
 
+    @Autowired
+    private AidasAuthorityRepository aidasAuthorityRepository;
+
     private final AidasUserSearchRepository aidasUserSearchRepository;
 
     public AidasUserResource(AidasUserRepository aidasUserRepository, AidasUserSearchRepository aidasUserSearchRepository, Keycloak keycloak) {
@@ -92,6 +98,34 @@ public class AidasUserResource {
             .body(result);
     }
 
+    /**
+     * {@code POST  /aidas-users} : Create a new aidasUser.
+     *
+     * @param newUser the aidasUser to create.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new aidasUser, or with status {@code 400 (Bad Request)} if the aidasUser has already an ID.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @PostMapping("/register")
+    public ResponseEntity<AidasUser> registerAidasUser(@Valid @RequestBody ManagedUserVM newUser) throws URISyntaxException {
+        log.debug("REST request to save AidasUser : {}", newUser);
+        AidasUser aidasUser = new AidasUser();
+        aidasUser.setEmail(newUser.getEmail());
+        aidasUser.setFirstName(newUser.getFirstName());
+        aidasUser.setLastName(newUser.getLastName());
+        aidasUser.setLocked(false);
+        aidasUser.setPassword(newUser.getPassword());
+        if (aidasUser.getId() != null) {
+            throw new BadRequestAlertException("A new aidasUser cannot already have an ID", ENTITY_NAME, "idexists");
+        }
+        registerNewUser(aidasUser);
+        AidasUser result = aidasUserRepository.save(aidasUser);
+        aidasUserSearchRepository.save(result);
+        updateUserToKeyCloak(result);
+        return ResponseEntity
+            .created(new URI("/api/aidas-users/" + result.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
+            .body(result);
+    }
 
     /**
      * {@code POST  /aidas-users/:role} : Update/change current role of the user.
@@ -106,6 +140,9 @@ public class AidasUserResource {
         System.out.println(SecurityUtils.getCurrentUserLogin().get());
         AidasUser aidasUser  = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         updateCurrentRole(aidasUser,role);
+        AidasAuthority currentAidasAuthority =  aidasAuthorityRepository.findByName(role.trim());
+        aidasUser.setCurrentAidasAuthority(currentAidasAuthority);
+        aidasUserRepository.save(aidasUser);
         return ResponseEntity
             .created(new URI("/api/aidas-users/" + aidasUser.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, aidasUser.getId().toString()))
@@ -307,15 +344,56 @@ public class AidasUserResource {
         UserResource userResource = usersRessource.get(userId);
         userResource.resetPassword(passwordCred);
         //userResource.sendVerifyEmail();
-        RoleRepresentation userRealmRole = realmResource.roles().get(AidasAuthoritiesConstants.USER).toRepresentation();
-        if(aidasUser.getAidasOrganisation()!=null){
-            userRealmRole = realmResource.roles().get(AidasAuthoritiesConstants.ORG_ADMIN).toRepresentation();
-        }else if (aidasUser.getAidasCustomer()!=null){
-            userRealmRole = realmResource.roles().get(AidasAuthoritiesConstants.CUSTOMER_ADMIN).toRepresentation();
-        }else if(aidasUser.getAidasVendor()!=null){
-            userRealmRole = realmResource.roles().get(AidasAuthoritiesConstants.VENDOR_ADMIN).toRepresentation();
+        List<RoleRepresentation> roleRepresentationList = realmResource.roles().list();
+        for (RoleRepresentation roleRepresentation : roleRepresentationList)
+        {
+            for(AidasAuthority aa:aidasUser.getAidasAuthorities()){
+                if (roleRepresentation.getName().equals(aa.getName()))
+                {
+                    userResource.roles().realmLevel().add(Arrays.asList(roleRepresentation));
+                    aidasUser.setCurrentAidasAuthority(aa);
+                }
+            }
         }
+    }
+
+    public void registerNewUser(AidasUser aidasUser) {
+
+        UserRepresentation user = new UserRepresentation();
+        user.setEnabled(true);
+        user.setUsername(aidasUser.getEmail());
+        user.setEmail(aidasUser.getEmail());
+        aidasUser.setLogin(aidasUser.getEmail());
+        if(SecurityUtils.getCurrentUserLogin().get()!=null) {
+            aidasUser.setCreatedBy(SecurityUtils.getCurrentUserLogin().get());
+            aidasUser.setLastModifiedBy(SecurityUtils.getCurrentUserLogin().get());
+        }else{
+            aidasUser.setCreatedBy("self_registered");
+            aidasUser.setLastModifiedBy("self_registered");
+        }
+        aidasUser.setCreatedDate(Instant.now());
+        aidasUser.setLastModifiedDate(Instant.now());
+        List<String> groups = new ArrayList<>();
+        groups.add("Users");
+        user.setGroups(groups);
+        RealmResource realmResource = keycloak.realm(keycloakConfig.getClientRealm());
+        UsersResource usersRessource = realmResource.users();
+        user.setEnabled(true);
+        user.setEmailVerified(true);
+        Response response = usersRessource.create(user);
+        String userId = CreatedResponseUtil.getCreatedId(response);
+        aidasUser.setKeycloakId(userId);
+        CredentialRepresentation passwordCred = new CredentialRepresentation();
+        passwordCred.setTemporary(false);
+        passwordCred.setType(CredentialRepresentation.PASSWORD);
+        passwordCred.setValue(aidasUser.getPassword());
+        UserResource userResource = usersRessource.get(userId);
+        userResource.resetPassword(passwordCred);
+        //userResource.sendVerifyEmail();
+        RoleRepresentation userRealmRole = realmResource.roles().get(AidasAuthoritiesConstants.USER).toRepresentation();
         userResource.roles().realmLevel().add(Arrays.asList(userRealmRole));
+        AidasAuthority currentAidasAuthority = aidasAuthorityRepository.findByName("ROLE_USER");
+        aidasUser.setCurrentAidasAuthority(currentAidasAuthority);
     }
 
     public void updateUserToKeyCloak(AidasUser aidasUser) {
@@ -339,7 +417,7 @@ public class AidasUserResource {
         passwordCred.setType(CredentialRepresentation.PASSWORD);
         passwordCred.setValue(aidasUser.getPassword());
         userResource.resetPassword(passwordCred);
-        userResource.roles().realmLevel().add(aidasUser.getAuthorities().stream().map(authority -> {return realmResource.roles().get(authority.getName()).toRepresentation();}).collect(Collectors.toList()));
+        userResource.roles().realmLevel().add(aidasUser.getAidasAuthorities().stream().map(authority -> {return realmResource.roles().get(authority.getName()).toRepresentation();}).collect(Collectors.toList()));
     }
 
     private void deleteUserFromKeyCloak(AidasUser aidasUser){
@@ -355,7 +433,15 @@ public class AidasUserResource {
         UserRepresentation user = userResource.toRepresentation();
         List<String> userAttrsVals = new ArrayList<>();
         userAttrsVals.add(selectedRole);
-        user.getAttributes().put("current_role",userAttrsVals);
+        if(user.getAttributes()!=null) {
+            user.getAttributes().put("current_role", userAttrsVals);
+        }
+        else{
+            Map<String,List<String>> userAttrs = new HashMap<>();
+            userAttrsVals.add(String.valueOf(aidasUser.getId()));
+            userAttrs.put("current_role",userAttrsVals);
+            user.setAttributes(userAttrs);
+        }
         userResource.update(user);
     }
 }

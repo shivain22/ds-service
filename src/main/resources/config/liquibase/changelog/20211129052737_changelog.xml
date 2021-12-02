@@ -2,7 +2,7 @@
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.1.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
     <changeSet author="shiva (generated)" id="1638163672456-7">
         <addColumn tableName="aidas_user">
-            <column name="aidas_authority_id" type="bigint"/>
+            <column name="current_aidas_authority_id" type="bigint"/>
         </addColumn>
     </changeSet>
 
@@ -19,6 +19,11 @@
         <addForeignKeyConstraint baseColumnNames="aidas_authority_id"
                                  baseTableName="aidas_user_aidas_authority"
                                  constraintName="fk_aidas_authority_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="aidas_authority"/>
+        <addForeignKeyConstraint baseColumnNames="current_aidas_authority_id"
+                                 baseTableName="aidas_user"
+                                 constraintName="fk_current_aidas_authority_id"
                                  referencedColumnNames="id"
                                  referencedTableName="aidas_authority"/>
         <addForeignKeyConstraint baseColumnNames="aidas_user_id"

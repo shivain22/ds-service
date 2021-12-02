@@ -11,6 +11,8 @@ import java.util.Set;
 import javax.persistence.*;
 import javax.validation.constraints.*;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Cache;
@@ -84,24 +86,22 @@ public class AidasUser extends AbstractAuditingEntity implements Serializable {
     private String imageUrl;
 
     @ManyToOne
-    private AidasAuthority aidasAuthority;
+    private AidasAuthority currentAidasAuthority;
 
-    public AidasAuthority getAidasAuthority() {
-        return aidasAuthority;
+    public AidasAuthority getCurrentAidasAuthority() {
+        return currentAidasAuthority;
     }
 
-    public void setAidasAuthority(AidasAuthority aidasAuthority) {
-        this.aidasAuthority = aidasAuthority;
+    public void setCurrentAidasAuthority(AidasAuthority currentAidasAuthority) {
+        this.currentAidasAuthority = currentAidasAuthority;
     }
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
         name = "aidas_user_aidas_authority",
         joinColumns = { @JoinColumn(name = "aidas_user_id", referencedColumnName = "id") },
         inverseJoinColumns = { @JoinColumn(name = "aidas_authority_id", referencedColumnName = "id") }
     )
-    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-    @BatchSize(size = 20)
     private Set<AidasAuthority> aidasAuthorities = new HashSet<>();
 
 
@@ -271,11 +271,11 @@ public class AidasUser extends AbstractAuditingEntity implements Serializable {
     }
 
     public Set<AidasAuthority> getAidasAuthorities() {
-        return authorities;
+        return aidasAuthorities;
     }
 
-    public void setAidasAuthorities(Set<AidasAuthority> authorities) {
-        this.authorities = authorities;
+    public void setAidasAuthorities(Set<AidasAuthority> aidasAuthorities) {
+        this.aidasAuthorities = aidasAuthorities;
     }
 
 

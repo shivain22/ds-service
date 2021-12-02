@@ -18,7 +18,8 @@ import org.springframework.data.elasticsearch.repository.ElasticsearchRepository
  * Spring Data Elasticsearch repository for the {@link AidasCustomer} entity.
  */
 public interface AidasCustomerSearchRepository
-    extends ElasticsearchRepository<AidasCustomer, Long>, AidasCustomerSearchRepositoryInternal {}
+    extends ElasticsearchRepository<AidasCustomer, Long>, AidasCustomerSearchRepositoryInternal {
+}
 
 interface AidasCustomerSearchRepositoryInternal {
     Page<AidasCustomer> search(String query, Pageable pageable);
