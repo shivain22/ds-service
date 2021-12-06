@@ -38,6 +38,9 @@ public class IdpSyncFilter implements Filter {
         AidasUser aidasUser = null;
         try {
             aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+            if(aidasUser!=null && aidasUser.getCurrentAidasAuthority()==null){
+
+            }
         }catch (Exception e){
             if (authentication instanceof JwtAuthenticationToken) {
                 JwtAuthenticationToken authToken =  ((JwtAuthenticationToken) authentication);

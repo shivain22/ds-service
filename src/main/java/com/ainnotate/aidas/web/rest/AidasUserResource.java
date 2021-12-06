@@ -112,20 +112,21 @@ public class AidasUserResource {
                 }
             }
         }
-        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN)){
+        if( loggedInUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN)){
             if(aidasUser.getAidasCustomer()!=null){
                 if(!loggedInUser.getAidasCustomer().equals(aidasUser.getAidasOrganisation())){
                     throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
                 }
             }
         }
-        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.VENDOR_ADMIN)){
+        if( loggedInUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.VENDOR_ADMIN)){
             if(aidasUser.getAidasVendor()!=null){
                 if(!loggedInUser.getAidasVendor().equals(aidasUser.getAidasVendor())){
                     throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
                 }
             }
         }
+
         addUserToKeyCloak(aidasUser);
         AidasUser result = aidasUserRepository.save(aidasUser);
         aidasUserSearchRepository.save(result);
@@ -177,7 +178,6 @@ public class AidasUserResource {
     public ResponseEntity<AidasUser> updateCurrentRole(@Valid @PathVariable String role) throws URISyntaxException {
         log.debug("REST request to update current role of AidasUser : {}", SecurityUtils.getCurrentUserLogin().get());
         AidasUser loggedInUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-        System.out.println(SecurityUtils.getCurrentUserLogin().get());
         AidasUser aidasUser  = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         updateCurrentRole(aidasUser,role);
         AidasAuthority currentAidasAuthority =  aidasAuthorityRepository.findByName(role.trim());
