@@ -38,6 +38,7 @@
     <include file="config/liquibase/changelog/20211111005450_added_entity_constraints_AidasUploadMetaData.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20211129052737_changelog.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20211016054047_added_entity_constraints_AidasUserAidasObjectMapping.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20211208062634_changelog.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-constraints-changelog - JHipster will add liquibase constraints changelogs here -->
     <!-- jhipster-needle-liquibase-add-incremental-changelog - JHipster will add incremental liquibase changelogs here -->
 </databaseChangeLog>

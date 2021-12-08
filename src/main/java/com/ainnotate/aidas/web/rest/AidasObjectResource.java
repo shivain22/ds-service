@@ -275,6 +275,9 @@ public class AidasObjectResource {
         log.debug("REST request to get AidasObject : {}", id);
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         Optional<AidasObject> aidasObject = aidasObjectRepository.findById(id);
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ADMIN) ){
+            return ResponseUtil.wrapOrNotFound(aidasObject);
+        }
         if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null ){
             if(aidasObject.isPresent()){
                 if(aidasObject.get().getAidasProject().getAidasCustomer().getAidasOrganisation().equals(aidasUser.getAidasOrganisation())){

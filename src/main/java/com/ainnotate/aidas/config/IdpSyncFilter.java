@@ -15,7 +15,7 @@ import javax.servlet.annotation.WebFilter;
 import java.io.IOException;
 
 @Component
-@WebFilter(urlPatterns = {"/*" })
+@WebFilter(urlPatterns = {"/*" },asyncSupported = true)
 public class IdpSyncFilter implements Filter {
 
     @Autowired

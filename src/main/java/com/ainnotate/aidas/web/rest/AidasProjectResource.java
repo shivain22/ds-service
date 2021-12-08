@@ -244,8 +244,11 @@ public class AidasProjectResource {
     public ResponseEntity<List<AidasProject>> getAllAidasProjects(Pageable pageable) {
         log.debug("REST request to get a page of AidasProjects");
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-        Page<AidasProject> page = aidasProjectRepository.findAll(pageable);
+        Page<AidasProject> page = null;
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ADMIN)){
+            page = aidasProjectRepository.findAll(pageable);
+        }
         if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null ){
             page = aidasProjectRepository.findAllByAidasCustomer_AidasOrganisation(pageable,aidasUser.getAidasOrganisation());
         }
@@ -253,10 +256,10 @@ public class AidasProjectResource {
             page = aidasProjectRepository.findAllByAidasCustomer(pageable,aidasUser.getAidasCustomer());
         }
         if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.VENDOR_ADMIN) || aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
-
+            page =  aidasProjectRepository.findAllProjectsByVendorAdmin(pageable,aidasUser.getAidasVendor());
         }
         if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.USER)){
-
+            page =  aidasProjectRepository.findAllProjectsByVendorUser(pageable,aidasUser);
         }
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
@@ -272,21 +275,27 @@ public class AidasProjectResource {
     public ResponseEntity<AidasProject> getAidasProject(@PathVariable Long id) {
         log.debug("REST request to get AidasProject : {}", id);
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-        Optional<AidasProject> aidasProject = aidasProjectRepository.findById(id);
-
+        Optional<AidasProject> aidasProject =null;
         if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null ){
-
+            aidasProject = aidasProjectRepository.findById(id);
+        }
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null ){
+            aidasProject = aidasProjectRepository.findAllProjectsByOrgAdminProject(aidasUser.getAidasOrganisation(),id);
         }
         if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN) && aidasUser.getAidasCustomer()!=null ){
-
+            aidasProject = aidasProjectRepository.findAllProjectsByCustomerAdminProject(aidasUser.getAidasCustomer(),id);
         }
         if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.VENDOR_ADMIN )|| aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
-
+            aidasProject = aidasProjectRepository.findAllProjectsByVendorAdminProject(aidasUser.getAidasVendor(),id);
         }
         if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.USER)){
-
+            aidasProject = aidasProjectRepository.findAllProjectsByVendorUserProject(aidasUser,id);
         }
-        return ResponseUtil.wrapOrNotFound(aidasProject);
+        if(aidasProject.isPresent()) {
+            return ResponseUtil.wrapOrNotFound(aidasProject);
+        }else{
+            throw new BadRequestAlertException("Not Authorised", ENTITY_NAME, "idexists");
+        }
     }
 
     /**
