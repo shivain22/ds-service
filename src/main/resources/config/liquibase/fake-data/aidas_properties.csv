@@ -1,11 +1,8 @@
-id;name;value;system_property;optional;description
-1;Shirt;neural-net circuit portals;false;true;Human dynamic
-2;Dalasi;channels visualize Phased;true;true;generate Avon Island
-3;Avon SQL;Brand Bacon middleware;false;true;online Engineer reboot
-4;functionalities violet Tools;scale;false;false;Uzbekistan Berkshire
-5;synthesizing Plastic Colorado;Central Operations up;true;false;Cotton orange connecting
-6;Berkshire bypassing Square;Configuration Cheese;true;true;Loan deposit
-7;Regional;TCP Underpass Chair;false;false;up Account
-8;open-source Directives Intranet;streamline;true;false;Specialist redundant Account
-9;e-tailers;content-based Iowa;true;true;aggregate
-10;navigating;upX;false;false;pixel ivory empower
+id;name;value;system_property;property_type;optional;description
+1;resolution;3264x2448;true;property;true;Image Resolution, optional, defaults to devices capability
+2;storage;gdrive;true;property;false;Storage type eg. s3,dropBox,gdrive etc, Mandatory
+3;orientation;landscape;true;property;true;Orientation of screen eg. landscape or portrait, optional. defaults to landscape
+4;platform;android;true;property;true;Default platform eg. Android/iOS/both
+5;platformPercentage;{android:60,iOS:40};true;property;true;Default platform eg. Number of object upload required in %
+6;objDescription;;false;metadata;true;Meta data for uploaded object
+

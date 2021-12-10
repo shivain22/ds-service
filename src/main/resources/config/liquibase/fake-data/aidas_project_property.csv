@@ -1,11 +1,6 @@
-id;name;description;value;aidas_project_id
-1;Re-engineered open-source attitude;zero Infrastructure next-generation;Intelligent Cotton;1
-2;auxiliary Producer as;silver Program;Dynamic Handcrafted Chips;2
-3;Program task-force;Cheese Account hard;Bedfordshire Avon Rand;3
-4;Dinar;International mesh Virginia;supply-chains;4
-5;program firmware Director;Ringgit;Orchestrator Glens;5
-6;Dollar Industrial;compress;web-enabled auxiliary;6
-7;Money Israel;Principal customized Fork;Dynamic Loan bypass;7
-8;Engineer;Handcrafted quantify robust;Director Electronics Central;8
-9;Metal Planner;auxiliary;Avon online;9
-10;partnerships Credit Steel;expedite Handcrafted;Plastic;10
+id;value;aidas_project_id;aidas_properties_id
+1;3264x2448;-1;1
+2;gdrive;-1;2
+3;landscape;-1;3
+4;platform;-1;4
+5;{android:60,iOS:40};-1;5

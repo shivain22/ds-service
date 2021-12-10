@@ -232,14 +232,14 @@ public class AidasUserResource {
                 }
             }
         }
-        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN)){
+        if( loggedInUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN)){
             if(aidasUser.getAidasCustomer()!=null){
                 if(!loggedInUser.getAidasCustomer().equals(aidasUser.getAidasOrganisation())){
                     throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
                 }
             }
         }
-        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.VENDOR_ADMIN)){
+        if( loggedInUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.VENDOR_ADMIN)){
             if(aidasUser.getAidasVendor()!=null){
                 if(!loggedInUser.getAidasVendor().equals(aidasUser.getAidasVendor())){
                     throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
@@ -398,7 +398,12 @@ public class AidasUserResource {
                 throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
             }
         }
-        if(loggedInUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.VENDOR_ADMIN) || aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
+        if(loggedInUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.VENDOR_ADMIN)){
+            if(!loggedInUser.getAidasVendor().equals(aidasUser.getAidasVendor())){
+                throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
+            }
+        }
+        if(loggedInUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
             if(!loggedInUser.getAidasVendor().equals(aidasUser.getAidasVendor())){
                 throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
             }
@@ -429,7 +434,12 @@ public class AidasUserResource {
                 throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
             }
         }
-        if(loggedInUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.VENDOR_ADMIN) || aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
+        if(loggedInUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.VENDOR_ADMIN) ){
+            if(!loggedInUser.getAidasVendor().equals(aidasUser.getAidasVendor())){
+                throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
+            }
+        }
+        if(loggedInUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.VENDOR_USER) ){
             if(!loggedInUser.getAidasVendor().equals(aidasUser.getAidasVendor())){
                 throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
             }

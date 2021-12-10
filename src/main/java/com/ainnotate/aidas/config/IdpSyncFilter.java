@@ -37,6 +37,7 @@ public class IdpSyncFilter implements Filter {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         AidasUser aidasUser = null;
         try {
+            System.out.println(SecurityUtils.getCurrentUserLogin());
             aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
             if(aidasUser!=null && aidasUser.getCurrentAidasAuthority()==null){
 

@@ -1,11 +1,2 @@
-id;first_name;last_name;email;locked;password
-1;Zackary;Kohler;Nadia.Littel@yahoo.com;false;Plain programming
-2;Pearline;Zieme;Verner.Predovic@gmail.com;false;Spain
-3;Randall;Ondricka;Shaylee_Rippin@hotmail.com;true;Fresh magnetic
-4;Bobbie;Crona;Dylan.Murphy13@gmail.com;false;SoapX
-5;Howard;Miller;Rafaela_Grant@yahoo.com;false;payment Gorgeous wir
-6;Cedrick;Homenick;Dayton66@hotmail.com;false;reinvent Wooden
-7;Noah;Hartmann;Ava_Pollich@hotmail.com;true;maroon
-8;Keyshawn;Kuhn;Christina.Keebler97@hotmail.com;false;Island
-9;Flavio;Steuber;Miracle54@hotmail.com;true;Stravenue Shoes
-10;Lesley;Goyette;Ruthe_Harvey18@yahoo.com;true;Savings Paradigm
+id;first_name;last_name;email;locked;password;login;image_url;activated;lang_key;created_by;last_modified_by;aidas_organisation_id;aidas_customer_id;aidas_vendor_id;current_aidas_authority_id;keycloak_id
+-1;Super;Admin;admin@ainnotate.com;false;12345678;admin;;true;en;-1;-1;;;;1;test

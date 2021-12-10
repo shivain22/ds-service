@@ -245,7 +245,6 @@ public class AidasProjectResource {
         log.debug("REST request to get a page of AidasProjects");
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         Page<AidasProject> page = null;
-        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ADMIN)){
             page = aidasProjectRepository.findAll(pageable);
         }
@@ -261,7 +260,12 @@ public class AidasProjectResource {
         if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.USER)){
             page =  aidasProjectRepository.findAllProjectsByVendorUser(pageable,aidasUser);
         }
-        return ResponseEntity.ok().headers(headers).body(page.getContent());
+        if(page!=null) {
+            HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+            return ResponseEntity.ok().headers(headers).body(page.getContent());
+        }else{
+            throw new BadRequestAlertException("Not Authorised", ENTITY_NAME, "idexists");
+        }
     }
 
     /**

@@ -20,6 +20,9 @@
             <column name="value" type="varchar(100)">
                 <constraints nullable="false" unique="true" uniqueConstraintName="ux_aidas_properties__value" />
             </column>
+            <column name="property_type" type="varchar(100)">
+                <constraints nullable="false" />
+            </column>
             <column name="system_property" type="boolean">
                 <constraints nullable="false" />
             </column>

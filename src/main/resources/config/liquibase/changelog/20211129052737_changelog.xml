@@ -1,38 +1,8 @@
 <?xml version="1.1" encoding="UTF-8" standalone="no"?>
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.1.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
-    <changeSet author="shiva (generated)" id="1638163672456-7">
-        <addColumn tableName="aidas_user">
-            <column name="current_aidas_authority_id" type="bigint"/>
-        </addColumn>
-    </changeSet>
 
-    <changeSet author="shiva (generated)" id="1638163672456-9">
-        <createTable tableName="aidas_authority">
-            <column name="id" type="bigint"  autoIncrement="true">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-            <column name="name" type="varchar(50)">
-                <constraints unique="true" nullable="false" uniqueConstraintName="ux_aidas_authority_name"/>
-            </column>
-        </createTable>
-        <addPrimaryKey columnNames="aidas_user_id, aidas_authority_id" tableName="aidas_user_aidas_authority"/>
-        <addForeignKeyConstraint baseColumnNames="aidas_authority_id"
-                                 baseTableName="aidas_user_aidas_authority"
-                                 constraintName="fk_aidas_authority_id"
-                                 referencedColumnNames="id"
-                                 referencedTableName="aidas_authority"/>
-        <addForeignKeyConstraint baseColumnNames="current_aidas_authority_id"
-                                 baseTableName="aidas_user"
-                                 constraintName="fk_current_aidas_authority_id"
-                                 referencedColumnNames="id"
-                                 referencedTableName="aidas_authority"/>
-        <addForeignKeyConstraint baseColumnNames="aidas_user_id"
-                                 baseTableName="aidas_user_aidas_authority"
-                                 constraintName="fk_aidas_user_id"
-                                 referencedColumnNames="id"
-                                 referencedTableName="aidas_user"/>
 
-    </changeSet>
+
 
     <changeSet author="shiva (generated)" id="1638163672456-11">
         <addUniqueConstraint columnNames="keycloak_id" constraintName="ux_aidas_user_keycloak" tableName="aidas_user"/>

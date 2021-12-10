@@ -43,4 +43,40 @@
     <changeSet author="shiva (generated)" id="1638944806745-2">
         <addNotNullConstraint columnDataType="varchar(20)" columnName="password" tableName="aidas_user" validate="true"/>
     </changeSet>
+    <changeSet id="1638944806745-16-data" author="jhipster" context="faker">
+        <loadData
+            file="config/liquibase/fake-data/aidas_authority.csv"
+            separator=";"
+            tableName="aidas_authority"
+            usePreparedStatements="true">
+            <column name="id" type="numeric"/>
+            <column name="name" type="string"/>
+        </loadData>
+    </changeSet>
+
+    <changeSet id="1638944806745-14-data" author="jhipster" context="faker">
+        <loadData
+            file="config/liquibase/fake-data/aidas_user.csv"
+            separator=";"
+            tableName="aidas_user"
+            usePreparedStatements="true">
+            <column name="id" type="numeric"/>
+            <column name="first_name" type="string"/>
+            <column name="last_name" type="string"/>
+            <column name="email" type="string"/>
+            <column name="locked" type="boolean"/>
+            <column name="password" type="string"/>
+            <!-- jhipster-needle-liquibase-add-loadcolumn - JHipster (and/or extensions) can add load columns here -->
+        </loadData>
+    </changeSet>
+    <changeSet id="1638944806745-15-data" author="jhipster" context="faker">
+        <loadData
+            file="config/liquibase/fake-data/aidas_user_aidas_authority.csv"
+            separator=";"
+            tableName="aidas_user_aidas_authority"
+            usePreparedStatements="true">
+            <column name="aidas_user_id" type="numeric"/>
+            <column name="aidas_authority_id" type="numeric"/>
+        </loadData>
+    </changeSet>
 </databaseChangeLog>
