@@ -83,8 +83,6 @@ class AidasProjectPropertyResourceIT {
      */
     public static AidasProjectProperty createEntity(EntityManager em) {
         AidasProjectProperty aidasProjectProperty = new AidasProjectProperty()
-            .name(DEFAULT_NAME)
-            .description(DEFAULT_DESCRIPTION)
             .value(DEFAULT_VALUE);
         // Add required entity
         AidasProject aidasProject;
@@ -107,8 +105,6 @@ class AidasProjectPropertyResourceIT {
      */
     public static AidasProjectProperty createUpdatedEntity(EntityManager em) {
         AidasProjectProperty aidasProjectProperty = new AidasProjectProperty()
-            .name(UPDATED_NAME)
-            .description(UPDATED_DESCRIPTION)
             .value(UPDATED_VALUE);
         // Add required entity
         AidasProject aidasProject;
@@ -146,8 +142,6 @@ class AidasProjectPropertyResourceIT {
         List<AidasProjectProperty> aidasProjectPropertyList = aidasProjectPropertyRepository.findAll();
         assertThat(aidasProjectPropertyList).hasSize(databaseSizeBeforeCreate + 1);
         AidasProjectProperty testAidasProjectProperty = aidasProjectPropertyList.get(aidasProjectPropertyList.size() - 1);
-        assertThat(testAidasProjectProperty.getName()).isEqualTo(DEFAULT_NAME);
-        assertThat(testAidasProjectProperty.getDescription()).isEqualTo(DEFAULT_DESCRIPTION);
         assertThat(testAidasProjectProperty.getValue()).isEqualTo(DEFAULT_VALUE);
 
         // Validate the AidasProjectProperty in Elasticsearch
@@ -233,7 +227,7 @@ class AidasProjectPropertyResourceIT {
         AidasProjectProperty updatedAidasProjectProperty = aidasProjectPropertyRepository.findById(aidasProjectProperty.getId()).get();
         // Disconnect from session so that the updates on updatedAidasProjectProperty are not directly saved in db
         em.detach(updatedAidasProjectProperty);
-        updatedAidasProjectProperty.name(UPDATED_NAME).description(UPDATED_DESCRIPTION).value(UPDATED_VALUE);
+
 
         restAidasProjectPropertyMockMvc
             .perform(
@@ -248,8 +242,7 @@ class AidasProjectPropertyResourceIT {
         List<AidasProjectProperty> aidasProjectPropertyList = aidasProjectPropertyRepository.findAll();
         assertThat(aidasProjectPropertyList).hasSize(databaseSizeBeforeUpdate);
         AidasProjectProperty testAidasProjectProperty = aidasProjectPropertyList.get(aidasProjectPropertyList.size() - 1);
-        assertThat(testAidasProjectProperty.getName()).isEqualTo(UPDATED_NAME);
-        assertThat(testAidasProjectProperty.getDescription()).isEqualTo(UPDATED_DESCRIPTION);
+
         assertThat(testAidasProjectProperty.getValue()).isEqualTo(UPDATED_VALUE);
 
         // Validate the AidasProjectProperty in Elasticsearch
@@ -340,7 +333,7 @@ class AidasProjectPropertyResourceIT {
         AidasProjectProperty partialUpdatedAidasProjectProperty = new AidasProjectProperty();
         partialUpdatedAidasProjectProperty.setId(aidasProjectProperty.getId());
 
-        partialUpdatedAidasProjectProperty.name(UPDATED_NAME).description(UPDATED_DESCRIPTION);
+
 
         restAidasProjectPropertyMockMvc
             .perform(
@@ -355,8 +348,7 @@ class AidasProjectPropertyResourceIT {
         List<AidasProjectProperty> aidasProjectPropertyList = aidasProjectPropertyRepository.findAll();
         assertThat(aidasProjectPropertyList).hasSize(databaseSizeBeforeUpdate);
         AidasProjectProperty testAidasProjectProperty = aidasProjectPropertyList.get(aidasProjectPropertyList.size() - 1);
-        assertThat(testAidasProjectProperty.getName()).isEqualTo(UPDATED_NAME);
-        assertThat(testAidasProjectProperty.getDescription()).isEqualTo(UPDATED_DESCRIPTION);
+
         assertThat(testAidasProjectProperty.getValue()).isEqualTo(DEFAULT_VALUE);
     }
 
@@ -372,7 +364,7 @@ class AidasProjectPropertyResourceIT {
         AidasProjectProperty partialUpdatedAidasProjectProperty = new AidasProjectProperty();
         partialUpdatedAidasProjectProperty.setId(aidasProjectProperty.getId());
 
-        partialUpdatedAidasProjectProperty.name(UPDATED_NAME).description(UPDATED_DESCRIPTION).value(UPDATED_VALUE);
+
 
         restAidasProjectPropertyMockMvc
             .perform(
@@ -387,8 +379,7 @@ class AidasProjectPropertyResourceIT {
         List<AidasProjectProperty> aidasProjectPropertyList = aidasProjectPropertyRepository.findAll();
         assertThat(aidasProjectPropertyList).hasSize(databaseSizeBeforeUpdate);
         AidasProjectProperty testAidasProjectProperty = aidasProjectPropertyList.get(aidasProjectPropertyList.size() - 1);
-        assertThat(testAidasProjectProperty.getName()).isEqualTo(UPDATED_NAME);
-        assertThat(testAidasProjectProperty.getDescription()).isEqualTo(UPDATED_DESCRIPTION);
+
         assertThat(testAidasProjectProperty.getValue()).isEqualTo(UPDATED_VALUE);
     }
 

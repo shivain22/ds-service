@@ -145,12 +145,7 @@ public class AidasObjectPropertyResource {
         Optional<AidasObjectProperty> result = aidasObjectPropertyRepository
             .findById(aidasObjectProperty.getId())
             .map(existingAidasObjectProperty -> {
-                if (aidasObjectProperty.getName() != null) {
-                    existingAidasObjectProperty.setName(aidasObjectProperty.getName());
-                }
-                if (aidasObjectProperty.getDescription() != null) {
-                    existingAidasObjectProperty.setDescription(aidasObjectProperty.getDescription());
-                }
+
                 if (aidasObjectProperty.getValue() != null) {
                     existingAidasObjectProperty.setValue(aidasObjectProperty.getValue());
                 }

@@ -246,7 +246,7 @@ public class AidasProjectResource {
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         Page<AidasProject> page = null;
         if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ADMIN)){
-            page = aidasProjectRepository.findAll(pageable);
+            page = aidasProjectRepository.findAllByIdGreaterThan(0l,pageable);
         }
         if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null ){
             page = aidasProjectRepository.findAllByAidasCustomer_AidasOrganisation(pageable,aidasUser.getAidasOrganisation());

@@ -3,6 +3,7 @@ package com.ainnotate.aidas.web.rest;
 import static org.elasticsearch.index.query.QueryBuilders.*;
 
 import com.ainnotate.aidas.domain.AidasCustomer;
+import com.ainnotate.aidas.domain.AidasOrganisation;
 import com.ainnotate.aidas.domain.AidasUser;
 import com.ainnotate.aidas.repository.AidasCustomerRepository;
 import com.ainnotate.aidas.repository.AidasUserRepository;
@@ -16,6 +17,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import javax.servlet.http.HttpServletRequest;
@@ -90,7 +92,7 @@ public class AidasCustomerResource {
 
 
         if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ADMIN) ||
-            !(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null && aidasUser.getAidasOrganisation().equals(aidasCustomer.getAidasOrganisation()))){
+            (aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null && aidasUser.getAidasOrganisation().equals(aidasCustomer.getAidasOrganisation()))){
             AidasCustomer result = aidasCustomerRepository.save(aidasCustomer);
             aidasCustomerSearchRepository.save(result);
             return ResponseEntity
@@ -218,13 +220,13 @@ public class AidasCustomerResource {
     public ResponseEntity<List<AidasCustomer>> getAllAidasCustomers(Pageable pageable) {
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to get a page of AidasCustomers");
-
+        Page<AidasCustomer> page =null;
         if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ADMIN)){
-            Page<AidasCustomer> page = aidasCustomerRepository.findAll(pageable);
-            HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
-            return ResponseEntity.ok().headers(headers).body(page.getContent());
+            page = aidasCustomerRepository.findAllByIdGreaterThan(pageable,-1l);
         }else if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null) {
-            Page<AidasCustomer> page = aidasCustomerRepository.findAllByAidasOrganisation(pageable,aidasUser.getAidasOrganisation());
+            page = aidasCustomerRepository.findAllByAidasOrganisation(pageable,aidasUser.getAidasOrganisation());
+        }
+        if(page!=null ){
             HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
             return ResponseEntity.ok().headers(headers).body(page.getContent());
         }else{
@@ -296,23 +298,15 @@ public class AidasCustomerResource {
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to search for a page of AidasCustomers for query {}", query);
         Page<AidasCustomer> page = aidasCustomerSearchRepository.search(query, pageable);
+        Predicate<AidasCustomer> isNotDefault = aidasCustomer -> !aidasCustomer.getId().equals(-1l);
+        page.getContent().removeIf(isNotDefault);
         if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null) {
-            Iterator<AidasCustomer> it = page.getContent().iterator();
-            while(it.hasNext()){
-                AidasCustomer aidasCustomer = it.next();
-                if(!aidasCustomer.getAidasOrganisation().equals(aidasUser.getAidasOrganisation())){
-                    it.remove();
-                }
-            }
+            Predicate<AidasCustomer> isQualified = aidasCustomer -> !aidasCustomer.getAidasOrganisation().equals(aidasUser.getAidasOrganisation());
+            page.getContent().removeIf(isQualified);
         }
         if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN) && aidasUser.getAidasCustomer()!=null) {
-            Iterator<AidasCustomer> it = page.getContent().iterator();
-            while(it.hasNext()){
-                AidasCustomer aidasCustomer = it.next();
-                if(!aidasCustomer.equals(aidasUser.getAidasCustomer())){
-                    it.remove();
-                }
-            }
+            Predicate<AidasCustomer> isQualified = aidasCustomer -> !aidasCustomer.equals(aidasUser.getAidasCustomer());
+            page.getContent().removeIf(isQualified);
         }
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());

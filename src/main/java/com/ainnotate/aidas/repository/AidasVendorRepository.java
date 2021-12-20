@@ -1,6 +1,8 @@
 package com.ainnotate.aidas.repository;
 
 import com.ainnotate.aidas.domain.AidasVendor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
 
@@ -9,4 +11,7 @@ import org.springframework.stereotype.Repository;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface AidasVendorRepository extends JpaRepository<AidasVendor, Long> {}
+public interface AidasVendorRepository extends JpaRepository<AidasVendor, Long> {
+
+    Page<AidasVendor> findAllByIdGreaterThan(Long id, Pageable page);
+}

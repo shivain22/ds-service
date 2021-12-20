@@ -84,8 +84,6 @@ class AidasObjectPropertyResourceIT {
      */
     public static AidasObjectProperty createEntity(EntityManager em) {
         AidasObjectProperty aidasObjectProperty = new AidasObjectProperty()
-            .name(DEFAULT_NAME)
-            .description(DEFAULT_DESCRIPTION)
             .value(DEFAULT_VALUE);
         // Add required entity
         AidasObject aidasObject;
@@ -118,8 +116,6 @@ class AidasObjectPropertyResourceIT {
      */
     public static AidasObjectProperty createUpdatedEntity(EntityManager em) {
         AidasObjectProperty aidasObjectProperty = new AidasObjectProperty()
-            .name(UPDATED_NAME)
-            .description(UPDATED_DESCRIPTION)
             .value(UPDATED_VALUE);
         // Add required entity
         AidasObject aidasObject;
@@ -167,8 +163,6 @@ class AidasObjectPropertyResourceIT {
         List<AidasObjectProperty> aidasObjectPropertyList = aidasObjectPropertyRepository.findAll();
         assertThat(aidasObjectPropertyList).hasSize(databaseSizeBeforeCreate + 1);
         AidasObjectProperty testAidasObjectProperty = aidasObjectPropertyList.get(aidasObjectPropertyList.size() - 1);
-        assertThat(testAidasObjectProperty.getName()).isEqualTo(DEFAULT_NAME);
-        assertThat(testAidasObjectProperty.getDescription()).isEqualTo(DEFAULT_DESCRIPTION);
         assertThat(testAidasObjectProperty.getValue()).isEqualTo(DEFAULT_VALUE);
 
         // Validate the AidasObjectProperty in Elasticsearch
@@ -254,7 +248,6 @@ class AidasObjectPropertyResourceIT {
         AidasObjectProperty updatedAidasObjectProperty = aidasObjectPropertyRepository.findById(aidasObjectProperty.getId()).get();
         // Disconnect from session so that the updates on updatedAidasObjectProperty are not directly saved in db
         em.detach(updatedAidasObjectProperty);
-        updatedAidasObjectProperty.name(UPDATED_NAME).description(UPDATED_DESCRIPTION).value(UPDATED_VALUE);
 
         restAidasObjectPropertyMockMvc
             .perform(
@@ -269,8 +262,6 @@ class AidasObjectPropertyResourceIT {
         List<AidasObjectProperty> aidasObjectPropertyList = aidasObjectPropertyRepository.findAll();
         assertThat(aidasObjectPropertyList).hasSize(databaseSizeBeforeUpdate);
         AidasObjectProperty testAidasObjectProperty = aidasObjectPropertyList.get(aidasObjectPropertyList.size() - 1);
-        assertThat(testAidasObjectProperty.getName()).isEqualTo(UPDATED_NAME);
-        assertThat(testAidasObjectProperty.getDescription()).isEqualTo(UPDATED_DESCRIPTION);
         assertThat(testAidasObjectProperty.getValue()).isEqualTo(UPDATED_VALUE);
 
         // Validate the AidasObjectProperty in Elasticsearch
@@ -376,8 +367,6 @@ class AidasObjectPropertyResourceIT {
         List<AidasObjectProperty> aidasObjectPropertyList = aidasObjectPropertyRepository.findAll();
         assertThat(aidasObjectPropertyList).hasSize(databaseSizeBeforeUpdate);
         AidasObjectProperty testAidasObjectProperty = aidasObjectPropertyList.get(aidasObjectPropertyList.size() - 1);
-        assertThat(testAidasObjectProperty.getName()).isEqualTo(DEFAULT_NAME);
-        assertThat(testAidasObjectProperty.getDescription()).isEqualTo(DEFAULT_DESCRIPTION);
         assertThat(testAidasObjectProperty.getValue()).isEqualTo(UPDATED_VALUE);
     }
 
@@ -393,7 +382,6 @@ class AidasObjectPropertyResourceIT {
         AidasObjectProperty partialUpdatedAidasObjectProperty = new AidasObjectProperty();
         partialUpdatedAidasObjectProperty.setId(aidasObjectProperty.getId());
 
-        partialUpdatedAidasObjectProperty.name(UPDATED_NAME).description(UPDATED_DESCRIPTION).value(UPDATED_VALUE);
 
         restAidasObjectPropertyMockMvc
             .perform(
@@ -408,8 +396,7 @@ class AidasObjectPropertyResourceIT {
         List<AidasObjectProperty> aidasObjectPropertyList = aidasObjectPropertyRepository.findAll();
         assertThat(aidasObjectPropertyList).hasSize(databaseSizeBeforeUpdate);
         AidasObjectProperty testAidasObjectProperty = aidasObjectPropertyList.get(aidasObjectPropertyList.size() - 1);
-        assertThat(testAidasObjectProperty.getName()).isEqualTo(UPDATED_NAME);
-        assertThat(testAidasObjectProperty.getDescription()).isEqualTo(UPDATED_DESCRIPTION);
+
         assertThat(testAidasObjectProperty.getValue()).isEqualTo(UPDATED_VALUE);
     }
 

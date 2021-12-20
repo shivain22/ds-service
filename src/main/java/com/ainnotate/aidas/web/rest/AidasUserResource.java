@@ -358,10 +358,10 @@ public class AidasUserResource {
         AidasUser loggedInUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         Page<AidasUser> page = null;//aidasUserRepository.findAll(pageable);
         if(loggedInUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ADMIN)){
-            page = aidasUserRepository.findAll(pageable);
+            page = aidasUserRepository.findAllByIdGreaterThan(0l,pageable);
         }
         if(loggedInUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN) && loggedInUser.getAidasOrganisation()!=null ){
-            page = aidasUserRepository.findAllByAidasCustomer_AidasOrganisation(pageable,loggedInUser.getAidasOrganisation());
+            page = aidasUserRepository.findAllByAidasOrganisation_OrAidasCustomer_AidasOrganisation(pageable,loggedInUser.getAidasOrganisation(),loggedInUser.getAidasOrganisation());
         }
         if( loggedInUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN) && loggedInUser.getAidasCustomer()!=null ){
             page = aidasUserRepository.findAllByAidasCustomer(pageable,loggedInUser.getAidasCustomer());

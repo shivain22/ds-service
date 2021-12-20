@@ -23,12 +23,6 @@ public class AidasProjectProperty implements Serializable {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "name")
-    private String name;
-
-    @Column(name = "description")
-    private String description;
-
     @Column(name = "value")
     private String value;
 
@@ -55,31 +49,15 @@ public class AidasProjectProperty implements Serializable {
         this.id = id;
     }
 
-    public String getName() {
-        return this.name;
-    }
 
-    public AidasProjectProperty name(String name) {
-        this.setName(name);
-        return this;
-    }
 
-    public void setName(String name) {
-        this.name = name;
-    }
 
-    public String getDescription() {
-        return this.description;
-    }
 
-    public AidasProjectProperty description(String description) {
-        this.setDescription(description);
-        return this;
-    }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
+
+
+
+
 
     public String getValue() {
         return this.value;
@@ -144,8 +122,8 @@ public class AidasProjectProperty implements Serializable {
     public String toString() {
         return "AidasProjectProperty{" +
             "id=" + getId() +
-            ", name='" + getName() + "'" +
-            ", description='" + getDescription() + "'" +
+            ", name='" + this.aidasProperties.getName() + "'" +
+            ", description='" + this.aidasProperties.getDescription() + "'" +
             ", value='" + getValue() + "'" +
             "}";
     }

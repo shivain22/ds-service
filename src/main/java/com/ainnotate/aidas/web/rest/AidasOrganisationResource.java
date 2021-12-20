@@ -18,6 +18,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import javax.validation.Valid;
@@ -200,7 +201,7 @@ public class AidasOrganisationResource {
         Page<AidasOrganisation> page=null;
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ADMIN)) {
-            page = aidasOrganisationRepository.findAll(pageable);
+            page = aidasOrganisationRepository.findAllByIdGreaterThan(-1l,pageable);
         }
         else{
             if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN)){
@@ -267,14 +268,11 @@ public class AidasOrganisationResource {
         log.debug("REST request to search for a page of AidasOrganisations for query {}", query);
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         Page<AidasOrganisation> page = aidasOrganisationSearchRepository.search(query, pageable);
+        Predicate<AidasOrganisation> isNotDefault = aidasOrganisation -> !aidasOrganisation.getId().equals(-1l);
+        page.getContent().removeIf(isNotDefault);
         if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN)) {
-            Iterator<AidasOrganisation> it = page.getContent().iterator();
-            while(it.hasNext()){
-                AidasOrganisation aidasOrganisation = it.next();
-                if(!aidasOrganisation.equals(aidasUser.getAidasOrganisation())){
-                    it.remove();
-                }
-            }
+            Predicate<AidasOrganisation> isQualified = aidasOrganisation -> !aidasOrganisation.equals(aidasUser.getAidasOrganisation());
+            page.getContent().removeIf(isQualified);
         }
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());

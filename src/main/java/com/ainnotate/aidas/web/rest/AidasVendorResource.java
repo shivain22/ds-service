@@ -172,7 +172,7 @@ public class AidasVendorResource {
     @GetMapping("/aidas-vendors")
     public ResponseEntity<List<AidasVendor>> getAllAidasVendors(Pageable pageable) {
         log.debug("REST request to get a page of AidasVendors");
-        Page<AidasVendor> page = aidasVendorRepository.findAll(pageable);
+        Page<AidasVendor> page = aidasVendorRepository.findAllByIdGreaterThan(0l,pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }

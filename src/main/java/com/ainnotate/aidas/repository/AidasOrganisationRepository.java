@@ -14,4 +14,5 @@ import org.springframework.stereotype.Repository;
 public interface AidasOrganisationRepository extends JpaRepository<AidasOrganisation, Long> {
 
     Page<AidasOrganisation> findAllById(Long id, Pageable page);
+    Page<AidasOrganisation> findAllByIdGreaterThan(Long id, Pageable page);
 }

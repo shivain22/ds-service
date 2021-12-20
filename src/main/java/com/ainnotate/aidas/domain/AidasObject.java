@@ -2,6 +2,7 @@ package com.ainnotate.aidas.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.io.Serializable;
+import java.util.Set;
 import javax.persistence.*;
 import javax.validation.constraints.*;
 import org.hibernate.annotations.Cache;
@@ -40,7 +41,18 @@ public class AidasObject implements Serializable {
     @JsonIgnoreProperties(value = { "aidasCustomer" }, allowSetters = true)
     private AidasProject aidasProject;
 
-    // jhipster-needle-entity-add-field - JHipster will add fields here
+    @OneToMany(mappedBy = "aidasObject",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+    @JsonIgnoreProperties(value = { "aidasObject" }, allowSetters = true)
+    private Set<AidasObjectProperty> aidasObjectProperties;
+
+    public Set<AidasObjectProperty> getAidasObjectProperties() {
+        return aidasObjectProperties;
+    }
+
+    public void setAidasObjectProperties(Set<AidasObjectProperty> aidasObjectProperties) {
+        this.aidasObjectProperties = aidasObjectProperties;
+    }
+// jhipster-needle-entity-add-field - JHipster will add fields here
 
     public Long getId() {
         return this.id;
