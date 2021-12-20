@@ -1,6 +1,8 @@
 package com.ainnotate.aidas.repository;
 
 import com.ainnotate.aidas.domain.AidasObjectProperty;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
 
@@ -9,4 +11,9 @@ import org.springframework.stereotype.Repository;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface AidasObjectPropertyRepository extends JpaRepository<AidasObjectProperty, Long> {}
+public interface AidasObjectPropertyRepository extends JpaRepository<AidasObjectProperty, Long> {
+
+    @Query(value = "select * from aidas_object_property aop where aop.aidas_object_id>?1",nativeQuery = true)
+    Page<AidasObjectProperty> findAllByAidasObjectIdGreaterThan(Pageable page, Long objectId);
+
+}

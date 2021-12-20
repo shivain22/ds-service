@@ -49,6 +49,12 @@ public class AidasProject implements Serializable {
         return aidasProjectProperties;
     }
 
+    public void addAidasProjectProperty(AidasProjectProperty aidasProjectProperty){
+        this.aidasProjectProperties.add(aidasProjectProperty);
+    }
+    public void removeAidasProjectProperty(AidasProjectProperty aidasProjectProperty){
+        this.aidasProjectProperties.remove(aidasProjectProperty);
+    }
     public void setAidasProjectProperties(Set<AidasProjectProperty> aidasProjectProperties) {
         this.aidasProjectProperties = aidasProjectProperties;
     }

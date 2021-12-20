@@ -2,8 +2,11 @@ package com.ainnotate.aidas.web.rest;
 
 import static org.elasticsearch.index.query.QueryBuilders.*;
 
+import com.ainnotate.aidas.domain.AidasObject;
 import com.ainnotate.aidas.domain.AidasObjectProperty;
+import com.ainnotate.aidas.domain.AidasUser;
 import com.ainnotate.aidas.repository.AidasObjectPropertyRepository;
+import com.ainnotate.aidas.repository.AidasObjectRepository;
 import com.ainnotate.aidas.repository.search.AidasObjectPropertySearchRepository;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
@@ -17,6 +20,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -46,6 +50,9 @@ public class AidasObjectPropertyResource {
     private String applicationName;
 
     private final AidasObjectPropertyRepository aidasObjectPropertyRepository;
+
+    @Autowired
+    private AidasObjectRepository aidasObjectRepository;
 
     private final AidasObjectPropertySearchRepository aidasObjectPropertySearchRepository;
 
@@ -107,7 +114,6 @@ public class AidasObjectPropertyResource {
         }
 
         AidasObjectProperty result = aidasObjectPropertyRepository.save(aidasObjectProperty);
-        aidasObjectPropertySearchRepository.save(result);
         return ResponseEntity
             .ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, aidasObjectProperty.getId().toString()))
@@ -174,7 +180,7 @@ public class AidasObjectPropertyResource {
     @GetMapping("/aidas-object-properties")
     public ResponseEntity<List<AidasObjectProperty>> getAllAidasObjectProperties(Pageable pageable) {
         log.debug("REST request to get a page of AidasObjectProperties");
-        Page<AidasObjectProperty> page = aidasObjectPropertyRepository.findAll(pageable);
+        Page<AidasObjectProperty> page = aidasObjectPropertyRepository.findAllByAidasObjectIdGreaterThan(pageable,-1l);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
@@ -201,8 +207,12 @@ public class AidasObjectPropertyResource {
     @DeleteMapping("/aidas-object-properties/{id}")
     public ResponseEntity<Void> deleteAidasObjectProperty(@PathVariable Long id) {
         log.debug("REST request to delete AidasObjectProperty : {}", id);
+        AidasObjectProperty aidasObjectProperty = aidasObjectPropertyRepository.getById(id);
+        AidasObject aidasObject = aidasObjectProperty.getAidasObject();
+        aidasObject.removeAidasObjectProperty(aidasObjectProperty);
+        aidasObjectRepository.save(aidasObject);
         aidasObjectPropertyRepository.deleteById(id);
-        aidasObjectPropertySearchRepository.deleteById(id);
+        //aidasObjectPropertySearchRepository.deleteById(id);
         return ResponseEntity
             .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))

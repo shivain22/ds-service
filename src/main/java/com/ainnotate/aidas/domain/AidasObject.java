@@ -52,6 +52,14 @@ public class AidasObject implements Serializable {
     public void setAidasObjectProperties(Set<AidasObjectProperty> aidasObjectProperties) {
         this.aidasObjectProperties = aidasObjectProperties;
     }
+
+    public void addAidasObjectProperty(AidasObjectProperty aidasObjectProperty){
+        this.aidasObjectProperties.add(aidasObjectProperty);
+    }
+
+    public void removeAidasObjectProperty(AidasObjectProperty aidasObjectProperty){
+        this.aidasObjectProperties.remove(aidasObjectProperty);
+    }
 // jhipster-needle-entity-add-field - JHipster will add fields here
 
     public Long getId() {

@@ -2,8 +2,10 @@ package com.ainnotate.aidas.web.rest;
 
 import static org.elasticsearch.index.query.QueryBuilders.*;
 
+import com.ainnotate.aidas.domain.AidasProject;
 import com.ainnotate.aidas.domain.AidasProjectProperty;
 import com.ainnotate.aidas.repository.AidasProjectPropertyRepository;
+import com.ainnotate.aidas.repository.AidasProjectRepository;
 import com.ainnotate.aidas.repository.search.AidasProjectPropertySearchRepository;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
@@ -17,6 +19,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -46,6 +49,9 @@ public class AidasProjectPropertyResource {
     private String applicationName;
 
     private final AidasProjectPropertyRepository aidasProjectPropertyRepository;
+
+    @Autowired
+    private AidasProjectRepository aidasProjectRepository;
 
     private final AidasProjectPropertySearchRepository aidasProjectPropertySearchRepository;
 
@@ -107,7 +113,6 @@ public class AidasProjectPropertyResource {
         }
 
         AidasProjectProperty result = aidasProjectPropertyRepository.save(aidasProjectProperty);
-        aidasProjectPropertySearchRepository.save(result);
         return ResponseEntity
             .ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, aidasProjectProperty.getId().toString()))
@@ -174,7 +179,7 @@ public class AidasProjectPropertyResource {
     @GetMapping("/aidas-project-properties")
     public ResponseEntity<List<AidasProjectProperty>> getAllAidasProjectProperties(Pageable pageable) {
         log.debug("REST request to get a page of AidasProjectProperties");
-        Page<AidasProjectProperty> page = aidasProjectPropertyRepository.findAll(pageable);
+        Page<AidasProjectProperty> page = aidasProjectPropertyRepository.findAllByAidasProjectIdGreaterThan(pageable,-1l);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
@@ -201,8 +206,11 @@ public class AidasProjectPropertyResource {
     @DeleteMapping("/aidas-project-properties/{id}")
     public ResponseEntity<Void> deleteAidasProjectProperty(@PathVariable Long id) {
         log.debug("REST request to delete AidasProjectProperty : {}", id);
+        AidasProjectProperty aidasProjectProperty = aidasProjectPropertyRepository.getById(id);
+        AidasProject aidasProject = aidasProjectProperty.getAidasProject();
+        aidasProject.removeAidasProjectProperty(aidasProjectProperty);
+        aidasProjectRepository.save(aidasProject);
         aidasProjectPropertyRepository.deleteById(id);
-        aidasProjectPropertySearchRepository.deleteById(id);
         return ResponseEntity
             .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
