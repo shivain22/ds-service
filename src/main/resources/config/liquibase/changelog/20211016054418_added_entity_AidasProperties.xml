@@ -18,7 +18,7 @@
                 <constraints nullable="false" unique="true" uniqueConstraintName="ux_aidas_properties__name" />
             </column>
             <column name="value" type="varchar(100)">
-                <constraints nullable="false" unique="true" uniqueConstraintName="ux_aidas_properties__value" />
+                <constraints nullable="false" />
             </column>
             <column name="property_type" type="varchar(100)">
                 <constraints nullable="false" />

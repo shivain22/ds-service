@@ -2,11 +2,10 @@ package com.ainnotate.aidas.web.rest;
 
 import static org.elasticsearch.index.query.QueryBuilders.*;
 
-import com.ainnotate.aidas.domain.AidasCustomer;
-import com.ainnotate.aidas.domain.AidasProject;
-import com.ainnotate.aidas.domain.AidasUser;
+import com.ainnotate.aidas.domain.*;
 import com.ainnotate.aidas.repository.AidasCustomerRepository;
 import com.ainnotate.aidas.repository.AidasProjectRepository;
+import com.ainnotate.aidas.repository.AidasPropertiesRepository;
 import com.ainnotate.aidas.repository.AidasUserRepository;
 import com.ainnotate.aidas.repository.search.AidasProjectSearchRepository;
 import com.ainnotate.aidas.security.AidasAuthoritiesConstants;
@@ -14,10 +13,7 @@ import com.ainnotate.aidas.security.SecurityUtils;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import javax.validation.Valid;
@@ -62,6 +58,9 @@ public class AidasProjectResource {
     private AidasUserRepository aidasUserRepository;
 
     @Autowired
+    private AidasPropertiesRepository aidasPropertiesRepository;
+
+    @Autowired
     private AidasCustomerRepository aidasCustomerRepository;
 
     public AidasProjectResource(AidasProjectRepository aidasProjectRepository, AidasProjectSearchRepository aidasProjectSearchRepository) {
@@ -99,8 +98,15 @@ public class AidasProjectResource {
                 throw new BadRequestAlertException("Not Authorized", ENTITY_NAME, "idexists");
             }
         }
+        List<AidasProperties> aidasProperties = aidasPropertiesRepository.findAll();
+        for(AidasProperties ap:aidasProperties){
+            AidasProjectProperty app = new AidasProjectProperty();
+            app.setAidasProject(aidasProject);
+            app.setAidasProperties(ap);
+            aidasProject.addAidasProjectProperty(app);
+        }
         AidasProject result = aidasProjectRepository.save(aidasProject);
-        aidasProjectSearchRepository.save(result);
+        //aidasProjectSearchRepository.save(result);
         return ResponseEntity
             .created(new URI("/api/aidas-projects/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))

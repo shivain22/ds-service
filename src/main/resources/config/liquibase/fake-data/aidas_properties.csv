@@ -5,4 +5,14 @@ id;name;value;system_property;property_type;optional;description
 4;platform;android;true;property;true;Default platform eg. Android/iOS/both
 5;platformPercentage;{android:60,iOS:40};true;property;true;Default platform eg. Number of object upload required in %
 6;objDescription;;false;metadata;true;Meta data for uploaded object
+7;autoFocus;[ON,OFF];true;property;true;Camera Autofocus
+8;flash;[ON,OFF,AUTO,TORCH];true;property;true;Camera Flash options
+9;focusDepth;0;true;property;true;Will work if autofocus is off
+10;ratio;;true;property;true;possible ratios supported by the camera that can be retieved from RNCamera library (only Android)
+11;type;[front,back];true;property;true;Front or back camera
+12;whiteBalance;[SUNNY, CLOUDY, SHADOW, INCANDESCENT, FLUORESCENT, AUTO];true;property;true;and for IOS we can specify custom temperature, tint and rgb offset values {temperature: 4000, tint: -10.0, redGainOffset: 0.0, greenGainOffset: 0.0, blueGainOffset: 0.0}
+13;exposure;[0,1];true;property;true;Front or back camera
+14;zoom;[0,1];true;property;true;zoom level
+15;videoQuality;[2160p, 1080p, 720p, 480p, 4:3, 288p];true;property;true;video quality
+
 

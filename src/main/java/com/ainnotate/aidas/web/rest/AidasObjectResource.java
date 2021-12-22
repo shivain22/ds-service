@@ -2,11 +2,10 @@ package com.ainnotate.aidas.web.rest;
 
 import static org.elasticsearch.index.query.QueryBuilders.*;
 
-import com.ainnotate.aidas.domain.AidasCustomer;
-import com.ainnotate.aidas.domain.AidasObject;
-import com.ainnotate.aidas.domain.AidasUser;
+import com.ainnotate.aidas.domain.*;
 import com.ainnotate.aidas.repository.AidasCustomerRepository;
 import com.ainnotate.aidas.repository.AidasObjectRepository;
+import com.ainnotate.aidas.repository.AidasPropertiesRepository;
 import com.ainnotate.aidas.repository.AidasUserRepository;
 import com.ainnotate.aidas.repository.search.AidasObjectSearchRepository;
 import com.ainnotate.aidas.security.AidasAuthoritiesConstants;
@@ -62,6 +61,9 @@ public class AidasObjectResource {
     private AidasUserRepository aidasUserRepository;
 
     @Autowired
+    private AidasPropertiesRepository aidasPropertiesRepository;
+
+    @Autowired
     private AidasCustomerRepository aidasCustomerRepository;
 
     public AidasObjectResource(AidasObjectRepository aidasObjectRepository, AidasObjectSearchRepository aidasObjectSearchRepository) {
@@ -99,8 +101,17 @@ public class AidasObjectResource {
                 throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
             }
         }
+        List<AidasProperties> aidasProperties = aidasPropertiesRepository.findAll();
+        for(AidasProperties ap:aidasProperties){
+            AidasObjectProperty app = new AidasObjectProperty();
+            app.setAidasObject(aidasObject);
+            app.setAidasProperties(ap);
+            aidasObject.addAidasObjectProperty(app);
+        }
+
         AidasObject result = aidasObjectRepository.save(aidasObject);
-        aidasObjectSearchRepository.save(result);
+
+        //aidasObjectSearchRepository.save(result);
         return ResponseEntity
             .created(new URI("/api/aidas-objects/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))

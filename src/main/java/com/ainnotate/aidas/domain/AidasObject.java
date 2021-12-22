@@ -2,6 +2,7 @@ package com.ainnotate.aidas.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
 import javax.persistence.*;
 import javax.validation.constraints.*;
@@ -43,7 +44,7 @@ public class AidasObject implements Serializable {
 
     @OneToMany(mappedBy = "aidasObject",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
     @JsonIgnoreProperties(value = { "aidasObject" }, allowSetters = true)
-    private Set<AidasObjectProperty> aidasObjectProperties;
+    private Set<AidasObjectProperty> aidasObjectProperties = new HashSet<>();
 
     public Set<AidasObjectProperty> getAidasObjectProperties() {
         return aidasObjectProperties;

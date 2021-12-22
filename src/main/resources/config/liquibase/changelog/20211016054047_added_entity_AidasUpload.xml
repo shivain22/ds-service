@@ -38,6 +38,12 @@
             <column name="status_modified_by_id" type="bigint">
                 <constraints nullable="true" />
             </column>
+            <column name="uploaded_file" type="longblob">
+                <constraints nullable="false" />
+            </column>
+            <column name="uploaded_file_content_type" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
             <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here -->
         </createTable>
         <dropDefaultValue tableName="aidas_upload" columnName="date_uploaded" columnDataType="${datetimeType}"/>

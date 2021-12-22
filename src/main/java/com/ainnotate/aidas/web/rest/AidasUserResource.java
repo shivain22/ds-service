@@ -2,10 +2,7 @@ package com.ainnotate.aidas.web.rest;
 
 import com.ainnotate.aidas.config.KeycloakConfig;
 import com.ainnotate.aidas.domain.*;
-import com.ainnotate.aidas.repository.AidasAuthorityRepository;
-import com.ainnotate.aidas.repository.AidasCustomerRepository;
-import com.ainnotate.aidas.repository.AidasOrganisationRepository;
-import com.ainnotate.aidas.repository.AidasUserRepository;
+import com.ainnotate.aidas.repository.*;
 import com.ainnotate.aidas.repository.search.AidasUserSearchRepository;
 import com.ainnotate.aidas.security.AidasAuthoritiesConstants;
 import com.ainnotate.aidas.security.SecurityUtils;
@@ -20,6 +17,7 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.Response;
 
 import com.ainnotate.aidas.web.rest.vm.ManagedUserVM;
+import com.netflix.discovery.converters.Auto;
 import org.keycloak.admin.client.CreatedResponseUtil;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.RealmResource;
@@ -68,6 +66,12 @@ public class AidasUserResource {
 
     @Autowired
     private AidasAuthorityRepository aidasAuthorityRepository;
+
+    @Autowired
+    private AidasObjectRepository aidasObjectRepository;
+
+    @Autowired
+    private AidasUserAidasObjectMappingRepository aidasUserAidasObjectMappingRepository;
 
     @Autowired
     private AidasCustomerRepository aidasCustomerRepository;
@@ -159,6 +163,11 @@ public class AidasUserResource {
 
         registerNewUser(aidasUser);
         AidasUser result = aidasUserRepository.save(aidasUser);
+        AidasUserAidasObjectMapping auao = new AidasUserAidasObjectMapping();
+        AidasObject defaultObject = aidasObjectRepository.getById(-1l);
+        auao.setAidasUser(result);
+        auao.setAidasObject(defaultObject);
+        aidasUserAidasObjectMappingRepository.save(auao);
         aidasUserSearchRepository.save(result);
         updateUserToKeyCloak(result);
         return ResponseEntity

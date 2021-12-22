@@ -38,7 +38,7 @@ public class IdpSyncFilter implements Filter {
         AidasUser aidasUser = null;
         try {
             aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-            if(aidasUser!=null && aidasUser.getCurrentAidasAuthority()==null){
+            if(aidasUser!=null && aidasUser.getKeycloakId().equals("test")){
 
             }
         }catch (Exception e){
