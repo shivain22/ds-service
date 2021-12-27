@@ -59,6 +59,16 @@ public class AidasUser extends AbstractAuditingEntity implements Serializable {
     @Column(name = "locked", nullable = false)
     private Boolean locked;
 
+    @Column(name = "deleted", nullable = false)
+    private Boolean deleted;
+
+    public Boolean getDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(Boolean deleted) {
+        this.deleted = deleted;
+    }
 
     @Column(name = "password", length = 20, nullable = false)
     private String password;
@@ -84,6 +94,8 @@ public class AidasUser extends AbstractAuditingEntity implements Serializable {
     @Size(max = 256)
     @Column(name = "image_url", length = 256)
     private String imageUrl;
+
+
 
     @ManyToOne
     private AidasAuthority currentAidasAuthority;

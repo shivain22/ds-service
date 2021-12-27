@@ -28,7 +28,7 @@ import org.testcontainers.utility.DockerImageName;
 
 class AinnotateserviceKafkaResourceIT {
 
-    private static boolean started = false;
+    /*private static boolean started = false;
     private static KafkaContainer kafkaContainer;
 
     private MockMvc restMockMvc;
@@ -119,5 +119,5 @@ class AinnotateserviceKafkaResourceIT {
         consumerProps.put("auto.offset.reset", "earliest");
         consumerProps.put("group.id", group);
         return consumerProps;
-    }
+    }*/
 }

@@ -7,8 +7,12 @@ import com.ainnotate.aidas.repository.search.AidasUserSearchRepository;
 import com.ainnotate.aidas.security.AidasAuthoritiesConstants;
 import com.ainnotate.aidas.security.SecurityUtils;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
+
+import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.ByteBuffer;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -17,6 +21,17 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.Response;
 
 import com.ainnotate.aidas.web.rest.vm.ManagedUserVM;
+/*import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.AWSCredentialsProvider;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.internal.StaticCredentialsProvider;
+import com.amazonaws.regions.Region;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.PutObjectRequest;*/
 import com.netflix.discovery.converters.Auto;
 import org.keycloak.admin.client.CreatedResponseUtil;
 import org.keycloak.admin.client.Keycloak;
@@ -132,15 +147,44 @@ public class AidasUserResource {
         }
 
         addUserToKeyCloak(aidasUser);
+        aidasUser.setDeleted(false);
         AidasUser result = aidasUserRepository.save(aidasUser);
+        AidasUserAidasObjectMapping auao = new AidasUserAidasObjectMapping();
+        AidasObject defaultObject = aidasObjectRepository.getById(-1l);
+        auao.setAidasUser(result);
+        auao.setAidasObject(defaultObject);
         aidasUserSearchRepository.save(result);
         updateUserToKeyCloak(result);
+
+        /*String bucketName = "objects-upload";
+        AWSCredentials credentials = new BasicAWSCredentials(
+            "AKIART6S2XPD6CH4Y23I\n",
+            "PjnrxkZXV1HX4wL+ycOJrnUE7LlBQwKsuRdc3OC4\n"
+        );
+        AmazonS3 s3client = AmazonS3ClientBuilder
+            .standard()
+            .withCredentials(new AWSStaticCredentialsProvider(credentials))
+            .withRegion(Regions.AP_SOUTH_1)
+            .build();
+
+        s3client.putObject(
+            bucketName,
+            "aidas_reqs.txt",
+            new File("C:\\Users\\shiva\\Downloads\\aidas_reqs.txt")
+        );*/
+
+
         return ResponseEntity
             .created(new URI("/api/aidas-users/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
             .body(result);
     }
 
+    private static ByteBuffer getRandomByteBuffer(int size) throws IOException {
+        byte[] b = new byte[size];
+        new Random().nextBytes(b);
+        return ByteBuffer.wrap(b);
+    }
     /**
      * {@code POST  /aidas-users} : Create a new aidasUser.
      *
@@ -162,6 +206,7 @@ public class AidasUserResource {
         }
 
         registerNewUser(aidasUser);
+        aidasUser.setDeleted(false);
         AidasUser result = aidasUserRepository.save(aidasUser);
         AidasUserAidasObjectMapping auao = new AidasUserAidasObjectMapping();
         AidasObject defaultObject = aidasObjectRepository.getById(-1l);
@@ -367,16 +412,16 @@ public class AidasUserResource {
         AidasUser loggedInUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         Page<AidasUser> page = null;//aidasUserRepository.findAll(pageable);
         if(loggedInUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ADMIN)){
-            page = aidasUserRepository.findAllByIdGreaterThan(0l,pageable);
+            page = aidasUserRepository.findAllByIdGreaterThanAndDeletedIsFalse(0l,pageable);
         }
         if(loggedInUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN) && loggedInUser.getAidasOrganisation()!=null ){
-            page = aidasUserRepository.findAllByAidasOrganisation_OrAidasCustomer_AidasOrganisation(pageable,loggedInUser.getAidasOrganisation(),loggedInUser.getAidasOrganisation());
+            page = aidasUserRepository.findAllByDeletedIsFalseAndAidasOrganisation_OrAidasCustomer_AidasOrganisation(pageable,loggedInUser.getAidasOrganisation(),loggedInUser.getAidasOrganisation());
         }
         if( loggedInUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN) && loggedInUser.getAidasCustomer()!=null ){
-            page = aidasUserRepository.findAllByAidasCustomer(pageable,loggedInUser.getAidasCustomer());
+            page = aidasUserRepository.findAllByDeletedIsFalseAndAidasCustomer(pageable,loggedInUser.getAidasCustomer());
         }
         if(loggedInUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.VENDOR_ADMIN) || loggedInUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
-            page = aidasUserRepository.findAllByAidasVendor(pageable,loggedInUser.getAidasVendor());
+            page = aidasUserRepository.findAllByDeletedIsFalseAndAidasVendor(pageable,loggedInUser.getAidasVendor());
         }
         if(loggedInUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.USER)){
 
@@ -454,8 +499,10 @@ public class AidasUserResource {
             }
         }
         deleteUserFromKeyCloak(aidasUser);
-        aidasUserRepository.deleteById(id);
-        aidasUserSearchRepository.deleteById(id);
+        aidasUser.setDeleted(true);
+        aidasUserRepository.save(aidasUser);
+        //aidasUserRepository.deleteById(id);
+        //aidasUserSearchRepository.deleteById(id);
         return ResponseEntity
             .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))

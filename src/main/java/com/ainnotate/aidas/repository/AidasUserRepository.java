@@ -23,10 +23,10 @@ public interface AidasUserRepository extends JpaRepository<AidasUser, Long> {
 
     Optional<AidasUser> findOneByLogin(String login);
 
-    Page<AidasUser> findAllByAidasCustomer(Pageable pageable, AidasCustomer aidasCustomer);
-    Page<AidasUser> findAllByAidasOrganisation_OrAidasCustomer_AidasOrganisation(Pageable pageable, AidasOrganisation aidasOrganisation,AidasOrganisation aidasCustomerOrganisation);
-    Page<AidasUser> findAllByAidasVendor(Pageable pageable, AidasVendor aidasVendor);
+    Page<AidasUser> findAllByDeletedIsFalseAndAidasCustomer(Pageable pageable, AidasCustomer aidasCustomer);
+    Page<AidasUser> findAllByDeletedIsFalseAndAidasOrganisation_OrAidasCustomer_AidasOrganisation(Pageable pageable, AidasOrganisation aidasOrganisation,AidasOrganisation aidasCustomerOrganisation);
+    Page<AidasUser> findAllByDeletedIsFalseAndAidasVendor(Pageable pageable, AidasVendor aidasVendor);
 
-    Page<AidasUser> findAllByIdGreaterThan(Long id,Pageable page);
+    Page<AidasUser> findAllByIdGreaterThanAndDeletedIsFalse(Long id,Pageable page);
 
 }

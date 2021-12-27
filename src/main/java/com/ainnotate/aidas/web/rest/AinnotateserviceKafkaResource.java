@@ -19,11 +19,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-@RestController
-@RequestMapping("/api/ainnotateservice-kafka")
+//@RestController
+//@RequestMapping("/api/ainnotateservice-kafka")
 public class AinnotateserviceKafkaResource {
 
-    private final Logger log = LoggerFactory.getLogger(AinnotateserviceKafkaResource.class);
+    /*private final Logger log = LoggerFactory.getLogger(AinnotateserviceKafkaResource.class);
 
     private final KafkaProperties kafkaProperties;
     private KafkaProducer<String, String> producer;
@@ -87,5 +87,5 @@ public class AinnotateserviceKafkaResource {
             this.offset = offset;
             this.timestamp = timestamp;
         }
-    }
+    }*/
 }

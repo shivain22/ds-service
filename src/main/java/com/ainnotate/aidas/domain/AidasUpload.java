@@ -46,28 +46,9 @@ public class AidasUpload implements Serializable {
     @JsonIgnoreProperties(value = { "aidasUser", "aidasObject", "aidasUploads" }, allowSetters = true)
     private AidasUserAidasObjectMapping aidasUserAidasObjectMapping;
 
-    @Lob
-    @Column(name = "uploaded_file", nullable = false)
-    private byte[] uploadedFile;
 
-    @Column(name = "uploaded_file_content_type", nullable = false)
-    private String uploadedFileContentType;
 
-    public byte[] getUploadedFile() {
-        return uploadedFile;
-    }
 
-    public void setUploadedFile(byte[] uploadedFile) {
-        this.uploadedFile = uploadedFile;
-    }
-
-    public String getUploadedFileContentType() {
-        return uploadedFileContentType;
-    }
-
-    public void setUploadedFileContentType(String uploadedFileContentType) {
-        this.uploadedFileContentType = uploadedFileContentType;
-    }
 // jhipster-needle-entity-add-field - JHipster will add fields here
 
     public Long getId() {
