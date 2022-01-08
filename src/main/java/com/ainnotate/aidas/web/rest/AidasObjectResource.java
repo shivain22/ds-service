@@ -106,6 +106,7 @@ public class AidasObjectResource {
             AidasObjectProperty app = new AidasObjectProperty();
             app.setAidasObject(aidasObject);
             app.setAidasProperties(ap);
+            app.setValue(ap.getValue());
             aidasObject.addAidasObjectProperty(app);
         }
 

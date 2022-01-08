@@ -30,6 +30,9 @@ public class AidasObject implements Serializable {
     @Column(name = "name", length = 500, nullable = false)
     private String name;
 
+    @Column(name="buffer_percent")
+    private Integer bufferPercent;
+
     @Column(name = "description")
     private String description;
 
@@ -42,9 +45,39 @@ public class AidasObject implements Serializable {
     @JsonIgnoreProperties(value = { "aidasCustomer" }, allowSetters = true)
     private AidasProject aidasProject;
 
+    @Transient
+    private Integer completedUploads;
+
+    @Transient
+    private Integer remainingUploads;
+
+    public Integer getCompletedUploads() {
+        return completedUploads;
+    }
+
+    public void setCompletedUploads(Integer completedUploads) {
+        this.completedUploads = completedUploads;
+    }
+
+    public Integer getRemainingUploads() {
+        return remainingUploads;
+    }
+
+    public void setRemainingUploads(Integer remainingUploads) {
+        this.remainingUploads = remainingUploads;
+    }
+
     @OneToMany(mappedBy = "aidasObject",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
     @JsonIgnoreProperties(value = { "aidasObject" }, allowSetters = true)
     private Set<AidasObjectProperty> aidasObjectProperties = new HashSet<>();
+
+    public Integer getBufferPercent() {
+        return bufferPercent;
+    }
+
+    public void setBufferPercent(Integer bufferPercent) {
+        this.bufferPercent = bufferPercent;
+    }
 
     public Set<AidasObjectProperty> getAidasObjectProperties() {
         return aidasObjectProperties;

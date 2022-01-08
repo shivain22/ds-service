@@ -75,6 +75,7 @@ public class AidasUploadResource {
             .body(result);
     }
 
+
     /**
      * {@code PUT  /aidas-uploads/:id} : Updates an existing aidasUpload.
      *
@@ -110,6 +111,59 @@ public class AidasUploadResource {
             .body(result);
     }
 
+    /**
+     * {@code PUT  /aidas-uploads/:id} : Approve an existing aidasUpload.
+     *
+     * @param id the id of the aidasUpload to save.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated aidasUpload,
+     * or with status {@code 400 (Bad Request)} if the aidasUpload is not valid,
+     * or with status {@code 500 (Internal Server Error)} if the aidasUpload couldn't be updated.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @PostMapping("/aidas-uploads/approve/{id}")
+    public ResponseEntity<AidasUpload> approveAidasUpload(
+        @PathVariable(value = "id", required = false) final Long id
+    ) throws URISyntaxException {
+        log.debug("REST request to approve AidasUpload : {}, {}", id);
+        if (!aidasUploadRepository.existsById(id)) {
+            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
+        }
+        AidasUpload aidasUpload = aidasUploadRepository.getById(id);
+        aidasUpload.setStatus(true);
+        AidasUpload result = aidasUploadRepository.save(aidasUpload);
+        aidasUploadSearchRepository.save(result);
+        return ResponseEntity
+            .ok()
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, aidasUpload.getId().toString()))
+            .body(result);
+    }
+
+    /**
+     * {@code PUT  /aidas-uploads/:id} : Reject an existing aidasUpload.
+     *
+     * @param id the id of the aidasUpload to save.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated aidasUpload,
+     * or with status {@code 400 (Bad Request)} if the aidasUpload is not valid,
+     * or with status {@code 500 (Internal Server Error)} if the aidasUpload couldn't be updated.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @PostMapping("/aidas-uploads/reject/{id}")
+    public ResponseEntity<AidasUpload> rejectAidasUpload(
+        @PathVariable(value = "id", required = false) final Long id
+    ) throws URISyntaxException {
+        log.debug("REST request to reject AidasUpload : {}, {}", id);
+        if (!aidasUploadRepository.existsById(id)) {
+            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
+        }
+        AidasUpload aidasUpload = aidasUploadRepository.getById(id);
+        aidasUpload.setStatus(true);
+        AidasUpload result = aidasUploadRepository.save(aidasUpload);
+        aidasUploadSearchRepository.save(result);
+        return ResponseEntity
+            .ok()
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, aidasUpload.getId().toString()))
+            .body(result);
+    }
     /**
      * {@code PATCH  /aidas-uploads/:id} : Partial updates given fields of an existing aidasUpload, field will ignore if it is null
      *

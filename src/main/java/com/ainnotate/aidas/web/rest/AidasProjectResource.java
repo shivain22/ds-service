@@ -103,6 +103,7 @@ public class AidasProjectResource {
             AidasProjectProperty app = new AidasProjectProperty();
             app.setAidasProject(aidasProject);
             app.setAidasProperties(ap);
+            app.setValue(ap.getValue());
             aidasProject.addAidasProjectProperty(app);
         }
         AidasProject result = aidasProjectRepository.save(aidasProject);

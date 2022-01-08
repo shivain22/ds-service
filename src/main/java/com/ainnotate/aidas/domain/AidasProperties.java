@@ -23,12 +23,10 @@ public class AidasProperties implements Serializable {
     private Long id;
 
     @NotNull
-    @Size(min = 3, max = 100)
     @Column(name = "name", length = 100, nullable = false, unique = true)
     private String name;
 
     @NotNull
-    @Size(min = 3, max = 100)
     @Column(name = "value", length = 100, nullable = false, unique = true)
     private String value;
 

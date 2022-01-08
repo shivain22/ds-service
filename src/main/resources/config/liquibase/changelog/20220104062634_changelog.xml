@@ -1,0 +1,36 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.1.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+    <changeSet author="shiva (generated)" id="1638944806745-6">
+        <createTable tableName="aidas_upload_reject_reason">
+            <column name="id" type="bigint"  autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="reason" type="varchar(50)">
+                <constraints unique="true" nullable="false" uniqueConstraintName="ux_aidas_up_rej_reason"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="aidas_upload_aidas_rej_reason">
+            <column name="aidas_upload_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="aidas_upload_reject_reason_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey columnNames="aidas_upload_id, aidas_upload_reject_reason_id" tableName="aidas_upload_aidas_rej_reason"/>
+        <addForeignKeyConstraint baseColumnNames="aidas_upload_id"
+                                 baseTableName="aidas_upload_aidas_rej_reason"
+                                 constraintName="fk_aidas_upload_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="aidas_upload"/>
+
+        <addForeignKeyConstraint baseColumnNames="aidas_upload_reject_reason_id"
+                                 baseTableName="aidas_upload_aidas_rej_reason"
+                                 constraintName="fk_aidas_upload_rej_reason_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="aidas_upload_reject_reason"/>
+
+    </changeSet>
+</databaseChangeLog>

@@ -24,7 +24,6 @@ public class AidasUpload implements Serializable {
     @Column(name = "id")
     private Long id;
 
-    @NotNull
     @Size(min = 3, max = 500)
     @Column(name = "name", length = 500, nullable = false)
     private String name;
@@ -42,7 +41,6 @@ public class AidasUpload implements Serializable {
     private String rejectReason;
 
     @ManyToOne(optional = false)
-    @NotNull
     @JsonIgnoreProperties(value = { "aidasUser", "aidasObject", "aidasUploads" }, allowSetters = true)
     private AidasUserAidasObjectMapping aidasUserAidasObjectMapping;
 
