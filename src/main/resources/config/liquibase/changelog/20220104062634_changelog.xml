@@ -32,5 +32,14 @@
                                  referencedColumnNames="id"
                                  referencedTableName="aidas_upload_reject_reason"/>
 
+        <addColumn tableName="aidas_upload">
+            <column name="upload_url" type="varchar(2000)">
+                <constraints nullable="true" />
+            </column>
+            <column name="upload_etag" type="varchar(2000)">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+
     </changeSet>
 </databaseChangeLog>

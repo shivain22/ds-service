@@ -2,6 +2,7 @@ package com.ainnotate.aidas.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.io.Serializable;
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import javax.persistence.*;
 import javax.validation.constraints.*;
@@ -24,12 +25,18 @@ public class AidasUpload implements Serializable {
     @Column(name = "id")
     private Long id;
 
-    @Size(min = 3, max = 500)
+
     @Column(name = "name", length = 500, nullable = false)
     private String name;
 
+    @Column(name = "upload_url",  nullable = false)
+    private String uploadUrl;
+
+    @Column(name = "upload_etag",  nullable = false)
+    private String uploadEtag;
+
     @Column(name = "date_uploaded")
-    private ZonedDateTime dateUploaded;
+    private Instant dateUploaded;
 
     @Column(name = "status")
     private Boolean status;
@@ -44,7 +51,21 @@ public class AidasUpload implements Serializable {
     @JsonIgnoreProperties(value = { "aidasUser", "aidasObject", "aidasUploads" }, allowSetters = true)
     private AidasUserAidasObjectMapping aidasUserAidasObjectMapping;
 
+    public String getUploadUrl() {
+        return uploadUrl;
+    }
 
+    public void setUploadUrl(String uploadUrl) {
+        this.uploadUrl = uploadUrl;
+    }
+
+    public String getUploadEtag() {
+        return uploadEtag;
+    }
+
+    public void setUploadEtag(String uploadEtag) {
+        this.uploadEtag = uploadEtag;
+    }
 
 
 // jhipster-needle-entity-add-field - JHipster will add fields here
@@ -75,16 +96,16 @@ public class AidasUpload implements Serializable {
         this.name = name;
     }
 
-    public ZonedDateTime getDateUploaded() {
+    public Instant getDateUploaded() {
         return this.dateUploaded;
     }
 
-    public AidasUpload dateUploaded(ZonedDateTime dateUploaded) {
+    public AidasUpload dateUploaded(Instant dateUploaded) {
         this.setDateUploaded(dateUploaded);
         return this;
     }
 
-    public void setDateUploaded(ZonedDateTime dateUploaded) {
+    public void setDateUploaded(Instant dateUploaded) {
         this.dateUploaded = dateUploaded;
     }
 

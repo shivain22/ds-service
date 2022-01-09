@@ -9,4 +9,7 @@ import org.springframework.stereotype.Repository;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface AidasUserAidasObjectMappingRepository extends JpaRepository<AidasUserAidasObjectMapping, Long> {}
+public interface AidasUserAidasObjectMappingRepository extends JpaRepository<AidasUserAidasObjectMapping, Long> {
+
+    AidasUserAidasObjectMapping findByAidasUser_IdAndAidasObject_Id(Long aidasUserId, Long aidasObject);
+}

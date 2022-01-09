@@ -3,11 +3,17 @@ package com.ainnotate.aidas.web.rest;
 import static org.elasticsearch.index.query.QueryBuilders.*;
 
 import com.ainnotate.aidas.domain.AidasUpload;
+import com.ainnotate.aidas.domain.AidasUserAidasObjectMapping;
+import com.ainnotate.aidas.dto.UploadDto;
+import com.ainnotate.aidas.repository.AidasObjectRepository;
 import com.ainnotate.aidas.repository.AidasUploadRepository;
+import com.ainnotate.aidas.repository.AidasUserAidasObjectMappingRepository;
+import com.ainnotate.aidas.repository.AidasUserRepository;
 import com.ainnotate.aidas.repository.search.AidasUploadSearchRepository;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -17,6 +23,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -45,6 +52,13 @@ public class AidasUploadResource {
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
+    @Autowired
+    private AidasUserRepository aidasUserRepository;
+    @Autowired
+    private AidasObjectRepository aidasObjectRepository;
+    @Autowired
+    private AidasUserAidasObjectMappingRepository aidasUserAidasObjectMappingRepository;
+
     private final AidasUploadRepository aidasUploadRepository;
 
     private final AidasUploadSearchRepository aidasUploadSearchRepository;
@@ -67,6 +81,44 @@ public class AidasUploadResource {
         if (aidasUpload.getId() != null) {
             throw new BadRequestAlertException("A new aidasUpload cannot already have an ID", ENTITY_NAME, "idexists");
         }
+        AidasUpload result = aidasUploadRepository.save(aidasUpload);
+        aidasUploadSearchRepository.save(result);
+        return ResponseEntity
+            .created(new URI("/api/aidas-uploads/" + result.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
+            .body(result);
+    }
+
+    /**
+     * {@code POST  /aidas-uploads/dto} : Create a new aidasUpload.
+     *
+     * @param uploadDto the aidasUpload to create.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new aidasUpload, or with status {@code 400 (Bad Request)} if the aidasUpload has already an ID.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @PostMapping("/aidas-uploads/dto")
+    public ResponseEntity<AidasUpload> createAidasUploadFromDto(@Valid @RequestBody UploadDto uploadDto) throws URISyntaxException {
+        log.debug("REST request to save AidasUpload : {}", uploadDto);
+        if (uploadDto.getUserId() == null) {
+            throw new BadRequestAlertException("No User Id", ENTITY_NAME, "idexists");
+        }
+        if (uploadDto.getObjectId() == null) {
+            throw new BadRequestAlertException("No Object Id", ENTITY_NAME, "idexists");
+        }
+        if (uploadDto.getUploadUrl() == null) {
+            throw new BadRequestAlertException("No Upload URL Id", ENTITY_NAME, "idexists");
+        }
+        if (uploadDto.getEtag() == null) {
+            throw new BadRequestAlertException("No Etag Id", ENTITY_NAME, "idexists");
+        }
+
+        AidasUpload aidasUpload = new AidasUpload();
+        AidasUserAidasObjectMapping auaom = aidasUserAidasObjectMappingRepository.findByAidasUser_IdAndAidasObject_Id(uploadDto.getUserId(),uploadDto.getObjectId());
+        aidasUpload.setAidasUserAidasObjectMapping(auaom);
+        aidasUpload.setDateUploaded(Instant.now());
+        aidasUpload.setName(uploadDto.getUploadUrl());
+        aidasUpload.setUploadUrl(uploadDto.getUploadUrl());
+        aidasUpload.setUploadEtag(uploadDto.getEtag());
         AidasUpload result = aidasUploadRepository.save(aidasUpload);
         aidasUploadSearchRepository.save(result);
         return ResponseEntity

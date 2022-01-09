@@ -115,6 +115,107 @@ public class AidasProjectResource {
     }
 
     /**
+     * {@code POST  /aidas-projects/{id}} : Update aidas Project properties to default value.
+     *
+     * @param id the aidasProject id to update project properties to default value.
+     * @return the {@link ResponseEntity} with status {@code 201 (Updated)} and with body the new aidasProject, or with status {@code 400 (Bad Request)} if the aidasProject has no ID.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @Secured({AidasAuthoritiesConstants.ADMIN,AidasAuthoritiesConstants.ORG_ADMIN,AidasAuthoritiesConstants.CUSTOMER_ADMIN})
+    @PostMapping("/aidas-projects/{id}")
+    public ResponseEntity<AidasProject> resetProjectPropertiesToDefaultValues(@PathVariable(value = "id", required = false) final Long id) throws URISyntaxException {
+        AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+
+        log.debug("REST request to save AidasProjectProperties to default value : {}", id);
+        if (id == null) {
+            throw new BadRequestAlertException("A new aidasProject cannot already have an ID", ENTITY_NAME, "idexists");
+        }
+        AidasProject aidasProject = aidasProjectRepository.getById(id);
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null ){
+            Optional<AidasCustomer> aidasCustomer = aidasCustomerRepository.findById(aidasProject.getAidasCustomer().getId());
+            if(aidasCustomer.isPresent()){
+                if(!aidasProject.getAidasCustomer().equals(aidasCustomer.get())){
+                    throw new BadRequestAlertException("Not Authorized", ENTITY_NAME, "idexists");
+                }
+            }else{
+                throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
+            }
+        }
+        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN) ){
+            if(aidasUser.getAidasCustomer()!=null && !aidasUser.getAidasCustomer().equals(aidasProject.getAidasCustomer())) {
+                throw new BadRequestAlertException("Not Authorized", ENTITY_NAME, "idexists");
+            }
+        }
+        List<AidasProperties> aidasProperties = aidasPropertiesRepository.findAll();
+        for(AidasProperties ap:aidasProperties){
+            for(AidasProjectProperty app1:aidasProject.getAidasProjectProperties()){
+                if(app1.getAidasProperties().getId().equals(ap.getId())){
+                    app1.setValue(ap.getValue());
+                }
+            }
+        }
+        AidasProject result = aidasProjectRepository.save(aidasProject);
+        //aidasProjectSearchRepository.save(result);
+        return ResponseEntity
+            .created(new URI("/api/aidas-projects/" + result.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
+            .body(result);
+    }
+
+    /**
+     * {@code POST  /aidas-projects/add-all-new-added-properties/{id}} : Update aidas Project properties to add new properties.
+     *
+     * @param id the aidasProject id to add new project properties .
+     * @return the {@link ResponseEntity} with status {@code 201 (Updated)} and with body the new aidasProject, or with status {@code 400 (Bad Request)} if the aidasProject has no ID.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @Secured({AidasAuthoritiesConstants.ADMIN,AidasAuthoritiesConstants.ORG_ADMIN,AidasAuthoritiesConstants.CUSTOMER_ADMIN})
+    @PostMapping("/aidas-projects/add-all-new-added-properties/{id}")
+    public ResponseEntity<AidasProject> addAllNewlyAddedProperties(@PathVariable(value = "id", required = false) final Long id) throws URISyntaxException {
+        AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+
+        log.debug("REST request to save AidasProjectProperties to default value : {}", id);
+        if (id == null) {
+            throw new BadRequestAlertException("A new aidasProject cannot already have an ID", ENTITY_NAME, "idexists");
+        }
+        AidasProject aidasProject = aidasProjectRepository.getById(id);
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null ){
+            Optional<AidasCustomer> aidasCustomer = aidasCustomerRepository.findById(aidasProject.getAidasCustomer().getId());
+            if(aidasCustomer.isPresent()){
+                if(!aidasProject.getAidasCustomer().equals(aidasCustomer.get())){
+                    throw new BadRequestAlertException("Not Authorized", ENTITY_NAME, "idexists");
+                }
+            }else{
+                throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
+            }
+        }
+        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN) ){
+            if(aidasUser.getAidasCustomer()!=null && !aidasUser.getAidasCustomer().equals(aidasProject.getAidasCustomer())) {
+                throw new BadRequestAlertException("Not Authorized", ENTITY_NAME, "idexists");
+            }
+        }
+        List<AidasProperties> aidasProperties = aidasPropertiesRepository.findAll();
+        List<AidasProperties> addedAidasProperties = new ArrayList();
+        for(AidasProjectProperty app1:aidasProject.getAidasProjectProperties()){
+                addedAidasProperties.add(app1.getAidasProperties());
+        }
+        aidasProperties.removeAll(addedAidasProperties);
+        for(AidasProperties ap:aidasProperties){
+            for(AidasProjectProperty app1:aidasProject.getAidasProjectProperties()){
+                if(app1.getAidasProperties().getId().equals(ap.getId())){
+                    app1.setValue(ap.getValue());
+                }
+            }
+        }
+        AidasProject result = aidasProjectRepository.save(aidasProject);
+        //aidasProjectSearchRepository.save(result);
+        return ResponseEntity
+            .created(new URI("/api/aidas-projects/" + result.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
+            .body(result);
+    }
+
+    /**
      * {@code PUT  /aidas-projects/:id} : Updates an existing aidasProject.
      *
      * @param id the id of the aidasProject to save.
@@ -287,6 +388,9 @@ public class AidasProjectResource {
         log.debug("REST request to get AidasProject : {}", id);
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         Optional<AidasProject> aidasProject =null;
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ADMIN)){
+            aidasProject = aidasProjectRepository.findById(id);
+        }
         if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null ){
             aidasProject = aidasProjectRepository.findById(id);
         }
