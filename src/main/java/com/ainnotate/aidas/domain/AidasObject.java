@@ -6,6 +6,9 @@ import java.util.HashSet;
 import java.util.Set;
 import javax.persistence.*;
 import javax.validation.constraints.*;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -46,25 +49,27 @@ public class AidasObject implements Serializable {
     private AidasProject aidasProject;
 
     @Transient
-    private Integer completedUploads;
+    @JsonProperty
+    private Integer uploadsCompleted;
 
     @Transient
-    private Integer remainingUploads;
+    @JsonProperty
+    private Integer uploadsRemaining;
 
-    public Integer getCompletedUploads() {
-        return completedUploads;
+    public Integer getUploadsCompleted() {
+        return uploadsCompleted;
     }
 
-    public void setCompletedUploads(Integer completedUploads) {
-        this.completedUploads = completedUploads;
+    public void setUploadsCompleted(Integer uploadsCompleted) {
+        this.uploadsCompleted = uploadsCompleted;
     }
 
-    public Integer getRemainingUploads() {
-        return remainingUploads;
+    public Integer getUploadsRemaining() {
+        return uploadsRemaining;
     }
 
-    public void setRemainingUploads(Integer remainingUploads) {
-        this.remainingUploads = remainingUploads;
+    public void setUploadsRemaining(Integer uploadsRemaining) {
+        this.uploadsRemaining = uploadsRemaining;
     }
 
     @OneToMany(mappedBy = "aidasObject",cascade = CascadeType.ALL,fetch = FetchType.EAGER)

@@ -3,10 +3,7 @@ package com.ainnotate.aidas.web.rest;
 import static org.elasticsearch.index.query.QueryBuilders.*;
 
 import com.ainnotate.aidas.domain.*;
-import com.ainnotate.aidas.repository.AidasCustomerRepository;
-import com.ainnotate.aidas.repository.AidasProjectRepository;
-import com.ainnotate.aidas.repository.AidasPropertiesRepository;
-import com.ainnotate.aidas.repository.AidasUserRepository;
+import com.ainnotate.aidas.repository.*;
 import com.ainnotate.aidas.repository.search.AidasProjectSearchRepository;
 import com.ainnotate.aidas.security.AidasAuthoritiesConstants;
 import com.ainnotate.aidas.security.SecurityUtils;
@@ -22,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
@@ -62,6 +60,9 @@ public class AidasProjectResource {
 
     @Autowired
     private AidasCustomerRepository aidasCustomerRepository;
+
+    @Autowired
+    private AidasUploadRepository aidasUploadRepository;
 
     public AidasProjectResource(AidasProjectRepository aidasProjectRepository, AidasProjectSearchRepository aidasProjectSearchRepository) {
         this.aidasProjectRepository = aidasProjectRepository;
@@ -161,6 +162,7 @@ public class AidasProjectResource {
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
             .body(result);
     }
+
 
     /**
      * {@code POST  /aidas-projects/add-all-new-added-properties/{id}} : Update aidas Project properties to add new properties.
@@ -482,5 +484,23 @@ public class AidasProjectResource {
         }
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    @Autowired
+    TaskExecutor uploadDownloadTaskExecutor;
+
+    @Autowired
+    AidasDownloadRepository aidasDownloadRepository;
+    /**
+     * {@code GET  /download/:id/:status} : download objects with the "id" aidasObject and provided status.  User "all" for download both.
+     *
+     * @param id the id of the aidasObject to retrieve.
+     * @param status the id of the upload objects to retrieve and download.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the aidasObject, or with status {@code 404 (Not Found)}.
+     */
+    @GetMapping("/download/project/{id}/{status}")
+    public void downloadUploadedObjectsOfProject(@PathVariable("id") Long id,@PathVariable("status") String status){
+        AidasProject aidasProject = aidasProjectRepository.getById(id);
+        uploadDownloadTaskExecutor.execute(new DownloadUploadS3(aidasProject,status,aidasProjectRepository,aidasUploadRepository,aidasDownloadRepository));
     }
 }

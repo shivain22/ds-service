@@ -65,7 +65,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .antMatchers("/api/authenticate").permitAll()
             .antMatchers("/api/auth-info").permitAll()
             .antMatchers("/api/register").permitAll()
-            .antMatchers("/api/admin/**").hasAuthority(AidasAuthoritiesConstants.ADMIN)
+            .antMatchers("/api/admin/**").authenticated()
             .antMatchers("/api/**").authenticated()
             .antMatchers("/management/health").permitAll()
             .antMatchers("/management/health/**").permitAll()

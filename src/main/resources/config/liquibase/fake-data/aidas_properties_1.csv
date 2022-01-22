@@ -1,0 +1,7 @@
+id;name;value;system_property;property_type;optional;description
+16;accessKey;AKIART6S2XPD6CH4Y23I;false;property;true;AWS Access key
+17;accessSecret;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;false;property;true;AWS access secret
+18;region;ap-south-1;false;property;true;AWS S3 bucket region
+19;bucketName;objects-upload;false;property;true;AWS S3 bucket name
+
+

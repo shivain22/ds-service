@@ -12,4 +12,7 @@ import org.springframework.stereotype.Repository;
 public interface AidasUserAidasObjectMappingRepository extends JpaRepository<AidasUserAidasObjectMapping, Long> {
 
     AidasUserAidasObjectMapping findByAidasUser_IdAndAidasObject_Id(Long aidasUserId, Long aidasObject);
+
+    @Query(value= "select count(*) from (select * from aidas_user_obj_map where aidas_user_id in (select id from aidas_user where aidas_vendor_id=?1) and aidas_object_id=?2) a",nativeQuery = true)
+    Integer getCountOfAidasObjectMappingForVendorAdmin(Long vendorId,Long aidasObject);
 }

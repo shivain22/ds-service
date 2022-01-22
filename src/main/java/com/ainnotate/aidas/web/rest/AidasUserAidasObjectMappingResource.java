@@ -2,8 +2,13 @@ package com.ainnotate.aidas.web.rest;
 
 import static org.elasticsearch.index.query.QueryBuilders.*;
 
+import com.ainnotate.aidas.domain.AidasObject;
+import com.ainnotate.aidas.domain.AidasUser;
 import com.ainnotate.aidas.domain.AidasUserAidasObjectMapping;
+import com.ainnotate.aidas.dto.UserObjectMappingDto;
+import com.ainnotate.aidas.repository.AidasObjectRepository;
 import com.ainnotate.aidas.repository.AidasUserAidasObjectMappingRepository;
+import com.ainnotate.aidas.repository.AidasUserRepository;
 import com.ainnotate.aidas.repository.search.AidasUserAidasObjectMappingSearchRepository;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
@@ -17,6 +22,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -49,6 +55,13 @@ public class AidasUserAidasObjectMappingResource {
 
     private final AidasUserAidasObjectMappingSearchRepository aidasUserAidasObjectMappingSearchRepository;
 
+    @Autowired
+    private AidasUserRepository aidasUserRepository;
+
+    @Autowired
+    private AidasObjectRepository aidasObjectRepository;
+
+
     public AidasUserAidasObjectMappingResource(
         AidasUserAidasObjectMappingRepository aidasUserAidasObjectMappingRepository,
         AidasUserAidasObjectMappingSearchRepository aidasUserAidasObjectMappingSearchRepository
@@ -74,6 +87,34 @@ public class AidasUserAidasObjectMappingResource {
         }
         AidasUserAidasObjectMapping result = aidasUserAidasObjectMappingRepository.save(aidasUserAidasObjectMapping);
         aidasUserAidasObjectMappingSearchRepository.save(result);
+        return ResponseEntity
+            .created(new URI("/api/aidas-user-aidas-object-mappings/" + result.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
+            .body(result);
+    }
+
+    /**
+     * {@code POST  /aidas-user-aidas-object-mappings} : Create a new aidasUserAidasObjectMapping.
+     *
+     * @param userAidasObjectMappingDto the userObjectMappingDto to create.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new aidasUserAidasObjectMapping, or with status {@code 400 (Bad Request)} if the aidasUserAidasObjectMapping has already an ID.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @PostMapping("/aidas-user-aidas-object-mappings/dto")
+    public ResponseEntity<AidasUserAidasObjectMapping> createAidasUserAidasObjectMappingFromIds( @Valid @RequestBody UserObjectMappingDto userAidasObjectMappingDto ) throws URISyntaxException {
+        log.debug("REST request to save AidasUserAidasObjectMapping : {}", userAidasObjectMappingDto);
+        if (userAidasObjectMappingDto.getAidasUserId() == null) {
+            throw new BadRequestAlertException("User id can not be null", ENTITY_NAME, "idexists");
+        }
+        if (userAidasObjectMappingDto.getAidasObjectId() == null) {
+            throw new BadRequestAlertException("Object id can not be null", ENTITY_NAME, "idexists");
+        }
+        AidasUser aidasUser = aidasUserRepository.getById(userAidasObjectMappingDto.getAidasUserId());
+        AidasObject aidasObject = aidasObjectRepository.getById(userAidasObjectMappingDto.getAidasObjectId());
+        AidasUserAidasObjectMapping aidasUserAidasObjectMapping = new AidasUserAidasObjectMapping();
+        aidasUserAidasObjectMapping.setAidasUser(aidasUser);
+        aidasUserAidasObjectMapping.setAidasObject(aidasObject);
+        AidasUserAidasObjectMapping result = aidasUserAidasObjectMappingRepository.save(aidasUserAidasObjectMapping);
         return ResponseEntity
             .created(new URI("/api/aidas-user-aidas-object-mappings/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))

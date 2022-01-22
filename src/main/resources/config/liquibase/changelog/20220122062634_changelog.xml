@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.5.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <!--
+        Added the entity AidasUpload.
+    -->
+    <changeSet id="20220122062634-1" author="jhipster">
+        <createTable tableName="aidas_download">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(500)">
+                <constraints nullable="false" />
+            </column>
+            <column name="date_uploaded" type="${datetimeType}">
+                <constraints nullable="true" />
+            </column>
+            <column name="bucket_name" type="varchar(500)">
+                <constraints nullable="true" />
+            </column>
+            <column name="aws_key" type="varchar(500)">
+                <constraints nullable="true" />
+            </column>
+            <column name="aws_secret" type="varchar(500)">
+                <constraints nullable="true" />
+            </column>
+            <column name="region" type="varchar(500)">
+                <constraints nullable="true" />
+            </column>
+            <column name="object_key" type="varchar(3500)">
+                <constraints nullable="true" />
+            </column>
+            <column name="upload_url" type="varchar(3500)">
+                <constraints nullable="true" />
+            </column>
+            <column name="upload_etag" type="varchar(500)">
+                <constraints nullable="true" />
+            </column>
+            <column name="aidas_project_id" type="bigint">
+                <constraints nullable="true" />
+            </column>
+            <column name="aidas_object_id" type="bigint">
+                <constraints nullable="true" />
+            </column>
+            <column name="upload_object_ids" type="varchar(3500)">
+                <constraints nullable="true" />
+            </column>
+            <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here -->
+        </createTable>
+        <dropDefaultValue tableName="aidas_upload" columnName="date_uploaded" columnDataType="${datetimeType}"/>
+
+    </changeSet>
+    <changeSet author="shiva (generated)" id="20220122062634-1-5">
+        <addColumn tableName="aidas_upload">
+            <column name="object_key" type="varchar(3500)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="20220122062634-1-6">
+    <addForeignKeyConstraint baseColumnNames="aidas_project_id"
+                             baseTableName="aidas_download"
+                             constraintName="fk_aidas_download__aidas_project_id"
+                             referencedColumnNames="id"
+                             referencedTableName="aidas_project"/>
+
+    <addForeignKeyConstraint baseColumnNames="aidas_object_id"
+                             baseTableName="aidas_download"
+                             constraintName="fk_aidas_download__aidas_object_id"
+                             referencedColumnNames="id"
+                             referencedTableName="aidas_object"/>
+    </changeSet>
+</databaseChangeLog>

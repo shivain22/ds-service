@@ -175,6 +175,7 @@ spring:
             client-secret: internal
             scope: openid,profile,email
 
+
 server:
   servlet:
     session:

@@ -2,13 +2,11 @@ package com.ainnotate.aidas.web.rest;
 
 import static org.elasticsearch.index.query.QueryBuilders.*;
 
+import com.ainnotate.aidas.domain.AidasObject;
 import com.ainnotate.aidas.domain.AidasUpload;
 import com.ainnotate.aidas.domain.AidasUserAidasObjectMapping;
 import com.ainnotate.aidas.dto.UploadDto;
-import com.ainnotate.aidas.repository.AidasObjectRepository;
-import com.ainnotate.aidas.repository.AidasUploadRepository;
-import com.ainnotate.aidas.repository.AidasUserAidasObjectMappingRepository;
-import com.ainnotate.aidas.repository.AidasUserRepository;
+import com.ainnotate.aidas.repository.*;
 import com.ainnotate.aidas.repository.search.AidasUploadSearchRepository;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
@@ -25,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
@@ -120,7 +119,7 @@ public class AidasUploadResource {
         aidasUpload.setUploadUrl(uploadDto.getUploadUrl());
         aidasUpload.setUploadEtag(uploadDto.getEtag());
         AidasUpload result = aidasUploadRepository.save(aidasUpload);
-        aidasUploadSearchRepository.save(result);
+        //aidasUploadSearchRepository.save(result);
         return ResponseEntity
             .created(new URI("/api/aidas-uploads/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
@@ -183,7 +182,7 @@ public class AidasUploadResource {
         AidasUpload aidasUpload = aidasUploadRepository.getById(id);
         aidasUpload.setStatus(true);
         AidasUpload result = aidasUploadRepository.save(aidasUpload);
-        aidasUploadSearchRepository.save(result);
+        //aidasUploadSearchRepository.save(result);
         return ResponseEntity
             .ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, aidasUpload.getId().toString()))
@@ -210,7 +209,7 @@ public class AidasUploadResource {
         AidasUpload aidasUpload = aidasUploadRepository.getById(id);
         aidasUpload.setStatus(true);
         AidasUpload result = aidasUploadRepository.save(aidasUpload);
-        aidasUploadSearchRepository.save(result);
+        //aidasUploadSearchRepository.save(result);
         return ResponseEntity
             .ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, aidasUpload.getId().toString()))
@@ -336,5 +335,21 @@ public class AidasUploadResource {
         Page<AidasUpload> page = aidasUploadSearchRepository.search(query, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    @Autowired
+    TaskExecutor uploadDownloadTaskExecutor;
+
+    @Autowired
+    AidasDownloadRepository aidasDownloadRepository;
+    /**
+     * {@code GET  /download/uploads/} : download objects with the "id" aidasObject and provided status.  User "all" for download both.
+     *
+     * @param uploadIds array of upload ids to download.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the aidasObject, or with status {@code 404 (Not Found)}.
+     */
+    @PostMapping("/download/uploads")
+    public void downloadUploadedObjects(@RequestBody List<Long> uploadIds){
+        uploadDownloadTaskExecutor.execute(new DownloadUploadS3(uploadIds,aidasUploadRepository,aidasDownloadRepository));
     }
 }

@@ -47,6 +47,17 @@ public class AidasUpload implements Serializable {
     @Column(name = "reject_reason")
     private String rejectReason;
 
+    @Column(name = "object_key",  nullable = false)
+    private String objectKey;
+
+    public String getObjectKey() {
+        return objectKey;
+    }
+
+    public void setObjectKey(String objectKey) {
+        this.objectKey = objectKey;
+    }
+
     @ManyToOne(optional = false)
     @JsonIgnoreProperties(value = { "aidasUser", "aidasObject", "aidasUploads" }, allowSetters = true)
     private AidasUserAidasObjectMapping aidasUserAidasObjectMapping;
