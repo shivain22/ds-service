@@ -153,7 +153,7 @@ public class DownloadUploadS3  implements  Runnable{
                         }
                     }
                     try {
-                        download(accessKey,accessSecret,bucketName,region,au.getUploadUrl());
+                        download(accessKey,accessSecret,bucketName,region,au.getObjectKey());
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -192,6 +192,7 @@ public class DownloadUploadS3  implements  Runnable{
         AwsBasicCredentials awsCreds = AwsBasicCredentials.create(accessKey, accessSecret);
         S3Client s3client = S3Client.builder().credentialsProvider(StaticCredentialsProvider.create(awsCreds)).region(Region.of(region)).build();
         GetObjectRequest getObjectRequest = GetObjectRequest.builder().bucket(bucketName).key(key).build();
+        System.out.println(accessKey+" ###Secret### "+accessSecret+" ###BucketName#### "+bucketName+" ####Region### "+region+" ###ObjectKey####  "+key);
         s3client.getObject(getObjectRequest, ResponseTransformer.toFile(dest));
     }
 

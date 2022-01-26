@@ -6,6 +6,24 @@ public class UploadDto {
     private Long objectId;
     private String uploadUrl;
     private String etag;
+    private String objectKey;
+    private String uploadMetadata;
+
+    public String getObjectKey() {
+        return objectKey;
+    }
+
+    public void setObjectKey(String objectKey) {
+        this.objectKey = objectKey;
+    }
+
+    public String getUploadMetadata() {
+        return uploadMetadata;
+    }
+
+    public void setUploadMetadata(String uploadMetadata) {
+        this.uploadMetadata = uploadMetadata;
+    }
 
     public String getUploadUrl() {
         return uploadUrl;

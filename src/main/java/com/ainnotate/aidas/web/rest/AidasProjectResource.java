@@ -262,7 +262,12 @@ public class AidasProjectResource {
             }
         }
 
-        AidasProject result = aidasProjectRepository.save(aidasProject);
+        AidasProject existingAidasProject =aidasProjectRepository.getById(aidasProject.getId());
+        existingAidasProject.setName(aidasProject.getName());
+        existingAidasProject.setProjectType(aidasProject.getProjectType());
+        existingAidasProject.setDescription(aidasProject.getDescription());
+        existingAidasProject.setAidasCustomer(aidasProject.getAidasCustomer());
+        AidasProject result = aidasProjectRepository.save(existingAidasProject);
         aidasProjectSearchRepository.save(result);
         return ResponseEntity
             .ok()

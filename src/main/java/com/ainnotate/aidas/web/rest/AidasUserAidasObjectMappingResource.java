@@ -13,6 +13,8 @@ import com.ainnotate.aidas.repository.search.AidasUserAidasObjectMappingSearchRe
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -114,6 +116,7 @@ public class AidasUserAidasObjectMappingResource {
         AidasUserAidasObjectMapping aidasUserAidasObjectMapping = new AidasUserAidasObjectMapping();
         aidasUserAidasObjectMapping.setAidasUser(aidasUser);
         aidasUserAidasObjectMapping.setAidasObject(aidasObject);
+        aidasUserAidasObjectMapping.setDateAssigned(ZonedDateTime.now());
         AidasUserAidasObjectMapping result = aidasUserAidasObjectMappingRepository.save(aidasUserAidasObjectMapping);
         return ResponseEntity
             .created(new URI("/api/aidas-user-aidas-object-mappings/" + result.getId()))

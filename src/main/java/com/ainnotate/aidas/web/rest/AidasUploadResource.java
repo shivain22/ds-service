@@ -5,6 +5,7 @@ import static org.elasticsearch.index.query.QueryBuilders.*;
 import com.ainnotate.aidas.domain.AidasObject;
 import com.ainnotate.aidas.domain.AidasUpload;
 import com.ainnotate.aidas.domain.AidasUserAidasObjectMapping;
+import com.ainnotate.aidas.dto.UploadByUserObjectMappingDto;
 import com.ainnotate.aidas.dto.UploadDto;
 import com.ainnotate.aidas.repository.*;
 import com.ainnotate.aidas.repository.search.AidasUploadSearchRepository;
@@ -118,6 +119,43 @@ public class AidasUploadResource {
         aidasUpload.setName(uploadDto.getUploadUrl());
         aidasUpload.setUploadUrl(uploadDto.getUploadUrl());
         aidasUpload.setUploadEtag(uploadDto.getEtag());
+        AidasUpload result = aidasUploadRepository.save(aidasUpload);
+        //aidasUploadSearchRepository.save(result);
+        return ResponseEntity
+            .created(new URI("/api/aidas-uploads/" + result.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
+            .body(result);
+    }
+
+    /**
+     * {@code POST  /aidas-uploads/dto} : Create a new aidasUpload.
+     *
+     * @param uploadByUserObjectMappingDto the aidasUpload to create.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new aidasUpload, or with status {@code 400 (Bad Request)} if the aidasUpload has already an ID.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @PostMapping("/aidas-uploads/user-object-mapping-dto")
+    public ResponseEntity<AidasUpload> createAidasUploadFromUseObjectMappingDto(@Valid @RequestBody UploadByUserObjectMappingDto uploadByUserObjectMappingDto) throws URISyntaxException {
+        log.debug("REST request to save AidasUpload : {}", uploadByUserObjectMappingDto);
+        if (uploadByUserObjectMappingDto.getUserObjectMappingId() == null) {
+            throw new BadRequestAlertException("No User Id", ENTITY_NAME, "idexists");
+        }
+        if (uploadByUserObjectMappingDto.getUploadUrl() == null) {
+            throw new BadRequestAlertException("No Upload URL Id", ENTITY_NAME, "idexists");
+        }
+        if (uploadByUserObjectMappingDto.getEtag() == null) {
+            throw new BadRequestAlertException("No Etag Id", ENTITY_NAME, "idexists");
+        }
+
+        AidasUpload aidasUpload = new AidasUpload();
+        AidasUserAidasObjectMapping auaom = aidasUserAidasObjectMappingRepository.getById(uploadByUserObjectMappingDto.getUserObjectMappingId());
+        aidasUpload.setAidasUserAidasObjectMapping(auaom);
+        aidasUpload.setDateUploaded(Instant.now());
+        aidasUpload.setName(uploadByUserObjectMappingDto.getUploadUrl());
+        aidasUpload.setUploadUrl(uploadByUserObjectMappingDto.getUploadUrl());
+        aidasUpload.setUploadEtag(uploadByUserObjectMappingDto.getEtag());
+        aidasUpload.setObjectKey(uploadByUserObjectMappingDto.getObjectKey());
+        aidasUpload.setUploadObjectMeta(uploadByUserObjectMappingDto.getUploadMetadata());
         AidasUpload result = aidasUploadRepository.save(aidasUpload);
         //aidasUploadSearchRepository.save(result);
         return ResponseEntity

@@ -282,7 +282,13 @@ public class AidasObjectResource {
             }
         }
 
-        AidasObject result = aidasObjectRepository.save(aidasObject);
+        AidasObject existingAidasObject = aidasObjectRepository.getById(aidasObject.getId());
+        existingAidasObject.setName(aidasObject.getName());
+        existingAidasObject.setDescription(aidasObject.getDescription());
+        existingAidasObject.setAidasProject(aidasObject.getAidasProject());
+        existingAidasObject.setBufferPercent(aidasObject.getBufferPercent());
+        existingAidasObject.setNumberOfUploadReqd(aidasObject.getNumberOfUploadReqd());
+        AidasObject result = aidasObjectRepository.save(existingAidasObject);
         aidasObjectSearchRepository.save(result);
         return ResponseEntity
             .ok()

@@ -50,6 +50,17 @@ public class AidasUpload implements Serializable {
     @Column(name = "object_key",  nullable = false)
     private String objectKey;
 
+    @Column(name = "upload_object_meta",  nullable = false)
+    private String uploadObjectMeta;
+
+    public String getUploadObjectMeta() {
+        return uploadObjectMeta;
+    }
+
+    public void setUploadObjectMeta(String uploadObjectMeta) {
+        this.uploadObjectMeta = uploadObjectMeta;
+    }
+
     public String getObjectKey() {
         return objectKey;
     }
