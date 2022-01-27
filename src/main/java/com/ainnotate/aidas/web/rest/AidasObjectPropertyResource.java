@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
@@ -78,12 +79,16 @@ public class AidasObjectPropertyResource {
         if (aidasObjectProperty.getId() != null) {
             throw new BadRequestAlertException("A new aidasObjectProperty cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        AidasObjectProperty result = aidasObjectPropertyRepository.save(aidasObjectProperty);
-        aidasObjectPropertySearchRepository.save(result);
-        return ResponseEntity
-            .created(new URI("/api/aidas-object-properties/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
-            .body(result);
+        try {
+            AidasObjectProperty result = aidasObjectPropertyRepository.save(aidasObjectProperty);
+            aidasObjectPropertySearchRepository.save(result);
+            return ResponseEntity
+                .created(new URI("/api/aidas-object-properties/" + result.getId()))
+                .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
+                .body(result);
+        }catch(DataIntegrityViolationException dive){
+            throw new BadRequestAlertException("The property is already added to the object.", ENTITY_NAME, "idexists");
+        }
     }
 
     /**

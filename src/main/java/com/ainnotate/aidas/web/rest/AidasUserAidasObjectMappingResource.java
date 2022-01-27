@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
@@ -87,12 +88,16 @@ public class AidasUserAidasObjectMappingResource {
         if (aidasUserAidasObjectMapping.getId() != null) {
             throw new BadRequestAlertException("A new aidasUserAidasObjectMapping cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        AidasUserAidasObjectMapping result = aidasUserAidasObjectMappingRepository.save(aidasUserAidasObjectMapping);
-        aidasUserAidasObjectMappingSearchRepository.save(result);
-        return ResponseEntity
-            .created(new URI("/api/aidas-user-aidas-object-mappings/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
-            .body(result);
+        try {
+            AidasUserAidasObjectMapping result = aidasUserAidasObjectMappingRepository.save(aidasUserAidasObjectMapping);
+            aidasUserAidasObjectMappingSearchRepository.save(result);
+            return ResponseEntity
+                .created(new URI("/api/aidas-user-aidas-object-mappings/" + result.getId()))
+                .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
+                .body(result);
+        }catch(DataIntegrityViolationException dive){
+            throw new BadRequestAlertException("There is already a mapping available for selected user and object", ENTITY_NAME, "idexists");
+        }
     }
 
     /**
@@ -223,7 +228,7 @@ public class AidasUserAidasObjectMappingResource {
     @GetMapping("/aidas-user-aidas-object-mappings")
     public ResponseEntity<List<AidasUserAidasObjectMapping>> getAllAidasUserAidasObjectMappings(Pageable pageable) {
         log.debug("REST request to get a page of AidasUserAidasObjectMappings");
-        Page<AidasUserAidasObjectMapping> page = aidasUserAidasObjectMappingRepository.findAll(pageable);
+        Page<AidasUserAidasObjectMapping> page = aidasUserAidasObjectMappingRepository.findAllMappings(pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
