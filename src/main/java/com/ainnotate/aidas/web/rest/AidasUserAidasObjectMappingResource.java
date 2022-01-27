@@ -166,6 +166,48 @@ public class AidasUserAidasObjectMappingResource {
             .body(result);
     }
 
+
+    /**
+     * {@code PUT  /aidas-user-aidas-object-mappings/:id} : Updates an existing aidasUserAidasObjectMapping.
+     *
+     * @param id the id of the aidasUserAidasObjectMapping to save.
+     * @param userAidasObjectMappingDto the aidasUserAidasObjectMapping to update.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated aidasUserAidasObjectMapping,
+     * or with status {@code 400 (Bad Request)} if the aidasUserAidasObjectMapping is not valid,
+     * or with status {@code 500 (Internal Server Error)} if the aidasUserAidasObjectMapping couldn't be updated.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @PutMapping("/aidas-user-aidas-object-mappings/dto/{id}")
+    public ResponseEntity<AidasUserAidasObjectMapping> updateAidasUserAidasObjectMappingDto(
+        @PathVariable(value = "id", required = false) final Long id,
+        @Valid @RequestBody UserObjectMappingDto userAidasObjectMappingDto
+    ) throws URISyntaxException {
+        log.debug("REST request to update AidasUserAidasObjectMapping : {}, {}", id, userAidasObjectMappingDto);
+        if (userAidasObjectMappingDto.getAidasUserId() == null) {
+            throw new BadRequestAlertException("User id can not be null", ENTITY_NAME, "idexists");
+        }
+        if (userAidasObjectMappingDto.getAidasObjectId() == null) {
+            throw new BadRequestAlertException("Object id can not be null", ENTITY_NAME, "idexists");
+        }
+
+        if (!aidasUserAidasObjectMappingRepository.existsById(id)) {
+            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
+        }
+        AidasUser aidasUser = aidasUserRepository.getById(userAidasObjectMappingDto.getAidasUserId());
+        AidasObject aidasObject = aidasObjectRepository.getById(userAidasObjectMappingDto.getAidasObjectId());
+        AidasUserAidasObjectMapping existing = aidasUserAidasObjectMappingRepository.getById(id);
+        existing.setAidasUser(aidasUser);
+        existing.setAidasObject(aidasObject);
+        AidasUserAidasObjectMapping result = aidasUserAidasObjectMappingRepository.save(existing);
+        aidasUserAidasObjectMappingSearchRepository.save(result);
+        return ResponseEntity
+            .ok()
+            .headers(
+                HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, result.getId().toString())
+            )
+            .body(result);
+    }
+
     /**
      * {@code PATCH  /aidas-user-aidas-object-mappings/:id} : Partial updates given fields of an existing aidasUserAidasObjectMapping, field will ignore if it is null
      *

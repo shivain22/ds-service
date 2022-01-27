@@ -60,7 +60,7 @@ public class AidasPropertiesResource {
     /**
      * {@code POST  /aidas-properties} : Create a new aidasProperties.
      *
-     * @param aidasProperties the aidasProperties to create.
+     * @param aidasProperties the aidasProperties to create. For propertyType use values "metadata" or "property"
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new aidasProperties, or with status {@code 400 (Bad Request)} if the aidasProperties has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */

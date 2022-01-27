@@ -35,13 +35,24 @@ public class AidasProperties implements Serializable {
     private Boolean systemProperty;
 
     @NotNull
+    @Column(name="property_type", nullable = false)
+    private String propertyType;
+
+    @NotNull
     @Column(name = "optional", nullable = false)
     private Boolean optional;
 
     @Column(name = "description")
     private String description;
 
-    // jhipster-needle-entity-add-field - JHipster will add fields here
+    public String getPropertyType() {
+        return propertyType;
+    }
+
+    public void setPropertyType(String propertyType) {
+        this.propertyType = propertyType;
+    }
+// jhipster-needle-entity-add-field - JHipster will add fields here
 
     public Long getId() {
         return this.id;
