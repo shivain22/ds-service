@@ -89,6 +89,17 @@ spring:
     user-name: admin
     password: admin
     client-realm: jhipster
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: shivain22@gmail.com  #Replace this field with your Gmail username.
+    password: xigwcqsnfffuafxa           #Replace this field with your Gmail password/App password.
+    protocol: smtp
+    tls: true
+    properties.mail.smtp:
+      auth: true
+      starttls.enable: true
+      ssl.trust: smtp.gmail.com
 # ===================================================================
 # To enable TLS in production, generate a certificate using:
 # keytool -genkey -alias ainnotateservice -storetype PKCS12 -keyalg RSA -keysize 2048 -keystore keystore.p12 -validity 3650

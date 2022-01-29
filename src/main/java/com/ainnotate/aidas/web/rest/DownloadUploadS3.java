@@ -7,6 +7,13 @@ import com.ainnotate.aidas.repository.AidasProjectRepository;
 import com.ainnotate.aidas.repository.AidasUploadRepository;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.ResponseBytes;
@@ -17,7 +24,12 @@ import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
 import java.io.*;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -25,12 +37,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+@Service
 public class DownloadUploadS3  implements  Runnable{
 
     private String resource;
@@ -38,28 +52,113 @@ public class DownloadUploadS3  implements  Runnable{
     private List<Long> uploadedFileIds;
     private AidasProject aidasProject;
     private AidasObject aidasObject;
-    private AidasProjectRepository aidasProjectRepository;
-    private AidasObjectRepository aidasObjectRepository;
-    private AidasUploadRepository aidasUploadRepository;
     private String tempFolder;
     private String zipFile;
+    private String zipFileKey;
+    private AidasUser aidasUser;
+
+    public AidasUser getAidasUser() {
+        return aidasUser;
+    }
+
+    public void setAidasUser(AidasUser aidasUser) {
+        this.aidasUser = aidasUser;
+    }
+
+    public String getZipFileKey() {
+        return zipFileKey;
+    }
+
+    public void setZipFileKey(String zipFileKey) {
+        this.zipFileKey = zipFileKey;
+    }
+
+    public String getResource() {
+        return resource;
+    }
+
+    public void setResource(String resource) {
+        this.resource = resource;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public List<Long> getUploadedFileIds() {
+        return uploadedFileIds;
+    }
+
+    public void setUploadedFileIds(List<Long> uploadedFileIds) {
+        this.uploadedFileIds = uploadedFileIds;
+    }
+
+    public AidasProject getAidasProject() {
+        return aidasProject;
+    }
+
+    public void setAidasProject(AidasProject aidasProject) {
+        this.aidasProject = aidasProject;
+    }
+
+    public AidasObject getAidasObject() {
+        return aidasObject;
+    }
+
+    public void setAidasObject(AidasObject aidasObject) {
+        this.aidasObject = aidasObject;
+    }
+
+    public String getTempFolder() {
+        return tempFolder;
+    }
+
+    public void setTempFolder(String tempFolder) {
+        this.tempFolder = tempFolder;
+    }
+
+    public String getZipFile() {
+        return zipFile;
+    }
+
+    public void setZipFile(String zipFile) {
+        this.zipFile = zipFile;
+    }
+
+    @Autowired
+    private AidasProjectRepository aidasProjectRepository;
+    @Autowired
+    private AidasObjectRepository aidasObjectRepository;
+    @Autowired
+    private AidasUploadRepository aidasUploadRepository;
+    @Autowired
     private AidasDownloadRepository aidasDownloadRepository;
+    @Autowired
+    private JavaMailSender javaMailSender;
 
 
-    public DownloadUploadS3(AidasProject aidasProject,String status, AidasProjectRepository aidasProjectRepository, AidasUploadRepository aidasUploadRepository, AidasDownloadRepository aidasDownloadRepository){
+
+
+    public DownloadUploadS3(){
+
+    }
+
+    public void setUp(AidasProject aidasProject,String status){
         this.resource = "project";
         this.status = status;
         this.aidasProject= aidasProject;
-        this.aidasProjectRepository = aidasProjectRepository;
-        this.aidasUploadRepository = aidasUploadRepository;
-        this.aidasDownloadRepository = aidasDownloadRepository;
         String format = "yyyy_MM_dd_HH_mm";
         DateFormat dateFormatter = new SimpleDateFormat(format);
         String createDate = dateFormatter.format(new Date());
         String separator = FileSystems.getDefault().getSeparator();
         String tmpdir = System.getProperty("java.io.tmpdir");
-        this.tempFolder =  tmpdir+separator+aidasProject.getId()+"_"+aidasProject.getName()+"_"+createDate+"_"+this.status;
-        this.zipFile= tmpdir+separator+aidasProject.getId()+"_"+aidasProject.getName()+"_"+createDate+"_"+this.status+".zip";
+        this.tempFolder =  tmpdir+separator+aidasUser.getId()+"_"+aidasProject.getId()+"_"+aidasProject.getName()+"_"+createDate+"_"+this.status;
+        this.zipFile= tmpdir+separator+aidasUser.getId()+"_"+aidasProject.getId()+"_"+aidasProject.getName()+"_"+createDate+"_"+this.status+".zip";
+        this.zipFileKey = aidasUser.getId()+"_"+aidasProject.getId()+"_"+aidasProject.getName()+"_"+createDate+"_"+this.status+".zip";
         File f = new File(this.tempFolder);
         if(!f.exists()){
             f.mkdir();
@@ -67,38 +166,35 @@ public class DownloadUploadS3  implements  Runnable{
 
     }
 
-    public DownloadUploadS3(AidasObject aidasObject,String status, AidasObjectRepository aidasObjectRepository, AidasUploadRepository aidasUploadRepository, AidasDownloadRepository aidasDownloadRepository){
+    public void setUp(AidasObject aidasObject,String status){
         this.resource = "object";
         this.status = status;
         this.aidasObject= aidasObject;
-        this.aidasObjectRepository = aidasObjectRepository;
-        this.aidasUploadRepository = aidasUploadRepository;
-        this.aidasDownloadRepository = aidasDownloadRepository;
         String format = "yyyy_MM_dd_HH_mm";
         DateFormat dateFormatter = new SimpleDateFormat(format);
         String createDate = dateFormatter.format(new Date());
         String separator = FileSystems.getDefault().getSeparator();
         String tmpdir = System.getProperty("java.io.tmpdir");
-        this.tempFolder =  tmpdir+separator+aidasObject.getId()+"_"+aidasObject.getName()+"_"+createDate+"_"+this.status;
-        this.zipFile= tmpdir+separator+aidasObject.getId()+"_"+aidasObject.getName()+"_"+createDate+"_"+this.status+".zip";
+        this.tempFolder =  tmpdir+separator+aidasUser.getId()+"_"+aidasObject.getId()+"_"+aidasObject.getName()+"_"+createDate+"_"+this.status;
+        this.zipFile= tmpdir+separator+aidasUser.getId()+"_"+aidasObject.getId()+"_"+aidasObject.getName()+"_"+createDate+"_"+this.status+".zip";
+        this.zipFileKey = aidasUser.getId()+"_"+aidasObject.getId()+"_"+aidasObject.getName()+"_"+createDate+"_"+this.status+".zip";
         File f = new File(this.tempFolder);
         if(!f.exists()){
             f.mkdir();
         }
     }
 
-    public DownloadUploadS3(List<Long> uploadedFileIds, AidasUploadRepository aidasUploadRepository, AidasDownloadRepository aidasDownloadRepository){
+    public void setUp(List<Long> uploadedFileIds){
         this.resource = "uploads";
         this.uploadedFileIds= uploadedFileIds;
-        this.aidasUploadRepository = aidasUploadRepository;
-        this.aidasDownloadRepository = aidasDownloadRepository;
         String format = "yyyy_MM_dd_HH_mm";
         DateFormat dateFormatter = new SimpleDateFormat(format);
         String createDate = dateFormatter.format(new Date());
         String separator = FileSystems.getDefault().getSeparator();
         String tmpdir = System.getProperty("java.io.tmpdir");
-        this.tempFolder =  tmpdir+separator+createDate+"_"+this.status;
-        this.zipFile= tmpdir+separator+createDate+"_"+this.status+".zip";
+        this.tempFolder =  tmpdir+aidasUser.getId()+"_"+createDate+"_"+this.status;
+        this.zipFile= tmpdir+aidasUser.getId()+"_"+createDate+"_"+this.status+".zip";
+        this.zipFileKey = aidasUser.getId()+"_"+createDate+"_"+this.status+".zip";
         File f = new File(this.tempFolder);
         if(!f.exists()){
             f.mkdir();
@@ -112,58 +208,47 @@ public class DownloadUploadS3  implements  Runnable{
         String accessSecret ="";
         String region = "";
         String bucketName = "";
-            if(this.resource.equals("project")){
-                if(this.status.equals("approved")){
+        try {
+            if (this.resource.equals("project")) {
+                if (this.status.equals("approved")) {
                     uploads = this.aidasUploadRepository.getAidasUploadsByAidasUserAidasObjectMapping_AidasObject_AidasProjectAndStatusIsTrue(this.aidasProject);
-                }else if(this.status.equals("rejected")){
+                } else if (this.status.equals("rejected")) {
                     uploads = this.aidasUploadRepository.getAidasUploadsByAidasUserAidasObjectMapping_AidasObject_AidasProjectAndStatusIsFalse(this.aidasProject);
-                }else{
+                } else {
                     uploads = this.aidasUploadRepository.getAidasUploadsByAidasUserAidasObjectMapping_AidasObject_AidasProjectAndStatusIsNull(this.aidasProject);
                 }
-            }else if(this.resource.equals("object")){
-                if(this.status.equals("approved")){
+            } else if (this.resource.equals("object")) {
+                if (this.status.equals("approved")) {
                     uploads = this.aidasUploadRepository.getAidasUploadsByAidasUserAidasObjectMapping_AidasObjectAndStatusIsTrue(this.aidasObject);
-                }else if(this.status.equals("rejected")){
+                } else if (this.status.equals("rejected")) {
                     uploads = this.aidasUploadRepository.getAidasUploadsByAidasUserAidasObjectMapping_AidasObjectAndStatusIsFalse(this.aidasObject);
-                }else{
+                } else {
                     uploads = this.aidasUploadRepository.getAidasUploadsByAidasUserAidasObjectMapping_AidasObjectAndStatusIsNull(this.aidasObject);
                 }
-            }else if(this.resource.equals("uploads")){
-                if(uploadedFileIds.size()>0){
-                    uploads = new ArrayList<>();
-                }
-                for(Long uploadId:uploadedFileIds){
-                    uploads.add(this.aidasUploadRepository.getById(uploadId));
-                }
+            } else if (this.resource.equals("uploads")) {
+                uploads = this.aidasUploadRepository.findAllById(uploadedFileIds);
             }
-            if(uploads!=null){
-                for(AidasUpload au:uploads){
-                    for(AidasObjectProperty aop: au.getAidasUserAidasObjectMapping().getAidasObject().getAidasObjectProperties()){
-                        if(aop.getAidasProperties().getName().equals("accessKey")){
+            if (uploads != null) {
+                for (AidasUpload au : uploads) {
+                    for (AidasObjectProperty aop : au.getAidasUserAidasObjectMapping().getAidasObject().getAidasObjectProperties()) {
+                        if (aop.getAidasProperties().getName().equals("accessKey")) {
                             accessKey = aop.getValue();
                         }
-                        if(aop.getAidasProperties().getName().equals("accessSecret")){
+                        if (aop.getAidasProperties().getName().equals("accessSecret")) {
                             accessSecret = aop.getValue();
                         }
-                        if(aop.getAidasProperties().getName().equals("region")){
+                        if (aop.getAidasProperties().getName().equals("region")) {
                             region = aop.getValue();
                         }
-                        if(aop.getAidasProperties().getName().equals("bucketName")){
+                        if (aop.getAidasProperties().getName().equals("bucketName")) {
                             bucketName = aop.getValue();
                         }
                     }
-                    try {
-                        download(accessKey,accessSecret,bucketName,region,au.getObjectKey());
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-                try {
+                    download(accessKey, accessSecret, bucketName, region, au.getObjectKey());
+                   }
                     zip();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                upload(accessKey,accessSecret,bucketName,region);
+                    upload(accessKey, accessSecret, bucketName, region);
+
                 AidasDownload aidasDownload = new AidasDownload();
                 aidasDownload.setName(this.zipFile);
                 aidasDownload.setAwsKey(accessKey);
@@ -172,18 +257,33 @@ public class DownloadUploadS3  implements  Runnable{
                 aidasDownload.setRegion(region);
                 aidasDownload.setObjectKey(this.zipFile);
                 aidasDownload.setDateUploaded(Instant.now());
-                if(aidasObject!=null){
+                if (aidasObject != null) {
                     aidasDownload.setAidasObject(aidasObject);
                 }
-                if(aidasProject!=null){
+                if (aidasProject != null) {
                     aidasDownload.setAidasProject(aidasProject);
                 }
-                if(uploadedFileIds!=null){
+                if (uploadedFileIds != null) {
                     aidasDownload.setUploadedObjectIds(uploadedFileIds.toString());
                 }
                 aidasDownloadRepository.save(aidasDownload);
+            }
+        }catch(Exception e){
+            MimeMessage msg = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = null;
+            try {
+                helper = new MimeMessageHelper(msg, true);
+                helper.setTo(aidasUser.getEmail());
+                helper.setSubject("Unable to create donloadable objects"+this.zipFileKey);
+                helper.setText("<h1>Unable to create downloadable zip.  Please try again</h1>", true);
+                javaMailSender.send(msg);
+            } catch (MessagingException ex) {
+                ex.printStackTrace();
+            }
         }
     }
+
+
 
     private void download(String accessKey, String accessSecret, String bucketName, String region, String key) throws IOException {
         Path dest = Paths.get(this.tempFolder+"/"+key);
@@ -192,14 +292,13 @@ public class DownloadUploadS3  implements  Runnable{
         AwsBasicCredentials awsCreds = AwsBasicCredentials.create(accessKey, accessSecret);
         S3Client s3client = S3Client.builder().credentialsProvider(StaticCredentialsProvider.create(awsCreds)).region(Region.of(region)).build();
         GetObjectRequest getObjectRequest = GetObjectRequest.builder().bucket(bucketName).key(key).build();
-        System.out.println(accessKey+" ###Secret### "+accessSecret+" ###BucketName#### "+bucketName+" ####Region### "+region+" ###ObjectKey####  "+key);
         s3client.getObject(getObjectRequest, ResponseTransformer.toFile(dest));
     }
 
     public void zip( ) throws IOException {
-        Path zipFile = Paths.get(this.zipFile);
+        Path zipFilePath = Paths.get(this.zipFile);
         Path sourceDirPath = Paths.get(this.tempFolder);
-        try (ZipOutputStream zipOutputStream = new ZipOutputStream(Files.newOutputStream(zipFile));
+        try (ZipOutputStream zipOutputStream = new ZipOutputStream(Files.newOutputStream(zipFilePath));
              Stream<Path> paths = Files.walk(sourceDirPath)) {
             paths
                 .filter(path -> !Files.isDirectory(path))
@@ -214,16 +313,40 @@ public class DownloadUploadS3  implements  Runnable{
                     }
                 });
         }
-        System.out.println("Zip is created at : "+zipFile);
     }
 
-    private void upload(String accessKey, String accessSecret, String bucketName, String region){
+    private void upload(String accessKey, String accessSecret, String bucketName, String region) throws MessagingException {
         Map<String, String> metadata = new HashMap<>();
-        metadata.put("x-amz-meta-file", this.zipFile);
+        metadata.put("x-amz-meta-file", this.zipFileKey);
         AwsBasicCredentials awsCreds = AwsBasicCredentials.create(accessKey, accessSecret);
         S3Client s3client = S3Client.builder().credentialsProvider(StaticCredentialsProvider.create(awsCreds)).region(Region.of(region)).build();
-        PutObjectRequest putOb = PutObjectRequest.builder().bucket(bucketName).key(this.zipFile).metadata(metadata).build();
+        PutObjectRequest putOb = PutObjectRequest.builder().bucket(bucketName).key(this.zipFileKey).metadata(metadata).build();
         PutObjectResponse response = s3client.putObject(putOb, software.amazon.awssdk.core.sync.RequestBody.fromBytes(getObjectFile(this.zipFile)));
+
+        java.util.Date expiration = new java.util.Date();
+        long expTimeMillis = expiration.getTime();
+        expTimeMillis += 1000 * 60 * 60;
+        expiration.setTime(expTimeMillis);
+
+        S3Presigner presigner = S3Presigner.builder().credentialsProvider(StaticCredentialsProvider.create(awsCreds)).region(Region.of(region)).build();// .create();
+        GetObjectRequest getObjectRequest =
+            GetObjectRequest.builder()
+                .bucket(bucketName)
+                .key(this.zipFileKey)
+                .build();
+        GetObjectPresignRequest getObjectPresignRequest = GetObjectPresignRequest.builder().signatureDuration(Duration.ofMinutes(10))
+                .getObjectRequest(getObjectRequest)
+                .build();
+        PresignedGetObjectRequest presignedGetObjectRequest = presigner.presignGetObject(getObjectPresignRequest);
+
+        MimeMessage msg = javaMailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(msg, true);
+        helper.setTo(aidasUser.getEmail());
+        helper.setSubject("Download objects"+this.zipFileKey);
+        helper.setText("<h1>Check attachment for zipfiles!</h1>"+presignedGetObjectRequest.url(), true);
+        FileSystemResource res = new FileSystemResource(new File(this.zipFile));
+        helper.addAttachment(this.zipFileKey, res);
+        javaMailSender.send(msg);
     }
 
     private static byte[] getObjectFile(String filePath) {

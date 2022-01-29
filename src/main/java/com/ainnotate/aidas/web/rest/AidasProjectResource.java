@@ -8,11 +8,16 @@ import com.ainnotate.aidas.repository.search.AidasProjectSearchRepository;
 import com.ainnotate.aidas.security.AidasAuthoritiesConstants;
 import com.ainnotate.aidas.security.SecurityUtils;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
+
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import javax.mail.MessagingException;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import org.slf4j.Logger;
@@ -25,6 +30,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -495,7 +502,7 @@ public class AidasProjectResource {
     TaskExecutor uploadDownloadTaskExecutor;
 
     @Autowired
-    AidasDownloadRepository aidasDownloadRepository;
+    DownloadUploadS3 downloadUploadS3;
     /**
      * {@code GET  /download/:id/:status} : download objects with the "id" aidasObject and provided status.  User "all" for download both.
      *
@@ -505,7 +512,14 @@ public class AidasProjectResource {
      */
     @GetMapping("/download/project/{id}/{status}")
     public void downloadUploadedObjectsOfProject(@PathVariable("id") Long id,@PathVariable("status") String status){
+        AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        downloadUploadS3.setAidasUser(aidasUser);
         AidasProject aidasProject = aidasProjectRepository.getById(id);
-        uploadDownloadTaskExecutor.execute(new DownloadUploadS3(aidasProject,status,aidasProjectRepository,aidasUploadRepository,aidasDownloadRepository));
+        downloadUploadS3.setUp(aidasProject,status);
+        uploadDownloadTaskExecutor.execute(downloadUploadS3);
     }
+
+
+
+
 }

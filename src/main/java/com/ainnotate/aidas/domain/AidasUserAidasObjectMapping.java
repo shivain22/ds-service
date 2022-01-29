@@ -32,12 +32,12 @@ public class AidasUserAidasObjectMapping implements Serializable {
     @Column(name = "status")
     private Boolean status;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false,fetch = FetchType.EAGER)
     @NotNull
     @JsonIgnoreProperties(value = { "aidasOrganisation", "aidasCustomer", "aidasVendor" }, allowSetters = true)
     private AidasUser aidasUser;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false,fetch = FetchType.EAGER)
     @NotNull
     @JsonIgnoreProperties(value = { "aidasProject" }, allowSetters = true)
     private AidasObject aidasObject;

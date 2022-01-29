@@ -4,11 +4,13 @@ import static org.elasticsearch.index.query.QueryBuilders.*;
 
 import com.ainnotate.aidas.domain.AidasObject;
 import com.ainnotate.aidas.domain.AidasUpload;
+import com.ainnotate.aidas.domain.AidasUser;
 import com.ainnotate.aidas.domain.AidasUserAidasObjectMapping;
 import com.ainnotate.aidas.dto.UploadByUserObjectMappingDto;
 import com.ainnotate.aidas.dto.UploadDto;
 import com.ainnotate.aidas.repository.*;
 import com.ainnotate.aidas.repository.search.AidasUploadSearchRepository;
+import com.ainnotate.aidas.security.SecurityUtils;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -30,6 +32,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -379,7 +382,7 @@ public class AidasUploadResource {
     TaskExecutor uploadDownloadTaskExecutor;
 
     @Autowired
-    AidasDownloadRepository aidasDownloadRepository;
+    DownloadUploadS3 downloadUploadS3;
     /**
      * {@code GET  /download/uploads/} : download objects with the "id" aidasObject and provided status.  User "all" for download both.
      *
@@ -388,6 +391,9 @@ public class AidasUploadResource {
      */
     @PostMapping("/download/uploads")
     public void downloadUploadedObjects(@RequestBody List<Long> uploadIds){
-        uploadDownloadTaskExecutor.execute(new DownloadUploadS3(uploadIds,aidasUploadRepository,aidasDownloadRepository));
+        AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        downloadUploadS3.setAidasUser(aidasUser);
+        downloadUploadS3.setUp(uploadIds);
+        uploadDownloadTaskExecutor.execute(downloadUploadS3);
     }
 }

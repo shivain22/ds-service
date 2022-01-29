@@ -69,7 +69,7 @@ public class AidasUpload implements Serializable {
         this.objectKey = objectKey;
     }
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false,fetch = FetchType.EAGER)
     @JsonIgnoreProperties(value = { "aidasUser", "aidasObject", "aidasUploads" }, allowSetters = true)
     private AidasUserAidasObjectMapping aidasUserAidasObjectMapping;
 

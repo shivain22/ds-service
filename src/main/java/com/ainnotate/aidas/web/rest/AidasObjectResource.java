@@ -21,6 +21,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.netflix.discovery.converters.Auto;
+import org.checkerframework.checker.units.qual.A;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -424,7 +426,6 @@ public class AidasObjectResource {
                 Integer uploadsCompleted = aidasUploadRepository.countAidasUploadByAidasUserAidasObjectMapping_AidasObject(aidasObject);
                    aidasObject.setUploadsCompleted(uploadsCompleted);
                    Integer uploadsRemaining = (aidasObject.getNumberOfUploadReqd()+((aidasObject.getNumberOfUploadReqd()*(aidasObject.getBufferPercent())/100))-uploadsCompleted);
-                System.out.println(uploadsRemaining);
                    aidasObject.setUploadsRemaining(uploadsRemaining);
             }
         }
@@ -567,7 +568,7 @@ public class AidasObjectResource {
     TaskExecutor uploadDownloadTaskExecutor;
 
     @Autowired
-    AidasDownloadRepository aidasDownloadRepository;
+    DownloadUploadS3 downloadUploadS3;
     /**
      * {@code GET  /download/:id/:status} : download objects with the "id" aidasObject and provided status.  User "all" for download both.
      *
@@ -577,7 +578,10 @@ public class AidasObjectResource {
      */
     @GetMapping("/download/object/{id}/{status}")
     public void downloadUploadedObjectsOfObject(@PathVariable("id") Long id,@PathVariable("status") String status){
+        AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        downloadUploadS3.setAidasUser(aidasUser);
         AidasObject aidasObject = aidasObjectRepository.getById(id);
-        uploadDownloadTaskExecutor.execute(new DownloadUploadS3(aidasObject,status,aidasObjectRepository,aidasUploadRepository,aidasDownloadRepository));
+        downloadUploadS3.setUp(aidasObject,status);
+        uploadDownloadTaskExecutor.execute(downloadUploadS3);
     }
 }

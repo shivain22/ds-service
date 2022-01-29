@@ -269,10 +269,12 @@ public class AidasOrganisationResource {
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         Page<AidasOrganisation> page = aidasOrganisationSearchRepository.search(query, pageable);
         Predicate<AidasOrganisation> isNotDefault = aidasOrganisation -> !aidasOrganisation.getId().equals(-1l);
-        page.getContent().removeIf(isNotDefault);
-        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN)) {
-            Predicate<AidasOrganisation> isQualified = aidasOrganisation -> !aidasOrganisation.equals(aidasUser.getAidasOrganisation());
-            page.getContent().removeIf(isQualified);
+        Iterator<AidasOrganisation> it = page.getContent().iterator();
+        while(it.hasNext()){
+            AidasOrganisation ao = it.next();
+            if(ao.getId().equals(-1l)){
+                it.remove();
+            }
         }
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
