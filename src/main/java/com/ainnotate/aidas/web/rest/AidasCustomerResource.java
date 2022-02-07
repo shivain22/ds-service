@@ -225,6 +225,8 @@ public class AidasCustomerResource {
             page = aidasCustomerRepository.findAllByIdGreaterThan(pageable,-1l);
         }else if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null) {
             page = aidasCustomerRepository.findAllByAidasOrganisation(pageable,aidasUser.getAidasOrganisation());
+        }else if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN) && aidasUser.getAidasCustomer()!=null) {
+            page = aidasCustomerRepository.findAllByIdEquals(pageable, aidasUser.getAidasCustomer().getId());
         }
         if(page!=null ){
             HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);

@@ -1,5 +1,6 @@
 package com.ainnotate.aidas.web.rest;
 
+import com.ainnotate.aidas.domain.AidasDashboard;
 import com.ainnotate.aidas.domain.AidasDownload;
 import com.ainnotate.aidas.domain.AidasUpload;
 import com.ainnotate.aidas.repository.*;
@@ -59,17 +60,16 @@ public class AidasDashboardResource {
     private AidasUploadRepository aidasUploadRepository;
 
     /**
-     * {@code GET  /aidas-downloads} : get all the aidasUploads.
+     * {@code GET  /aidas-dashboard} : get all the dashboard metrics.
      *
-     * @param pageable the pagination information.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of aidasDownloads in body.
+     *
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of aidasDashboard in body.
      */
     @GetMapping("/aidas-dashboard")
-    public ResponseEntity<List<AidasDownload>> getAllAidasUploads(Pageable pageable) {
+    public ResponseEntity<AidasDashboard> getAllAidasUploads() {
         log.debug("REST request to get a page of AidasDownloads");
-        Page<AidasDownload> page = aidasDownloadRepository.findAll(pageable);
-        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
-        return ResponseEntity.ok().headers(headers).body(page.getContent());
+        AidasDashboard ad = new AidasDashboard();
+        return ResponseEntity.ok().body(ad);
     }
 
 
