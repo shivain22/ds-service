@@ -6,6 +6,7 @@ import com.ainnotate.aidas.domain.AidasAuthority;
 import com.ainnotate.aidas.domain.AidasCustomer;
 import com.ainnotate.aidas.domain.AidasOrganisation;
 import com.ainnotate.aidas.domain.AidasUser;
+import com.ainnotate.aidas.repository.AidasCustomerRepository;
 import com.ainnotate.aidas.repository.AidasOrganisationRepository;
 import com.ainnotate.aidas.repository.AidasUserRepository;
 import com.ainnotate.aidas.repository.search.AidasOrganisationSearchRepository;
@@ -56,6 +57,8 @@ public class AidasOrganisationResource {
     private String applicationName;
 
     private final AidasOrganisationRepository aidasOrganisationRepository;
+
+
 
     private final AidasOrganisationSearchRepository aidasOrganisationSearchRepository;
 
@@ -194,7 +197,7 @@ public class AidasOrganisationResource {
      * @param pageable the pagination information.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of aidasOrganisations in body.
      */
-    @Secured({AidasAuthoritiesConstants.ADMIN,AidasAuthoritiesConstants.ORG_ADMIN})
+    @Secured({AidasAuthoritiesConstants.ADMIN,AidasAuthoritiesConstants.ORG_ADMIN,AidasAuthoritiesConstants.CUSTOMER_ADMIN})
     @GetMapping("/aidas-organisations")
     public ResponseEntity<List<AidasOrganisation>> getAllAidasOrganisations(Pageable pageable) {
         log.debug("REST request to get a page of AidasOrganisations");
@@ -207,6 +210,11 @@ public class AidasOrganisationResource {
             if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN)){
                 if(aidasUser.getAidasOrganisation()!=null){
                     page = aidasOrganisationRepository.findAllById(aidasUser.getAidasOrganisation().getId(),pageable);
+                }
+            }
+            if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN)){
+                if(aidasUser.getAidasCustomer()!=null){
+                    page = aidasOrganisationRepository.findAllByCustomer(aidasUser.getAidasCustomer().getAidasOrganisation().getId(),pageable);
                 }
             }
         }

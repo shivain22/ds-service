@@ -431,6 +431,20 @@ public class AidasUserResource {
     }
 
     /**
+     * {@code GET  /aidas-users} : get all the aidasUsers.
+     *
+     *  @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of aidasUsers in body.
+     */
+    @GetMapping("/aidas-vendor-users")
+    public ResponseEntity<List<AidasUser>> getAllAidasVendorUsers() {
+        log.debug("REST request to get a page of AidasUsers");
+        AidasUser loggedInUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        AidasAuthority aidasAuthority = aidasAuthorityRepository.findByName(AidasAuthoritiesConstants.VENDOR_USER);
+        List<AidasUser> aidasUsers = aidasUserRepository.findAllByAidasAuthoritiesEquals(aidasAuthority);
+        return ResponseEntity.ok().body(aidasUsers);
+    }
+
+    /**
      * {@code GET  /aidas-users/:id} : get the "id" aidasUser.
      *
      * @param id the id of the aidasUser to retrieve.

@@ -17,4 +17,10 @@ public interface AidasCustomerRepository extends JpaRepository<AidasCustomer, Lo
     Page<AidasCustomer> findAllByIdGreaterThan(Pageable page, Long id);
     Page<AidasCustomer> findAllByIdEquals(Pageable page, Long customerId);
 
+    Long countAidasCustomerByAidasOrganisation(AidasOrganisation aidasOrganisation);
+
+    @Query(value = "select count(*) from (select ac.id,count(*) from aidas_user_obj_map auom, aidas_user au, aidas_object ao, aidas_project ap, aidas_customer ac where auom.aidas_object_id=ao.id and auom.aidas_user_id=au.id and ao.aidas_project_id=ap.id and ap.aidas_customer_id=ac.id and au.aidas_vendor_id=?1 group by ac.id)a",nativeQuery = true)
+    Long countAidasCustomerCountForVendorAdmin(Long aidasVendorId);
+
+
 }

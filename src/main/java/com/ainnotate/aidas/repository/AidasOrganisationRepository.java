@@ -15,4 +15,8 @@ public interface AidasOrganisationRepository extends JpaRepository<AidasOrganisa
 
     Page<AidasOrganisation> findAllById(Long id, Pageable page);
     Page<AidasOrganisation> findAllByIdGreaterThan(Long id, Pageable page);
+
+    @Query(value = "select * from aidas_organisation where id=?1",nativeQuery = true)
+    Page<AidasOrganisation> findAllByCustomer(Long id, Pageable page);
+
 }

@@ -412,7 +412,7 @@ public class AidasProjectResource {
             aidasProject = aidasProjectRepository.findAllProjectsByOrgAdminProject(aidasUser.getAidasOrganisation(),id);
         }
         if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN) && aidasUser.getAidasCustomer()!=null ){
-            aidasProject = aidasProjectRepository.findAllProjectsByCustomerAdminProject(aidasUser.getAidasCustomer(),id);
+            aidasProject = aidasProjectRepository.findAllProjectsByCustomerAdminProject(aidasUser.getAidasCustomer().getId(),id);
         }
         if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.VENDOR_ADMIN )|| aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
             aidasProject = aidasProjectRepository.findAllProjectsByVendorAdminProject(aidasUser.getAidasVendor(),id);
