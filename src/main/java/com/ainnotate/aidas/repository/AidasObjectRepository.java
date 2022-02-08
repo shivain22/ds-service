@@ -45,4 +45,14 @@ public interface AidasObjectRepository extends JpaRepository<AidasObject, Long> 
     @Query(value="select o.* from aidas_project p, aidas_object o,  aidas_user_obj_map am ,aidas_user u where  am.aidas_object_id=o.id and o.aidas_project_id=p.id and am.aidas_user_id=u.id and u.aidas_vendor_id= ?1 and p.id=?2",nativeQuery = true)
     Page<AidasObject> findAllObjectsByOrgAdminProject(Pageable pageable,AidasOrganisation aidasOrganisation,Long aidasProjectId);
 
+    Long countAidasObjectByAidasProject_AidasCustomer_AidasOrganisation(AidasOrganisation aidasOrganisation);
+
+    Long countAidasObjectByAidasProject_AidasCustomer(AidasCustomer aidasCustomer);
+
+    @Query(value="select count(*) from (select ao.id,count(*) from aidas_user_obj_map auom, aidas_user au, aidas_object ao where auom.aidas_object_id=ao.id and auom.aidas_user_id=au.id and au.aidas_vendor_id=?1 group by ao.id)a",nativeQuery = true)
+    Long countAidasObjectByVendor(Long aidasVendorId);
+
+    @Query(value="select count(*) from (select ao.id from aidas_upload au,aidas_user_obj_map auom, aidas_object ao where  auom.aidas_object_id=ao.id and au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_user_id=?1 group by ao.id)a;",nativeQuery = true)
+    Long countAidasProjectByVendorUser(Long aidasVendorUserId);
+
 }
