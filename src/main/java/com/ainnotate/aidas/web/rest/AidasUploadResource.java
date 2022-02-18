@@ -84,6 +84,7 @@ public class AidasUploadResource {
         if (aidasUpload.getId() != null) {
             throw new BadRequestAlertException("A new aidasUpload cannot already have an ID", ENTITY_NAME, "idexists");
         }
+        aidasUpload.setStatus(2);
         AidasUpload result = aidasUploadRepository.save(aidasUpload);
         aidasUploadSearchRepository.save(result);
         return ResponseEntity
@@ -221,7 +222,7 @@ public class AidasUploadResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
         AidasUpload aidasUpload = aidasUploadRepository.getById(id);
-        aidasUpload.setStatus(true);
+        aidasUpload.setStatus(1);
         AidasUpload result = aidasUploadRepository.save(aidasUpload);
         //aidasUploadSearchRepository.save(result);
         return ResponseEntity
@@ -248,7 +249,7 @@ public class AidasUploadResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
         AidasUpload aidasUpload = aidasUploadRepository.getById(id);
-        aidasUpload.setStatus(true);
+        aidasUpload.setStatus(0);
         AidasUpload result = aidasUploadRepository.save(aidasUpload);
         //aidasUploadSearchRepository.save(result);
         return ResponseEntity

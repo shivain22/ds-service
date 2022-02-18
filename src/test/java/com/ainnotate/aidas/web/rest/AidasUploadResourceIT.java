@@ -51,8 +51,8 @@ class AidasUploadResourceIT {
     private static final Instant DEFAULT_DATE_UPLOADED = Instant.now();
     private static final Instant UPDATED_DATE_UPLOADED = Instant.now();
 
-    private static final Boolean DEFAULT_STATUS = false;
-    private static final Boolean UPDATED_STATUS = true;
+    private static final Integer DEFAULT_STATUS = 2;
+    private static final Integer UPDATED_STATUS = 1;
 
     private static final ZonedDateTime DEFAULT_STATUS_MODIFIED_DATE = ZonedDateTime.ofInstant(Instant.ofEpochMilli(0L), ZoneOffset.UTC);
     private static final ZonedDateTime UPDATED_STATUS_MODIFIED_DATE = ZonedDateTime.now(ZoneId.systemDefault()).withNano(0);
@@ -233,7 +233,7 @@ class AidasUploadResourceIT {
             .andExpect(jsonPath("$.[*].id").value(hasItem(aidasUpload.getId().intValue())))
             .andExpect(jsonPath("$.[*].name").value(hasItem(DEFAULT_NAME)))
             //.andExpect(jsonPath("$.[*].dateUploaded").value(hasItem(sameInstant(DEFAULT_DATE_UPLOADED))))
-            .andExpect(jsonPath("$.[*].status").value(hasItem(DEFAULT_STATUS.booleanValue())))
+            .andExpect(jsonPath("$.[*].status").value(hasItem(DEFAULT_STATUS)))
             .andExpect(jsonPath("$.[*].statusModifiedDate").value(hasItem(sameInstant(DEFAULT_STATUS_MODIFIED_DATE))))
             .andExpect(jsonPath("$.[*].rejectReason").value(hasItem(DEFAULT_REJECT_REASON)));
     }
@@ -252,7 +252,7 @@ class AidasUploadResourceIT {
             .andExpect(jsonPath("$.id").value(aidasUpload.getId().intValue()))
             .andExpect(jsonPath("$.name").value(DEFAULT_NAME))
             //.andExpect(jsonPath("$.dateUploaded").value(sameInstant(DEFAULT_DATE_UPLOADED)))
-            .andExpect(jsonPath("$.status").value(DEFAULT_STATUS.booleanValue()))
+            .andExpect(jsonPath("$.status").value(DEFAULT_STATUS))
             .andExpect(jsonPath("$.statusModifiedDate").value(sameInstant(DEFAULT_STATUS_MODIFIED_DATE)))
             .andExpect(jsonPath("$.rejectReason").value(DEFAULT_REJECT_REASON));
     }
@@ -564,7 +564,7 @@ class AidasUploadResourceIT {
             .andExpect(jsonPath("$.[*].id").value(hasItem(aidasUpload.getId().intValue())))
             .andExpect(jsonPath("$.[*].name").value(hasItem(DEFAULT_NAME)))
             //.andExpect(jsonPath("$.[*].dateUploaded").value(hasItem(sameInstant(DEFAULT_DATE_UPLOADED))))
-            .andExpect(jsonPath("$.[*].status").value(hasItem(DEFAULT_STATUS.booleanValue())))
+            .andExpect(jsonPath("$.[*].status").value(hasItem(DEFAULT_STATUS)))
             .andExpect(jsonPath("$.[*].statusModifiedDate").value(hasItem(sameInstant(DEFAULT_STATUS_MODIFIED_DATE))))
             .andExpect(jsonPath("$.[*].rejectReason").value(hasItem(DEFAULT_REJECT_REASON)));
     }

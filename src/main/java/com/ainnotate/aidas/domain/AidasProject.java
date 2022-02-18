@@ -6,6 +6,10 @@ import java.util.HashSet;
 import java.util.Set;
 import javax.persistence.*;
 import javax.validation.constraints.*;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -16,6 +20,25 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 @Table(name = "aidas_project")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @org.springframework.data.elasticsearch.annotations.Document(indexName = "aidasproject")
+@AllArgsConstructor
+@NoArgsConstructor
+@SqlResultSetMapping(
+    name = "findAllDataMapping",
+    classes = @ConstructorResult(
+        targetClass = AidasProject.class,
+        columns = {
+            @ColumnResult(name = "id"),
+            @ColumnResult(name = "name"),
+            @ColumnResult(name = "description"),
+            @ColumnResult(name = "project_type"),
+            @ColumnResult(name = "totalUploaded"),
+            @ColumnResult(name = "totalApproved"),
+            @ColumnResult(name = "totalRejected"),
+            @ColumnResult(name = "totalPending")
+        }
+    )
+)
+@NamedNativeQuery(name = "findAllDataMapping", resultClass = AidasProject.class,resultSetMapping ="findAllDataMapping" , query="select ap.*, count(au.id) totalUploaded,SUM(CASE WHEN au.status = 1 THEN 1 ELSE 0 END) AS totalApproved,SUM(CASE WHEN au.status = 0 THEN 1 ELSE 0 END) AS totalRejected,SUM(CASE WHEN au.status = 2 THEN 1 ELSE 0 END) AS totalPending from aidas_project ap left outer join aidas_object ao on ao.aidas_project_id=ap.id left outer join aidas_user_obj_map am on am.aidas_object_id=ao.id left outer join aidas_upload au on au.aidas_user_aidas_object_mapping_id=am.id where am.aidas_user_id= ?1 group by ap.id")
 public class AidasProject implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -35,6 +58,58 @@ public class AidasProject implements Serializable {
 
     @Column(name = "project_type")
     private String projectType;
+
+    @Transient
+    @Column (name = "total_uploaded")
+    @JsonProperty
+    private Integer totalUploaded;
+
+    @Transient
+    @Column(name = "total_approved")
+    @JsonProperty
+    private Integer totalApproved;
+
+    @Transient
+    @Column(name = "total_rejected")
+    @JsonProperty
+    private Integer totalRejected;
+
+    @Transient
+    @Column(name = "total_pending")
+    @JsonProperty
+    private Integer totalPending;
+
+    public Integer getTotalUploaded() {
+        return totalUploaded;
+    }
+
+    public void setTotalUploaded(Integer totalUploaded) {
+        this.totalUploaded = totalUploaded;
+    }
+
+    public Integer getTotalApproved() {
+        return totalApproved;
+    }
+
+    public void setTotalApproved(Integer totalApproved) {
+        this.totalApproved = totalApproved;
+    }
+
+    public Integer getTotalRejected() {
+        return totalRejected;
+    }
+
+    public void setTotalRejected(Integer totalRejected) {
+        this.totalRejected = totalRejected;
+    }
+
+    public Integer getTotalPending() {
+        return totalPending;
+    }
+
+    public void setTotalPending(Integer totalPending) {
+        this.totalPending = totalPending;
+    }
 
     @ManyToOne(optional = false)
     @NotNull

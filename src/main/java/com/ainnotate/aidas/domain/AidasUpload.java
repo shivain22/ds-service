@@ -39,7 +39,7 @@ public class AidasUpload implements Serializable {
     private Instant dateUploaded;
 
     @Column(name = "status")
-    private Boolean status;
+    private Integer status;
 
     @Column(name = "status_modified_date")
     private ZonedDateTime statusModifiedDate;
@@ -100,7 +100,10 @@ public class AidasUpload implements Serializable {
         this.setId(id);
         return this;
     }
-
+    public AidasUpload status(Integer status) {
+        this.setStatus(status);
+        return this;
+    }
     public void setId(Long id) {
         this.id = id;
     }
@@ -131,16 +134,12 @@ public class AidasUpload implements Serializable {
         this.dateUploaded = dateUploaded;
     }
 
-    public Boolean getStatus() {
-        return this.status;
+
+    public Integer getStatus() {
+        return status;
     }
 
-    public AidasUpload status(Boolean status) {
-        this.setStatus(status);
-        return this;
-    }
-
-    public void setStatus(Boolean status) {
+    public void setStatus(Integer status) {
         this.status = status;
     }
 

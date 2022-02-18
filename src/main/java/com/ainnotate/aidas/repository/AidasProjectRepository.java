@@ -18,7 +18,7 @@ public interface AidasProjectRepository extends JpaRepository<AidasProject, Long
     Page<AidasProject> findAllByAidasCustomer_AidasOrganisation(Pageable page, AidasOrganisation organisation);
     Page<AidasProject> findAllByAidasCustomer(Pageable page,AidasCustomer aidasCustomer);
 
-    @Query(value="select p.* from aidas_project p, aidas_object o,  aidas_user_obj_map am ,aidas_user u where  am.aidas_object_id=o.id and o.aidas_project_id=p.id and am.aidas_user_id=u.id and u.id= ?1",nativeQuery = true)
+    @Query(value="select p.* from aidas_project p, aidas_object o,  aidas_user_obj_map am  where  am.aidas_object_id=o.id and o.aidas_project_id=p.id and am.aidas_user_id= 1 group by p.id",nativeQuery = true)
     Page<AidasProject> findAllProjectsByVendorUser(Pageable page, AidasUser aidasUser);
 
     @Query(value="select p.* from aidas_project p, aidas_object o,  aidas_user_obj_map am ,aidas_user u where  am.aidas_object_id=o.id and o.aidas_project_id=p.id and am.aidas_user_id=u.id and u.aidas_vendor_id= ?1",nativeQuery = true)
@@ -50,5 +50,8 @@ public interface AidasProjectRepository extends JpaRepository<AidasProject, Long
 
     @Query(value="select count(*) from (select ap.id from aidas_upload au,aidas_user_obj_map auom, aidas_object ao, aidas_project ap where ao.aidas_project_id=ap.id and auom.aidas_object_id=ao.id and au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_user_id=?1 group by ap.id)a;",nativeQuery = true)
     Long countAidasProjectByVendorUser(Long aidasVendorUserId);
+
+    @Query(value = "select ap.id as projectId, count(au.id) totalUploaded, SUM(CASE WHEN au.status = 1 THEN 1 ELSE 0 END) AS totalApproved, SUM(CASE WHEN au.status = 0 THEN 1 ELSE 0 END) AS totalRejected, SUM(CASE WHEN au.status =2 THEN 1 ELSE 0 END) AS totalPending from aidas_user_obj_map am,  aidas_object ao, aidas_project ap,aidas_upload au where au.aidas_user_aidas_object_mapping_id=am.id and am.aidas_object_id=ao.id and ao.aidas_project_id=ap.id and ap.id=?1 and am.aidas_user_id=?2", nativeQuery = true)
+    UploadDetail countUploadsByProjectAndUser(Long projectId, Long userId);
 
 }

@@ -415,7 +415,10 @@ public class AidasObjectResource {
         if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN) && aidasUser.getAidasCustomer()!=null ){
             page = aidasObjectRepository.findAllByAidasProject_AidasCustomerAndAidasProject_Id(pageable,aidasUser.getAidasCustomer(),projectId);
         }
-        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.VENDOR_ADMIN) || aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.VENDOR_ADMIN) ){
+            page = aidasObjectRepository.findAllObjectsByVendorAdminProject(pageable,aidasUser.getAidasVendor(),projectId);
+        }
+        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
             page = aidasObjectRepository.findAllObjectsByVendorAdminProject(pageable,aidasUser.getAidasVendor(),projectId);
         }
         if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.USER)){
@@ -427,6 +430,11 @@ public class AidasObjectResource {
                    aidasObject.setUploadsCompleted(uploadsCompleted);
                    Integer uploadsRemaining = (aidasObject.getNumberOfUploadReqd()+((aidasObject.getNumberOfUploadReqd()*(aidasObject.getBufferPercent())/100))-uploadsCompleted);
                    aidasObject.setUploadsRemaining(uploadsRemaining);
+                   UploadDetail ud = aidasObjectRepository.countUploadsByObjectAndUser(aidasUser.getId(),aidasObject.getId());
+                   aidasObject.setTotalUploaded(ud.getTotalUploaded());
+                   aidasObject.setTotalApproved(ud.getTotalApproved());
+                   aidasObject.setTotalRejected(ud.getTotalRejected());
+                   aidasObject.setTotalPending(ud.getTotalPending());
             }
         }
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);

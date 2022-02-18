@@ -56,6 +56,55 @@ public class AidasObject implements Serializable {
     @JsonProperty
     private Integer uploadsRemaining;
 
+
+    @Transient
+    @JsonProperty
+    private Integer totalUploaded;
+
+    @Transient
+    @JsonProperty
+    private Integer totalApproved;
+
+    @Transient
+    @JsonProperty
+    private Integer totalRejected;
+
+    @Transient
+    @JsonProperty
+    private Integer totalPending;
+
+    public Integer getTotalUploaded() {
+        return totalUploaded;
+    }
+
+    public void setTotalUploaded(Integer totalUploaded) {
+        this.totalUploaded = totalUploaded;
+    }
+
+    public Integer getTotalApproved() {
+        return totalApproved;
+    }
+
+    public void setTotalApproved(Integer totalApproved) {
+        this.totalApproved = totalApproved;
+    }
+
+    public Integer getTotalRejected() {
+        return totalRejected;
+    }
+
+    public void setTotalRejected(Integer totalRejected) {
+        this.totalRejected = totalRejected;
+    }
+
+    public Integer getTotalPending() {
+        return totalPending;
+    }
+
+    public void setTotalPending(Integer totalPending) {
+        this.totalPending = totalPending;
+    }
+
     public Integer getUploadsCompleted() {
         return uploadsCompleted;
     }

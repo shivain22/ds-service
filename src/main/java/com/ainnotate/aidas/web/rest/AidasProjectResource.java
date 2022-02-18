@@ -1,7 +1,5 @@
 package com.ainnotate.aidas.web.rest;
 
-import static org.elasticsearch.index.query.QueryBuilders.*;
-
 import com.ainnotate.aidas.domain.*;
 import com.ainnotate.aidas.repository.*;
 import com.ainnotate.aidas.repository.search.AidasProjectSearchRepository;
@@ -9,17 +7,12 @@ import com.ainnotate.aidas.security.AidasAuthoritiesConstants;
 import com.ainnotate.aidas.security.SecurityUtils;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-import javax.mail.MessagingException;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,10 +21,7 @@ import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -376,8 +366,18 @@ public class AidasProjectResource {
         if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN) && aidasUser.getAidasCustomer()!=null ){
             page = aidasProjectRepository.findAllByAidasCustomer(pageable,aidasUser.getAidasCustomer());
         }
-        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.VENDOR_ADMIN) || aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.VENDOR_ADMIN)){
             page =  aidasProjectRepository.findAllProjectsByVendorAdmin(pageable,aidasUser.getAidasVendor());
+        }
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
+            page =  aidasProjectRepository.findAllProjectsByVendorUser(pageable,aidasUser);
+            for(AidasProject ap: page.getContent()){
+                UploadDetail pu = aidasProjectRepository.countUploadsByProjectAndUser(ap.getId(),aidasUser.getId());
+                ap.setTotalUploaded(pu.getTotalUploaded());
+                ap.setTotalApproved(pu.getTotalApproved());
+                ap.setTotalRejected(pu.getTotalRejected());
+                ap.setTotalPending(pu.getTotalPending());
+            }
         }
         if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.USER)){
             page =  aidasProjectRepository.findAllProjectsByVendorUser(pageable,aidasUser);
