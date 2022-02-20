@@ -36,7 +36,7 @@ public interface AidasObjectRepository extends JpaRepository<AidasObject, Long> 
     @Query(value="select ao.* ,count(au.id) total_uploaded, SUM(CASE WHEN au.status = 1 THEN 1 ELSE 0 END) AS total_approved, SUM(CASE WHEN au.status = 0 THEN 1 ELSE 0 END) AS total_rejected, SUM(CASE WHEN au.status = 2 THEN 1 ELSE 0 END) AS total_pending from aidas_object ao left outer join  aidas_user_obj_map am on am.aidas_object_id=ao.id left outer join aidas_upload au on au.aidas_user_aidas_object_mapping_id=am.id where  am.aidas_user_id= ?1 and ao.aidas_project_id=?2 group by ao.id",nativeQuery = true)
     Page<AidasObject> findAllObjectsByVendorUserProject(Pageable pageable,AidasUser aidasUser, Long aidasProjectId);
 
-    @Query(value="select o.* from aidas_project p, aidas_object o,  aidas_user_obj_map am ,aidas_user u where  am.aidas_object_id=o.id and o.aidas_project_id=p.id and am.aidas_user_id=u.id and u.aidas_vendor_id= ?1 and p.id=?2",nativeQuery = true)
+    @Query(value="select o.* from aidas_project p, aidas_object o,  aidas_user_obj_map am ,aidas_user u where  am.aidas_object_id=o.id and o.aidas_project_id=p.id and am.aidas_user_id=u.id and u.aidas_vendor_id= ?1 and p.id=?2 and o.id>-1",nativeQuery = true)
     Page<AidasObject> findAllObjectsByVendorAdminProject(Pageable pageable, AidasVendor aidasVendor, Long aidasProjectId);
 
     @Query(value="select o.* from aidas_project p, aidas_object o,  aidas_user_obj_map am ,aidas_user u where  am.aidas_object_id=o.id and o.aidas_project_id=p.id and am.aidas_user_id=u.id and u.id= ?1 and p.id=?2",nativeQuery = true)
@@ -55,7 +55,9 @@ public interface AidasObjectRepository extends JpaRepository<AidasObject, Long> 
     @Query(value="select count(*) from (select ao.id from aidas_upload au,aidas_user_obj_map auom, aidas_object ao where  auom.aidas_object_id=ao.id and au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_user_id=?1 group by ao.id)a;",nativeQuery = true)
     Long countAidasProjectByVendorUser(Long aidasVendorUserId);
 
-    @Query(value="select ao.id as objectId ,count(au.id) totalUploaded, SUM(CASE WHEN au.status = 1 THEN 1 ELSE 0 END) AS totalApproved, SUM(CASE WHEN au.status = 0 THEN 1 ELSE 0 END) AS totalRejected, SUM(CASE WHEN au.status = 2 THEN 1 ELSE 0 END) AS totalPending from aidas_object ao left outer join  aidas_user_obj_map am on am.aidas_object_id=ao.id left outer join aidas_upload au on au.aidas_user_aidas_object_mapping_id=am.id where  am.aidas_user_id= ?1 and ao.id=?2 group by ao.id",nativeQuery = true)
+    @Query(value="select ao.id as objectId ,count(au.id) totalUploaded, SUM(CASE WHEN au.status = 1 THEN 1 ELSE 0 END) AS totalApproved, SUM(CASE WHEN au.status = 0 THEN 1 ELSE 0 END) AS totalRejected, SUM(CASE WHEN au.status = 2 THEN 1 ELSE 0 END) AS totalPending from aidas_object ao left  join  aidas_user_obj_map am on am.aidas_object_id=ao.id left  join aidas_upload au on au.aidas_user_aidas_object_mapping_id=am.id where  am.aidas_user_id= ?1 and ao.id=?2 group by ao.id " +
+        " union " +
+        " select ao.id as objectId ,count(au.id) totalUploaded, SUM(CASE WHEN au.status = 1 THEN 1 ELSE 0 END) AS totalApproved, SUM(CASE WHEN au.status = 0 THEN 1 ELSE 0 END) AS totalRejected, SUM(CASE WHEN au.status = 2 THEN 1 ELSE 0 END) AS totalPending from aidas_object ao right  join  aidas_user_obj_map am on am.aidas_object_id=ao.id right  join aidas_upload au on au.aidas_user_aidas_object_mapping_id=am.id where  am.aidas_user_id= ?1 and ao.id=?2 group by ao.id",nativeQuery = true)
     UploadDetail countUploadsByObjectAndUser(Long aidasUserId, Long aidasObjectId);
 
 }
