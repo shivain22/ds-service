@@ -68,7 +68,7 @@ public class AidasDashboardResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of aidasDashboard in body.
      */
     @GetMapping("/aidas-dashboard")
-    public ResponseEntity<AidasDashboard> getAllAidasUploads() {
+    public ResponseEntity<AidasDashboard> getDashboardDetails() {
         log.debug("REST request to get a page of AidasDownloads");
         AidasDashboard ad = new AidasDashboard();
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
@@ -133,7 +133,7 @@ public class AidasDashboardResource {
             ad.setVendorCount(1l);
             ad.setProjectCount(aidasProjectRepository.countAidasProjectByVendorUser(aidasUser.getId()));
             ad.setObjectCount(aidasObjectRepository.countAidasProjectByVendorUser(aidasUser.getId()));
-            ad.setUploadCount(aidasUploadRepository.countAidasUploadByAidasVendorUser(aidasUser.getAidasCustomer().getId()));
+            ad.setUploadCount(aidasUploadRepository.countAidasUploadByAidasVendorUser(aidasUser.getAidasVendor().getId()));
             ad.setApprovedUploadCount(aidasUploadRepository.countAidasUploadByAidasVendorUserStatusTrue(aidasUser.getAidasVendor().getId()));
             ad.setRejectedUploadCount(aidasUploadRepository.countAidasUploadByAidasVendorUserStatusFalse(aidasUser.getAidasVendor().getId()));
             ad.setPendingUploadCount(aidasUploadRepository.countAidasUploadByAidasVendorUserStatusIsNull(aidasUser.getAidasVendor().getId()));

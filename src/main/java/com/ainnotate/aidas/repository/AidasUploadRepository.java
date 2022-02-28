@@ -29,8 +29,11 @@ public interface AidasUploadRepository extends JpaRepository<AidasUpload, Long> 
 
     List<AidasUpload> getAidasUploadsByAidasUserAidasObjectMapping_AidasObject_AidasProjectAndStatusIsNull(AidasProject aidasProject);
 
+    @Query(value="select count(*) from aidas_upload  au where au.status=0", nativeQuery = true)
     Long countAidasUploadByStatusFalse();
+    @Query(value="select count(*) from aidas_upload  au where au.status=1", nativeQuery = true)
     Long countAidasUploadByStatusTrue();
+    @Query(value="select count(*) from aidas_upload  au where au.status=2", nativeQuery = true)
     Long countAidasUploadByStatusIsNull();
 
     @Query(value="select count(*) from aidas_upload au, aidas_user_obj_map auom, aidas_object ao, aidas_project ap, aidas_customer ac, aidas_organisation ao1 where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_object_id=ao.id and ao.aidas_project_id=ap.id and ap.aidas_customer_id=ac.id and ac.aidas_organisation_id=ao1.id and ao1.id=?1",nativeQuery = true)
@@ -80,4 +83,13 @@ public interface AidasUploadRepository extends JpaRepository<AidasUpload, Long> 
 
     @Query(value="select count(*) from aidas_upload au, aidas_user_obj_map auom where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_user_id=?1  and au.status is null",nativeQuery = true)
     Long countAidasUploadByAidasVendorUserStatusIsNull(Long aidasVendord);
+
+    @Query(value="select * from aidas_upload au, aidas_user_obj_map auom where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_user_id=?1 and auom.aidas_object_id=?2",nativeQuery = true)
+    List<AidasUpload> findAllByUserAndObject(Long userId, Long objectId);
+
+    @Query(value="select * from aidas_upload au, aidas_user_obj_map auom,aidas_object ao, aidas_project ap where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_object_id=ao.id and ao.aidas_project_id=ap.id and ap.id=?2 and auom.aidas_user_id=?1",nativeQuery = true)
+    List<AidasUpload> findAllByUserAndProject(Long userId, Long projectId);
+
+    @Query(value="select * from aidas_upload au, aidas_user_obj_map auom where au.aidas_user_aidas_object_mapping_id=auom.id  and auom.aidas_user_id=?1",nativeQuery = true)
+    List<AidasUpload> findAllByUser(Long userId);
 }

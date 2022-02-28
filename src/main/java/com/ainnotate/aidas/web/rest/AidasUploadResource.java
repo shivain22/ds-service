@@ -2,14 +2,12 @@ package com.ainnotate.aidas.web.rest;
 
 import static org.elasticsearch.index.query.QueryBuilders.*;
 
-import com.ainnotate.aidas.domain.AidasObject;
-import com.ainnotate.aidas.domain.AidasUpload;
-import com.ainnotate.aidas.domain.AidasUser;
-import com.ainnotate.aidas.domain.AidasUserAidasObjectMapping;
+import com.ainnotate.aidas.domain.*;
 import com.ainnotate.aidas.dto.UploadByUserObjectMappingDto;
 import com.ainnotate.aidas.dto.UploadDto;
 import com.ainnotate.aidas.repository.*;
 import com.ainnotate.aidas.repository.search.AidasUploadSearchRepository;
+import com.ainnotate.aidas.security.AidasAuthoritiesConstants;
 import com.ainnotate.aidas.security.SecurityUtils;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
@@ -81,16 +79,33 @@ public class AidasUploadResource {
     @PostMapping("/aidas-uploads")
     public ResponseEntity<AidasUpload> createAidasUpload(@Valid @RequestBody AidasUpload aidasUpload) throws URISyntaxException {
         log.debug("REST request to save AidasUpload : {}", aidasUpload);
-        if (aidasUpload.getId() != null) {
-            throw new BadRequestAlertException("A new aidasUpload cannot already have an ID", ENTITY_NAME, "idexists");
+        AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        AidasAuthority aidasAuthority = aidasUser.getCurrentAidasAuthority();
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ADMIN)){
+
         }
-        aidasUpload.setStatus(2);
-        AidasUpload result = aidasUploadRepository.save(aidasUpload);
-        aidasUploadSearchRepository.save(result);
-        return ResponseEntity
-            .created(new URI("/api/aidas-uploads/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
-            .body(result);
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ORG_ADMIN)){
+            throw new BadRequestAlertException("You can not upload as ORG ADMIN", ENTITY_NAME, "idexists");
+        }
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN)){
+            throw new BadRequestAlertException("You can not upload as CUSTOMER ADMIN", ENTITY_NAME, "idexists");
+        }
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_ADMIN)){
+            throw new BadRequestAlertException("You can not upload as VENDOR ADMIN", ENTITY_NAME, "idexists");
+        }
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
+            if (aidasUpload.getId() != null) {
+                throw new BadRequestAlertException("A new aidasUpload cannot already have an ID", ENTITY_NAME, "idexists");
+            }
+            aidasUpload.setStatus(2);
+            AidasUpload result = aidasUploadRepository.save(aidasUpload);
+            aidasUploadSearchRepository.save(result);
+            return ResponseEntity
+                .created(new URI("/api/aidas-uploads/" + result.getId()))
+                .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
+                .body(result);
+        }
+        throw new BadRequestAlertException("You can not upload as there was an error internally", ENTITY_NAME, "idexists");
     }
 
     /**
@@ -102,33 +117,50 @@ public class AidasUploadResource {
      */
     @PostMapping("/aidas-uploads/dto")
     public ResponseEntity<AidasUpload> createAidasUploadFromDto(@Valid @RequestBody UploadDto uploadDto) throws URISyntaxException {
+        AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to save AidasUpload : {}", uploadDto);
-        if (uploadDto.getUserId() == null) {
-            throw new BadRequestAlertException("No User Id", ENTITY_NAME, "idexists");
-        }
-        if (uploadDto.getObjectId() == null) {
-            throw new BadRequestAlertException("No Object Id", ENTITY_NAME, "idexists");
-        }
-        if (uploadDto.getUploadUrl() == null) {
-            throw new BadRequestAlertException("No Upload URL Id", ENTITY_NAME, "idexists");
-        }
-        if (uploadDto.getEtag() == null) {
-            throw new BadRequestAlertException("No Etag Id", ENTITY_NAME, "idexists");
-        }
+        AidasAuthority aidasAuthority = aidasUser.getCurrentAidasAuthority();
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ADMIN)){
 
-        AidasUpload aidasUpload = new AidasUpload();
-        AidasUserAidasObjectMapping auaom = aidasUserAidasObjectMappingRepository.findByAidasUser_IdAndAidasObject_Id(uploadDto.getUserId(),uploadDto.getObjectId());
-        aidasUpload.setAidasUserAidasObjectMapping(auaom);
-        aidasUpload.setDateUploaded(Instant.now());
-        aidasUpload.setName(uploadDto.getUploadUrl());
-        aidasUpload.setUploadUrl(uploadDto.getUploadUrl());
-        aidasUpload.setUploadEtag(uploadDto.getEtag());
-        AidasUpload result = aidasUploadRepository.save(aidasUpload);
-        //aidasUploadSearchRepository.save(result);
-        return ResponseEntity
-            .created(new URI("/api/aidas-uploads/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
-            .body(result);
+        }
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ORG_ADMIN)){
+            throw new BadRequestAlertException("You can not upload as ORG ADMIN", ENTITY_NAME, "idexists");
+        }
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN)){
+            throw new BadRequestAlertException("You can not upload as CUSTOMER ADMIN", ENTITY_NAME, "idexists");
+        }
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_ADMIN)){
+            throw new BadRequestAlertException("You can not upload as VENDOR ADMIN", ENTITY_NAME, "idexists");
+        }
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
+            if (uploadDto.getUserId() == null) {
+                throw new BadRequestAlertException("No User Id", ENTITY_NAME, "idexists");
+            }
+            if (uploadDto.getObjectId() == null) {
+                throw new BadRequestAlertException("No Object Id", ENTITY_NAME, "idexists");
+            }
+            if (uploadDto.getUploadUrl() == null) {
+                throw new BadRequestAlertException("No Upload URL Id", ENTITY_NAME, "idexists");
+            }
+            if (uploadDto.getEtag() == null) {
+                throw new BadRequestAlertException("No Etag Id", ENTITY_NAME, "idexists");
+            }
+
+            AidasUpload aidasUpload = new AidasUpload();
+            AidasUserAidasObjectMapping auaom = aidasUserAidasObjectMappingRepository.findByAidasUser_IdAndAidasObject_Id(uploadDto.getUserId(),uploadDto.getObjectId());
+            aidasUpload.setAidasUserAidasObjectMapping(auaom);
+            aidasUpload.setDateUploaded(Instant.now());
+            aidasUpload.setName(uploadDto.getUploadUrl());
+            aidasUpload.setUploadUrl(uploadDto.getUploadUrl());
+            aidasUpload.setUploadEtag(uploadDto.getEtag());
+            AidasUpload result = aidasUploadRepository.save(aidasUpload);
+            //aidasUploadSearchRepository.save(result);
+            return ResponseEntity
+                .created(new URI("/api/aidas-uploads/" + result.getId()))
+                .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
+                .body(result);
+        }
+        throw new BadRequestAlertException("Internal error occured.  Contact administrator", ENTITY_NAME, "idexists");
     }
 
     /**
@@ -140,32 +172,49 @@ public class AidasUploadResource {
      */
     @PostMapping("/aidas-uploads/user-object-mapping-dto")
     public ResponseEntity<AidasUpload> createAidasUploadFromUseObjectMappingDto(@Valid @RequestBody UploadByUserObjectMappingDto uploadByUserObjectMappingDto) throws URISyntaxException {
+        AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to save AidasUpload : {}", uploadByUserObjectMappingDto);
-        if (uploadByUserObjectMappingDto.getUserObjectMappingId() == null) {
-            throw new BadRequestAlertException("No User Id", ENTITY_NAME, "idexists");
-        }
-        if (uploadByUserObjectMappingDto.getUploadUrl() == null) {
-            throw new BadRequestAlertException("No Upload URL Id", ENTITY_NAME, "idexists");
-        }
-        if (uploadByUserObjectMappingDto.getEtag() == null) {
-            throw new BadRequestAlertException("No Etag Id", ENTITY_NAME, "idexists");
-        }
+        AidasAuthority aidasAuthority = aidasUser.getCurrentAidasAuthority();
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ADMIN)){
 
-        AidasUpload aidasUpload = new AidasUpload();
-        AidasUserAidasObjectMapping auaom = aidasUserAidasObjectMappingRepository.getById(uploadByUserObjectMappingDto.getUserObjectMappingId());
-        aidasUpload.setAidasUserAidasObjectMapping(auaom);
-        aidasUpload.setDateUploaded(Instant.now());
-        aidasUpload.setName(uploadByUserObjectMappingDto.getUploadUrl());
-        aidasUpload.setUploadUrl(uploadByUserObjectMappingDto.getUploadUrl());
-        aidasUpload.setUploadEtag(uploadByUserObjectMappingDto.getEtag());
-        aidasUpload.setObjectKey(uploadByUserObjectMappingDto.getObjectKey());
-        aidasUpload.setUploadObjectMeta(uploadByUserObjectMappingDto.getUploadMetadata());
-        AidasUpload result = aidasUploadRepository.save(aidasUpload);
-        //aidasUploadSearchRepository.save(result);
-        return ResponseEntity
-            .created(new URI("/api/aidas-uploads/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
-            .body(result);
+        }
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ORG_ADMIN)){
+            throw new BadRequestAlertException("You can not upload as ORG ADMIN", ENTITY_NAME, "idexists");
+        }
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN)){
+            throw new BadRequestAlertException("You can not upload as CUSTOMER ADMIN", ENTITY_NAME, "idexists");
+        }
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_ADMIN)){
+            throw new BadRequestAlertException("You can not upload as VENDOR ADMIN", ENTITY_NAME, "idexists");
+        }
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
+            if (uploadByUserObjectMappingDto.getUserObjectMappingId() == null) {
+                throw new BadRequestAlertException("No User Id", ENTITY_NAME, "idexists");
+            }
+            if (uploadByUserObjectMappingDto.getUploadUrl() == null) {
+                throw new BadRequestAlertException("No Upload URL Id", ENTITY_NAME, "idexists");
+            }
+            if (uploadByUserObjectMappingDto.getEtag() == null) {
+                throw new BadRequestAlertException("No Etag Id", ENTITY_NAME, "idexists");
+            }
+
+            AidasUpload aidasUpload = new AidasUpload();
+            AidasUserAidasObjectMapping auaom = aidasUserAidasObjectMappingRepository.getById(uploadByUserObjectMappingDto.getUserObjectMappingId());
+            aidasUpload.setAidasUserAidasObjectMapping(auaom);
+            aidasUpload.setDateUploaded(Instant.now());
+            aidasUpload.setName(uploadByUserObjectMappingDto.getUploadUrl());
+            aidasUpload.setUploadUrl(uploadByUserObjectMappingDto.getUploadUrl());
+            aidasUpload.setUploadEtag(uploadByUserObjectMappingDto.getEtag());
+            aidasUpload.setObjectKey(uploadByUserObjectMappingDto.getObjectKey());
+            aidasUpload.setUploadObjectMeta(uploadByUserObjectMappingDto.getUploadMetadata());
+            AidasUpload result = aidasUploadRepository.save(aidasUpload);
+            //aidasUploadSearchRepository.save(result);
+            return ResponseEntity
+                .created(new URI("/api/aidas-uploads/" + result.getId()))
+                .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
+                .body(result);
+        }
+        throw new BadRequestAlertException("Internal error occured.  Contact administrator", ENTITY_NAME, "idexists");
     }
 
 
@@ -184,7 +233,24 @@ public class AidasUploadResource {
         @PathVariable(value = "id", required = false) final Long id,
         @Valid @RequestBody AidasUpload aidasUpload
     ) throws URISyntaxException {
+        AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to update AidasUpload : {}, {}", id, aidasUpload);
+        AidasAuthority aidasAuthority = aidasUser.getCurrentAidasAuthority();
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ADMIN)){
+
+        }
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ORG_ADMIN)){
+
+        }
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN)){
+
+        }
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_ADMIN)){
+
+        }
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
+
+        }
         if (aidasUpload.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -217,7 +283,24 @@ public class AidasUploadResource {
     public ResponseEntity<AidasUpload> approveAidasUpload(
         @PathVariable(value = "id", required = false) final Long id
     ) throws URISyntaxException {
+        AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to approve AidasUpload : {}, {}", id);
+        AidasAuthority aidasAuthority = aidasUser.getCurrentAidasAuthority();
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ADMIN)){
+
+        }
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ORG_ADMIN)){
+
+        }
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN)){
+
+        }
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_ADMIN)){
+
+        }
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
+
+        }
         if (!aidasUploadRepository.existsById(id)) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
@@ -244,7 +327,24 @@ public class AidasUploadResource {
     public ResponseEntity<AidasUpload> rejectAidasUpload(
         @PathVariable(value = "id", required = false) final Long id
     ) throws URISyntaxException {
+        AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to reject AidasUpload : {}, {}", id);
+        AidasAuthority aidasAuthority = aidasUser.getCurrentAidasAuthority();
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ADMIN)){
+
+        }
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ORG_ADMIN)){
+
+        }
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN)){
+
+        }
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_ADMIN)){
+
+        }
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
+
+        }
         if (!aidasUploadRepository.existsById(id)) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
@@ -273,7 +373,24 @@ public class AidasUploadResource {
         @PathVariable(value = "id", required = false) final Long id,
         @NotNull @RequestBody AidasUpload aidasUpload
     ) throws URISyntaxException {
+        AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to partial update AidasUpload partially : {}, {}", id, aidasUpload);
+        AidasAuthority aidasAuthority = aidasUser.getCurrentAidasAuthority();
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ADMIN)){
+
+        }
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ORG_ADMIN)){
+
+        }
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN)){
+
+        }
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_ADMIN)){
+
+        }
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
+
+        }
         if (aidasUpload.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -327,8 +444,26 @@ public class AidasUploadResource {
      */
     @GetMapping("/aidas-uploads")
     public ResponseEntity<List<AidasUpload>> getAllAidasUploads(Pageable pageable) {
+        AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to get a page of AidasUploads");
         Page<AidasUpload> page = aidasUploadRepository.findAll(pageable);
+        AidasAuthority aidasAuthority = aidasUser.getCurrentAidasAuthority();
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ADMIN)){
+            page = aidasUploadRepository.findAll(pageable);
+        }
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ORG_ADMIN)){
+
+        }
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN)){
+
+        }
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_ADMIN)){
+
+        }
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
+
+        }
+
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
@@ -341,7 +476,24 @@ public class AidasUploadResource {
      */
     @GetMapping("/aidas-uploads/{id}")
     public ResponseEntity<AidasUpload> getAidasUpload(@PathVariable Long id) {
+        AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to get AidasUpload : {}", id);
+        AidasAuthority aidasAuthority = aidasUser.getCurrentAidasAuthority();
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ADMIN)){
+
+        }
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ORG_ADMIN)){
+
+        }
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN)){
+
+        }
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_ADMIN)){
+
+        }
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
+
+        }
         Optional<AidasUpload> aidasUpload = aidasUploadRepository.findById(id);
         return ResponseUtil.wrapOrNotFound(aidasUpload);
     }
@@ -354,7 +506,24 @@ public class AidasUploadResource {
      */
     @DeleteMapping("/aidas-uploads/{id}")
     public ResponseEntity<Void> deleteAidasUpload(@PathVariable Long id) {
+        AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to delete AidasUpload : {}", id);
+        AidasAuthority aidasAuthority = aidasUser.getCurrentAidasAuthority();
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ADMIN)){
+
+        }
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ORG_ADMIN)){
+
+        }
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN)){
+
+        }
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_ADMIN)){
+
+        }
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
+
+        }
         aidasUploadRepository.deleteById(id);
         aidasUploadSearchRepository.deleteById(id);
         return ResponseEntity
@@ -373,7 +542,24 @@ public class AidasUploadResource {
      */
     @GetMapping("/_search/aidas-uploads")
     public ResponseEntity<List<AidasUpload>> searchAidasUploads(@RequestParam String query, Pageable pageable) {
+        AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to search for a page of AidasUploads for query {}", query);
+        AidasAuthority aidasAuthority = aidasUser.getCurrentAidasAuthority();
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ADMIN)){
+
+        }
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ORG_ADMIN)){
+
+        }
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN)){
+
+        }
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_ADMIN)){
+
+        }
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
+
+        }
         Page<AidasUpload> page = aidasUploadSearchRepository.search(query, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
