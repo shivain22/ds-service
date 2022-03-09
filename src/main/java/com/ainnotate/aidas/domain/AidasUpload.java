@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.io.Serializable;
 import java.time.Instant;
 import java.time.ZonedDateTime;
+import java.util.HashSet;
+import java.util.Set;
 import javax.persistence.*;
 import javax.validation.constraints.*;
 import org.hibernate.annotations.Cache;
@@ -72,6 +74,22 @@ public class AidasUpload implements Serializable {
     @ManyToOne(optional = false,fetch = FetchType.EAGER)
     @JsonIgnoreProperties(value = { "aidasUser", "aidasObject", "aidasUploads" }, allowSetters = true)
     private AidasUserAidasObjectMapping aidasUserAidasObjectMapping;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+        name = "aidas_upload_aidas_rej_reason",
+        joinColumns = { @JoinColumn(name = "aidas_upload_id", referencedColumnName = "id") },
+        inverseJoinColumns = { @JoinColumn(name = "aidas_upload_reject_reason_id", referencedColumnName = "id") }
+    )
+    private Set<AidasUploadRejectReason> aidasUploadRejectReasons = new HashSet<>();
+
+    public Set<AidasUploadRejectReason> getAidasUploadRejectReasons() {
+        return aidasUploadRejectReasons;
+    }
+
+    public void setAidasUploadRejectReasons(Set<AidasUploadRejectReason> aidasUploadRejectReasons) {
+        this.aidasUploadRejectReasons = aidasUploadRejectReasons;
+    }
 
     public String getUploadUrl() {
         return uploadUrl;

@@ -73,7 +73,7 @@ public class AidasUploadRejectReasonResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/aidas-upload-reject-reason")
-    public ResponseEntity<AidasUploadRejectReason> createAidasAuthority(@Valid @RequestBody AidasUploadRejectReason aidasUploadRejectReason) throws URISyntaxException {
+    public ResponseEntity<AidasUploadRejectReason> createAidasUploadRejectReason(@Valid @RequestBody AidasUploadRejectReason aidasUploadRejectReason) throws URISyntaxException {
         log.debug("REST request to save AidasUploadRejectReason : {}", aidasUploadRejectReason);
         HttpServletRequest req = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
 
@@ -81,7 +81,7 @@ public class AidasUploadRejectReasonResource {
             throw new BadRequestAlertException("A new aidasUploadRejectReason cannot already have an ID", ENTITY_NAME, "idexists");
         }
         AidasUploadRejectReason result = aidasUploadRejectReasonRepository.save(aidasUploadRejectReason);
-        aidasUploadRejectReasonSearchRepository.save(result);
+        //aidasUploadRejectReasonSearchRepository.save(result);
         return ResponseEntity
             .created(new URI("/api/aidas-upload-reject-reason/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
@@ -99,7 +99,7 @@ public class AidasUploadRejectReasonResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/aidas-upload-reject-reason/{id}")
-    public ResponseEntity<AidasUploadRejectReason> updateAidasAuthority(
+    public ResponseEntity<AidasUploadRejectReason> updateUploadRejectReason(
         @PathVariable(value = "id", required = false) final Long id,
         @Valid @RequestBody AidasUploadRejectReason aidasUploadRejectReason
     ) throws URISyntaxException {
@@ -135,7 +135,7 @@ public class AidasUploadRejectReasonResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PatchMapping(value = "/aidas-upload-reject-reason/{id}", consumes = { "application/json", "application/merge-patch+json" })
-    public ResponseEntity<AidasUploadRejectReason> partialUpdateAidasAuthority(
+    public ResponseEntity<AidasUploadRejectReason> partialUpdateAidasUploadRejectReason(
         @PathVariable(value = "id", required = false) final Long id,
         @NotNull @RequestBody AidasUploadRejectReason aidasUploadRejectReason
     ) throws URISyntaxException {
@@ -183,7 +183,7 @@ public class AidasUploadRejectReasonResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of aidasAuthoritys in body.
      */
     @GetMapping("/aidas-upload-reject-reason")
-    public ResponseEntity<List<AidasUploadRejectReason>> getAllAidasAuthoritys(Pageable pageable) {
+    public ResponseEntity<List<AidasUploadRejectReason>> getAllAidasUploadRejectReason(Pageable pageable) {
         log.debug("REST request to get a page of AidasAuthoritys");
         Page<AidasUploadRejectReason> page = aidasUploadRejectReasonRepository.findAll(pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
@@ -197,7 +197,7 @@ public class AidasUploadRejectReasonResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the aidasUploadRejectReason, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/aidas-upload-reject-reason/{id}")
-    public ResponseEntity<AidasUploadRejectReason> getAidasAuthority(@PathVariable Long id) {
+    public ResponseEntity<AidasUploadRejectReason> getAidasUploadRejectReason(@PathVariable Long id) {
         log.debug("REST request to get AidasUploadRejectReason : {}", id);
         Optional<AidasUploadRejectReason> aidasUploadRejectReason = aidasUploadRejectReasonRepository.findById(id);
         return ResponseUtil.wrapOrNotFound(aidasUploadRejectReason);
@@ -210,7 +210,7 @@ public class AidasUploadRejectReasonResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/aidas-upload-reject-reason/{id}")
-    public ResponseEntity<Void> deleteAidasAuthority(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteAidasUploadRejectReason(@PathVariable Long id) {
         log.debug("REST request to delete AidasUploadRejectReason : {}", id);
         aidasUploadRejectReasonRepository.deleteById(id);
         aidasUploadRejectReasonSearchRepository.deleteById(id);
@@ -229,7 +229,7 @@ public class AidasUploadRejectReasonResource {
      * @return the result of the search.
      */
     @GetMapping("/_search/aidas-upload-reject-reason")
-    public ResponseEntity<List<AidasUploadRejectReason>> searchAidasAuthoritys(@RequestParam String query, Pageable pageable) {
+    public ResponseEntity<List<AidasUploadRejectReason>> searchAidasUploadRejectReason(@RequestParam String query, Pageable pageable) {
         log.debug("REST request to search for a page of AidasAuthoritys for query {}", query);
         Page<AidasUploadRejectReason> page = aidasUploadRejectReasonSearchRepository.search(query, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);

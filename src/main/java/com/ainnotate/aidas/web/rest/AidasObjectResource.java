@@ -408,35 +408,85 @@ public class AidasObjectResource {
         Page<AidasObject> page =null;
         if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ADMIN)){
             page = aidasObjectRepository.findAllByIdGreaterThanAndAidasProject_Id(0l,projectId,pageable);
+            if(page!=null && page.getContent()!=null && page.getContent().size()>0){
+                for(AidasObject aidasObject: page.getContent()){
+                    Integer uploadsCompleted = aidasUploadRepository.countAidasUploadByAidasUserAidasObjectMapping_AidasObject(aidasObject);
+                    aidasObject.setUploadsCompleted(uploadsCompleted);
+                    Integer uploadsRemaining = (aidasObject.getNumberOfUploadReqd()+((aidasObject.getNumberOfUploadReqd()*(aidasObject.getBufferPercent())/100))-uploadsCompleted);
+                    aidasObject.setUploadsRemaining(uploadsRemaining);
+                    UploadDetail ud = aidasObjectRepository.countUploadsByObjectAndAidasAdmin(aidasObject.getId());
+                    aidasObject.setTotalUploaded(ud.getTotalUploaded());
+                    aidasObject.setTotalApproved(ud.getTotalApproved());
+                    aidasObject.setTotalRejected(ud.getTotalRejected());
+                    aidasObject.setTotalPending(ud.getTotalPending());
+                }
+            }
         }
         if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null ){
             page = aidasObjectRepository.findAllByAidasProject_AidasCustomer_AidasOrganisationAndAidasProject_Id(pageable,aidasUser.getAidasOrganisation(),projectId);
+            if(page!=null && page.getContent()!=null && page.getContent().size()>0){
+                for(AidasObject aidasObject: page.getContent()){
+                    Integer uploadsCompleted = aidasUploadRepository.countAidasUploadByAidasUserAidasObjectMapping_AidasObject(aidasObject);
+                    aidasObject.setUploadsCompleted(uploadsCompleted);
+                    Integer uploadsRemaining = (aidasObject.getNumberOfUploadReqd()+((aidasObject.getNumberOfUploadReqd()*(aidasObject.getBufferPercent())/100))-uploadsCompleted);
+                    aidasObject.setUploadsRemaining(uploadsRemaining);
+                    UploadDetail ud = aidasObjectRepository.countUploadsByObjectAndAidasOrganisation(aidasUser.getAidasOrganisation().getId(),aidasObject.getId());
+                    aidasObject.setTotalUploaded(ud.getTotalUploaded());
+                    aidasObject.setTotalApproved(ud.getTotalApproved());
+                    aidasObject.setTotalRejected(ud.getTotalRejected());
+                    aidasObject.setTotalPending(ud.getTotalPending());
+                }
+            }
         }
         if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN) && aidasUser.getAidasCustomer()!=null ){
             page = aidasObjectRepository.findAllByAidasProject_AidasCustomerAndAidasProject_Id(pageable,aidasUser.getAidasCustomer(),projectId);
+            if(page!=null && page.getContent()!=null && page.getContent().size()>0){
+                for(AidasObject aidasObject: page.getContent()){
+                    Integer uploadsCompleted = aidasUploadRepository.countAidasUploadByAidasUserAidasObjectMapping_AidasObject(aidasObject);
+                    aidasObject.setUploadsCompleted(uploadsCompleted);
+                    Integer uploadsRemaining = (aidasObject.getNumberOfUploadReqd()+((aidasObject.getNumberOfUploadReqd()*(aidasObject.getBufferPercent())/100))-uploadsCompleted);
+                    aidasObject.setUploadsRemaining(uploadsRemaining);
+                    UploadDetail ud = aidasObjectRepository.countUploadsByObjectAndAidasCustomer(aidasUser.getAidasCustomer().getId(),aidasObject.getId());
+                    aidasObject.setTotalUploaded(ud.getTotalUploaded());
+                    aidasObject.setTotalApproved(ud.getTotalApproved());
+                    aidasObject.setTotalRejected(ud.getTotalRejected());
+                    aidasObject.setTotalPending(ud.getTotalPending());
+                }
+            }
         }
         if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.VENDOR_ADMIN) ){
             page = aidasObjectRepository.findAllObjectsByVendorAdminProject(pageable,aidasUser.getAidasVendor(),projectId);
+            if(page!=null && page.getContent()!=null && page.getContent().size()>0){
+                for(AidasObject aidasObject: page.getContent()){
+                    Integer uploadsCompleted = aidasUploadRepository.countAidasUploadByAidasUserAidasObjectMapping_AidasObject(aidasObject);
+                    aidasObject.setUploadsCompleted(uploadsCompleted);
+                    Integer uploadsRemaining = (aidasObject.getNumberOfUploadReqd()+((aidasObject.getNumberOfUploadReqd()*(aidasObject.getBufferPercent())/100))-uploadsCompleted);
+                    aidasObject.setUploadsRemaining(uploadsRemaining);
+                    UploadDetail ud = aidasObjectRepository.countUploadsByObjectAndAidasVendor(aidasUser.getAidasVendor().getId(),aidasObject.getId());
+                    aidasObject.setTotalUploaded(ud.getTotalUploaded());
+                    aidasObject.setTotalApproved(ud.getTotalApproved());
+                    aidasObject.setTotalRejected(ud.getTotalRejected());
+                    aidasObject.setTotalPending(ud.getTotalPending());
+                }
+            }
         }
         if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
             page = aidasObjectRepository.findAllObjectsByVendorAdminProject(pageable,aidasUser.getAidasVendor(),projectId);
-        }
-        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.USER)){
-            page = aidasObjectRepository.findAllObjectsByVendorUserProject(pageable,aidasUser,projectId);
-        }
-        if(page!=null && page.getContent()!=null && page.getContent().size()>0){
-            for(AidasObject aidasObject: page.getContent()){
-                Integer uploadsCompleted = aidasUploadRepository.countAidasUploadByAidasUserAidasObjectMapping_AidasObject(aidasObject);
-                   aidasObject.setUploadsCompleted(uploadsCompleted);
-                   Integer uploadsRemaining = (aidasObject.getNumberOfUploadReqd()+((aidasObject.getNumberOfUploadReqd()*(aidasObject.getBufferPercent())/100))-uploadsCompleted);
-                   aidasObject.setUploadsRemaining(uploadsRemaining);
-                   UploadDetail ud = aidasObjectRepository.countUploadsByObjectAndUser(aidasUser.getId(),aidasObject.getId());
-                   aidasObject.setTotalUploaded(ud.getTotalUploaded());
-                   aidasObject.setTotalApproved(ud.getTotalApproved());
-                   aidasObject.setTotalRejected(ud.getTotalRejected());
-                   aidasObject.setTotalPending(ud.getTotalPending());
+            if(page!=null && page.getContent()!=null && page.getContent().size()>0){
+                for(AidasObject aidasObject: page.getContent()){
+                    Integer uploadsCompleted = aidasUploadRepository.countAidasUploadByAidasUserAidasObjectMapping_AidasObject(aidasObject);
+                    aidasObject.setUploadsCompleted(uploadsCompleted);
+                    Integer uploadsRemaining = (aidasObject.getNumberOfUploadReqd()+((aidasObject.getNumberOfUploadReqd()*(aidasObject.getBufferPercent())/100))-uploadsCompleted);
+                    aidasObject.setUploadsRemaining(uploadsRemaining);
+                    UploadDetail ud = aidasObjectRepository.countUploadsByObjectAndUser(aidasUser.getId(),aidasObject.getId());
+                    aidasObject.setTotalUploaded(ud.getTotalUploaded());
+                    aidasObject.setTotalApproved(ud.getTotalApproved());
+                    aidasObject.setTotalRejected(ud.getTotalRejected());
+                    aidasObject.setTotalPending(ud.getTotalPending());
+                }
             }
         }
+
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }

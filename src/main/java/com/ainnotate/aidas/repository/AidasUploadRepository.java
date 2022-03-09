@@ -3,8 +3,11 @@ package com.ainnotate.aidas.repository;
 import com.ainnotate.aidas.domain.AidasObject;
 import com.ainnotate.aidas.domain.AidasProject;
 import com.ainnotate.aidas.domain.AidasUpload;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
+
 
 import java.util.List;
 
@@ -36,6 +39,8 @@ public interface AidasUploadRepository extends JpaRepository<AidasUpload, Long> 
     @Query(value="select count(*) from aidas_upload  au where au.status=2", nativeQuery = true)
     Long countAidasUploadByStatusIsNull();
 
+
+
     @Query(value="select count(*) from aidas_upload au, aidas_user_obj_map auom, aidas_object ao, aidas_project ap, aidas_customer ac, aidas_organisation ao1 where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_object_id=ao.id and ao.aidas_project_id=ap.id and ap.aidas_customer_id=ac.id and ac.aidas_organisation_id=ao1.id and ao1.id=?1",nativeQuery = true)
     Long countAidasUploadByAidasOrganisation(Long aidasOrganisationId);
 
@@ -45,8 +50,25 @@ public interface AidasUploadRepository extends JpaRepository<AidasUpload, Long> 
     @Query(value="select count(*) from aidas_upload au, aidas_user_obj_map auom, aidas_object ao, aidas_project ap, aidas_customer ac, aidas_organisation ao1 where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_object_id=ao.id and ao.aidas_project_id=ap.id and ap.aidas_customer_id=ac.id and ac.aidas_organisation_id=ao1.id and ao1.id=?1 and au.status=1",nativeQuery = true)
     Long countAidasUploadByAidasOrganisationAndStatusTrue(Long aidasOrganisationId);
 
-    @Query(value="select count(*) from aidas_upload au, aidas_user_obj_map auom, aidas_object ao, aidas_project ap, aidas_customer ac, aidas_organisation ao1 where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_object_id=ao.id and ao.aidas_project_id=ap.id and ap.aidas_customer_id=ac.id and ac.aidas_organisation_id=ao1.id and ao1.id=?1 and au.status is null",nativeQuery = true)
+    @Query(value="select count(*) from aidas_upload au, aidas_user_obj_map auom, aidas_object ao, aidas_project ap, aidas_customer ac, aidas_organisation ao1 where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_object_id=ao.id and ao.aidas_project_id=ap.id and ap.aidas_customer_id=ac.id and ac.aidas_organisation_id=ao1.id and ao1.id=?1 and au.status =2",nativeQuery = true)
     Long countAidasUploadByAidasOrganisationAndStatusIsNull(Long aidasOrganisationId);
+
+
+    @Query(value="select * from aidas_upload au, aidas_user_obj_map auom, aidas_object ao, aidas_project ap, aidas_customer ac, aidas_organisation ao1 where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_object_id=ao.id and ao.aidas_project_id=ap.id and ap.aidas_customer_id=ac.id and ac.aidas_organisation_id=ao1.id and ao1.id=?1",
+        countQuery = "select count(*) from aidas_upload au, aidas_user_obj_map auom, aidas_object ao, aidas_project ap, aidas_customer ac, aidas_organisation ao1 where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_object_id=ao.id and ao.aidas_project_id=ap.id and ap.aidas_customer_id=ac.id and ac.aidas_organisation_id=ao1.id and ao1.id=?1",
+        nativeQuery = true)
+    Page<AidasUpload> findAidasUploadByAidasOrganisation(Long aidasOrganisationId, Pageable pageable);
+
+    @Query(value="select * from aidas_upload au, aidas_user_obj_map auom, aidas_object ao, aidas_project ap, aidas_customer ac, aidas_organisation ao1 where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_object_id=ao.id and ao.aidas_project_id=ap.id and ap.aidas_customer_id=ac.id and ac.aidas_organisation_id=ao1.id and ao1.id=?1 and au.status=0",nativeQuery = true)
+    List<AidasUpload> findAidasUploadByAidasOrganisationAndStatusFalse(Long aidasOrganisationId);
+
+    @Query(value="select * from aidas_upload au, aidas_user_obj_map auom, aidas_object ao, aidas_project ap, aidas_customer ac, aidas_organisation ao1 where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_object_id=ao.id and ao.aidas_project_id=ap.id and ap.aidas_customer_id=ac.id and ac.aidas_organisation_id=ao1.id and ao1.id=?1 and au.status=1",nativeQuery = true)
+    List<AidasUpload> findAidasUploadByAidasOrganisationAndStatusTrue(Long aidasOrganisationId);
+
+    @Query(value="select * from aidas_upload au, aidas_user_obj_map auom, aidas_object ao, aidas_project ap, aidas_customer ac, aidas_organisation ao1 where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_object_id=ao.id and ao.aidas_project_id=ap.id and ap.aidas_customer_id=ac.id and ac.aidas_organisation_id=ao1.id and ao1.id=?1 and au.status =2",nativeQuery = true)
+    List<AidasUpload> findAidasUploadByAidasOrganisationAndStatusIsNull(Long aidasOrganisationId);
+
+
 
     @Query(value="select count(*) from aidas_upload au, aidas_user_obj_map auom, aidas_object ao, aidas_project ap, aidas_customer ac where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_object_id=ao.id and ao.aidas_project_id=ap.id and ap.aidas_customer_id=ac.id and ac.id=?1",nativeQuery = true)
     Long countAidasUploadByAidasCustomer(Long aidasCustomerId);
@@ -57,39 +79,108 @@ public interface AidasUploadRepository extends JpaRepository<AidasUpload, Long> 
     @Query(value="select count(*) from aidas_upload au, aidas_user_obj_map auom, aidas_object ao, aidas_project ap, aidas_customer ac where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_object_id=ao.id and ao.aidas_project_id=ap.id and ap.aidas_customer_id=ac.id and ac.id=?1  and au.status=1",nativeQuery = true)
     Long countAidasUploadByAidasCustomerStatusTrue(Long aidasCustomerId);
 
-    @Query(value="select count(*) from aidas_upload au, aidas_user_obj_map auom, aidas_object ao, aidas_project ap, aidas_customer ac where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_object_id=ao.id and ao.aidas_project_id=ap.id and ap.aidas_customer_id=ac.id and ac.id=?1  and au.status is null",nativeQuery = true)
+    @Query(value="select count(*) from aidas_upload au, aidas_user_obj_map auom, aidas_object ao, aidas_project ap, aidas_customer ac where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_object_id=ao.id and ao.aidas_project_id=ap.id and ap.aidas_customer_id=ac.id and ac.id=?1  and au.status =2",nativeQuery = true)
     Long countAidasUploadByAidasCustomerStatusIsNull(Long aidasCustomerId);
 
+    @Query(value="select * from aidas_upload au, aidas_user_obj_map auom, aidas_object ao, aidas_project ap, aidas_customer ac where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_object_id=ao.id and ao.aidas_project_id=ap.id and ap.aidas_customer_id=ac.id and ac.id=?1",nativeQuery = true)
+    Page<AidasUpload> findAidasUploadByAidasCustomer(Long aidasCustomerId,Pageable pageable);
+
+    @Query(value="select * from aidas_upload au, aidas_user_obj_map auom, aidas_object ao, aidas_project ap, aidas_customer ac where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_object_id=ao.id and ao.aidas_project_id=ap.id and ap.aidas_customer_id=ac.id and ac.id=?1  and au.status=0",nativeQuery = true)
+    List<AidasUpload> findAidasUploadByAidasCustomerStatusFalse(Long aidasCustomerId);
+
+    @Query(value="select * from aidas_upload au, aidas_user_obj_map auom, aidas_object ao, aidas_project ap, aidas_customer ac where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_object_id=ao.id and ao.aidas_project_id=ap.id and ap.aidas_customer_id=ac.id and ac.id=?1  and au.status=1",nativeQuery = true)
+    List<AidasUpload> findAidasUploadByAidasCustomerStatusTrue(Long aidasCustomerId);
+
+    @Query(value="select * from aidas_upload au, aidas_user_obj_map auom, aidas_object ao, aidas_project ap, aidas_customer ac where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_object_id=ao.id and ao.aidas_project_id=ap.id and ap.aidas_customer_id=ac.id and ac.id=?1  and au.status =2",nativeQuery = true)
+    List<AidasUpload> findAidasUploadByAidasCustomerStatusIsNull(Long aidasCustomerId);
+
+
+
+
     @Query(value="select count(*) from aidas_upload au, aidas_user_obj_map auom, aidas_user au1 where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_user_id=au1.id and au1.aidas_vendor_id=?1",nativeQuery = true)
-    Long countAidasUploadByAidasVendor(Long aidasVendord);
+    Long countAidasUploadByAidasVendor(Long aidasVendorId);
 
     @Query(value="select count(*) from aidas_upload au, aidas_user_obj_map auom, aidas_user au1 where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_user_id=au1.id and au1.aidas_vendor_id=?1  and au.status=0",nativeQuery = true)
-    Long countAidasUploadByAidasVendorStatusFalse(Long aidasVendord);
+    Long countAidasUploadByAidasVendorStatusFalse(Long aidasVendorId);
 
     @Query(value="select count(*) from aidas_upload au, aidas_user_obj_map auom, aidas_user au1 where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_user_id=au1.id and au1.aidas_vendor_id=?1  and au.status=1",nativeQuery = true)
-    Long countAidasUploadByAidasVendorStatusTrue(Long aidasVendord);
+    Long countAidasUploadByAidasVendorStatusTrue(Long aidasVendorId);
 
-    @Query(value="select count(*) from aidas_upload au, aidas_user_obj_map auom, aidas_user au1 where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_user_id=au1.id and au1.aidas_vendor_id=?1  and au.status is null",nativeQuery = true)
-    Long countAidasUploadByAidasVendorStatusIsNull(Long aidasVendord);
+    @Query(value="select count(*) from aidas_upload au, aidas_user_obj_map auom, aidas_user au1 where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_user_id=au1.id and au1.aidas_vendor_id=?1  and au.status =2",nativeQuery = true)
+    Long countAidasUploadByAidasVendorStatusIsNull(Long aidasVendorId);
+
+
+    @Query(value="select * from aidas_upload au, aidas_user_obj_map auom, aidas_user au1 where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_user_id=au1.id and au1.aidas_vendor_id=?1",nativeQuery = true)
+    Page<AidasUpload> findAidasUploadByAidasVendor(Long aidasVendorId,Pageable pageable);
+
+    @Query(value="select * from aidas_upload au, aidas_user_obj_map auom, aidas_user au1 where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_user_id=au1.id and au1.aidas_vendor_id=?1  and au.status=0",nativeQuery = true)
+    List<AidasUpload> findAidasUploadByAidasVendorStatusFalse(Long aidasVendorId);
+
+    @Query(value="select * from aidas_upload au, aidas_user_obj_map auom, aidas_user au1 where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_user_id=au1.id and au1.aidas_vendor_id=?1  and au.status=1",nativeQuery = true)
+    List<AidasUpload> findAidasUploadByAidasVendorStatusTrue(Long aidasVendorId);
+
+    @Query(value="select * from aidas_upload au, aidas_user_obj_map auom, aidas_user au1 where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_user_id=au1.id and au1.aidas_vendor_id=?1  and au.status =2",nativeQuery = true)
+    List<AidasUpload> findAidasUploadByAidasVendorStatusIsNull(Long aidasVendorId);
+
+
+
 
     @Query(value="select count(*) from aidas_upload au, aidas_user_obj_map auom where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_user_id=?1",nativeQuery = true)
-    Long countAidasUploadByAidasVendorUser(Long aidasVendord);
+    Long countAidasUploadByAidasVendorUser(Long aidasVendorId);
 
-    @Query(value="select count(*) from aidas_upload au, aidas_user_obj_map auom where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_user_id=?1  and au.status=1  and au.status=0",nativeQuery = true)
-    Long countAidasUploadByAidasVendorUserStatusFalse(Long aidasVendord);
+    @Query(value="select count(*) from aidas_upload au, aidas_user_obj_map auom where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_user_id=?1  and  au.status=0",nativeQuery = true)
+    Long countAidasUploadByAidasVendorUserStatusFalse(Long aidasVendorId);
 
     @Query(value="select count(*) from aidas_upload au, aidas_user_obj_map auom where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_user_id=?1  and au.status=1",nativeQuery = true)
-    Long countAidasUploadByAidasVendorUserStatusTrue(Long aidasVendord);
+    Long countAidasUploadByAidasVendorUserStatusTrue(Long aidasVendorId);
 
-    @Query(value="select count(*) from aidas_upload au, aidas_user_obj_map auom where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_user_id=?1  and au.status is null",nativeQuery = true)
-    Long countAidasUploadByAidasVendorUserStatusIsNull(Long aidasVendord);
+    @Query(value="select count(*) from aidas_upload au, aidas_user_obj_map auom where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_user_id=?1  and au.status =2",nativeQuery = true)
+    Long countAidasUploadByAidasVendorUserStatusIsNull(Long aidasVendorId);
 
-    @Query(value="select * from aidas_upload au, aidas_user_obj_map auom where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_user_id=?1 and auom.aidas_object_id=?2",nativeQuery = true)
-    List<AidasUpload> findAllByUserAndObject(Long userId, Long objectId);
+
+    @Query(value="select * from aidas_upload au, aidas_user_obj_map auom where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_user_id=?1 and auom.aidas_object_id=?2",
+        countQuery = "select count(*) from aidas_upload au, aidas_user_obj_map auom where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_user_id=?1 and auom.aidas_object_id=?2",
+        nativeQuery = true)
+    Page<AidasUpload> findAllByUserAndObjectAll(Long userId, Long objectId,Pageable pageable);
+
+    @Query(value="select * from aidas_upload au, aidas_user_obj_map auom where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_user_id=?1 and auom.aidas_object_id=?2 and au.status=1",
+        countQuery = "select count(*) from aidas_upload au, aidas_user_obj_map auom where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_user_id=?1 and auom.aidas_object_id=?2 and au.status=1",
+        nativeQuery = true)
+    Page<AidasUpload> findAllByUserAndObjectApproved(Long userId, Long objectId,Pageable pageable);
+
+    @Query(value="select * from aidas_upload au, aidas_user_obj_map auom where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_user_id=?1 and auom.aidas_object_id=?2 and au.status=0",
+        countQuery = "select count(*) from aidas_upload au, aidas_user_obj_map auom where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_user_id=?1 and auom.aidas_object_id=?2 and au.status=0",
+        nativeQuery = true)
+    Page<AidasUpload> findAllByUserAndObjectRejected(Long userId, Long objectId,Pageable pageable);
+
+    @Query(value="select * from aidas_upload au, aidas_user_obj_map auom where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_user_id=?1 and auom.aidas_object_id=?2 and au.status=2",
+        countQuery = "select count(*) from aidas_upload au, aidas_user_obj_map auom where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_user_id=?1 and auom.aidas_object_id=?2 and au.status=2",
+        nativeQuery = true)
+    Page<AidasUpload> findAllByUserAndObjectPending(Long userId, Long objectId,Pageable pageable);
+
 
     @Query(value="select * from aidas_upload au, aidas_user_obj_map auom,aidas_object ao, aidas_project ap where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_object_id=ao.id and ao.aidas_project_id=ap.id and ap.id=?2 and auom.aidas_user_id=?1",nativeQuery = true)
-    List<AidasUpload> findAllByUserAndProject(Long userId, Long projectId);
+    Page<AidasUpload> findAllByUserAndProjectAll(Long userId, Long projectId,Pageable pageable);
+
+    @Query(value="select * from aidas_upload au, aidas_user_obj_map auom,aidas_object ao, aidas_project ap where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_object_id=ao.id and ao.aidas_project_id=ap.id and ap.id=?2 and auom.aidas_user_id=?1 and au.status=1",nativeQuery = true)
+    Page<AidasUpload> findAllByUserAndProjectApproved(Long userId, Long projectId,Pageable pageable);
+
+    @Query(value="select * from aidas_upload au, aidas_user_obj_map auom,aidas_object ao, aidas_project ap where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_object_id=ao.id and ao.aidas_project_id=ap.id and ap.id=?2 and auom.aidas_user_id=?1 and au.status=0",nativeQuery = true)
+    Page<AidasUpload> findAllByUserAndProjectRejected(Long userId, Long projectId,Pageable pageable);
+
+    @Query(value="select * from aidas_upload au, aidas_user_obj_map auom,aidas_object ao, aidas_project ap where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_object_id=ao.id and ao.aidas_project_id=ap.id and ap.id=?2 and auom.aidas_user_id=?1 and au.status=2",nativeQuery = true)
+    Page<AidasUpload> findAllByUserAndProjectPending(Long userId, Long projectId,Pageable pageable);
+
 
     @Query(value="select * from aidas_upload au, aidas_user_obj_map auom where au.aidas_user_aidas_object_mapping_id=auom.id  and auom.aidas_user_id=?1",nativeQuery = true)
-    List<AidasUpload> findAllByUser(Long userId);
+    Page<AidasUpload> findAllByUserAll(Long userId,Pageable pageable);
+
+    @Query(value="select * from aidas_upload au, aidas_user_obj_map auom where au.aidas_user_aidas_object_mapping_id=auom.id  and auom.aidas_user_id=?1 and au.status=1",nativeQuery = true)
+    Page<AidasUpload> findAllByUserApproved(Long userId,Pageable pageable);
+
+    @Query(value="select * from aidas_upload au, aidas_user_obj_map auom where au.aidas_user_aidas_object_mapping_id=auom.id  and auom.aidas_user_id=?1 and au.status=0",nativeQuery = true)
+    Page<AidasUpload> findAllByUserRejected(Long userId,Pageable pageable);
+
+    @Query(value="select * from aidas_upload au, aidas_user_obj_map auom where au.aidas_user_aidas_object_mapping_id=auom.id  and auom.aidas_user_id=?1 and au.status=2",nativeQuery = true)
+    Page<AidasUpload> findAllByUserPending(Long userId,Pageable pageable);
 }
