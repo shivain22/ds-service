@@ -58,7 +58,7 @@ public class AidasDownloadResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of aidasDownloads in body.
      */
     @GetMapping("/aidas-downloads")
-    public ResponseEntity<List<AidasDownload>> getAllAidasUploads(Pageable pageable) {
+    public ResponseEntity<List<AidasDownload>> getAllAidasDownloads(Pageable pageable) {
         log.debug("REST request to get a page of AidasDownloads");
         Page<AidasDownload> page = aidasDownloadRepository.findAll(pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
