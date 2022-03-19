@@ -10,8 +10,10 @@ import javax.annotation.PostConstruct;
 
 import com.ainnotate.aidas.config.KeycloakConfig;
 import org.apache.commons.lang3.StringUtils;
+import org.keycloak.admin.client.Keycloak;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.liquibase.LiquibaseProperties;
@@ -33,6 +35,13 @@ public class AinnotateserviceApp {
     public AinnotateserviceApp(Environment env) {
         this.env = env;
     }
+
+    @Autowired
+    private Keycloak keycloak;
+
+    @Autowired
+    private KeycloakConfig keycloakConfig;
+
 
     /**
      * Initializes ainnotateservice.
