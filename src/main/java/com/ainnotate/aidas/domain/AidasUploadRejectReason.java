@@ -2,6 +2,7 @@ package com.ainnotate.aidas.domain;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.envers.Audited;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -15,7 +16,8 @@ import java.util.Objects;
 @Entity
 @Table(name = "aidas_upload_reject_reason")
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-public class AidasUploadRejectReason implements Serializable {
+@Audited
+public class AidasUploadRejectReason extends AbstractAuditingEntity  implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

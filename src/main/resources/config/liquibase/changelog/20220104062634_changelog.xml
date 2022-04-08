@@ -9,37 +9,5 @@
                 <constraints unique="true" nullable="false" uniqueConstraintName="ux_aidas_up_rej_reason"/>
             </column>
         </createTable>
-
-        <createTable tableName="aidas_upload_aidas_rej_reason">
-            <column name="aidas_upload_id" type="bigint">
-                <constraints nullable="false"/>
-            </column>
-            <column name="aidas_upload_reject_reason_id" type="bigint">
-                <constraints nullable="false"/>
-            </column>
-        </createTable>
-
-        <addPrimaryKey columnNames="aidas_upload_id, aidas_upload_reject_reason_id" tableName="aidas_upload_aidas_rej_reason"/>
-        <addForeignKeyConstraint baseColumnNames="aidas_upload_id"
-                                 baseTableName="aidas_upload_aidas_rej_reason"
-                                 constraintName="fk_aidas_upload_id"
-                                 referencedColumnNames="id"
-                                 referencedTableName="aidas_upload"/>
-
-        <addForeignKeyConstraint baseColumnNames="aidas_upload_reject_reason_id"
-                                 baseTableName="aidas_upload_aidas_rej_reason"
-                                 constraintName="fk_aidas_upload_rej_reason_id"
-                                 referencedColumnNames="id"
-                                 referencedTableName="aidas_upload_reject_reason"/>
-
-        <addColumn tableName="aidas_upload">
-            <column name="upload_url" type="varchar(2000)">
-                <constraints nullable="true" />
-            </column>
-            <column name="upload_etag" type="varchar(2000)">
-                <constraints nullable="true" />
-            </column>
-        </addColumn>
-
     </changeSet>
 </databaseChangeLog>

@@ -12,6 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.envers.Audited;
 
 /**
  * A AidasProject.
@@ -20,6 +21,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 @Table(name = "aidas_project")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @org.springframework.data.elasticsearch.annotations.Document(indexName = "aidasproject")
+@Audited
 @AllArgsConstructor
 @NoArgsConstructor
 @SqlResultSetMapping(
@@ -39,7 +41,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
     )
 )
 @NamedNativeQuery(name = "findAllDataMapping", resultClass = AidasProject.class,resultSetMapping ="findAllDataMapping" , query="select ap.*, count(au.id) totalUploaded,SUM(CASE WHEN au.status = 1 THEN 1 ELSE 0 END) AS totalApproved,SUM(CASE WHEN au.status = 0 THEN 1 ELSE 0 END) AS totalRejected,SUM(CASE WHEN au.status = 2 THEN 1 ELSE 0 END) AS totalPending from aidas_project ap left outer join aidas_object ao on ao.aidas_project_id=ap.id left outer join aidas_user_obj_map am on am.aidas_object_id=ao.id left outer join aidas_upload au on au.aidas_user_aidas_object_mapping_id=am.id where am.aidas_user_id= ?1 group by ap.id")
-public class AidasProject implements Serializable {
+public class AidasProject extends AbstractAuditingEntity  implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

@@ -7,6 +7,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.envers.Audited;
 
 /**
  * An authority (a security role) used by Spring Security.
@@ -14,7 +15,8 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 @Entity
 @Table(name = "aidas_authority")
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-public class AidasAuthority implements Serializable {
+@Audited
+public class AidasAuthority extends AbstractAuditingEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

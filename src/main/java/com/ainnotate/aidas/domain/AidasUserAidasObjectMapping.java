@@ -9,6 +9,7 @@ import javax.persistence.*;
 import javax.validation.constraints.*;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.envers.Audited;
 
 /**
  * A AidasUserAidasObjectMapping.
@@ -17,7 +18,8 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 @Table(name = "aidas_user_obj_map")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @org.springframework.data.elasticsearch.annotations.Document(indexName = "aidasuseraidasobjectmapping")
-public class AidasUserAidasObjectMapping implements Serializable {
+@Audited
+public class AidasUserAidasObjectMapping extends AbstractAuditingEntity  implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -28,9 +30,6 @@ public class AidasUserAidasObjectMapping implements Serializable {
 
     @Column(name = "date_assigned")
     private ZonedDateTime dateAssigned;
-
-    @Column(name = "status")
-    private Boolean status;
 
     @ManyToOne(optional = false,fetch = FetchType.EAGER)
     @NotNull
@@ -75,18 +74,12 @@ public class AidasUserAidasObjectMapping implements Serializable {
         this.dateAssigned = dateAssigned;
     }
 
-    public Boolean getStatus() {
-        return this.status;
-    }
 
-    public AidasUserAidasObjectMapping status(Boolean status) {
+    public AidasUserAidasObjectMapping status(Integer status) {
         this.setStatus(status);
         return this;
     }
 
-    public void setStatus(Boolean status) {
-        this.status = status;
-    }
 
     public AidasUser getAidasUser() {
         return this.aidasUser;

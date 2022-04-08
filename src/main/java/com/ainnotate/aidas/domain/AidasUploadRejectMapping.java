@@ -3,6 +3,7 @@ package com.ainnotate.aidas.domain;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.envers.Audited;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -15,10 +16,11 @@ import java.util.Set;
  * A AidasUserAidasObjectMapping.
  */
 @Entity
-@Table(name = "aidas_upload_reject_reason")
+@Table(name = "aidas_upload_aidas_rej_reason")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @org.springframework.data.elasticsearch.annotations.Document(indexName = "aidasupoadrejectmapping")
-public class AidasUploadRejectMapping implements Serializable {
+@Audited
+public class AidasUploadRejectMapping extends AbstractAuditingEntity  implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

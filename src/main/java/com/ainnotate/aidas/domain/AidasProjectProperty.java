@@ -6,6 +6,7 @@ import javax.persistence.*;
 import javax.validation.constraints.*;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.envers.Audited;
 
 /**
  * A AidasProjectProperty.
@@ -14,7 +15,8 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 @Table(name = "aidas_project_property")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @org.springframework.data.elasticsearch.annotations.Document(indexName = "aidasprojectproperty")
-public class AidasProjectProperty implements Serializable {
+@Audited
+public class AidasProjectProperty extends AbstractAuditingEntity  implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

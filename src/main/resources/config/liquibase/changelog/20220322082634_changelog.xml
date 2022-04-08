@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.5.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <!--
+        Added the entity AidasUpload.
+    -->
+
+    <changeSet author="shiva (generated)" id="20220322082634-1-1">
+
+        <createTable tableName="aidas_upload_aidas_rej_reason">
+            <column name="id" type="bigint"  autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="aidas_upload_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="aidas_upload_reject_reason_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey columnNames="aidas_upload_id, aidas_upload_reject_reason_id" tableName="aidas_upload_aidas_rej_reason"/>
+        <addForeignKeyConstraint baseColumnNames="aidas_upload_id"
+                                 baseTableName="aidas_upload_aidas_rej_reason"
+                                 constraintName="fk_aidas_upload_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="aidas_upload"/>
+
+        <addForeignKeyConstraint baseColumnNames="aidas_upload_reject_reason_id"
+                                 baseTableName="aidas_upload_aidas_rej_reason"
+                                 constraintName="fk_aidas_upload_rej_reason_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="aidas_upload_reject_reason"/>
+    </changeSet>
+
+</databaseChangeLog>

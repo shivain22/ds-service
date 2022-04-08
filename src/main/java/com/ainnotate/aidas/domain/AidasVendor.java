@@ -5,6 +5,7 @@ import javax.persistence.*;
 import javax.validation.constraints.*;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.envers.Audited;
 
 /**
  * A AidasVendor.
@@ -13,7 +14,8 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 @Table(name = "aidas_vendor")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @org.springframework.data.elasticsearch.annotations.Document(indexName = "aidasvendor")
-public class AidasVendor implements Serializable {
+@Audited
+public class AidasVendor extends AbstractAuditingEntity  implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

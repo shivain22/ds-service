@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.envers.Audited;
 
 /**
  * A AidasObject.
@@ -19,7 +20,8 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 @Table(name = "aidas_object")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @org.springframework.data.elasticsearch.annotations.Document(indexName = "aidasobject")
-public class AidasObject implements Serializable {
+@Audited
+public class AidasObject extends AbstractAuditingEntity  implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -42,6 +44,9 @@ public class AidasObject implements Serializable {
     @NotNull
     @Column(name = "number_of_upload_reqd", nullable = false)
     private Integer numberOfUploadReqd;
+
+    @Column(name = "status")
+    private Integer status;
 
     @ManyToOne(optional = false)
     @NotNull

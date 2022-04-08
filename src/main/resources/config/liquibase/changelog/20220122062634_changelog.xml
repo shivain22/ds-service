@@ -14,31 +14,31 @@
             <column name="id" type="bigint" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="name" type="varchar(500)">
+            <column name="name" type="varchar(100)">
                 <constraints nullable="false" />
             </column>
             <column name="date_uploaded" type="${datetimeType}">
                 <constraints nullable="true" />
             </column>
-            <column name="bucket_name" type="varchar(500)">
+            <column name="bucket_name" type="varchar(150)">
                 <constraints nullable="true" />
             </column>
-            <column name="aws_key" type="varchar(500)">
+            <column name="aws_key" type="varchar(150)">
                 <constraints nullable="true" />
             </column>
-            <column name="aws_secret" type="varchar(500)">
+            <column name="aws_secret" type="varchar(150)">
                 <constraints nullable="true" />
             </column>
-            <column name="region" type="varchar(500)">
+            <column name="region" type="varchar(100)">
                 <constraints nullable="true" />
             </column>
-            <column name="object_key" type="varchar(3500)">
+            <column name="object_key" type="varchar(150)">
                 <constraints nullable="true" />
             </column>
-            <column name="upload_url" type="varchar(3500)">
+            <column name="upload_url" type="varchar(1500)">
                 <constraints nullable="true" />
             </column>
-            <column name="upload_etag" type="varchar(500)">
+            <column name="upload_etag" type="varchar(150)">
                 <constraints nullable="true" />
             </column>
             <column name="aidas_project_id" type="bigint">

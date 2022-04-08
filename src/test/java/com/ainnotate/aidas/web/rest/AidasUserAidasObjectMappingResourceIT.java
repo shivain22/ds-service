@@ -49,8 +49,8 @@ class AidasUserAidasObjectMappingResourceIT {
     private static final ZonedDateTime DEFAULT_DATE_ASSIGNED = ZonedDateTime.ofInstant(Instant.ofEpochMilli(0L), ZoneOffset.UTC);
     private static final ZonedDateTime UPDATED_DATE_ASSIGNED = ZonedDateTime.now(ZoneId.systemDefault()).withNano(0);
 
-    private static final Boolean DEFAULT_STATUS = false;
-    private static final Boolean UPDATED_STATUS = true;
+    private static final Integer DEFAULT_STATUS = 1;
+    private static final Integer UPDATED_STATUS = 2;
 
     private static final String ENTITY_API_URL = "/api/aidas-user-aidas-object-mappings";
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
@@ -215,7 +215,7 @@ class AidasUserAidasObjectMappingResourceIT {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(aidasUserAidasObjectMapping.getId().intValue())))
             .andExpect(jsonPath("$.[*].dateAssigned").value(hasItem(sameInstant(DEFAULT_DATE_ASSIGNED))))
-            .andExpect(jsonPath("$.[*].status").value(hasItem(DEFAULT_STATUS.booleanValue())));
+            .andExpect(jsonPath("$.[*].status").value(hasItem(DEFAULT_STATUS)));
     }
 
     @Test
@@ -231,7 +231,7 @@ class AidasUserAidasObjectMappingResourceIT {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(aidasUserAidasObjectMapping.getId().intValue()))
             .andExpect(jsonPath("$.dateAssigned").value(sameInstant(DEFAULT_DATE_ASSIGNED)))
-            .andExpect(jsonPath("$.status").value(DEFAULT_STATUS.booleanValue()));
+            .andExpect(jsonPath("$.status").value(DEFAULT_STATUS));
     }
 
     @Test
@@ -526,6 +526,6 @@ class AidasUserAidasObjectMappingResourceIT {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(aidasUserAidasObjectMapping.getId().intValue())))
             .andExpect(jsonPath("$.[*].dateAssigned").value(hasItem(sameInstant(DEFAULT_DATE_ASSIGNED))))
-            .andExpect(jsonPath("$.[*].status").value(hasItem(DEFAULT_STATUS.booleanValue())));
+            .andExpect(jsonPath("$.[*].status").value(hasItem(DEFAULT_STATUS)));
     }
 }

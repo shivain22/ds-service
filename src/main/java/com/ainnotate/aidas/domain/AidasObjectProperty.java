@@ -6,6 +6,7 @@ import javax.persistence.*;
 import javax.validation.constraints.*;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.envers.Audited;
 
 /**
  * A AidasObjectProperty.
@@ -14,7 +15,8 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 @Table(name = "aidas_object_property")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @org.springframework.data.elasticsearch.annotations.Document(indexName = "aidasobjectproperty")
-public class AidasObjectProperty implements Serializable {
+@Audited
+public class AidasObjectProperty extends AbstractAuditingEntity  implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -34,6 +36,7 @@ public class AidasObjectProperty implements Serializable {
     @ManyToOne(optional = false)
     @NotNull
     private AidasProperties aidasProperties;
+
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 

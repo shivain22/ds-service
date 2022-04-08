@@ -3,6 +3,7 @@ package com.ainnotate.aidas.domain;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.envers.Audited;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -16,7 +17,8 @@ import java.time.ZonedDateTime;
 @Table(name = "aidas_download")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @org.springframework.data.elasticsearch.annotations.Document(indexName = "aidasupload")
-public class AidasDownload implements Serializable {
+@Audited
+public class AidasDownload extends AbstractAuditingEntity  implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -25,7 +27,7 @@ public class AidasDownload implements Serializable {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "name", length = 3500, nullable = false)
+    @Column(name = "name", length = 100, nullable = false)
     private String name;
 
     @Column(name = "upload_url",  nullable = false)
@@ -37,19 +39,19 @@ public class AidasDownload implements Serializable {
     @Column(name = "date_uploaded")
     private Instant dateUploaded;
 
-    @Column(name = "bucket_name", length = 3500, nullable = false)
+    @Column(name = "bucket_name", length = 150, nullable = false)
     private String bucketName;
 
-    @Column(name = "aws_key", length = 3500, nullable = false)
+    @Column(name = "aws_key", length = 150, nullable = false)
     private String awsKey;
 
-    @Column(name = "aws_secret", length = 3500, nullable = false)
+    @Column(name = "aws_secret", length = 150, nullable = false)
     private String awsSecret;
 
-    @Column(name = "region", length = 3500, nullable = false)
+    @Column(name = "region", length = 150, nullable = false)
     private String region;
 
-    @Column(name = "object_key", length = 3500, nullable = false)
+    @Column(name = "object_key", length = 150, nullable = false)
     private String objectKey;
 
     @Column(name = "upload_object_ids", length = 3500, nullable = false)

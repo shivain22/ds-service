@@ -10,6 +10,7 @@ import javax.persistence.*;
 import javax.validation.constraints.*;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.envers.Audited;
 
 /**
  * A AidasUpload.
@@ -18,7 +19,8 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 @Table(name = "aidas_upload")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @org.springframework.data.elasticsearch.annotations.Document(indexName = "aidasupload")
-public class AidasUpload implements Serializable {
+@Audited
+public class AidasUpload extends AbstractAuditingEntity  implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -40,8 +42,7 @@ public class AidasUpload implements Serializable {
     @Column(name = "date_uploaded")
     private Instant dateUploaded;
 
-    @Column(name = "status")
-    private Integer status;
+
 
     @Column(name = "status_modified_date")
     private ZonedDateTime statusModifiedDate;
@@ -153,13 +154,6 @@ public class AidasUpload implements Serializable {
     }
 
 
-    public Integer getStatus() {
-        return status;
-    }
-
-    public void setStatus(Integer status) {
-        this.status = status;
-    }
 
     public ZonedDateTime getStatusModifiedDate() {
         return this.statusModifiedDate;

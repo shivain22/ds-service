@@ -5,6 +5,7 @@ import java.io.Serializable;
 import javax.persistence.*;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.envers.Audited;
 
 /**
  * A AidasUserJsonStorage.
@@ -13,7 +14,8 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 @Table(name = "aidas_user_json_storage")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @org.springframework.data.elasticsearch.annotations.Document(indexName = "aidasuserjsonstorage")
-public class AidasUserJsonStorage implements Serializable {
+@Audited
+public class AidasUserJsonStorage extends AbstractAuditingEntity  implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

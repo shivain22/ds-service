@@ -5,6 +5,7 @@ import java.io.Serializable;
 import javax.persistence.*;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.envers.Audited;
 
 /**
  * A AidasUploadMetaData.
@@ -13,7 +14,8 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 @Table(name = "aidas_upload_meta_data")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @org.springframework.data.elasticsearch.annotations.Document(indexName = "aidasuploadmetadata")
-public class AidasUploadMetaData implements Serializable {
+@Audited
+public class AidasUploadMetaData extends AbstractAuditingEntity  implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

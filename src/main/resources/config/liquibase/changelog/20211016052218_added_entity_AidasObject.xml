@@ -26,6 +26,9 @@
             <column name="aidas_project_id" type="bigint">
                 <constraints nullable="false" />
             </column>
+            <column name="buffer_percent" type="bigint">
+                <constraints nullable="false"/>
+            </column>
             <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here -->
         </createTable>
     </changeSet>

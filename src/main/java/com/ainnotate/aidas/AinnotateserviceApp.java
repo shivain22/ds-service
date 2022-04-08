@@ -3,14 +3,18 @@ package com.ainnotate.aidas;
 import com.ainnotate.aidas.config.ApplicationProperties;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Optional;
+import java.util.*;
 import javax.annotation.PostConstruct;
 
 import com.ainnotate.aidas.config.KeycloakConfig;
+import com.ainnotate.aidas.domain.AidasUser;
+import com.ainnotate.aidas.repository.AidasUserRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.keycloak.admin.client.Keycloak;
+import org.keycloak.admin.client.resource.RealmResource;
+import org.keycloak.admin.client.resource.UserResource;
+import org.keycloak.admin.client.resource.UsersResource;
+import org.keycloak.representations.idm.UserRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +46,9 @@ public class AinnotateserviceApp {
     @Autowired
     private KeycloakConfig keycloakConfig;
 
+    @Autowired
+    private AidasUserRepository aidasUserRepository;
+
 
     /**
      * Initializes ainnotateservice.
@@ -52,6 +59,36 @@ public class AinnotateserviceApp {
      */
     @PostConstruct
     public void initApplication() {
+        RealmResource realmResource = keycloak.realm(keycloakConfig.getClientRealm());
+        UsersResource usersRessource = realmResource.users();
+        List<AidasUser> aidasUsers =  aidasUserRepository.findAll();
+        List<UserRepresentation> users = usersRessource.list();
+        for(UserRepresentation user:users) {
+            if (aidasUserRepository.findByLogin(user.getUsername()).isPresent()) {
+
+                AidasUser aidasUser = aidasUserRepository.findByLogin(user.getUsername()).get();
+                if (!aidasUser.getKeycloakId().equals(user.getId())) {
+                    aidasUser.setKeycloakId(user.getId());
+                    aidasUserRepository.save(aidasUser);
+                }
+                List<String> userAttrsVals = new ArrayList<>();
+                userAttrsVals.add(aidasUser.getCurrentAidasAuthority().getName());
+                List<String> userAttrVals1 = new ArrayList<>();
+                userAttrVals1.add(String.valueOf(aidasUser.getId()));
+                if (user.getAttributes() != null) {
+                    user.getAttributes().put("current_role", userAttrsVals);
+                    user.getAttributes().put("aidas_id", userAttrVals1);
+                } else {
+                    Map<String, List<String>> userAttrs = new HashMap<>();
+                    userAttrsVals.add(String.valueOf(aidasUser.getId()));
+                    userAttrs.put("current_role", userAttrsVals);
+                    user.getAttributes().put("aidas_id", userAttrVals1);
+                    user.setAttributes(userAttrs);
+                }
+                UserResource userResource = usersRessource.get(aidasUser.getKeycloakId());
+                userResource.update(user);
+            }
+        }
         Collection<String> activeProfiles = Arrays.asList(env.getActiveProfiles());
         if (
             activeProfiles.contains(JHipsterConstants.SPRING_PROFILE_DEVELOPMENT) &&
