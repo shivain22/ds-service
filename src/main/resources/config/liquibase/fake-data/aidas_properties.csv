@@ -1,18 +1,22 @@
 id;name;value;system_property;property_type;optional;description
-1;resolution;3264x2448;true;property;true;Image Resolution, optional, defaults to devices capability
-2;storage;gdrive;true;property;false;Storage type eg. s3,dropBox,gdrive etc, Mandatory
-3;orientation;landscape;true;property;true;Orientation of screen eg. landscape or portrait, optional. defaults to landscape
-4;platform;android;true;property;true;Default platform eg. Android/iOS/both
-5;platformPercentage;{android:60,iOS:40};true;property;true;Default platform eg. Number of object upload required in %
-6;objDescription;;false;metadata;true;Meta data for uploaded object
-7;autoFocus;ON;true;property;true;Camera Autofocus
-8;flash;ON;true;property;true;Camera Flash options
-9;focusDepth;0;true;property;true;Will work if autofocus is off
-10;ratio;;true;property;true;possible ratios supported by the camera that can be retieved from RNCamera library (only Android)
-11;type;front;true;property;true;Front or back camera
-12;whiteBalance;AUTO;true;property;true;and for IOS we can specify custom temperature, tint and rgb offset values {temperature: 4000, tint: -10.0, redGainOffset: 0.0, greenGainOffset: 0.0, blueGainOffset: 0.0}
-13;exposure;0;true;property;true;Front or back camera
-14;zoom;0;true;property;true;zoom level
-15;videoQuality;2160p;true;property;true;video quality
+1;resolution;3264x2448;true;1;true;Image Resolution, optional, defaults to devices capability
+2;storage;gdrive;true;1;false;Storage type eg. s3,dropBox,gdrive etc, Mandatory
+3;orientation;landscape;true;1;true;Orientation of screen eg. landscape or portrait, optional. defaults to landscape
+4;platform;android;true;1;true;Default platform eg. Android/iOS/both
+5;platformPercentage;{android:60,iOS:40};true;1;true;Default platform eg. Number of object upload required in %
+6;objDescription;metadata;false;2;true;Meta data for uploaded object
+7;autoFocus;ON;true;1;true;Camera Autofocus
+8;flash;ON;true;1;true;Camera Flash options
+9;focusDepth;0;true;1;true;Will work if autofocus is off
+10;ratio;0;true;1;true;possible ratios supported by the camera that can be retieved from RNCamera library (only Android)
+11;type;front;true;1;true;Front or back camera
+12;whiteBalance;AUTO;true;1;true;and for IOS we can specify custom temperature, tint and rgb offset values {temperature: 4000, tint: -10.0, redGainOffset: 0.0, greenGainOffset: 0.0, blueGainOffset: 0.0}
+13;exposure;0;true;1;true;Front or back camera
+14;zoom;0;true;1;true;zoom level
+15;videoQuality;2160p;true;1;true;video quality
+16;accessKey;AKIART6S2XPD6CH4Y23I;false;1;true;AWS Access key
+17;accessSecret;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;false;1;true;AWS access secret
+18;region;ap-south-1;false;1;true;AWS S3 bucket region
+19;bucketName;objects-upload;false;1;true;AWS S3 bucket name
 
 

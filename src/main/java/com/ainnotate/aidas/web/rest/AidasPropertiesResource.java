@@ -191,6 +191,22 @@ public class AidasPropertiesResource {
     }
 
     /**
+     * {@code GET  /aidas-properties} : get all the aidasProperties with specific type.
+     *
+     * @param pageable the pagination information.
+     * @param propertyType the type of property required (1=property , 2=metadata)
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of aidasProperties in body.
+     */
+    @GetMapping("/aidas-properties/type/{propertyType}")
+    public ResponseEntity<List<AidasProperties>> getAllAidasPropertiesByType(Pageable pageable,@PathVariable(value = "propertyType", required = false) final Long propertyType) {
+        log.debug("REST request to get a page of AidasProperties");
+
+        Page<AidasProperties> page = aidasPropertiesRepository.findAllByPropertyTypeEquals(pageable,propertyType);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    /**
      * {@code GET  /aidas-properties/:id} : get the "id" aidasProperties.
      *
      * @param id the id of the aidasProperties to retrieve.

@@ -37,8 +37,30 @@ public class AidasObjectProperty extends AbstractAuditingEntity  implements Seri
     @NotNull
     private AidasProperties aidasProperties;
 
+    @Column
+    private Integer status;
 
-    // jhipster-needle-entity-add-field - JHipster will add fields here
+    @Column
+    private Boolean optional;
+
+    @Override
+    public Integer getStatus() {
+        return status;
+    }
+
+    @Override
+    public void setStatus(Integer status) {
+        this.status = status;
+    }
+
+    public Boolean getOptional() {
+        return optional;
+    }
+
+    public void setOptional(Boolean optional) {
+        this.optional = optional;
+    }
+// jhipster-needle-entity-add-field - JHipster will add fields here
 
     public Long getId() {
         return this.id;

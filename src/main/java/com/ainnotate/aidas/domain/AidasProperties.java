@@ -38,7 +38,7 @@ public class AidasProperties extends AbstractAuditingEntity  implements Serializ
 
     @NotNull
     @Column(name="property_type", nullable = false)
-    private String propertyType;
+    private Long propertyType;
 
     @NotNull
     @Column(name = "optional", nullable = false)
@@ -47,11 +47,11 @@ public class AidasProperties extends AbstractAuditingEntity  implements Serializ
     @Column(name = "description")
     private String description;
 
-    public String getPropertyType() {
+    public Long getPropertyType() {
         return propertyType;
     }
 
-    public void setPropertyType(String propertyType) {
+    public void setPropertyType(Long propertyType) {
         this.propertyType = propertyType;
     }
 // jhipster-needle-entity-add-field - JHipster will add fields here

@@ -33,6 +33,30 @@ public class AidasProjectProperty extends AbstractAuditingEntity  implements Ser
     @JsonIgnoreProperties(value = { "aidasCustomer" }, allowSetters = true)
     private AidasProject aidasProject;
 
+    @Column
+    private Integer status;
+
+    @Column
+    private Boolean optional;
+
+    @Override
+    public Integer getStatus() {
+        return status;
+    }
+
+    @Override
+    public void setStatus(Integer status) {
+        this.status = status;
+    }
+
+    public Boolean getOptional() {
+        return optional;
+    }
+
+    public void setOptional(Boolean optional) {
+        this.optional = optional;
+    }
+
     @ManyToOne
     private AidasProperties aidasProperties;
 

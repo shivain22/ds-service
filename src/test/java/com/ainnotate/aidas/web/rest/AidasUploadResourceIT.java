@@ -98,7 +98,7 @@ class AidasUploadResourceIT {
             .dateUploaded(DEFAULT_DATE_UPLOADED)
             .status(DEFAULT_STATUS)
             .statusModifiedDate(DEFAULT_STATUS_MODIFIED_DATE)
-            .rejectReason(DEFAULT_REJECT_REASON);
+            ;
         // Add required entity
         AidasUserAidasObjectMapping aidasUserAidasObjectMapping;
         if (TestUtil.findAll(em, AidasUserAidasObjectMapping.class).isEmpty()) {
@@ -124,7 +124,7 @@ class AidasUploadResourceIT {
             .dateUploaded(UPDATED_DATE_UPLOADED)
             .status(UPDATED_STATUS)
             .statusModifiedDate(UPDATED_STATUS_MODIFIED_DATE)
-            .rejectReason(UPDATED_REJECT_REASON);
+            ;
         // Add required entity
         AidasUserAidasObjectMapping aidasUserAidasObjectMapping;
         if (TestUtil.findAll(em, AidasUserAidasObjectMapping.class).isEmpty()) {
@@ -165,7 +165,7 @@ class AidasUploadResourceIT {
         assertThat(testAidasUpload.getDateUploaded()).isEqualTo(DEFAULT_DATE_UPLOADED);
         assertThat(testAidasUpload.getStatus()).isEqualTo(DEFAULT_STATUS);
         assertThat(testAidasUpload.getStatusModifiedDate()).isEqualTo(DEFAULT_STATUS_MODIFIED_DATE);
-        assertThat(testAidasUpload.getRejectReason()).isEqualTo(DEFAULT_REJECT_REASON);
+
 
         // Validate the AidasUpload in Elasticsearch
         verify(mockAidasUploadSearchRepository, times(1)).save(testAidasUpload);
@@ -280,8 +280,8 @@ class AidasUploadResourceIT {
             .name(UPDATED_NAME)
             .dateUploaded(UPDATED_DATE_UPLOADED)
             .status(UPDATED_STATUS)
-            .statusModifiedDate(UPDATED_STATUS_MODIFIED_DATE)
-            .rejectReason(UPDATED_REJECT_REASON);
+            .statusModifiedDate(UPDATED_STATUS_MODIFIED_DATE);
+
 
         restAidasUploadMockMvc
             .perform(
@@ -300,7 +300,6 @@ class AidasUploadResourceIT {
         assertThat(testAidasUpload.getDateUploaded()).isEqualTo(UPDATED_DATE_UPLOADED);
         assertThat(testAidasUpload.getStatus()).isEqualTo(UPDATED_STATUS);
         assertThat(testAidasUpload.getStatusModifiedDate()).isEqualTo(UPDATED_STATUS_MODIFIED_DATE);
-        assertThat(testAidasUpload.getRejectReason()).isEqualTo(UPDATED_REJECT_REASON);
 
         // Validate the AidasUpload in Elasticsearch
         verify(mockAidasUploadSearchRepository).save(testAidasUpload);
@@ -412,7 +411,7 @@ class AidasUploadResourceIT {
         assertThat(testAidasUpload.getDateUploaded()).isEqualTo(UPDATED_DATE_UPLOADED);
         assertThat(testAidasUpload.getStatus()).isEqualTo(UPDATED_STATUS);
         assertThat(testAidasUpload.getStatusModifiedDate()).isEqualTo(UPDATED_STATUS_MODIFIED_DATE);
-        assertThat(testAidasUpload.getRejectReason()).isEqualTo(DEFAULT_REJECT_REASON);
+
     }
 
     @Test
@@ -432,7 +431,7 @@ class AidasUploadResourceIT {
             .dateUploaded(UPDATED_DATE_UPLOADED)
             .status(UPDATED_STATUS)
             .statusModifiedDate(UPDATED_STATUS_MODIFIED_DATE)
-            .rejectReason(UPDATED_REJECT_REASON);
+           ;
 
         restAidasUploadMockMvc
             .perform(
@@ -451,7 +450,7 @@ class AidasUploadResourceIT {
         assertThat(testAidasUpload.getDateUploaded()).isEqualTo(UPDATED_DATE_UPLOADED);
         assertThat(testAidasUpload.getStatus()).isEqualTo(UPDATED_STATUS);
         assertThat(testAidasUpload.getStatusModifiedDate()).isEqualTo(UPDATED_STATUS_MODIFIED_DATE);
-        assertThat(testAidasUpload.getRejectReason()).isEqualTo(UPDATED_REJECT_REASON);
+
     }
 
     @Test

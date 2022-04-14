@@ -34,7 +34,19 @@ public class AidasUploadMetaData extends AbstractAuditingEntity  implements Seri
     @JsonIgnoreProperties(value = { "aidasUserAidasObjectMapping" }, allowSetters = true)
     private AidasUpload aidasUpload;
 
-    // jhipster-needle-entity-add-field - JHipster will add fields here
+    @ManyToOne
+    @JsonIgnoreProperties(value = { "aidasUserAidasObjectMapping" }, allowSetters = true)
+    private AidasProjectProperty aidasProjectProperty;
+
+
+    public AidasProjectProperty getAidasProjectProperty() {
+        return aidasProjectProperty;
+    }
+
+    public void setAidasProjectProperty(AidasProjectProperty aidasProjectProperty) {
+        this.aidasProjectProperty = aidasProjectProperty;
+    }
+// jhipster-needle-entity-add-field - JHipster will add fields here
 
     public Long getId() {
         return this.id;

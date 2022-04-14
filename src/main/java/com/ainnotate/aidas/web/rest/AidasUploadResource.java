@@ -13,6 +13,7 @@ import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -60,9 +61,15 @@ public class AidasUploadResource {
     @Autowired
     private AidasUserAidasObjectMappingRepository aidasUserAidasObjectMappingRepository;
 
+    @Autowired
+    private AidasProjectPropertyRepository aidasProjectPropertyRepository;
+
     private final AidasUploadRepository aidasUploadRepository;
 
     private final AidasUploadSearchRepository aidasUploadSearchRepository;
+
+    @Autowired
+    private AidasUploadMetaDataRepository aidasUploadMetaDataRepository;
 
     public AidasUploadResource(AidasUploadRepository aidasUploadRepository, AidasUploadSearchRepository aidasUploadSearchRepository) {
         this.aidasUploadRepository = aidasUploadRepository;
@@ -97,13 +104,84 @@ public class AidasUploadResource {
             if (aidasUpload.getId() != null) {
                 throw new BadRequestAlertException("A new aidasUpload cannot already have an ID", ENTITY_NAME, "idexists");
             }
-            aidasUpload.setStatus(2);
+            aidasUpload.setStatus(0);
             AidasUpload result = aidasUploadRepository.save(aidasUpload);
             aidasUploadSearchRepository.save(result);
             return ResponseEntity
                 .created(new URI("/api/aidas-uploads/" + result.getId()))
                 .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
                 .body(result);
+        }
+        throw new BadRequestAlertException("You can not upload as there was an error internally", ENTITY_NAME, "idexists");
+    }
+
+
+    /**
+     * {@code POST  /aidas-uploads} : Create a new aidasUpload.
+     *
+     * @param uploadMetadataDTOS the list of aidasUploadMetadata to create.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new aidasUpload, or with status {@code 400 (Bad Request)} if the aidasUpload has already an ID.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @PostMapping("/aidas-uploads/metadata")
+    public ResponseEntity<List<AidasUploadMetaData>> submitMetadata(@Valid @RequestBody List<UploadMetadataDTO> uploadMetadataDTOS) throws URISyntaxException {
+        log.debug("REST request to save AidasUpload : {}", uploadMetadataDTOS);
+        AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        AidasAuthority aidasAuthority = aidasUser.getCurrentAidasAuthority();
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
+            List<AidasUploadMetaData> success = new ArrayList<>();
+            List<AidasUploadMetaData> failed = new ArrayList<>();
+            for(UploadMetadataDTO umd:uploadMetadataDTOS){
+                AidasUpload aidasUpload = aidasUploadRepository.getById(umd.getUploadId());
+                AidasProjectProperty aidasProjectProperty = aidasProjectPropertyRepository.getById(umd.getProjectPropertyId());
+                AidasUploadMetaData aum = new AidasUploadMetaData();
+                aum.setAidasUpload(aidasUpload);
+                aum.setAidasProjectProperty(aidasProjectProperty);
+                aum.setValue(umd.getValue());
+                if(!aidasProjectProperty.getAidasProperties().getOptional()){
+                    if(umd.getUploadId()==null){
+                        failed.add(aum);
+                    }else if(umd.getValue().trim().length()==0){
+                        failed.add(aum);
+                    }else{
+                        success.add(aum);
+                    }
+                }else{
+                    success.add(aum);
+                }
+            }
+            for(AidasUploadMetaData aum:success){
+                aidasUploadMetaDataRepository.save(aum);
+                AidasUpload aidasUpload = aum.getAidasUpload();
+                aidasUpload.setStatus(3);
+                aidasUploadRepository.save(aidasUpload);
+            }
+            return ResponseEntity.ok().body(failed);
+        }
+        throw new BadRequestAlertException("You can not upload as there was an error internally", ENTITY_NAME, "idexists");
+    }
+
+    /**
+     * {@code POST  /aidas-uploads} : Create a new aidasUpload.
+     *
+     * @param uploadIds the list of aidasUploadMetadata to create.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new aidasUpload, or with status {@code 400 (Bad Request)} if the aidasUpload has already an ID.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @PostMapping("/aidas-uploads/qc")
+    public ResponseEntity<String> submitForQc(@Valid @RequestBody List<Long> uploadIds) throws URISyntaxException {
+        log.debug("REST request to save AidasUpload : {}", uploadIds);
+        AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        AidasAuthority aidasAuthority = aidasUser.getCurrentAidasAuthority();
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
+            for(Long upId:uploadIds){
+                AidasUpload aidasUpload = aidasUploadRepository.getById(upId);
+                if(aidasUpload.getStatus()==3) {
+                    aidasUpload.setStatus(4);
+                }
+                aidasUploadRepository.save(aidasUpload);
+            }
+            return ResponseEntity.ok().body("Success");
         }
         throw new BadRequestAlertException("You can not upload as there was an error internally", ENTITY_NAME, "idexists");
     }
@@ -153,6 +231,7 @@ public class AidasUploadResource {
             aidasUpload.setName(uploadDto.getUploadUrl());
             aidasUpload.setUploadUrl(uploadDto.getUploadUrl());
             aidasUpload.setUploadEtag(uploadDto.getEtag());
+            aidasUpload.setStatus(2);
             AidasUpload result = aidasUploadRepository.save(aidasUpload);
             //aidasUploadSearchRepository.save(result);
             return ResponseEntity
@@ -206,7 +285,7 @@ public class AidasUploadResource {
             aidasUpload.setUploadUrl(uploadByUserObjectMappingDto.getUploadUrl());
             aidasUpload.setUploadEtag(uploadByUserObjectMappingDto.getEtag());
             aidasUpload.setObjectKey(uploadByUserObjectMappingDto.getObjectKey());
-            aidasUpload.setUploadObjectMeta(uploadByUserObjectMappingDto.getUploadMetadata());
+            aidasUpload.setStatus(2);
             AidasUpload result = aidasUploadRepository.save(aidasUpload);
             //aidasUploadSearchRepository.save(result);
             return ResponseEntity
@@ -417,9 +496,7 @@ public class AidasUploadResource {
                 if (aidasUpload.getStatusModifiedDate() != null) {
                     existingAidasUpload.setStatusModifiedDate(aidasUpload.getStatusModifiedDate());
                 }
-                if (aidasUpload.getRejectReason() != null) {
-                    existingAidasUpload.setRejectReason(aidasUpload.getRejectReason());
-                }
+
 
                 return existingAidasUpload;
             })
@@ -541,6 +618,31 @@ public class AidasUploadResource {
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
+
+
+
+    /**
+     * {@code GET  /aidas-uploads/{id}/{type}/{status}} : get all the aidasUploads.
+     *
+     * @param projectId the pagination information.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of aidasUploads in body.
+     */
+    @GetMapping("/aidas-uploads/metadata/{projectId}")
+    public ResponseEntity<UploadsMetadata> getAllAidasUploadsForMetadata(@PathVariable Long projectId) {
+        AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        AidasAuthority aidasAuthority = aidasUser.getCurrentAidasAuthority();
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
+            List<AidasUpload> aidasUploads= aidasUploadRepository.findAllByUserAndProjectAllForMetadata(aidasUser.getId(),projectId);
+            UploadsMetadata uploadsMetadata = new UploadsMetadata();
+            uploadsMetadata.setAidasUploads(aidasUploads);
+            List<AidasProjectProperty> aidasProjectProperties = aidasProjectPropertyRepository.findAllAidasProjectPropertyForMetadata(projectId);
+            uploadsMetadata.setAidasProjectProperties(aidasProjectProperties);
+            return ResponseEntity.ok().body(uploadsMetadata);
+        }
+        throw new BadRequestAlertException("VENDOR_USER only allowed", ENTITY_NAME, "notauthorised");
+    }
+
+
     /**
      * {@code GET  /aidas-uploads/:id} : get the "id" aidasUpload.
      *
@@ -570,6 +672,42 @@ public class AidasUploadResource {
         Optional<AidasUpload> aidasUpload = aidasUploadRepository.findById(id);
         return ResponseUtil.wrapOrNotFound(aidasUpload);
     }
+
+    /**
+     * {@code GET  /aidas-uploads/:id} : get the "id" aidasUpload.
+     *
+     * @param id the id of the aidasUpload to retrieve.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the aidasUpload, or with status {@code 404 (Not Found)}.
+     */
+    @GetMapping("/aidas-uploads/next")
+    public ResponseEntity<AidasUpload> getNextAidasUpload(@PathVariable Long id) {
+        AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        log.debug("REST request to get AidasUpload : {}", id);
+        AidasAuthority aidasAuthority = aidasUser.getCurrentAidasAuthority();
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ADMIN)){
+
+        }
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ORG_ADMIN)){
+
+        }
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN)){
+
+        }
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_ADMIN)){
+
+        }
+        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
+
+        }
+        AidasUpload aidasUpload = aidasUploadRepository.findTopByQcNotDoneYet();
+        aidasUpload.setQcDoneBy(aidasUser.getId());
+        aidasUpload.setQcStartDate(Instant.now().getEpochSecond());
+        aidasUpload.setQcStatus(2);
+
+        return ResponseEntity.ok().body(aidasUpload);
+    }
+
+
 
     /**
      * {@code DELETE  /aidas-uploads/:id} : delete the "id" aidasUpload.

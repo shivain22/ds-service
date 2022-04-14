@@ -47,21 +47,90 @@ public class AidasUpload extends AbstractAuditingEntity  implements Serializable
     @Column(name = "status_modified_date")
     private ZonedDateTime statusModifiedDate;
 
-    @Column(name = "reject_reason")
-    private String rejectReason;
+    @OneToMany(mappedBy = "aidasUpload")
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    @JsonIgnoreProperties(value = { "aidasUpload" }, allowSetters = true)
+    private Set<AidasUploadRejectMapping> aidasUploadRejectMappings = new HashSet<>();
+
+    public Set<AidasUploadRejectMapping> getAidasUploadRejectMappings() {
+        return aidasUploadRejectMappings;
+    }
+
+    public void setAidasUploadRejectMappings(Set<AidasUploadRejectMapping> aidasUploadRejectMappings) {
+        this.aidasUploadRejectMappings = aidasUploadRejectMappings;
+    }
 
     @Column(name = "object_key",  nullable = false)
     private String objectKey;
 
-    @Column(name = "upload_object_meta",  nullable = false)
-    private String uploadObjectMeta;
+    @OneToMany(mappedBy = "aidasUpload")
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    @JsonIgnoreProperties(value = { "aidasUpload" }, allowSetters = true)
+    private Set<AidasUploadMetaData> aidasUploadMetaDataSet = new HashSet<>();
 
-    public String getUploadObjectMeta() {
-        return uploadObjectMeta;
+    @Column(name="status", nullable=false)
+    private Integer status;
+
+    @Column(name="qc_status", nullable=false)
+    private Integer qcStatus;
+
+    @Column(name="qc_done_by", nullable=false)
+    private Long qcDoneBy;
+
+    @Column(name="qc_start_date", nullable=false)
+    private Long qcStartDate;
+
+    @Column(name="qc_end_date", nullable=false)
+    private Long qcEndDate;
+
+    public Set<AidasUploadMetaData> getAidasUploadMetaDataSet() {
+        return aidasUploadMetaDataSet;
     }
 
-    public void setUploadObjectMeta(String uploadObjectMeta) {
-        this.uploadObjectMeta = uploadObjectMeta;
+    public void setAidasUploadMetaDataSet(Set<AidasUploadMetaData> aidasUploadMetaDataSet) {
+        this.aidasUploadMetaDataSet = aidasUploadMetaDataSet;
+    }
+
+    @Override
+    public Integer getStatus() {
+        return status;
+    }
+
+    @Override
+    public void setStatus(Integer status) {
+        this.status = status;
+    }
+
+    public Integer getQcStatus() {
+        return qcStatus;
+    }
+
+    public void setQcStatus(Integer qcStatus) {
+        this.qcStatus = qcStatus;
+    }
+
+    public Long getQcDoneBy() {
+        return qcDoneBy;
+    }
+
+    public void setQcDoneBy(Long qcDoneBy) {
+        this.qcDoneBy = qcDoneBy;
+    }
+
+    public Long getQcStartDate() {
+        return qcStartDate;
+    }
+
+    public void setQcStartDate(Long qcStartDate) {
+        this.qcStartDate = qcStartDate;
+    }
+
+    public Long getQcEndDate() {
+        return qcEndDate;
+    }
+
+    public void setQcEndDate(Long qcEndDate) {
+        this.qcEndDate = qcEndDate;
     }
 
     public String getObjectKey() {
@@ -168,18 +237,7 @@ public class AidasUpload extends AbstractAuditingEntity  implements Serializable
         this.statusModifiedDate = statusModifiedDate;
     }
 
-    public String getRejectReason() {
-        return this.rejectReason;
-    }
 
-    public AidasUpload rejectReason(String rejectReason) {
-        this.setRejectReason(rejectReason);
-        return this;
-    }
-
-    public void setRejectReason(String rejectReason) {
-        this.rejectReason = rejectReason;
-    }
 
     public AidasUserAidasObjectMapping getAidasUserAidasObjectMapping() {
         return this.aidasUserAidasObjectMapping;
@@ -222,7 +280,6 @@ public class AidasUpload extends AbstractAuditingEntity  implements Serializable
             ", dateUploaded='" + getDateUploaded() + "'" +
             ", status='" + getStatus() + "'" +
             ", statusModifiedDate='" + getStatusModifiedDate() + "'" +
-            ", rejectReason='" + getRejectReason() + "'" +
             "}";
     }
 }

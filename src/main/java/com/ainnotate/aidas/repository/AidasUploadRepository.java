@@ -183,4 +183,11 @@ public interface AidasUploadRepository extends JpaRepository<AidasUpload, Long> 
 
     @Query(value="select * from aidas_upload au, aidas_user_obj_map auom where au.aidas_user_aidas_object_mapping_id=auom.id  and auom.aidas_user_id=?1 and au.status=2",nativeQuery = true)
     Page<AidasUpload> findAllByUserPending(Long userId,Pageable pageable);
+
+    @Query(value="select * from aidas_upload au, aidas_user_obj_map auom,aidas_object ao, aidas_project ap where au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_object_id=ao.id and ao.aidas_project_id=ap.id and ap.id=?2 and auom.aidas_user_id=?1",nativeQuery = true)
+    List<AidasUpload> findAllByUserAndProjectAllForMetadata(Long userId, Long projectId);
+
+    @Query(value="select * from aidas_upload where qc_done_by is null limit 1",nativeQuery = true)
+    AidasUpload findTopByQcNotDoneYet();
+
 }

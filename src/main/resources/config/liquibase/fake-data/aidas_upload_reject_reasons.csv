@@ -1,4 +1,7 @@
-id;name;description
-1;Low Resoultuion
-2;Wrong orientation
-3;Wrong platform (Android/iOS)
+id;reason;description
+1;Low Resoultuion;Low Resolution
+2;Wrong orientation;Wrong orientation
+3;Wrong platform (Android/iOS);Wront platform
+4;Blurred Image;Blurred Image
+5;Shaken Video;Shaken Video
+6;Wrong Zoom;Wrong Zoom
