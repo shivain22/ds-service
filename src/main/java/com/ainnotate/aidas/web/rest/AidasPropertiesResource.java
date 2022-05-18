@@ -191,6 +191,18 @@ public class AidasPropertiesResource {
     }
 
     /**
+     * {@code GET  /aidas-properties} : get all the aidasProperties.
+     *
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of aidasProperties in body.
+     */
+    @GetMapping("/aidas-properties/all")
+    public ResponseEntity<List<AidasProperties>> getAllAidasProperties() {
+        log.debug("REST request to get a page of AidasProperties");
+        List<AidasProperties> aidasProperties = aidasPropertiesRepository.findAll();
+        return ResponseEntity.ok().body(aidasProperties);
+    }
+
+    /**
      * {@code GET  /aidas-properties} : get all the aidasProperties with specific type.
      *
      * @param pageable the pagination information.

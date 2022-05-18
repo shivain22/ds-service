@@ -100,6 +100,7 @@ public class IdpUserService {
         aidasUser.setLastModifiedDate(Instant.now());
         aidasUser.setCurrentAidasAuthority(currentAidasAuthority);
         aidasUser.setPassword(" ");
+        aidasUser.setDeleted(false);
         AidasUser result = aidasUserRepository.save(aidasUser);
         if(userRep.getAttributes()!=null) {
             List<String> userAttrsVals = new ArrayList<>();

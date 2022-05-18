@@ -7,7 +7,9 @@ import java.util.*;
 import javax.annotation.PostConstruct;
 
 import com.ainnotate.aidas.config.KeycloakConfig;
+import com.ainnotate.aidas.domain.AidasAuthority;
 import com.ainnotate.aidas.domain.AidasUser;
+import com.ainnotate.aidas.repository.AidasAuthorityRepository;
 import com.ainnotate.aidas.repository.AidasUserRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.keycloak.admin.client.Keycloak;
@@ -49,6 +51,9 @@ public class AinnotateserviceApp {
     @Autowired
     private AidasUserRepository aidasUserRepository;
 
+    @Autowired
+    private AidasAuthorityRepository aidasAuthorityRepository;
+
 
     /**
      * Initializes ainnotateservice.
@@ -72,7 +77,13 @@ public class AinnotateserviceApp {
                     aidasUserRepository.save(aidasUser);
                 }
                 List<String> userAttrsVals = new ArrayList<>();
-                userAttrsVals.add(aidasUser.getCurrentAidasAuthority().getName());
+                if(aidasUser.getCurrentAidasAuthority()!=null && aidasUser.getCurrentAidasAuthority().getName()!=null) {
+                    userAttrsVals.add(aidasUser.getCurrentAidasAuthority().getName());
+                }
+                else {
+                    AidasAuthority aidasAuthority = aidasAuthorityRepository.getById(6l);
+                    userAttrsVals.add(aidasAuthority.getName());
+                }
                 List<String> userAttrVals1 = new ArrayList<>();
                 userAttrVals1.add(String.valueOf(aidasUser.getId()));
                 if (user.getAttributes() != null) {
@@ -80,9 +91,8 @@ public class AinnotateserviceApp {
                     user.getAttributes().put("aidas_id", userAttrVals1);
                 } else {
                     Map<String, List<String>> userAttrs = new HashMap<>();
-                    userAttrsVals.add(String.valueOf(aidasUser.getId()));
-                    userAttrs.put("current_role", userAttrsVals);
-                    user.getAttributes().put("aidas_id", userAttrVals1);
+                    userAttrs.put("current_role",userAttrsVals);
+                    userAttrs.put("aidas_id",userAttrVals1);
                     user.setAttributes(userAttrs);
                 }
                 UserResource userResource = usersRessource.get(aidasUser.getKeycloakId());

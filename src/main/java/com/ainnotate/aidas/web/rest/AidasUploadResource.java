@@ -231,13 +231,20 @@ public class AidasUploadResource {
             aidasUpload.setName(uploadDto.getUploadUrl());
             aidasUpload.setUploadUrl(uploadDto.getUploadUrl());
             aidasUpload.setUploadEtag(uploadDto.getEtag());
+
             aidasUpload.setStatus(2);
-            AidasUpload result = aidasUploadRepository.save(aidasUpload);
-            //aidasUploadSearchRepository.save(result);
-            return ResponseEntity
-                .created(new URI("/api/aidas-uploads/" + result.getId()))
-                .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
-                .body(result);
+            aidasUpload.setObjectKey(uploadDto.getObjectKey());
+            try {
+                AidasUpload result = aidasUploadRepository.save(aidasUpload);
+                //aidasUploadSearchRepository.save(result);
+                return ResponseEntity
+                    .created(new URI("/api/aidas-uploads/" + result.getId()))
+                    .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
+                    .body(result);
+            }catch(Exception e){
+                e.printStackTrace();
+                throw new BadRequestAlertException("Internal error occured.  Contact administrator "+e.getMessage(), ENTITY_NAME, "idexists");
+            }
         }
         throw new BadRequestAlertException("Internal error occured.  Contact administrator", ENTITY_NAME, "idexists");
     }

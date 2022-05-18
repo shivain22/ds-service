@@ -37,4 +37,9 @@ public interface AidasUserRepository extends JpaRepository<AidasUser, Long> {
     @Query(value="select count(*) from aidas_user au, aidas_user_aidas_authority auaa where au.id=auaa.aidas_user_id and auaa.aidas_authority_id=5", nativeQuery = true)
     Long countAllVendorUsers();
 
+    @Query(value = "select * from aidas_user au where au.id in (select auom.aidas_user_id from aidas_user_obj_map auom where auom.aidas_object_id=?1) ",nativeQuery = true)
+    List<AidasUser> getUsersByAssignedToObject(Long objectId);
+    @Query(value = "select * from aidas_user au where au.id not in (select auom.aidas_user_id from aidas_user_obj_map auom where auom.aidas_object_id=?1) ",nativeQuery = true)
+    List<AidasUser> getUsersByNotAssignedToObject(Long objectId);
+
 }

@@ -195,4 +195,6 @@ public interface AidasObjectRepository extends JpaRepository<AidasObject, Long> 
         "group by ao.id",nativeQuery = true)
     UploadDetail countUploadsByObjectAndAidasAdmin(Long aidasObjectId);
 
+
+
 }
