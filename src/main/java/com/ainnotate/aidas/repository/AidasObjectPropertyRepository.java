@@ -16,4 +16,6 @@ public interface AidasObjectPropertyRepository extends JpaRepository<AidasObject
     @Query(value = "select * from aidas_object_property aop where aop.aidas_object_id>?1",nativeQuery = true)
     Page<AidasObjectProperty> findAllByAidasObjectIdGreaterThan(Pageable page, Long objectId);
 
+    AidasObjectProperty findByAidasObject_IdAndAidasProperties_Id(Long aidasObjectId, Long aidasPropertiesId);
+
 }

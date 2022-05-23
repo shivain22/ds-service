@@ -47,6 +47,17 @@ public class AidasProperties extends AbstractAuditingEntity  implements Serializ
     @Column(name = "description")
     private String description;
 
+    @Column(name = "default_prop")
+    private Integer defaultProp;
+
+    public Integer getDefaultProp() {
+        return defaultProp;
+    }
+
+    public void setDefaultProp(Integer defaultProp) {
+        this.defaultProp = defaultProp;
+    }
+
     public Long getPropertyType() {
         return propertyType;
     }

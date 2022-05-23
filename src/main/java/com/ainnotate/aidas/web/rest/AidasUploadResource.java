@@ -681,15 +681,13 @@ public class AidasUploadResource {
     }
 
     /**
-     * {@code GET  /aidas-uploads/:id} : get the "id" aidasUpload.
-     *
-     * @param id the id of the aidasUpload to retrieve.
+     * {@code GET  /aidas-uploads/next} : get the "id" aidasUpload.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the aidasUpload, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/aidas-uploads/next")
-    public ResponseEntity<AidasUpload> getNextAidasUpload(@PathVariable Long id) {
+    public ResponseEntity<AidasUpload> getNextAidasUpload() {
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-        log.debug("REST request to get AidasUpload : {}", id);
+        log.debug("REST request to get next AidasUpload : {}");
         AidasAuthority aidasAuthority = aidasUser.getCurrentAidasAuthority();
         if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ADMIN)){
 

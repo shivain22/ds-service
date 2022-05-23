@@ -142,48 +142,18 @@ public class AidasObjectResource {
     }
 
 
-    /**
-     * {@code POST  /aidas-project-properties} : Create a new aidasProjectProperty.
-     *
-     * @param objectPropertyDto the projectPropertyDto to create.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new aidasProjectProperty, or with status {@code 400 (Bad Request)} if the aidasProjectProperty has already an ID.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
-    @PostMapping("/aidas-object-properties/dto")
-    public ResponseEntity<AidasObjectProperty> createAidasProjectProperty(@Valid @RequestBody ObjectPropertyDto objectPropertyDto)
-        throws URISyntaxException {
-        log.debug("REST request to save AidasProjectProperty : {}", objectPropertyDto);
-        AidasObject aidasObject = aidasObjectRepository.getById(objectPropertyDto.getAidasObjectId());
-        AidasProperties aidasProperties = aidasPropertiesRepository.getById(objectPropertyDto.getAidasPropertiesId());
-        try {
-            if (aidasObject != null && aidasProperties != null) {
-                AidasObjectProperty aidasObjectProperty = new AidasObjectProperty();
-                aidasObjectProperty.setAidasObject(aidasObject);
-                aidasObjectProperty.setAidasProperties(aidasProperties);
-                AidasObjectProperty result =  aidasObjectPropertyRepository.save(aidasObjectProperty);
-                return ResponseEntity
-                    .created(new URI("/api/aidas-object-properties/" + result.getId()))
-                    .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
-                    .body(result);
-            }else{
-                throw new BadRequestAlertException("Error occured when trying to map aidas property to project", ENTITY_NAME, "idexists");
-            }
-        }
-        catch(Exception e){
-            throw new BadRequestAlertException(e.getMessage(), ENTITY_NAME, "idexists");
-        }
-    }
+
 
     /**
-     * {@code POST  /aidas-projects} : Update aidas Object properties to default value.
+     * {@code POST  /aidas-objects/{id}} : Update aidas Object properties to default value.
      *
-     * @param id the aidasProject id to update object properties to default value.
+     * @param id the aidasObject id to update object properties to default value.
      * @return the {@link ResponseEntity} with status {@code 201 (Updated)} and with body the new aidasObject, or with status {@code 400 (Bad Request)} if the aidasObject has no ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @Secured({AidasAuthoritiesConstants.ADMIN,AidasAuthoritiesConstants.ORG_ADMIN,AidasAuthoritiesConstants.CUSTOMER_ADMIN})
     @PostMapping("/aidas-objects/{id}")
-    public ResponseEntity<AidasObject> resetProjectPropertiesToDefaultValues(@PathVariable(value = "id", required = false) final Long id) throws URISyntaxException {
+    public ResponseEntity<AidasObject> resetObjectPropertiesToDefaultValues(@PathVariable(value = "id", required = false) final Long id) throws URISyntaxException {
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
 
         log.debug("REST request to save AidasProjectProperties to default value : {}", id);
@@ -595,7 +565,7 @@ public class AidasObjectResource {
      * @param objectId the id of the aidasObject to retrieve.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the aidasObject, or with status {@code 404 (Not Found)}.
      */
-    @GetMapping("/aidas-objects/assinged-users/{id}")
+    @GetMapping("/aidas-objects/assinged-users/{objectId}")
     public ResponseEntity<List<AidasUser>> getAssignedAidasUser(@PathVariable Long objectId) {
         log.debug("REST request to get assigned users for AidasObject : {}", objectId);
         List<AidasUser> assignedAidasUsers = aidasUserRepository.getUsersByAssignedToObject(objectId);
@@ -608,7 +578,7 @@ public class AidasObjectResource {
      * @param objectId the id of the aidasObject to retrieve.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the aidasObject, or with status {@code 404 (Not Found)}.
      */
-    @GetMapping("/aidas-objects/unassinged-users/{id}")
+    @GetMapping("/aidas-objects/unassinged-users/{objectId}")
     public ResponseEntity<List<AidasUser>> getUnAssignedAidasUser(@PathVariable Long objectId) {
         log.debug("REST request to get unassigned users for AidasObject : {}", objectId);
         List<AidasUser> unAssignedAidasUsers = aidasUserRepository.getUsersByNotAssignedToObject(objectId);

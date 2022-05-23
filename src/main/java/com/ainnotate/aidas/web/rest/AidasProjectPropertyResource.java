@@ -1,11 +1,6 @@
 package com.ainnotate.aidas.web.rest;
 
-import static org.elasticsearch.index.query.QueryBuilders.*;
-
-import com.ainnotate.aidas.domain.AidasProject;
-import com.ainnotate.aidas.domain.AidasProjectProperty;
-import com.ainnotate.aidas.domain.AidasProperties;
-import com.ainnotate.aidas.domain.ProjectPropertyDto;
+import com.ainnotate.aidas.domain.*;
 import com.ainnotate.aidas.repository.AidasProjectPropertyRepository;
 import com.ainnotate.aidas.repository.AidasProjectRepository;
 import com.ainnotate.aidas.repository.AidasPropertiesRepository;
@@ -16,8 +11,6 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import org.slf4j.Logger;
@@ -28,7 +21,6 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -97,23 +89,24 @@ public class AidasProjectPropertyResource {
 
 
     /**
-     * {@code POST  /aidas-project-properties} : Create a new aidasProjectProperty.
+     * {@code POST  /aidas-project-properties/dto} : Create a new aidasProjectProperty.
      *
-     * @param projectPropertyDto the projectPropertyDto to create.
+     * @param aidasProjectPropertyDTO the projectPropertyDto to create.
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new aidasProjectProperty, or with status {@code 400 (Bad Request)} if the aidasProjectProperty has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/aidas-project-properties/dto")
-    public ResponseEntity<AidasProjectProperty> createAidasProjectProperty(@Valid @RequestBody ProjectPropertyDto projectPropertyDto)
+    public ResponseEntity<AidasProjectProperty> createAidasProjectProperty(@Valid @RequestBody AidasProjectPropertyDTO aidasProjectPropertyDTO)
         throws URISyntaxException {
-        log.debug("REST request to save AidasProjectProperty : {}", projectPropertyDto);
-        AidasProject aidasProject = aidasProjectRepository.getById(projectPropertyDto.getAidasProjectId());
-        AidasProperties aidasProperties = aidasPropertiesRepository.getById(projectPropertyDto.getAidasPropertiesId());
+        log.debug("REST request to save AidasProjectProperty : {}", aidasProjectPropertyDTO);
+        AidasProject aidasProject = aidasProjectRepository.getById(aidasProjectPropertyDTO.getAidasProjectId());
+        AidasProperties aidasProperties = aidasPropertiesRepository.getById(aidasProjectPropertyDTO.getAidasPropertiesId());
         try {
             if (aidasProject != null && aidasProperties != null) {
                 AidasProjectProperty aidasProjectProperty = new AidasProjectProperty();
                 aidasProjectProperty.setAidasProject(aidasProject);
                 aidasProjectProperty.setAidasProperties(aidasProperties);
+                aidasProjectProperty.setValue(aidasProjectPropertyDTO.getValue());
                 AidasProjectProperty result =  aidasProjectPropertyRepository.save(aidasProjectProperty);
                 return ResponseEntity
                     .created(new URI("/api/aidas-project-properties/" + result.getId()))
@@ -125,6 +118,153 @@ public class AidasProjectPropertyResource {
         }
         catch(Exception e){
             throw new BadRequestAlertException(e.getMessage(), ENTITY_NAME, "idexists");
+        }
+    }
+
+
+
+    /**
+     * {@code POST  /aidas-project-properties/dtos} : Create a new aidasProjectProperty.
+     *
+     * @param aidasProjectPropertyDTOs the projectPropertyDto to create.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new aidasProjectProperty, or with status {@code 400 (Bad Request)} if the aidasProjectProperty has already an ID.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @PostMapping("/aidas-project-properties/dto")
+    public ResponseEntity<String> createAidasProjectProperties(@Valid @RequestBody List<AidasProjectPropertyDTO> aidasProjectPropertyDTOs)
+        throws URISyntaxException {
+        log.debug("REST request to save AidasProjectProperty : {}", aidasProjectPropertyDTOs);
+        int i=0;
+        try {
+            for(AidasProjectPropertyDTO aidasProjectPropertyDTO:aidasProjectPropertyDTOs) {
+                AidasProject aidasProject = aidasProjectRepository.getById(aidasProjectPropertyDTO.getAidasProjectId());
+                AidasProperties aidasProperties = aidasPropertiesRepository.getById(aidasProjectPropertyDTO.getAidasPropertiesId());
+                if (aidasProject != null && aidasProperties != null) {
+                    AidasProjectProperty aidasProjectProperty = new AidasProjectProperty();
+                    aidasProjectProperty.setAidasProject(aidasProject);
+                    aidasProjectProperty.setAidasProperties(aidasProperties);
+                    aidasProjectProperty.setValue(aidasProjectPropertyDTO.getValue());
+                    AidasProjectProperty result = aidasProjectPropertyRepository.save(aidasProjectProperty);
+                    i++;
+                } else {
+                    //throw new BadRequestAlertException("Error occured when trying to map aidas property to project", ENTITY_NAME, "idexists");
+                }
+            }
+        }
+        catch(Exception e){
+            throw new BadRequestAlertException(e.getMessage(), ENTITY_NAME, "idexists");
+        }
+        if(i==aidasProjectPropertyDTOs.size()){
+            return ResponseEntity.ok().body("All project properties created");
+        }else{
+            return ResponseEntity.ok().body("Some project properties not created");
+        }
+    }
+
+    /**
+     * {@code POST  /aidas-properties-aidas-project-properties/dtos} : Create a new aidasProjectProperty with creating aidasProperties entryt.
+     *
+     * @param aidasPropertiesAidasProjectPropertyDTOs the projectPropertyDto to create.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new aidasProjectProperty, or with status {@code 400 (Bad Request)} if the aidasProjectProperty has already an ID.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @PostMapping("/aidas-properties-aidas-project-properties/dto")
+    public ResponseEntity<String> createAidasPropertiesAidasProjectProperties(@Valid @RequestBody List<AidasPropertiesAidasProjectPropertyDTO> aidasPropertiesAidasProjectPropertyDTOs)
+        throws URISyntaxException {
+        log.debug("REST request to save AidasProjectProperty : {}", aidasPropertiesAidasProjectPropertyDTOs);
+        int i=0;
+        try {
+            for(AidasPropertiesAidasProjectPropertyDTO aidasPropertiesAidasProjectPropertyDTO:aidasPropertiesAidasProjectPropertyDTOs) {
+                AidasProject aidasProject = aidasProjectRepository.getById(aidasPropertiesAidasProjectPropertyDTO.getAidasProjectId());
+                AidasProperties aidasProperties = new AidasProperties();
+                if (aidasProject != null && aidasProperties != null) {
+                    aidasProperties.setName(aidasPropertiesAidasProjectPropertyDTO.getName());
+                    aidasProperties.setDefaultProp(aidasPropertiesAidasProjectPropertyDTO.getDefaultProp());
+                    aidasProperties.setPropertyType(aidasPropertiesAidasProjectPropertyDTO.getPropertyType());
+                    aidasProperties.setSystemProperty(aidasPropertiesAidasProjectPropertyDTO.getSystemProperty());
+                    aidasProperties.setDescription(aidasPropertiesAidasProjectPropertyDTO.getDescription());
+                    aidasProperties.setValue(aidasPropertiesAidasProjectPropertyDTO.getValue());
+                    aidasProperties = aidasPropertiesRepository.save(aidasProperties);
+                    AidasProjectProperty aidasProjectProperty = new AidasProjectProperty();
+                    aidasProjectProperty.setAidasProject(aidasProject);
+                    aidasProjectProperty.setAidasProperties(aidasProperties);
+                    aidasProjectProperty.setValue(aidasPropertiesAidasProjectPropertyDTO.getAidasProjectPropertyValue());
+                    AidasProjectProperty result = aidasProjectPropertyRepository.save(aidasProjectProperty);
+                    i++;
+                } else {
+                    //throw new BadRequestAlertException("Error occured when trying to map aidas property to project", ENTITY_NAME, "idexists");
+                }
+            }
+        }
+        catch(Exception e){
+            throw new BadRequestAlertException(e.getMessage(), ENTITY_NAME, "idexists");
+        }
+        if(i==aidasPropertiesAidasProjectPropertyDTOs.size()){
+            return ResponseEntity.ok().body("All project properties created");
+        }else{
+            return ResponseEntity.ok().body("Some project properties not created");
+        }
+    }
+
+    /**
+     * {@code POST  /aidas-project-properties/dto/update} : Create a new aidasProjectProperty.
+     *
+     * @param aidasProjectPropertyDTO the projectPropertyDto to create.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new aidasProjectProperty, or with status {@code 400 (Bad Request)} if the aidasProjectProperty has already an ID.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @PostMapping("/aidas-project-properties/dto/update")
+    public ResponseEntity<AidasProjectProperty> updateAidasProjectProperty(@Valid @RequestBody AidasProjectPropertyDTO aidasProjectPropertyDTO)
+        throws URISyntaxException {
+        AidasProjectProperty aidasProjectProperty = aidasProjectPropertyRepository.findByAidasProject_IdAndAidasProperties_Id(aidasProjectPropertyDTO.getAidasProjectId(),aidasProjectPropertyDTO.getAidasPropertiesId());
+        try {
+            if (aidasProjectProperty != null) {
+                aidasProjectProperty.setValue(aidasProjectPropertyDTO.getValue());
+                AidasProjectProperty result =  aidasProjectPropertyRepository.save(aidasProjectProperty);
+                return ResponseEntity
+                    .created(new URI("/api/aidas-project-properties/" + result.getId()))
+                    .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
+                    .body(result);
+            }else{
+                throw new BadRequestAlertException("Error occured when trying to map aidas property to project", ENTITY_NAME, "idexists");
+            }
+        }
+        catch(Exception e){
+            throw new BadRequestAlertException(e.getMessage(), ENTITY_NAME, "idexists");
+        }
+
+    }
+
+    /**
+     * {@code POST  /aidas-project-properties/dtos/update} : Create a new aidasProjectProperty.
+     *
+     * @param aidasProjectPropertyDTOs the projectPropertyDto to create.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new aidasProjectProperty, or with status {@code 400 (Bad Request)} if the aidasProjectProperty has already an ID.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @PostMapping("/aidas-project-properties/dto/update")
+    public ResponseEntity<String> updateAidasProjectProperties(@Valid @RequestBody List<AidasProjectPropertyDTO> aidasProjectPropertyDTOs)
+        throws URISyntaxException {
+        int i=0;
+        try {
+            for(AidasProjectPropertyDTO aidasProjectPropertyDTO:aidasProjectPropertyDTOs) {
+                AidasProjectProperty aidasProjectProperty = aidasProjectPropertyRepository.findByAidasProject_IdAndAidasProperties_Id(aidasProjectPropertyDTO.getAidasProjectId(), aidasProjectPropertyDTO.getAidasPropertiesId());
+                if (aidasProjectProperty != null) {
+                    aidasProjectProperty.setValue(aidasProjectPropertyDTO.getValue());
+                    AidasProjectProperty result = aidasProjectPropertyRepository.save(aidasProjectProperty);
+                    i++;
+                } else {
+                    //throw new BadRequestAlertException("Error occured when trying to map aidas property to project", ENTITY_NAME, "idexists");
+                }
+            }
+        }
+        catch(Exception e){
+            throw new BadRequestAlertException(e.getMessage(), ENTITY_NAME, "idexists");
+        }
+        if(i==aidasProjectPropertyDTOs.size()){
+            return ResponseEntity.ok().body("All project properties created");
+        }else{
+            return ResponseEntity.ok().body("Some project properties not created");
         }
     }
 

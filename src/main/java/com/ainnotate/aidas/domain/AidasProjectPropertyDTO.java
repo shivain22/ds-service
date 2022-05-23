@@ -1,9 +1,10 @@
 package com.ainnotate.aidas.domain;
 
-public class ProjectPropertyDto {
+public class AidasProjectPropertyDTO {
 
     private Long aidasProjectId;
     private Long aidasPropertiesId;
+    private String value;
 
     public Long getAidasProjectId() {
         return aidasProjectId;
@@ -19,5 +20,13 @@ public class ProjectPropertyDto {
 
     public void setAidasPropertiesId(Long aidasPropertiesId) {
         this.aidasPropertiesId = aidasPropertiesId;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
     }
 }

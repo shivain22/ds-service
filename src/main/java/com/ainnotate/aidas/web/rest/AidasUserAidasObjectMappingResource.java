@@ -101,7 +101,7 @@ public class AidasUserAidasObjectMappingResource {
     }
 
     /**
-     * {@code POST  /aidas-user-aidas-object-mappings} : Create a new aidasUserAidasObjectMapping.
+     * {@code POST  /aidas-user-aidas-object-mappings/dto} : Create a new aidasUserAidasObjectMapping.
      *
      * @param userAidasObjectMappingDto the userObjectMappingDto to create.
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new aidasUserAidasObjectMapping, or with status {@code 400 (Bad Request)} if the aidasUserAidasObjectMapping has already an ID.
@@ -127,6 +127,34 @@ public class AidasUserAidasObjectMappingResource {
             .created(new URI("/api/aidas-user-aidas-object-mappings/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
             .body(result);
+    }
+
+    /**
+     * {@code POST  /aidas-user-aidas-object-mappings/dtos} : Create a new aidasUserAidasObjectMapping.
+     *
+     * @param userAidasObjectMappingDtos the userObjectMappingDtos to create.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new aidasUserAidasObjectMapping, or with status {@code 400 (Bad Request)} if the aidasUserAidasObjectMapping has already an ID.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @PostMapping("/aidas-user-aidas-object-mappings/dtos")
+    public ResponseEntity<String> createAidasUserAidasObjectMappings( @Valid @RequestBody List<UserObjectMappingDto> userAidasObjectMappingDtos ) throws URISyntaxException {
+        log.debug("REST request to save AidasUserAidasObjectMapping : {}", userAidasObjectMappingDtos);
+        for(UserObjectMappingDto userAidasObjectMappingDto:userAidasObjectMappingDtos) {
+            if (userAidasObjectMappingDto.getAidasUserId() == null) {
+                throw new BadRequestAlertException("User id can not be null", ENTITY_NAME, "idexists");
+            }
+            if (userAidasObjectMappingDto.getAidasObjectId() == null) {
+                throw new BadRequestAlertException("Object id can not be null", ENTITY_NAME, "idexists");
+            }
+            AidasUser aidasUser = aidasUserRepository.getById(userAidasObjectMappingDto.getAidasUserId());
+            AidasObject aidasObject = aidasObjectRepository.getById(userAidasObjectMappingDto.getAidasObjectId());
+            AidasUserAidasObjectMapping aidasUserAidasObjectMapping = new AidasUserAidasObjectMapping();
+            aidasUserAidasObjectMapping.setAidasUser(aidasUser);
+            aidasUserAidasObjectMapping.setAidasObject(aidasObject);
+            aidasUserAidasObjectMapping.setDateAssigned(ZonedDateTime.now());
+            AidasUserAidasObjectMapping result = aidasUserAidasObjectMappingRepository.save(aidasUserAidasObjectMapping);
+        }
+        return ResponseEntity.ok().body("success");
     }
 
     /**
