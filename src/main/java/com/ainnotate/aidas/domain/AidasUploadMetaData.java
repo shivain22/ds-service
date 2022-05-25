@@ -38,6 +38,17 @@ public class AidasUploadMetaData extends AbstractAuditingEntity  implements Seri
     @JsonIgnoreProperties(value = { "aidasUserAidasObjectMapping" }, allowSetters = true)
     private AidasProjectProperty aidasProjectProperty;
 
+    @ManyToOne
+    @JsonIgnoreProperties(value = { "aidasUserAidasObjectMapping" }, allowSetters = true)
+    private AidasObjectProperty aidasObjectProperty;
+
+    public AidasObjectProperty getAidasObjectProperty() {
+        return aidasObjectProperty;
+    }
+
+    public void setAidasObjectProperty(AidasObjectProperty aidasObjectProperty) {
+        this.aidasObjectProperty = aidasObjectProperty;
+    }
 
     public AidasProjectProperty getAidasProjectProperty() {
         return aidasProjectProperty;

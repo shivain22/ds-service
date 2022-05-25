@@ -10,6 +10,8 @@ import javax.persistence.*;
 import javax.validation.constraints.*;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.hibernate.envers.Audited;
 
 /**
@@ -47,7 +49,8 @@ public class AidasUpload extends AbstractAuditingEntity  implements Serializable
     @Column(name = "status_modified_date")
     private ZonedDateTime statusModifiedDate;
 
-    @OneToMany(mappedBy = "aidasUpload")
+    @OneToMany(mappedBy = "aidasUpload",fetch = FetchType.EAGER,cascade = CascadeType.ALL)
+    @Fetch(FetchMode.SUBSELECT)
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     @JsonIgnoreProperties(value = { "aidasUpload" }, allowSetters = true)
     private Set<AidasUploadRejectMapping> aidasUploadRejectMappings = new HashSet<>();
@@ -63,9 +66,10 @@ public class AidasUpload extends AbstractAuditingEntity  implements Serializable
     @Column(name = "object_key",  nullable = false)
     private String objectKey;
 
-    @OneToMany(mappedBy = "aidasUpload")
+    @OneToMany(mappedBy = "aidasUpload",fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SUBSELECT)
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-    @JsonIgnoreProperties(value = { "aidasUpload" }, allowSetters = true)
+    @JsonIgnoreProperties(value = { "aidasUpload","aidasProject","aidasObject" }, allowSetters = true)
     private Set<AidasUploadMetaData> aidasUploadMetaDataSet = new HashSet<>();
 
     @Column(name="status", nullable=false)
@@ -74,14 +78,17 @@ public class AidasUpload extends AbstractAuditingEntity  implements Serializable
     @Column(name="qc_status", nullable=false)
     private Integer qcStatus;
 
+    @Column(name="metadata_status", nullable=false)
+    private Integer metadataStatus;
+
     @Column(name="qc_done_by", nullable=false)
     private Long qcDoneBy;
 
     @Column(name="qc_start_date", nullable=false)
-    private Long qcStartDate;
+    private Instant qcStartDate;
 
     @Column(name="qc_end_date", nullable=false)
-    private Long qcEndDate;
+    private Instant qcEndDate;
 
     public Set<AidasUploadMetaData> getAidasUploadMetaDataSet() {
         return aidasUploadMetaDataSet;
@@ -89,6 +96,14 @@ public class AidasUpload extends AbstractAuditingEntity  implements Serializable
 
     public void setAidasUploadMetaDataSet(Set<AidasUploadMetaData> aidasUploadMetaDataSet) {
         this.aidasUploadMetaDataSet = aidasUploadMetaDataSet;
+    }
+
+    public Integer getMetadataStatus() {
+        return metadataStatus;
+    }
+
+    public void setMetadataStatus(Integer metadataStatus) {
+        this.metadataStatus = metadataStatus;
     }
 
     @Override
@@ -117,19 +132,19 @@ public class AidasUpload extends AbstractAuditingEntity  implements Serializable
         this.qcDoneBy = qcDoneBy;
     }
 
-    public Long getQcStartDate() {
+    public Instant getQcStartDate() {
         return qcStartDate;
     }
 
-    public void setQcStartDate(Long qcStartDate) {
+    public void setQcStartDate(Instant qcStartDate) {
         this.qcStartDate = qcStartDate;
     }
 
-    public Long getQcEndDate() {
+    public Instant getQcEndDate() {
         return qcEndDate;
     }
 
-    public void setQcEndDate(Long qcEndDate) {
+    public void setQcEndDate(Instant qcEndDate) {
         this.qcEndDate = qcEndDate;
     }
 
@@ -145,21 +160,7 @@ public class AidasUpload extends AbstractAuditingEntity  implements Serializable
     @JsonIgnoreProperties(value = { "aidasUser", "aidasObject", "aidasUploads" }, allowSetters = true)
     private AidasUserAidasObjectMapping aidasUserAidasObjectMapping;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-        name = "aidas_upload_aidas_rej_reason",
-        joinColumns = { @JoinColumn(name = "aidas_upload_id", referencedColumnName = "id") },
-        inverseJoinColumns = { @JoinColumn(name = "aidas_upload_reject_reason_id", referencedColumnName = "id") }
-    )
-    private Set<AidasUploadRejectReason> aidasUploadRejectReasons = new HashSet<>();
 
-    public Set<AidasUploadRejectReason> getAidasUploadRejectReasons() {
-        return aidasUploadRejectReasons;
-    }
-
-    public void setAidasUploadRejectReasons(Set<AidasUploadRejectReason> aidasUploadRejectReasons) {
-        this.aidasUploadRejectReasons = aidasUploadRejectReasons;
-    }
 
     public String getUploadUrl() {
         return uploadUrl;

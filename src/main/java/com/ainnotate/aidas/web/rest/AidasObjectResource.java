@@ -1,27 +1,18 @@
 package com.ainnotate.aidas.web.rest;
 
-import static org.elasticsearch.index.query.QueryBuilders.*;
-
 import com.ainnotate.aidas.domain.*;
 import com.ainnotate.aidas.repository.*;
 import com.ainnotate.aidas.repository.search.AidasObjectSearchRepository;
-import com.ainnotate.aidas.security.AidasAuthoritiesConstants;
+import com.ainnotate.aidas.constants.AidasConstants;
 import com.ainnotate.aidas.security.SecurityUtils;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 
-import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import com.netflix.discovery.converters.Auto;
-import org.checkerframework.checker.units.qual.A;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,21 +21,11 @@ import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.context.request.async.WebAsyncTask;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
-import software.amazon.awssdk.auth.credentials.AwsCredentials;
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.core.ResponseBytes;
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.*;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
 import tech.jhipster.web.util.ResponseUtil;
@@ -98,7 +79,7 @@ public class AidasObjectResource {
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new aidasObject, or with status {@code 400 (Bad Request)} if the aidasObject has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @Secured({AidasAuthoritiesConstants.ADMIN,AidasAuthoritiesConstants.ORG_ADMIN,AidasAuthoritiesConstants.CUSTOMER_ADMIN})
+    @Secured({AidasConstants.ADMIN, AidasConstants.ORG_ADMIN, AidasConstants.CUSTOMER_ADMIN})
     @PostMapping("/aidas-objects")
     public ResponseEntity<AidasObject> createAidasObject(@Valid @RequestBody AidasObject aidasObject) throws URISyntaxException {
         log.debug("REST request to save AidasObject : {}", aidasObject);
@@ -106,7 +87,7 @@ public class AidasObjectResource {
         if (aidasObject.getId() != null) {
             throw new BadRequestAlertException("A new aidasObject cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null ){
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null ){
             Optional<AidasCustomer> aidasCustomer = aidasCustomerRepository.findById(aidasObject.getAidasProject().getAidasCustomer().getId());
             if(aidasCustomer.isPresent()){
                 if(!aidasObject.getAidasProject().getAidasCustomer().equals(aidasCustomer.get())){
@@ -116,7 +97,7 @@ public class AidasObjectResource {
                 throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
             }
         }
-        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN)){
+        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN)){
             if(aidasUser.getAidasCustomer()!=null && !aidasUser.getAidasCustomer().equals(aidasObject.getAidasProject().getAidasCustomer())){
                 throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
             }
@@ -151,7 +132,7 @@ public class AidasObjectResource {
      * @return the {@link ResponseEntity} with status {@code 201 (Updated)} and with body the new aidasObject, or with status {@code 400 (Bad Request)} if the aidasObject has no ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @Secured({AidasAuthoritiesConstants.ADMIN,AidasAuthoritiesConstants.ORG_ADMIN,AidasAuthoritiesConstants.CUSTOMER_ADMIN})
+    @Secured({AidasConstants.ADMIN, AidasConstants.ORG_ADMIN, AidasConstants.CUSTOMER_ADMIN})
     @PostMapping("/aidas-objects/{id}")
     public ResponseEntity<AidasObject> resetObjectPropertiesToDefaultValues(@PathVariable(value = "id", required = false) final Long id) throws URISyntaxException {
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
@@ -161,7 +142,7 @@ public class AidasObjectResource {
             throw new BadRequestAlertException("A new aidasProject cannot already have an ID", ENTITY_NAME, "idexists");
         }
         AidasObject aidasObject = aidasObjectRepository.getById(id);
-        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null ){
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null ){
             Optional<AidasCustomer> aidasCustomer = aidasCustomerRepository.findById(aidasObject.getAidasProject().getAidasCustomer().getId());
             if(aidasCustomer.isPresent()){
                 if(!aidasObject.getAidasProject().getAidasCustomer().equals(aidasCustomer.get())){
@@ -171,7 +152,7 @@ public class AidasObjectResource {
                 throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
             }
         }
-        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN)){
+        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN)){
             if(aidasUser.getAidasCustomer()!=null && !aidasUser.getAidasCustomer().equals(aidasObject.getAidasProject().getAidasCustomer())){
                 throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
             }
@@ -199,7 +180,7 @@ public class AidasObjectResource {
      * @return the {@link ResponseEntity} with status {@code 201 (Updated)} and with body the new aidasObject, or with status {@code 400 (Bad Request)} if the aidasObject has no ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @Secured({AidasAuthoritiesConstants.ADMIN,AidasAuthoritiesConstants.ORG_ADMIN,AidasAuthoritiesConstants.CUSTOMER_ADMIN})
+    @Secured({AidasConstants.ADMIN, AidasConstants.ORG_ADMIN, AidasConstants.CUSTOMER_ADMIN})
     @PostMapping("/aidas-objects/add-all-new-added-properties/{id}")
     public ResponseEntity<AidasObject> addAllNewlyAddedProperties(@PathVariable(value = "id", required = false) final Long id) throws URISyntaxException {
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
@@ -209,7 +190,7 @@ public class AidasObjectResource {
             throw new BadRequestAlertException("A new aidasProject cannot already have an ID", ENTITY_NAME, "idexists");
         }
         AidasObject aidasObject = aidasObjectRepository.getById(id);
-        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null ){
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null ){
             Optional<AidasCustomer> aidasCustomer = aidasCustomerRepository.findById(aidasObject.getAidasProject().getAidasCustomer().getId());
             if(aidasCustomer.isPresent()){
                 if(!aidasObject.getAidasProject().getAidasCustomer().equals(aidasCustomer.get())){
@@ -219,7 +200,7 @@ public class AidasObjectResource {
                 throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
             }
         }
-        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN)){
+        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN)){
             if(aidasUser.getAidasCustomer()!=null && !aidasUser.getAidasCustomer().equals(aidasObject.getAidasProject().getAidasCustomer())){
                 throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
             }
@@ -255,7 +236,7 @@ public class AidasObjectResource {
      * or with status {@code 500 (Internal Server Error)} if the aidasObject couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @Secured({AidasAuthoritiesConstants.ADMIN,AidasAuthoritiesConstants.ORG_ADMIN,AidasAuthoritiesConstants.CUSTOMER_ADMIN})
+    @Secured({AidasConstants.ADMIN, AidasConstants.ORG_ADMIN, AidasConstants.CUSTOMER_ADMIN})
     @PutMapping("/aidas-objects/{id}")
     public ResponseEntity<AidasObject> updateAidasObject(
         @PathVariable(value = "id", required = false) final Long id,
@@ -274,7 +255,7 @@ public class AidasObjectResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null ){
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null ){
             Optional<AidasCustomer> aidasCustomer = aidasCustomerRepository.findById(aidasObject.getAidasProject().getAidasCustomer().getId());
             if(aidasCustomer.isPresent()){
                 if(!aidasObject.getAidasProject().getAidasCustomer().equals(aidasCustomer.get())){
@@ -284,7 +265,7 @@ public class AidasObjectResource {
                 throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
             }
         }
-        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN)){
+        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN)){
             if(aidasUser.getAidasCustomer()!=null && !aidasUser.getAidasCustomer().equals(aidasObject.getAidasProject().getAidasCustomer())){
                 throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
             }
@@ -388,19 +369,19 @@ public class AidasObjectResource {
         log.debug("REST request to get a page of AidasObjects");
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         Page<AidasObject> page =null;
-        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ADMIN)){
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.ADMIN)){
             page = aidasObjectRepository.findAllByIdGreaterThan(0l,pageable);
         }
-        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null ){
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null ){
             page = aidasObjectRepository.findAllByAidasProject_AidasCustomer_AidasOrganisation(pageable,aidasUser.getAidasOrganisation());
         }
-        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN) && aidasUser.getAidasCustomer()!=null ){
+        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN) && aidasUser.getAidasCustomer()!=null ){
             page = aidasObjectRepository.findAllByAidasProject_AidasCustomer(pageable,aidasUser.getAidasCustomer());
         }
-        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.VENDOR_ADMIN) || aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.VENDOR_ADMIN) || aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.VENDOR_USER)){
             page = aidasObjectRepository.findAllObjectsByVendorAdmin(pageable,aidasUser.getAidasVendor());
         }
-        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.USER)){
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.USER)){
             page = aidasObjectRepository.findAllObjectsByVendorUser(pageable,aidasUser);
         }
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
@@ -412,7 +393,7 @@ public class AidasObjectResource {
         log.debug("REST request to get a page of AidasObjects");
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         Page<AidasObject> page =null;
-        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ADMIN)){
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.ADMIN)){
             page = aidasObjectRepository.findAllByIdGreaterThanAndAidasProject_Id(0l,projectId,pageable);
             if(page!=null && page.getContent()!=null && page.getContent().size()>0){
                 for(AidasObject aidasObject: page.getContent()){
@@ -428,7 +409,7 @@ public class AidasObjectResource {
                 }
             }
         }
-        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null ){
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null ){
             page = aidasObjectRepository.findAllByAidasProject_AidasCustomer_AidasOrganisationAndAidasProject_Id(pageable,aidasUser.getAidasOrganisation(),projectId);
             if(page!=null && page.getContent()!=null && page.getContent().size()>0){
                 for(AidasObject aidasObject: page.getContent()){
@@ -444,7 +425,7 @@ public class AidasObjectResource {
                 }
             }
         }
-        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN) && aidasUser.getAidasCustomer()!=null ){
+        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN) && aidasUser.getAidasCustomer()!=null ){
             page = aidasObjectRepository.findAllByAidasProject_AidasCustomerAndAidasProject_Id(pageable,aidasUser.getAidasCustomer(),projectId);
             if(page!=null && page.getContent()!=null && page.getContent().size()>0){
                 for(AidasObject aidasObject: page.getContent()){
@@ -460,7 +441,7 @@ public class AidasObjectResource {
                 }
             }
         }
-        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.VENDOR_ADMIN) ){
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.VENDOR_ADMIN) ){
             page = aidasObjectRepository.findAllObjectsByVendorAdminProject(pageable,aidasUser.getAidasVendor(),projectId);
             if(page!=null && page.getContent()!=null && page.getContent().size()>0){
                 for(AidasObject aidasObject: page.getContent()){
@@ -476,7 +457,7 @@ public class AidasObjectResource {
                 }
             }
         }
-        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
+        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.VENDOR_USER)){
             page = aidasObjectRepository.findAllObjectsByVendorAdminProject(pageable,aidasUser.getAidasVendor(),projectId);
             if(page!=null && page.getContent()!=null && page.getContent().size()>0){
                 for(AidasObject aidasObject: page.getContent()){
@@ -508,10 +489,10 @@ public class AidasObjectResource {
         log.debug("REST request to get AidasObject : {}", id);
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         Optional<AidasObject> aidasObject = aidasObjectRepository.findById(id);
-        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ADMIN) ){
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.ADMIN) ){
             return ResponseUtil.wrapOrNotFound(aidasObject);
         }
-        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null ){
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null ){
             if(aidasObject.isPresent()){
                 if(aidasObject.get().getAidasProject().getAidasCustomer().getAidasOrganisation().equals(aidasUser.getAidasOrganisation())){
                     return ResponseUtil.wrapOrNotFound(aidasObject);
@@ -520,7 +501,7 @@ public class AidasObjectResource {
                 throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
             }
         }
-        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN) && aidasUser.getAidasCustomer()!=null ){
+        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN) && aidasUser.getAidasCustomer()!=null ){
             if(aidasObject.isPresent()){
                 if(aidasObject.get().getAidasProject().getAidasCustomer().equals(aidasUser.getAidasCustomer())){
                     return ResponseUtil.wrapOrNotFound(aidasObject);
@@ -529,7 +510,7 @@ public class AidasObjectResource {
                 throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
             }
         }
-        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.VENDOR_ADMIN)){
+        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.VENDOR_ADMIN)){
             Integer count = aidasUserAidasObjectMappingRepository.getCountOfAidasObjectMappingForVendorAdmin(aidasUser.getAidasVendor().getId(),id);
             if(count>0){
                 if(aidasObject.isPresent()){
@@ -540,7 +521,7 @@ public class AidasObjectResource {
             }
             throw new BadRequestAlertException("The object is not assigned to this vendor admin", ENTITY_NAME, "idexists");
         }
-        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
+        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.VENDOR_USER)){
             AidasUserAidasObjectMapping auao =  aidasUserAidasObjectMappingRepository.findByAidasUser_IdAndAidasObject_Id(aidasUser.getId(),id);
             if(auao!=null){
                 if(aidasObject.isPresent()){
@@ -551,7 +532,7 @@ public class AidasObjectResource {
             }
             throw new BadRequestAlertException("The object is not assigned to this vendor user", ENTITY_NAME, "idexists");
         }
-        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.USER)){
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.USER)){
             throw new BadRequestAlertException("The object is not assigned to user", ENTITY_NAME, "idexists");
         }
         throw new BadRequestAlertException("The object is not assigned  user", ENTITY_NAME, "idexists");
@@ -592,7 +573,7 @@ public class AidasObjectResource {
      * @param id the id of the aidasObject to delete.
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
-    @Secured({AidasAuthoritiesConstants.ADMIN,AidasAuthoritiesConstants.ORG_ADMIN,AidasAuthoritiesConstants.CUSTOMER_ADMIN})
+    @Secured({AidasConstants.ADMIN, AidasConstants.ORG_ADMIN, AidasConstants.CUSTOMER_ADMIN})
     @DeleteMapping("/aidas-objects/{id}")
     public ResponseEntity<Void> deleteAidasObject(@PathVariable Long id) {
         log.debug("REST request to delete AidasObject : {}", id);
@@ -600,7 +581,7 @@ public class AidasObjectResource {
         AidasObject aidasObject = aidasObjectRepository.getById(id);
         aidasObjectRepository.deleteById(id);
         aidasObjectSearchRepository.deleteById(id);
-        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null ){
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null ){
             Optional<AidasCustomer> aidasCustomer = aidasCustomerRepository.findById(aidasObject.getAidasProject().getAidasCustomer().getId());
             if(aidasCustomer.isPresent()){
                 if(!aidasObject.getAidasProject().getAidasCustomer().equals(aidasCustomer.get())){
@@ -610,7 +591,7 @@ public class AidasObjectResource {
                 throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
             }
         }
-        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN)){
+        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN)){
             if(aidasUser.getAidasCustomer()!=null && !aidasUser.getAidasCustomer().equals(aidasObject.getAidasProject().getAidasCustomer())){
                 throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
             }
@@ -634,7 +615,7 @@ public class AidasObjectResource {
         log.debug("REST request to search for a page of AidasObjects for query {}", query);
         Page<AidasObject> page = aidasObjectSearchRepository.search(query, pageable);
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null) {
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null) {
             Iterator<AidasObject> it = page.getContent().iterator();
             while(it.hasNext()){
                 AidasObject aidasObject = it.next();
@@ -643,7 +624,7 @@ public class AidasObjectResource {
                 }
             }
         }
-        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN) && aidasUser.getAidasCustomer()!=null) {
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN) && aidasUser.getAidasCustomer()!=null) {
             Iterator<AidasObject> it = page.getContent().iterator();
             while(it.hasNext()){
                 AidasObject aidasObject = it.next();

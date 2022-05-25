@@ -3,7 +3,7 @@ package com.ainnotate.aidas.web.rest;
 import com.ainnotate.aidas.domain.*;
 import com.ainnotate.aidas.repository.*;
 import com.ainnotate.aidas.repository.search.AidasProjectSearchRepository;
-import com.ainnotate.aidas.security.AidasAuthoritiesConstants;
+import com.ainnotate.aidas.constants.AidasConstants;
 import com.ainnotate.aidas.security.SecurityUtils;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 
@@ -73,7 +73,7 @@ public class AidasProjectResource {
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new aidasProject, or with status {@code 400 (Bad Request)} if the aidasProject has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @Secured({AidasAuthoritiesConstants.ADMIN,AidasAuthoritiesConstants.ORG_ADMIN,AidasAuthoritiesConstants.CUSTOMER_ADMIN})
+    @Secured({AidasConstants.ADMIN, AidasConstants.ORG_ADMIN, AidasConstants.CUSTOMER_ADMIN})
     @PostMapping("/aidas-projects")
     public ResponseEntity<AidasProject> createAidasProject(@Valid @RequestBody AidasProject aidasProject) throws URISyntaxException {
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
@@ -81,7 +81,7 @@ public class AidasProjectResource {
         if (aidasProject.getId() != null) {
             throw new BadRequestAlertException("A new aidasProject cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null ){
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null ){
             Optional<AidasCustomer> aidasCustomer = aidasCustomerRepository.findById(aidasProject.getAidasCustomer().getId());
             if(aidasCustomer.isPresent()){
                 if(!aidasProject.getAidasCustomer().equals(aidasCustomer.get())){
@@ -91,7 +91,7 @@ public class AidasProjectResource {
                 throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
             }
         }
-        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN) ){
+        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN) ){
             if(aidasUser.getAidasCustomer()!=null && !aidasUser.getAidasCustomer().equals(aidasProject.getAidasCustomer())) {
                 throw new BadRequestAlertException("Not Authorized", ENTITY_NAME, "idexists");
             }
@@ -119,7 +119,7 @@ public class AidasProjectResource {
      * @return the {@link ResponseEntity} with status {@code 201 (Updated)} and with body the new aidasProject, or with status {@code 400 (Bad Request)} if the aidasProject has no ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @Secured({AidasAuthoritiesConstants.ADMIN,AidasAuthoritiesConstants.ORG_ADMIN,AidasAuthoritiesConstants.CUSTOMER_ADMIN})
+    @Secured({AidasConstants.ADMIN, AidasConstants.ORG_ADMIN, AidasConstants.CUSTOMER_ADMIN})
     @PostMapping("/aidas-projects/{id}")
     public ResponseEntity<AidasProject> resetProjectPropertiesToDefaultValues(@PathVariable(value = "id", required = false) final Long id) throws URISyntaxException {
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
@@ -129,7 +129,7 @@ public class AidasProjectResource {
             throw new BadRequestAlertException("A new aidasProject cannot already have an ID", ENTITY_NAME, "idexists");
         }
         AidasProject aidasProject = aidasProjectRepository.getById(id);
-        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null ){
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null ){
             Optional<AidasCustomer> aidasCustomer = aidasCustomerRepository.findById(aidasProject.getAidasCustomer().getId());
             if(aidasCustomer.isPresent()){
                 if(!aidasProject.getAidasCustomer().equals(aidasCustomer.get())){
@@ -139,7 +139,7 @@ public class AidasProjectResource {
                 throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
             }
         }
-        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN) ){
+        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN) ){
             if(aidasUser.getAidasCustomer()!=null && !aidasUser.getAidasCustomer().equals(aidasProject.getAidasCustomer())) {
                 throw new BadRequestAlertException("Not Authorized", ENTITY_NAME, "idexists");
             }
@@ -168,7 +168,7 @@ public class AidasProjectResource {
      * @return the {@link ResponseEntity} with status {@code 201 (Updated)} and with body the new aidasProject, or with status {@code 400 (Bad Request)} if the aidasProject has no ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @Secured({AidasAuthoritiesConstants.ADMIN,AidasAuthoritiesConstants.ORG_ADMIN,AidasAuthoritiesConstants.CUSTOMER_ADMIN})
+    @Secured({AidasConstants.ADMIN, AidasConstants.ORG_ADMIN, AidasConstants.CUSTOMER_ADMIN})
     @PostMapping("/aidas-projects/add-all-new-added-properties/{id}")
     public ResponseEntity<AidasProject> addAllNewlyAddedProperties(@PathVariable(value = "id", required = false) final Long id) throws URISyntaxException {
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
@@ -178,7 +178,7 @@ public class AidasProjectResource {
             throw new BadRequestAlertException("A new aidasProject cannot already have an ID", ENTITY_NAME, "idexists");
         }
         AidasProject aidasProject = aidasProjectRepository.getById(id);
-        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null ){
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null ){
             Optional<AidasCustomer> aidasCustomer = aidasCustomerRepository.findById(aidasProject.getAidasCustomer().getId());
             if(aidasCustomer.isPresent()){
                 if(!aidasProject.getAidasCustomer().equals(aidasCustomer.get())){
@@ -188,7 +188,7 @@ public class AidasProjectResource {
                 throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
             }
         }
-        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN) ){
+        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN) ){
             if(aidasUser.getAidasCustomer()!=null && !aidasUser.getAidasCustomer().equals(aidasProject.getAidasCustomer())) {
                 throw new BadRequestAlertException("Not Authorized", ENTITY_NAME, "idexists");
             }
@@ -224,7 +224,7 @@ public class AidasProjectResource {
      * or with status {@code 500 (Internal Server Error)} if the aidasProject couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @Secured({AidasAuthoritiesConstants.ADMIN,AidasAuthoritiesConstants.ORG_ADMIN,AidasAuthoritiesConstants.CUSTOMER_ADMIN})
+    @Secured({AidasConstants.ADMIN, AidasConstants.ORG_ADMIN, AidasConstants.CUSTOMER_ADMIN})
     @PutMapping("/aidas-projects/{id}")
     public ResponseEntity<AidasProject> updateAidasProject(
         @PathVariable(value = "id", required = false) final Long id,
@@ -243,7 +243,7 @@ public class AidasProjectResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null ){
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null ){
             Optional<AidasCustomer> aidasCustomer = aidasCustomerRepository.findById(aidasProject.getAidasCustomer().getId());
             if(aidasCustomer.isPresent()){
                 if(!aidasProject.getAidasCustomer().equals(aidasCustomer.get())){
@@ -253,7 +253,7 @@ public class AidasProjectResource {
                 throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
             }
         }
-        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN)){
+        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN)){
             if(aidasUser.getAidasCustomer()!=null && !aidasUser.getAidasCustomer().equals(aidasProject.getAidasCustomer())){
                 throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
             }
@@ -283,7 +283,7 @@ public class AidasProjectResource {
      * or with status {@code 500 (Internal Server Error)} if the aidasProject couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @Secured({AidasAuthoritiesConstants.ADMIN,AidasAuthoritiesConstants.ORG_ADMIN,AidasAuthoritiesConstants.CUSTOMER_ADMIN})
+    @Secured({AidasConstants.ADMIN, AidasConstants.ORG_ADMIN, AidasConstants.CUSTOMER_ADMIN})
     @PatchMapping(value = "/aidas-projects/{id}", consumes = { "application/json", "application/merge-patch+json" })
     public ResponseEntity<AidasProject> partialUpdateAidasProject(
         @PathVariable(value = "id", required = false) final Long id,
@@ -302,7 +302,7 @@ public class AidasProjectResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null ){
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null ){
             Optional<AidasCustomer> aidasCustomer = aidasCustomerRepository.findById(aidasProject.getAidasCustomer().getId());
             if(aidasCustomer.isPresent()){
                 if(!aidasProject.getAidasCustomer().equals(aidasCustomer.get())){
@@ -312,7 +312,7 @@ public class AidasProjectResource {
                 throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
             }
         }
-        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN)){
+        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN)){
             if(aidasUser.getAidasCustomer()!=null && !aidasUser.getAidasCustomer().equals(aidasProject.getAidasCustomer())){
                 throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
             }
@@ -357,19 +357,19 @@ public class AidasProjectResource {
         log.debug("REST request to get a page of AidasProjects");
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         Page<AidasProject> page = null;
-        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ADMIN)){
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.ADMIN)){
             page = aidasProjectRepository.findAllByIdGreaterThan(0l,pageable);
         }
-        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null ){
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null ){
             page = aidasProjectRepository.findAllByAidasCustomer_AidasOrganisation(pageable,aidasUser.getAidasOrganisation());
         }
-        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN) && aidasUser.getAidasCustomer()!=null ){
+        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN) && aidasUser.getAidasCustomer()!=null ){
             page = aidasProjectRepository.findAllByAidasCustomer(pageable,aidasUser.getAidasCustomer());
         }
-        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.VENDOR_ADMIN)){
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.VENDOR_ADMIN)){
             page =  aidasProjectRepository.findAllProjectsByVendorAdmin(pageable,aidasUser.getAidasVendor());
         }
-        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.VENDOR_USER)){
             page =  aidasProjectRepository.findAllProjectsByVendorUser(pageable,aidasUser);
             for(AidasProject ap: page.getContent()){
                 UploadDetail pu = aidasProjectRepository.countUploadsByProjectAndUser(ap.getId(),aidasUser.getId());
@@ -379,7 +379,7 @@ public class AidasProjectResource {
                 ap.setTotalPending(pu.getTotalPending());
             }
         }
-        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.USER)){
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.USER)){
             page =  aidasProjectRepository.findAllProjectsByVendorUser(pageable,aidasUser);
         }
         if(page!=null) {
@@ -402,22 +402,22 @@ public class AidasProjectResource {
         log.debug("REST request to get AidasProject : {}", id);
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         Optional<AidasProject> aidasProject =null;
-        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ADMIN)){
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.ADMIN)){
             aidasProject = aidasProjectRepository.findById(id);
         }
-        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null ){
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null ){
             aidasProject = aidasProjectRepository.findById(id);
         }
-        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null ){
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null ){
             aidasProject = aidasProjectRepository.findAllProjectsByOrgAdminProject(aidasUser.getAidasOrganisation(),id);
         }
-        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN) && aidasUser.getAidasCustomer()!=null ){
+        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN) && aidasUser.getAidasCustomer()!=null ){
             aidasProject = aidasProjectRepository.findAllProjectsByCustomerAdminProject(aidasUser.getAidasCustomer().getId(),id);
         }
-        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.VENDOR_ADMIN )|| aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.VENDOR_ADMIN )|| aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.VENDOR_USER)){
             aidasProject = aidasProjectRepository.findAllProjectsByVendorAdminProject(aidasUser.getAidasVendor(),id);
         }
-        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.USER)){
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.USER)){
             aidasProject = aidasProjectRepository.findAllProjectsByVendorUserProject(aidasUser,id);
         }
         if(aidasProject.isPresent()) {
@@ -433,13 +433,13 @@ public class AidasProjectResource {
      * @param id the id of the aidasProject to delete.
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
-    @Secured({AidasAuthoritiesConstants.ADMIN,AidasAuthoritiesConstants.ORG_ADMIN,AidasAuthoritiesConstants.CUSTOMER_ADMIN})
+    @Secured({AidasConstants.ADMIN, AidasConstants.ORG_ADMIN, AidasConstants.CUSTOMER_ADMIN})
     @DeleteMapping("/aidas-projects/{id}")
     public ResponseEntity<Void> deleteAidasProject(@PathVariable Long id) {
         log.debug("REST request to delete AidasProject : {}", id);
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         AidasProject aidasProject = aidasProjectRepository.getById(id);
-        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null ){
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null ){
             Optional<AidasCustomer> aidasCustomer = aidasCustomerRepository.findById(aidasProject.getAidasCustomer().getId());
             if(aidasCustomer.isPresent()){
                 if(!aidasProject.getAidasCustomer().equals(aidasCustomer.get())){
@@ -449,7 +449,7 @@ public class AidasProjectResource {
                 throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
             }
         }
-        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN)){
+        if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN)){
             if(aidasUser.getAidasCustomer()!=null && !aidasUser.getAidasCustomer().equals(aidasProject.getAidasCustomer())){
                 throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
             }
@@ -476,7 +476,7 @@ public class AidasProjectResource {
         log.debug("REST request to search for a page of AidasProjects for query {}", query);
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         Page<AidasProject> page = aidasProjectSearchRepository.search(query, pageable);
-        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null) {
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null) {
             Iterator<AidasProject> it = page.getContent().iterator();
             while(it.hasNext()){
                 AidasProject aidasProject = it.next();
@@ -485,7 +485,7 @@ public class AidasProjectResource {
                 }
             }
         }
-        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN) && aidasUser.getAidasCustomer()!=null) {
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN) && aidasUser.getAidasCustomer()!=null) {
             Iterator<AidasProject> it = page.getContent().iterator();
             while(it.hasNext()){
                 AidasProject aidasProject = it.next();

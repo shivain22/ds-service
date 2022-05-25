@@ -130,7 +130,7 @@ public class AidasProjectPropertyResource {
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new aidasProjectProperty, or with status {@code 400 (Bad Request)} if the aidasProjectProperty has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PostMapping("/aidas-project-properties/dto")
+    @PostMapping("/aidas-project-properties/dtos")
     public ResponseEntity<String> createAidasProjectProperties(@Valid @RequestBody List<AidasProjectPropertyDTO> aidasProjectPropertyDTOs)
         throws URISyntaxException {
         log.debug("REST request to save AidasProjectProperty : {}", aidasProjectPropertyDTOs);
@@ -242,7 +242,7 @@ public class AidasProjectPropertyResource {
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new aidasProjectProperty, or with status {@code 400 (Bad Request)} if the aidasProjectProperty has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PostMapping("/aidas-project-properties/dto/update")
+    @PostMapping("/aidas-project-properties/dtos/update")
     public ResponseEntity<String> updateAidasProjectProperties(@Valid @RequestBody List<AidasProjectPropertyDTO> aidasProjectPropertyDTOs)
         throws URISyntaxException {
         int i=0;

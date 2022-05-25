@@ -2,25 +2,15 @@ package com.ainnotate.aidas.web.rest;
 
 import com.ainnotate.aidas.domain.*;
 import com.ainnotate.aidas.repository.*;
-import com.ainnotate.aidas.security.AidasAuthoritiesConstants;
+import com.ainnotate.aidas.constants.AidasConstants;
 import com.ainnotate.aidas.security.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-import tech.jhipster.web.util.HeaderUtil;
-import tech.jhipster.web.util.PaginationUtil;
-import tech.jhipster.web.util.ResponseUtil;
-
-import java.util.List;
-import java.util.Optional;
 
 /**
  * REST controller for managing {@link AidasUpload}.
@@ -73,7 +63,7 @@ public class AidasDashboardResource {
         AidasDashboard ad = new AidasDashboard();
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         AidasAuthority aidasAuthority = aidasUser.getCurrentAidasAuthority();
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.ADMIN)){
             ad.setOrganisationCount(aidasOrganisationRepository.count());
             ad.setCustomerCount(aidasCustomerRepository.count());
             ad.setVendorCount(aidasVendorRepository.count());
@@ -85,7 +75,7 @@ public class AidasDashboardResource {
             ad.setPendingUploadCount(aidasUploadRepository.countAidasUploadByStatusIsNull());
             ad.setUserCount(aidasUserRepository.count());
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ORG_ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.ORG_ADMIN)){
             ad.setOrganisationCount(1l);
             ad.setCustomerCount(aidasCustomerRepository.countAidasCustomerByAidasOrganisation(aidasUser.getAidasOrganisation()));
             ad.setVendorCount(aidasVendorRepository.count());
@@ -100,7 +90,7 @@ public class AidasDashboardResource {
             ad.setAllVendorUsersCount(aidasUserRepository.countAllVendorUsers());
             ad.setUserCount(ad.getOrgUsersCount()+ ad.getCustomerUsersCount());
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.CUSTOMER_ADMIN)){
             ad.setOrganisationCount(1l);
             ad.setCustomerCount(1l);
             ad.setVendorCount(aidasVendorRepository.count());
@@ -115,7 +105,7 @@ public class AidasDashboardResource {
             ad.setAllVendorUsersCount(aidasUserRepository.countAllVendorUsers());
             ad.setUserCount(ad.getCustomerUsersCount());
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.VENDOR_ADMIN)){
             ad.setOrganisationCount(1l);
             ad.setCustomerCount(aidasCustomerRepository.countAidasCustomerCountForVendorAdmin(aidasUser.getAidasVendor().getId()));
             ad.setVendorCount(1l);
@@ -127,7 +117,7 @@ public class AidasDashboardResource {
             ad.setPendingUploadCount(aidasUploadRepository.countAidasUploadByAidasVendorStatusIsNull(aidasUser.getAidasVendor().getId()));
             ad.setVendorUsersCount(aidasUserRepository.countAllByAidasVendor(aidasUser.getAidasVendor()));
             ad.setUserCount(aidasUserRepository.countAllByAidasVendor(aidasUser.getAidasVendor()));
-        }if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
+        }if(aidasAuthority.getName().equals(AidasConstants.VENDOR_USER)){
             ad.setOrganisationCount(1l);
             ad.setCustomerCount(1l);
             ad.setVendorCount(1l);
@@ -138,7 +128,7 @@ public class AidasDashboardResource {
             ad.setRejectedUploadCount(aidasUploadRepository.countAidasUploadByAidasVendorUserStatusFalse(aidasUser.getAidasVendor().getId()));
             ad.setPendingUploadCount(aidasUploadRepository.countAidasUploadByAidasVendorUserStatusIsNull(aidasUser.getAidasVendor().getId()));
              ad.setUserCount(1l);
-        }if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.USER)){
+        }if(aidasAuthority.getName().equals(AidasConstants.USER)){
             ad.setOrganisationCount(1l);
             ad.setCustomerCount(1l);
             ad.setVendorCount(1l);

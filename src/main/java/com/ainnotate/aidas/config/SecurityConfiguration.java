@@ -1,6 +1,6 @@
 package com.ainnotate.aidas.config;
 
-import com.ainnotate.aidas.security.*;
+import com.ainnotate.aidas.constants.AidasConstants;
 import com.ainnotate.aidas.security.oauth2.AudienceValidator;
 import com.ainnotate.aidas.security.oauth2.JwtGrantedAuthorityConverter;
 import org.springframework.beans.factory.annotation.Value;
@@ -71,7 +71,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .antMatchers("/management/health/**").permitAll()
             .antMatchers("/management/info").permitAll()
             .antMatchers("/management/prometheus").permitAll()
-            .antMatchers("/management/**").hasAuthority(AidasAuthoritiesConstants.ADMIN)
+            .antMatchers("/management/**").hasAuthority(AidasConstants.ADMIN)
         .and()
             .oauth2ResourceServer()
                 .jwt()

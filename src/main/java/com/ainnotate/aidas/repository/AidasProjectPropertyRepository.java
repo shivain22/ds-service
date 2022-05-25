@@ -22,6 +22,7 @@ public interface AidasProjectPropertyRepository extends JpaRepository<AidasProje
     @Query(value="select * from aidas_project_property app,aidas_properties ap where app.aidas_project_id=?1 and app.aidas_properties_id=ap.id and ap.property_type=2",nativeQuery = true)
     List<AidasProjectProperty> findAllAidasProjectPropertyForMetadata(Long projectId);
 
-
     AidasProjectProperty findByAidasProject_IdAndAidasProperties_Id(Long aidasProjectId, Long aidasPrpoertiesId);
+
+    Long countAidasProjectPropertiesByAidasProject_IdAndOptionalEquals(Long projectId, Integer optional);
 }

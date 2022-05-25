@@ -4,6 +4,15 @@ public class UploadMetadataDTO {
     private Long uploadId;
     private Long projectPropertyId;
     private String value;
+    private Long objectPropertyId;
+
+    public Long getObjectPropertyId() {
+        return objectPropertyId;
+    }
+
+    public void setObjectPropertyId(Long objectPropertyId) {
+        this.objectPropertyId = objectPropertyId;
+    }
 
     public Long getUploadId() {
         return uploadId;

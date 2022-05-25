@@ -56,4 +56,5 @@ public interface AidasProjectRepository extends JpaRepository<AidasProject, Long
         " select ap.id as projectId, count(au.id) totalUploaded,SUM(CASE WHEN au.status = 1 THEN 1 ELSE 0 END) AS totalApproved,SUM(CASE WHEN au.status = 0 THEN 1 ELSE 0 END) AS totalRejected,SUM(CASE WHEN au.status = 2 THEN 1 ELSE 0 END) AS totalPending from aidas_project ap right  join aidas_object ao on ao.aidas_project_id=ap.id right  join aidas_user_obj_map am on am.aidas_object_id=ao.id right  join aidas_upload au on au.aidas_user_aidas_object_mapping_id=am.id where am.aidas_user_id= ?2 and  ap.id=?1 group by ap.id", nativeQuery = true)
     UploadDetail countUploadsByProjectAndUser(Long projectId, Long userId);
 
+
 }

@@ -1,24 +1,17 @@
 package com.ainnotate.aidas.web.rest;
 
-import static org.elasticsearch.index.query.QueryBuilders.*;
-
 import com.ainnotate.aidas.domain.*;
 import com.ainnotate.aidas.dto.UploadByUserObjectMappingDto;
 import com.ainnotate.aidas.dto.UploadDto;
 import com.ainnotate.aidas.repository.*;
 import com.ainnotate.aidas.repository.search.AidasUploadSearchRepository;
-import com.ainnotate.aidas.security.AidasAuthoritiesConstants;
+import com.ainnotate.aidas.constants.AidasConstants;
 import com.ainnotate.aidas.security.SecurityUtils;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
+import java.time.*;
+import java.util.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import org.slf4j.Logger;
@@ -29,9 +22,7 @@ import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -54,6 +45,8 @@ public class AidasUploadResource {
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
+    private static final String PATTERN_FORMAT = "yyyy-MM-dd HH:mm:ss";
+
     @Autowired
     private AidasUserRepository aidasUserRepository;
     @Autowired
@@ -64,12 +57,21 @@ public class AidasUploadResource {
     @Autowired
     private AidasProjectPropertyRepository aidasProjectPropertyRepository;
 
+    @Autowired
+    private AidasObjectPropertyRepository aidasObjectPropertyRepository;
+
     private final AidasUploadRepository aidasUploadRepository;
 
     private final AidasUploadSearchRepository aidasUploadSearchRepository;
 
     @Autowired
     private AidasUploadMetaDataRepository aidasUploadMetaDataRepository;
+
+    @Autowired
+    private AidasUploadRejectReasonRepository aidasUploadRejectReasonRepository;
+
+    @Autowired
+    private AidasProjectRepository aidasProjectRepository;
 
     public AidasUploadResource(AidasUploadRepository aidasUploadRepository, AidasUploadSearchRepository aidasUploadSearchRepository) {
         this.aidasUploadRepository = aidasUploadRepository;
@@ -88,24 +90,39 @@ public class AidasUploadResource {
         log.debug("REST request to save AidasUpload : {}", aidasUpload);
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         AidasAuthority aidasAuthority = aidasUser.getCurrentAidasAuthority();
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.ADMIN)){
 
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ORG_ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.ORG_ADMIN)){
             throw new BadRequestAlertException("You can not upload as ORG ADMIN", ENTITY_NAME, "idexists");
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.CUSTOMER_ADMIN)){
             throw new BadRequestAlertException("You can not upload as CUSTOMER ADMIN", ENTITY_NAME, "idexists");
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.VENDOR_ADMIN)){
             throw new BadRequestAlertException("You can not upload as VENDOR ADMIN", ENTITY_NAME, "idexists");
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
+        if(aidasAuthority.getName().equals(AidasConstants.VENDOR_USER)){
             if (aidasUpload.getId() != null) {
                 throw new BadRequestAlertException("A new aidasUpload cannot already have an ID", ENTITY_NAME, "idexists");
             }
-            aidasUpload.setStatus(0);
+
+
+            AidasUserAidasObjectMapping auaom = aidasUserAidasObjectMappingRepository.getById(aidasUpload.getAidasUserAidasObjectMapping().getId());
+            AidasObject aidasObject = auaom.getAidasObject();
+            AidasProject aidasProject = aidasObject.getAidasProject();
+            Long mandatoryProjectProperties = aidasProjectPropertyRepository.countAidasProjectPropertiesByAidasProject_IdAndOptionalEquals(aidasProject.getId(),AidasConstants.AIDAS_PROPERTY_REQUIRED);
+            Long mandatoryObjectProperties = aidasObjectPropertyRepository.countAidasObjectPropertiesByAidasObject_IdAndOptionalEquals(aidasObject.getId(),AidasConstants.AIDAS_PROPERTY_REQUIRED);
+
+            if(mandatoryObjectProperties==0 && mandatoryProjectProperties==0){
+                aidasUpload.setMetadataStatus(AidasConstants.AIDAS_UPLOAD_METADATA_REQUIRED);
+            }else {
+                aidasUpload.setMetadataStatus(AidasConstants.AIDAS_UPLOAD_METADATA_COMPLETED);
+            }
+            aidasUpload.setStatus(AidasConstants.AIDAS_UPLOAD_PENDING);
+            aidasUpload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
             AidasUpload result = aidasUploadRepository.save(aidasUpload);
+
             aidasUploadSearchRepository.save(result);
             return ResponseEntity
                 .created(new URI("/api/aidas-uploads/" + result.getId()))
@@ -128,35 +145,74 @@ public class AidasUploadResource {
         log.debug("REST request to save AidasUpload : {}", uploadMetadataDTOS);
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         AidasAuthority aidasAuthority = aidasUser.getCurrentAidasAuthority();
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
+        if(aidasAuthority.getName().equals(AidasConstants.VENDOR_USER)){
             List<AidasUploadMetaData> success = new ArrayList<>();
             List<AidasUploadMetaData> failed = new ArrayList<>();
+            Map<Long,Long> projectPropertiesCount = new HashMap<>();
+            Map<Long,Long> objectPropertiesCount = new HashMap<>();
+            Map<AidasUpload,Long> uploadPropertiesCount = new HashMap<>();
             for(UploadMetadataDTO umd:uploadMetadataDTOS){
                 AidasUpload aidasUpload = aidasUploadRepository.getById(umd.getUploadId());
-                AidasProjectProperty aidasProjectProperty = aidasProjectPropertyRepository.getById(umd.getProjectPropertyId());
+                uploadPropertiesCount.put(aidasUpload,0l);
+                AidasProject aidasProject = aidasUpload.getAidasUserAidasObjectMapping().getAidasObject().getAidasProject();
+                AidasObject aidasObject = aidasUpload.getAidasUserAidasObjectMapping().getAidasObject();
+
+                Long mandatoryProjectProperties = aidasProjectPropertyRepository.countAidasProjectPropertiesByAidasProject_IdAndOptionalEquals(aidasProject.getId(),AidasConstants.AIDAS_PROPERTY_REQUIRED);
+                Long mandatoryObjectProperties = aidasObjectPropertyRepository.findAllUncommonMandatoryAidasObjectPropertyForMetadata(aidasProject.getId());
+
+                projectPropertiesCount.put(aidasProject.getId(),mandatoryProjectProperties);
+                objectPropertiesCount.put(aidasObject.getId(),mandatoryObjectProperties);
                 AidasUploadMetaData aum = new AidasUploadMetaData();
                 aum.setAidasUpload(aidasUpload);
-                aum.setAidasProjectProperty(aidasProjectProperty);
-                aum.setValue(umd.getValue());
-                if(!aidasProjectProperty.getAidasProperties().getOptional()){
-                    if(umd.getUploadId()==null){
-                        failed.add(aum);
-                    }else if(umd.getValue().trim().length()==0){
-                        failed.add(aum);
+                if(umd.getProjectPropertyId()!=null){
+                    AidasProjectProperty aidasProjectProperty = aidasProjectPropertyRepository.getById(umd.getProjectPropertyId());
+                    aum.setAidasProjectProperty(aidasProjectProperty);
+                    if(!aidasProjectProperty.getOptional()){
+                        if(umd.getUploadId()==null){
+                            failed.add(aum);
+                        }else if(umd.getValue().trim().length()==0){
+                            failed.add(aum);
+                        }else{
+                            uploadPropertiesCount.put(aidasUpload,uploadPropertiesCount.get(aidasUpload)+1);
+                            success.add(aum);
+                        }
                     }else{
                         success.add(aum);
                     }
-                }else{
-                    success.add(aum);
                 }
+                else if(umd.getObjectPropertyId()!=null){
+                    AidasObjectProperty aidasObjectProperty = aidasObjectPropertyRepository.getById(umd.getObjectPropertyId());
+                    aum.setAidasObjectProperty(aidasObjectProperty);
+                    if(!aidasObjectProperty.getOptional()){
+                        if(umd.getUploadId()==null){
+                            failed.add(aum);
+                        }else if(umd.getValue().trim().length()==0){
+                            failed.add(aum);
+                        }else{
+                            uploadPropertiesCount.put(aidasUpload,uploadPropertiesCount.get(aidasUpload)+1);
+                            success.add(aum);
+                        }
+                    }else{
+                        success.add(aum);
+                    }
+                }
+                aum.setValue(umd.getValue());
             }
             for(AidasUploadMetaData aum:success){
                 aidasUploadMetaDataRepository.save(aum);
-                AidasUpload aidasUpload = aum.getAidasUpload();
-                aidasUpload.setStatus(3);
-                aidasUploadRepository.save(aidasUpload);
             }
-            return ResponseEntity.ok().body(failed);
+            for (Map.Entry<AidasUpload,Long> entry : uploadPropertiesCount.entrySet()){
+                AidasProject aidasProject = entry.getKey().getAidasUserAidasObjectMapping().getAidasObject().getAidasProject();
+                AidasObject aidasObject = entry.getKey().getAidasUserAidasObjectMapping().getAidasObject();
+                Long totalMandatoryProperties = projectPropertiesCount.get(aidasProject.getId()) + objectPropertiesCount.get(aidasObject.getId());
+                if(entry.getValue().equals(totalMandatoryProperties)){
+                    entry.getKey().setMetadataStatus(AidasConstants.AIDAS_UPLOAD_METADATA_COMPLETED);
+                }else{
+                    entry.getKey().setMetadataStatus(AidasConstants.AIDAS_UPLOAD_METADATA_REQUIRED);
+                }
+                aidasUploadRepository.save(entry.getKey());
+            }
+                return ResponseEntity.ok().body(failed);
         }
         throw new BadRequestAlertException("You can not upload as there was an error internally", ENTITY_NAME, "idexists");
     }
@@ -173,11 +229,11 @@ public class AidasUploadResource {
         log.debug("REST request to save AidasUpload : {}", uploadIds);
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         AidasAuthority aidasAuthority = aidasUser.getCurrentAidasAuthority();
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
+        if(aidasAuthority.getName().equals(AidasConstants.VENDOR_USER)){
             for(Long upId:uploadIds){
                 AidasUpload aidasUpload = aidasUploadRepository.getById(upId);
-                if(aidasUpload.getStatus()==3) {
-                    aidasUpload.setStatus(4);
+                if(aidasUpload.getMetadataStatus().equals(AidasConstants.AIDAS_UPLOAD_METADATA_COMPLETED)) {
+                    aidasUpload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
                 }
                 aidasUploadRepository.save(aidasUpload);
             }
@@ -198,19 +254,19 @@ public class AidasUploadResource {
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to save AidasUpload : {}", uploadDto);
         AidasAuthority aidasAuthority = aidasUser.getCurrentAidasAuthority();
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.ADMIN)){
 
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ORG_ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.ORG_ADMIN)){
             throw new BadRequestAlertException("You can not upload as ORG ADMIN", ENTITY_NAME, "idexists");
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.CUSTOMER_ADMIN)){
             throw new BadRequestAlertException("You can not upload as CUSTOMER ADMIN", ENTITY_NAME, "idexists");
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.VENDOR_ADMIN)){
             throw new BadRequestAlertException("You can not upload as VENDOR ADMIN", ENTITY_NAME, "idexists");
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
+        if(aidasAuthority.getName().equals(AidasConstants.VENDOR_USER)){
             if (uploadDto.getUserId() == null) {
                 throw new BadRequestAlertException("No User Id", ENTITY_NAME, "idexists");
             }
@@ -231,9 +287,21 @@ public class AidasUploadResource {
             aidasUpload.setName(uploadDto.getUploadUrl());
             aidasUpload.setUploadUrl(uploadDto.getUploadUrl());
             aidasUpload.setUploadEtag(uploadDto.getEtag());
-
-            aidasUpload.setStatus(2);
             aidasUpload.setObjectKey(uploadDto.getObjectKey());
+
+            AidasObject aidasObject = auaom.getAidasObject();
+            AidasProject aidasProject = aidasObject.getAidasProject();
+            Long mandatoryProjectProperties = aidasProjectPropertyRepository.countAidasProjectPropertiesByAidasProject_IdAndOptionalEquals(aidasProject.getId(),AidasConstants.AIDAS_PROPERTY_REQUIRED);
+            Long mandatoryObjectProperties = aidasObjectPropertyRepository.countAidasObjectPropertiesByAidasObject_IdAndOptionalEquals(aidasObject.getId(),AidasConstants.AIDAS_PROPERTY_REQUIRED);
+
+            if(mandatoryObjectProperties==0 && mandatoryProjectProperties==0){
+                aidasUpload.setMetadataStatus(AidasConstants.AIDAS_UPLOAD_METADATA_REQUIRED);
+            }else {
+                aidasUpload.setMetadataStatus(AidasConstants.AIDAS_UPLOAD_METADATA_COMPLETED);
+            }
+            aidasUpload.setStatus(AidasConstants.AIDAS_UPLOAD_PENDING);
+            aidasUpload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
+
             try {
                 AidasUpload result = aidasUploadRepository.save(aidasUpload);
                 //aidasUploadSearchRepository.save(result);
@@ -261,19 +329,19 @@ public class AidasUploadResource {
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to save AidasUpload : {}", uploadByUserObjectMappingDto);
         AidasAuthority aidasAuthority = aidasUser.getCurrentAidasAuthority();
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.ADMIN)){
 
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ORG_ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.ORG_ADMIN)){
             throw new BadRequestAlertException("You can not upload as ORG ADMIN", ENTITY_NAME, "idexists");
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.CUSTOMER_ADMIN)){
             throw new BadRequestAlertException("You can not upload as CUSTOMER ADMIN", ENTITY_NAME, "idexists");
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.VENDOR_ADMIN)){
             throw new BadRequestAlertException("You can not upload as VENDOR ADMIN", ENTITY_NAME, "idexists");
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
+        if(aidasAuthority.getName().equals(AidasConstants.VENDOR_USER)){
             if (uploadByUserObjectMappingDto.getUserObjectMappingId() == null) {
                 throw new BadRequestAlertException("No User Id", ENTITY_NAME, "idexists");
             }
@@ -292,7 +360,20 @@ public class AidasUploadResource {
             aidasUpload.setUploadUrl(uploadByUserObjectMappingDto.getUploadUrl());
             aidasUpload.setUploadEtag(uploadByUserObjectMappingDto.getEtag());
             aidasUpload.setObjectKey(uploadByUserObjectMappingDto.getObjectKey());
-            aidasUpload.setStatus(2);
+
+            AidasObject aidasObject = auaom.getAidasObject();
+            AidasProject aidasProject = aidasObject.getAidasProject();
+            Long mandatoryProjectProperties = aidasProjectPropertyRepository.countAidasProjectPropertiesByAidasProject_IdAndOptionalEquals(aidasProject.getId(),AidasConstants.AIDAS_PROPERTY_REQUIRED);
+            Long mandatoryObjectProperties = aidasObjectPropertyRepository.countAidasObjectPropertiesByAidasObject_IdAndOptionalEquals(aidasObject.getId(),AidasConstants.AIDAS_PROPERTY_REQUIRED);
+
+            if(mandatoryObjectProperties==0 && mandatoryProjectProperties==0){
+                aidasUpload.setMetadataStatus(AidasConstants.AIDAS_UPLOAD_METADATA_REQUIRED);
+            }else {
+                aidasUpload.setMetadataStatus(AidasConstants.AIDAS_UPLOAD_METADATA_COMPLETED);
+            }
+            aidasUpload.setStatus(AidasConstants.AIDAS_UPLOAD_PENDING);
+            aidasUpload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
+
             AidasUpload result = aidasUploadRepository.save(aidasUpload);
             //aidasUploadSearchRepository.save(result);
             return ResponseEntity
@@ -322,19 +403,19 @@ public class AidasUploadResource {
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to update AidasUpload : {}, {}", id, aidasUpload);
         AidasAuthority aidasAuthority = aidasUser.getCurrentAidasAuthority();
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.ADMIN)){
 
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ORG_ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.ORG_ADMIN)){
 
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.CUSTOMER_ADMIN)){
 
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.VENDOR_ADMIN)){
 
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
+        if(aidasAuthority.getName().equals(AidasConstants.VENDOR_USER)){
 
         }
         if (aidasUpload.getId() == null) {
@@ -372,26 +453,29 @@ public class AidasUploadResource {
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to approve AidasUpload : {}, {}", id);
         AidasAuthority aidasAuthority = aidasUser.getCurrentAidasAuthority();
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.ADMIN)){
 
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ORG_ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.ORG_ADMIN)){
 
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.CUSTOMER_ADMIN)){
 
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.VENDOR_ADMIN)){
 
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
+        if(aidasAuthority.getName().equals(AidasConstants.VENDOR_USER)){
 
         }
         if (!aidasUploadRepository.existsById(id)) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
         AidasUpload aidasUpload = aidasUploadRepository.getById(id);
-        aidasUpload.setStatus(1);
+        aidasUpload.setStatus(AidasConstants.AIDAS_UPLOAD_APPROVED);
+        aidasUpload.setQcEndDate(Instant.now());
+        aidasUpload.setQcDoneBy(aidasUser.getId());
+        aidasUpload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_COMPLETED);
         AidasUpload result = aidasUploadRepository.save(aidasUpload);
         //aidasUploadSearchRepository.save(result);
         return ResponseEntity
@@ -411,32 +495,51 @@ public class AidasUploadResource {
      */
     @PostMapping("/aidas-uploads/reject/{id}")
     public ResponseEntity<AidasUpload> rejectAidasUpload(
-        @PathVariable(value = "id", required = false) final Long id
+        @PathVariable(value = "id", required = false) final Long id,
+        @Valid @RequestBody List<AidasUploadRejectReason> aidasUploadRejectReasons
     ) throws URISyntaxException {
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to reject AidasUpload : {}, {}", id);
         AidasAuthority aidasAuthority = aidasUser.getCurrentAidasAuthority();
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.ADMIN)){
 
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ORG_ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.ORG_ADMIN)){
 
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.CUSTOMER_ADMIN)){
 
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.VENDOR_ADMIN)){
 
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
+        if(aidasAuthority.getName().equals(AidasConstants.VENDOR_USER)){
 
         }
         if (!aidasUploadRepository.existsById(id)) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
         AidasUpload aidasUpload = aidasUploadRepository.getById(id);
-        aidasUpload.setStatus(0);
+        aidasUpload.setStatus(AidasConstants.AIDAS_UPLOAD_REJECTED);
         AidasUpload result = aidasUploadRepository.save(aidasUpload);
+        for(AidasUploadRejectReason aidasUploadRejectReason : aidasUploadRejectReasons){
+            AidasUploadRejectMapping aidasUploadRejectMapping = new AidasUploadRejectMapping();
+            if(aidasUploadRejectReason.getId()!=null){
+                aidasUploadRejectReason = aidasUploadRejectReasonRepository.getById(aidasUploadRejectReason.getId());
+                aidasUploadRejectMapping.setAidasUpload(aidasUpload);
+                aidasUploadRejectMapping.setAidasUploadRejectReason(aidasUploadRejectReason);
+                aidasUpload.getAidasUploadRejectMappings().add(aidasUploadRejectMapping);
+            }else{
+                aidasUploadRejectReason = aidasUploadRejectReasonRepository.save(aidasUploadRejectReason);
+                aidasUploadRejectMapping.setAidasUpload(aidasUpload);
+                aidasUploadRejectMapping.setAidasUploadRejectReason(aidasUploadRejectReason);
+                aidasUpload.getAidasUploadRejectMappings().add(aidasUploadRejectMapping);
+            }
+        }
+        aidasUpload.setQcEndDate(Instant.now());
+        aidasUpload.setQcDoneBy(aidasUser.getId());
+        aidasUpload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_COMPLETED);
+        aidasUploadRepository.save(aidasUpload);
         //aidasUploadSearchRepository.save(result);
         return ResponseEntity
             .ok()
@@ -462,19 +565,19 @@ public class AidasUploadResource {
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to partial update AidasUpload partially : {}, {}", id, aidasUpload);
         AidasAuthority aidasAuthority = aidasUser.getCurrentAidasAuthority();
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.ADMIN)){
 
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ORG_ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.ORG_ADMIN)){
 
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.CUSTOMER_ADMIN)){
 
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.VENDOR_ADMIN)){
 
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
+        if(aidasAuthority.getName().equals(AidasConstants.VENDOR_USER)){
 
         }
         if (aidasUpload.getId() == null) {
@@ -532,19 +635,19 @@ public class AidasUploadResource {
         log.debug("REST request to get a page of AidasUploads");
         Page<AidasUpload> page = aidasUploadRepository.findAll(pageable);
         AidasAuthority aidasAuthority = aidasUser.getCurrentAidasAuthority();
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.ADMIN)){
             page = aidasUploadRepository.findAll(pageable);
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ORG_ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.ORG_ADMIN)){
             page = aidasUploadRepository.findAidasUploadByAidasOrganisation(aidasUser.getAidasOrganisation().getId(),pageable);
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.CUSTOMER_ADMIN)){
             page = aidasUploadRepository.findAidasUploadByAidasCustomer(aidasUser.getAidasCustomer().getId(),pageable);
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.VENDOR_ADMIN)){
             page = aidasUploadRepository.findAidasUploadByAidasVendor(aidasUser.getAidasVendor().getId(),pageable);
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
+        if(aidasAuthority.getName().equals(AidasConstants.VENDOR_USER)){
             page = aidasUploadRepository.findAllByUserAll(aidasUser.getId(),pageable);
         }
 
@@ -564,19 +667,19 @@ public class AidasUploadResource {
         log.debug("REST request to get a page of AidasUploads");
         Page<AidasUpload> page = aidasUploadRepository.findAll(pageable);
         AidasAuthority aidasAuthority = aidasUser.getCurrentAidasAuthority();
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.ADMIN)){
             page = aidasUploadRepository.findAll(pageable);
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ORG_ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.ORG_ADMIN)){
             page = aidasUploadRepository.findAidasUploadByAidasOrganisation(aidasUser.getAidasOrganisation().getId(),pageable);
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.CUSTOMER_ADMIN)){
             page = aidasUploadRepository.findAidasUploadByAidasCustomer(aidasUser.getAidasCustomer().getId(),pageable);
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.VENDOR_ADMIN)){
             page = aidasUploadRepository.findAidasUploadByAidasVendor(aidasUser.getAidasVendor().getId(),pageable);
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
+        if(aidasAuthority.getName().equals(AidasConstants.VENDOR_USER)){
             if(id!=null && type!=null && status!=null){
                 if(id!=null && type.equalsIgnoreCase("o") && status.equalsIgnoreCase("a") ){
                     page= aidasUploadRepository.findAllByUserAndObjectApproved(aidasUser.getId(),id,pageable);
@@ -638,12 +741,15 @@ public class AidasUploadResource {
     public ResponseEntity<UploadsMetadata> getAllAidasUploadsForMetadata(@PathVariable Long projectId) {
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         AidasAuthority aidasAuthority = aidasUser.getCurrentAidasAuthority();
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
+        AidasProject aidasProject = aidasProjectRepository.getById(projectId);
+        if(aidasAuthority.getName().equals(AidasConstants.VENDOR_USER)){
             List<AidasUpload> aidasUploads= aidasUploadRepository.findAllByUserAndProjectAllForMetadata(aidasUser.getId(),projectId);
             UploadsMetadata uploadsMetadata = new UploadsMetadata();
             uploadsMetadata.setAidasUploads(aidasUploads);
             List<AidasProjectProperty> aidasProjectProperties = aidasProjectPropertyRepository.findAllAidasProjectPropertyForMetadata(projectId);
+            List<AidasObjectProperty> aidasObjectProperties = aidasObjectPropertyRepository.findAllUncommonAidasObjectPropertyForMetadata(projectId);
             uploadsMetadata.setAidasProjectProperties(aidasProjectProperties);
+            uploadsMetadata.setAidasObjectProperties(aidasObjectProperties);
             return ResponseEntity.ok().body(uploadsMetadata);
         }
         throw new BadRequestAlertException("VENDOR_USER only allowed", ENTITY_NAME, "notauthorised");
@@ -661,19 +767,19 @@ public class AidasUploadResource {
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to get AidasUpload : {}", id);
         AidasAuthority aidasAuthority = aidasUser.getCurrentAidasAuthority();
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.ADMIN)){
 
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ORG_ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.ORG_ADMIN)){
 
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.CUSTOMER_ADMIN)){
 
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.VENDOR_ADMIN)){
 
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
+        if(aidasAuthority.getName().equals(AidasConstants.VENDOR_USER)){
 
         }
         Optional<AidasUpload> aidasUpload = aidasUploadRepository.findById(id);
@@ -689,25 +795,31 @@ public class AidasUploadResource {
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to get next AidasUpload : {}");
         AidasAuthority aidasAuthority = aidasUser.getCurrentAidasAuthority();
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.ADMIN)){
 
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ORG_ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.ORG_ADMIN)){
 
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.CUSTOMER_ADMIN)){
 
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.VENDOR_ADMIN)){
 
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
+        if(aidasAuthority.getName().equals(AidasConstants.VENDOR_USER)){
 
         }
         AidasUpload aidasUpload = aidasUploadRepository.findTopByQcNotDoneYet();
-        aidasUpload.setQcDoneBy(aidasUser.getId());
-        aidasUpload.setQcStartDate(Instant.now().getEpochSecond());
-        aidasUpload.setQcStatus(2);
+        if(aidasUpload!=null) {
+            aidasUpload.setQcDoneBy(aidasUser.getId());
+            aidasUpload.setQcStartDate(Instant.now());
+            aidasUpload.setQcStatus(2);
+        }else{
+            aidasUpload = new AidasUpload();
+            return ResponseEntity.ok().body(aidasUpload);
+        }
+        aidasUploadRepository.save(aidasUpload);
 
         return ResponseEntity.ok().body(aidasUpload);
     }
@@ -725,19 +837,19 @@ public class AidasUploadResource {
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to delete AidasUpload : {}", id);
         AidasAuthority aidasAuthority = aidasUser.getCurrentAidasAuthority();
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.ADMIN)){
 
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ORG_ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.ORG_ADMIN)){
 
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.CUSTOMER_ADMIN)){
 
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.VENDOR_ADMIN)){
 
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
+        if(aidasAuthority.getName().equals(AidasConstants.VENDOR_USER)){
 
         }
         aidasUploadRepository.deleteById(id);
@@ -761,19 +873,19 @@ public class AidasUploadResource {
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to search for a page of AidasUploads for query {}", query);
         AidasAuthority aidasAuthority = aidasUser.getCurrentAidasAuthority();
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.ADMIN)){
 
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.ORG_ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.ORG_ADMIN)){
 
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.CUSTOMER_ADMIN)){
 
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_ADMIN)){
+        if(aidasAuthority.getName().equals(AidasConstants.VENDOR_ADMIN)){
 
         }
-        if(aidasAuthority.getName().equals(AidasAuthoritiesConstants.VENDOR_USER)){
+        if(aidasAuthority.getName().equals(AidasConstants.VENDOR_USER)){
 
         }
         Page<AidasUpload> page = aidasUploadSearchRepository.search(query, pageable);
