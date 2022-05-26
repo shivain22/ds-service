@@ -179,7 +179,8 @@ public class AidasObjectPropertyResource {
             for(AidasPropertiesAidasObjectPropertyDTO aidasPropertiesAidasObjectPropertyDTO: aidasPropertiesAidasObjectPropertyDTOs ){
                 AidasObject aidasObject = aidasObjectRepository.getById(aidasPropertiesAidasObjectPropertyDTO.getAidasObjectId());
                 AidasProperties aidasProperties = new AidasProperties();
-                if (aidasObject != null && aidasProperties != null) {
+                if (aidasObject != null) {
+                    aidasProperties.setOptional(aidasPropertiesAidasObjectPropertyDTO.getOptional());
                     aidasProperties.setName(aidasPropertiesAidasObjectPropertyDTO.getName());
                     aidasProperties.setDefaultProp(aidasPropertiesAidasObjectPropertyDTO.getDefaultProp());
                     aidasProperties.setPropertyType(aidasPropertiesAidasObjectPropertyDTO.getPropertyType());

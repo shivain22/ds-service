@@ -178,6 +178,7 @@ public class AidasProjectPropertyResource {
                 AidasProject aidasProject = aidasProjectRepository.getById(aidasPropertiesAidasProjectPropertyDTO.getAidasProjectId());
                 AidasProperties aidasProperties = new AidasProperties();
                 if (aidasProject != null && aidasProperties != null) {
+                    aidasProperties.setOptional(aidasPropertiesAidasProjectPropertyDTO.getOptional());
                     aidasProperties.setName(aidasPropertiesAidasProjectPropertyDTO.getName());
                     aidasProperties.setDefaultProp(aidasPropertiesAidasProjectPropertyDTO.getDefaultProp());
                     aidasProperties.setPropertyType(aidasPropertiesAidasProjectPropertyDTO.getPropertyType());
