@@ -14,4 +14,7 @@ import org.springframework.stereotype.Repository;
 public interface AidasVendorRepository extends JpaRepository<AidasVendor, Long> {
 
     Page<AidasVendor> findAllByIdGreaterThan(Long id, Pageable page);
+
+    @Query(value = "select count(*) from aidas_vendor where id>0", nativeQuery = true)
+    Long countAllVendorsForSuperAdmin();
 }

@@ -193,4 +193,15 @@ public interface AidasUploadRepository extends JpaRepository<AidasUpload, Long> 
     @Query(value="select * from aidas_upload where qc_done_by is not null and qc_end_date is null and qc_start_date is not null and qc_status=0 and TIMEstampDIFF(SECOND,qc_start_date,now())>(select value from aidas_app_properties where name='qc_clean_up_time')",nativeQuery = true)
     List<AidasUpload> findUploadsHeldByQcForMoreThan10Mins();
 
+    @Query(value = "select count(*) from aidas_upload where id>0", nativeQuery = true)
+    Long countAllUploadsForSuperAdmin();
+
+    @Query(value = "select count(*) from aidas_upload where id>0 and status=1", nativeQuery = true)
+    Long countAllApprovedUploadsForSuperAdmin();
+
+    @Query(value = "select count(*) from aidas_upload where id>0 and status=0", nativeQuery = true)
+    Long countAllRejectedUploadsForSuperAdmin();
+
+    @Query(value = "select count(*) from aidas_upload where id>0 and status=2", nativeQuery = true)
+    Long countAllPendingUploadsForSuperAdmin();
 }

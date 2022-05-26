@@ -195,6 +195,7 @@ public interface AidasObjectRepository extends JpaRepository<AidasObject, Long> 
         "group by ao.id",nativeQuery = true)
     UploadDetail countUploadsByObjectAndAidasAdmin(Long aidasObjectId);
 
-
+    @Query(value = "select count(*) from aidas_object where id>0", nativeQuery = true)
+    Long countAllObjectsForSuperAdmin();
 
 }

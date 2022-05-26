@@ -64,16 +64,16 @@ public class AidasDashboardResource {
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         AidasAuthority aidasAuthority = aidasUser.getCurrentAidasAuthority();
         if(aidasAuthority.getName().equals(AidasConstants.ADMIN)){
-            ad.setOrganisationCount(aidasOrganisationRepository.count());
-            ad.setCustomerCount(aidasCustomerRepository.count());
-            ad.setVendorCount(aidasVendorRepository.count());
-            ad.setProjectCount(aidasProjectRepository.count());
-            ad.setObjectCount(aidasObjectRepository.count());
-            ad.setUploadCount(aidasUploadRepository.count());
-            ad.setApprovedUploadCount(aidasUploadRepository.countAidasUploadByStatusTrue());
-            ad.setRejectedUploadCount(aidasUploadRepository.countAidasUploadByStatusFalse());
-            ad.setPendingUploadCount(aidasUploadRepository.countAidasUploadByStatusIsNull());
-            ad.setUserCount(aidasUserRepository.count());
+            ad.setOrganisationCount(aidasOrganisationRepository.countAllOrgsForSuperAdmin());
+            ad.setCustomerCount(aidasCustomerRepository.countAidasCustomersForSuperAdmin());
+            ad.setVendorCount(aidasVendorRepository.countAllVendorsForSuperAdmin());
+            ad.setProjectCount(aidasProjectRepository.countAllProjectsForSuperAdmin());
+            ad.setObjectCount(aidasObjectRepository.countAllObjectsForSuperAdmin());
+            ad.setUploadCount(aidasUploadRepository.countAllUploadsForSuperAdmin());
+            ad.setApprovedUploadCount(aidasUploadRepository.countAllApprovedUploadsForSuperAdmin());
+            ad.setRejectedUploadCount(aidasUploadRepository.countAllRejectedUploadsForSuperAdmin());
+            ad.setPendingUploadCount(aidasUploadRepository.countAllPendingUploadsForSuperAdmin());
+            ad.setUserCount(aidasUserRepository.countAllForSuperAdmin());
         }
         if(aidasAuthority.getName().equals(AidasConstants.ORG_ADMIN)){
             ad.setOrganisationCount(1l);

@@ -42,4 +42,7 @@ public interface AidasUserRepository extends JpaRepository<AidasUser, Long> {
     @Query(value = "select * from aidas_user au where au.id not in (select auom.aidas_user_id from aidas_user_obj_map auom where auom.aidas_object_id=?1) ",nativeQuery = true)
     List<AidasUser> getUsersByNotAssignedToObject(Long objectId);
 
+    @Query(value = "select count(*) from aidas_user where id>0", nativeQuery = true)
+    Long countAllForSuperAdmin();
+
 }

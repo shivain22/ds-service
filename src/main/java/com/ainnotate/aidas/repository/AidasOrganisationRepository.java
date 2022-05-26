@@ -19,4 +19,7 @@ public interface AidasOrganisationRepository extends JpaRepository<AidasOrganisa
     @Query(value = "select * from aidas_organisation where id=?1",nativeQuery = true)
     Page<AidasOrganisation> findAllByCustomer(Long id, Pageable page);
 
+    @Query(value = "select count(*) from aidas_organisation where id > 0 ", nativeQuery = true)
+    Long countAllOrgsForSuperAdmin();
+
 }
