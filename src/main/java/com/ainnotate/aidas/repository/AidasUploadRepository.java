@@ -187,7 +187,10 @@ public interface AidasUploadRepository extends JpaRepository<AidasUpload, Long> 
     @Query(value="select * from aidas_upload au, aidas_user_obj_map auom,aidas_object ao, aidas_project ap where au.status=2 and au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_object_id=ao.id and ao.aidas_project_id=ap.id and ap.id=?2 and auom.aidas_user_id=?1",nativeQuery = true)
     List<AidasUpload> findAllByUserAndProjectAllForMetadata(Long userId, Long projectId);
 
-    @Query(value="select * from aidas_upload where qc_done_by is null and qc_status=0 limit 1",nativeQuery = true)
+    @Query(value="select * from aidas_upload where qc_done_by is null and qc_status=0 and qc_end_date is null and qc_start_date is null limit 1",nativeQuery = true)
     AidasUpload findTopByQcNotDoneYet();
+
+    @Query(value="select * from aidas_upload where qc_done_by is not null and qc_end_date is null and qc_start_date is not null and qc_status=0 and TIMEstampDIFF(SECOND,qc_start_date,now())>(select value from aidas_app_properties where name='qc_clean_up_time')",nativeQuery = true)
+    List<AidasUpload> findUploadsHeldByQcForMoreThan10Mins();
 
 }

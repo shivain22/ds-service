@@ -41,7 +41,7 @@ public class AidasObjectProperty extends AbstractAuditingEntity  implements Seri
     private Integer status;
 
     @Column
-    private Boolean optional;
+    private Integer optional;
 
     @Override
     public Integer getStatus() {
@@ -53,14 +53,15 @@ public class AidasObjectProperty extends AbstractAuditingEntity  implements Seri
         this.status = status;
     }
 
-    public Boolean getOptional() {
+    public Integer getOptional() {
         return optional;
     }
 
-    public void setOptional(Boolean optional) {
+    public void setOptional(Integer optional) {
         this.optional = optional;
     }
-// jhipster-needle-entity-add-field - JHipster will add fields here
+
+    // jhipster-needle-entity-add-field - JHipster will add fields here
 
     public Long getId() {
         return this.id;

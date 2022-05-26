@@ -3,15 +3,15 @@ package com.ainnotate.aidas.domain;
 import java.util.List;
 
 public class UploadsMetadata {
-    List<AidasUpload> aidasUploads;
+    AidasUpload aidasUploads;
     List<AidasProjectProperty> aidasProjectProperties;
     List<AidasObjectProperty> aidasObjectProperties;
 
-    public List<AidasUpload> getAidasUploads() {
+    public AidasUpload getAidasUploads() {
         return aidasUploads;
     }
 
-    public void setAidasUploads(List<AidasUpload> aidasUploads) {
+    public void setAidasUploads(AidasUpload aidasUploads) {
         this.aidasUploads = aidasUploads;
     }
 

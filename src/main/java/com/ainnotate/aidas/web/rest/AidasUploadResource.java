@@ -23,6 +23,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -158,7 +159,7 @@ public class AidasUploadResource {
                 AidasObject aidasObject = aidasUpload.getAidasUserAidasObjectMapping().getAidasObject();
 
                 Long mandatoryProjectProperties = aidasProjectPropertyRepository.countAidasProjectPropertiesByAidasProject_IdAndOptionalEquals(aidasProject.getId(),AidasConstants.AIDAS_PROPERTY_REQUIRED);
-                Long mandatoryObjectProperties = aidasObjectPropertyRepository.findAllUncommonMandatoryAidasObjectPropertyForMetadata(aidasProject.getId());
+                Long mandatoryObjectProperties = aidasObjectPropertyRepository.findAllUncommonMandatoryAidasObjectPropertyForMetadata(aidasObject.getId(),aidasProject.getId());
 
                 projectPropertiesCount.put(aidasProject.getId(),mandatoryProjectProperties);
                 objectPropertiesCount.put(aidasObject.getId(),mandatoryObjectProperties);
@@ -167,7 +168,7 @@ public class AidasUploadResource {
                 if(umd.getProjectPropertyId()!=null){
                     AidasProjectProperty aidasProjectProperty = aidasProjectPropertyRepository.getById(umd.getProjectPropertyId());
                     aum.setAidasProjectProperty(aidasProjectProperty);
-                    if(!aidasProjectProperty.getOptional()){
+                    if(aidasProjectProperty.getOptional().equals(AidasConstants.AIDAS_PROPERTY_REQUIRED)){
                         if(umd.getUploadId()==null){
                             failed.add(aum);
                         }else if(umd.getValue().trim().length()==0){
@@ -183,7 +184,7 @@ public class AidasUploadResource {
                 else if(umd.getObjectPropertyId()!=null){
                     AidasObjectProperty aidasObjectProperty = aidasObjectPropertyRepository.getById(umd.getObjectPropertyId());
                     aum.setAidasObjectProperty(aidasObjectProperty);
-                    if(!aidasObjectProperty.getOptional()){
+                    if(aidasObjectProperty.getOptional().equals(AidasConstants.AIDAS_PROPERTY_REQUIRED)){
                         if(umd.getUploadId()==null){
                             failed.add(aum);
                         }else if(umd.getValue().trim().length()==0){
@@ -738,19 +739,23 @@ public class AidasUploadResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of aidasUploads in body.
      */
     @GetMapping("/aidas-uploads/metadata/{projectId}")
-    public ResponseEntity<UploadsMetadata> getAllAidasUploadsForMetadata(@PathVariable Long projectId) {
+    public ResponseEntity<List<UploadsMetadata>> getAllAidasUploadsForMetadata(@PathVariable Long projectId) {
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         AidasAuthority aidasAuthority = aidasUser.getCurrentAidasAuthority();
         AidasProject aidasProject = aidasProjectRepository.getById(projectId);
+        List<UploadsMetadata>uploadsMetadataList = new ArrayList<>();
         if(aidasAuthority.getName().equals(AidasConstants.VENDOR_USER)){
             List<AidasUpload> aidasUploads= aidasUploadRepository.findAllByUserAndProjectAllForMetadata(aidasUser.getId(),projectId);
             UploadsMetadata uploadsMetadata = new UploadsMetadata();
-            uploadsMetadata.setAidasUploads(aidasUploads);
             List<AidasProjectProperty> aidasProjectProperties = aidasProjectPropertyRepository.findAllAidasProjectPropertyForMetadata(projectId);
-            List<AidasObjectProperty> aidasObjectProperties = aidasObjectPropertyRepository.findAllUncommonAidasObjectPropertyForMetadata(projectId);
-            uploadsMetadata.setAidasProjectProperties(aidasProjectProperties);
-            uploadsMetadata.setAidasObjectProperties(aidasObjectProperties);
-            return ResponseEntity.ok().body(uploadsMetadata);
+            for(AidasUpload au : aidasUploads) {
+                List<AidasObjectProperty> aidasObjectProperties = aidasObjectPropertyRepository.findAllUncommonAidasObjectPropertyForMetadata(au.getAidasUserAidasObjectMapping().getAidasObject().getId(),projectId);
+                uploadsMetadata.setAidasUploads(au);
+                uploadsMetadata.setAidasProjectProperties(aidasProjectProperties);
+                uploadsMetadata.setAidasObjectProperties(aidasObjectProperties);
+                uploadsMetadataList.add(uploadsMetadata);
+            }
+            return ResponseEntity.ok().body(uploadsMetadataList);
         }
         throw new BadRequestAlertException("VENDOR_USER only allowed", ENTITY_NAME, "notauthorised");
     }
@@ -814,7 +819,7 @@ public class AidasUploadResource {
         if(aidasUpload!=null) {
             aidasUpload.setQcDoneBy(aidasUser.getId());
             aidasUpload.setQcStartDate(Instant.now());
-            aidasUpload.setQcStatus(2);
+            aidasUpload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
         }else{
             aidasUpload = new AidasUpload();
             return ResponseEntity.ok().body(aidasUpload);
@@ -911,4 +916,15 @@ public class AidasUploadResource {
         downloadUploadS3.setUp(uploadIds);
         uploadDownloadTaskExecutor.execute(downloadUploadS3);
     }
+
+    /*@Scheduled(cron = "0 0/15 * * * *")
+    public void clearQCPendingUploads(){
+        List<AidasUpload> qcPendingUploadsForMoreThan10Mins = aidasUploadRepository.findUploadsHeldByQcForMoreThan10Mins();
+        for(AidasUpload au:qcPendingUploadsForMoreThan10Mins){
+            au.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
+            au.setQcDoneBy(null);
+            au.setQcStartDate(null);
+            aidasUploadRepository.save(au);
+        }
+    }*/
 }

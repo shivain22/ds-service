@@ -20,6 +20,9 @@
     <include file="config/liquibase/changelog/aidas_upload_aidas_meta_dropTable.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/aidas_upload_nullable_columns.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/aidas_upload_aud_nullable_columns.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/aidas_obj_proj_prop_optional_col_change.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/aidas_app_properties_table.xml" relativeToChangelogFile="false"/>
+
 
 
 <!--    <include file="config/liquibase/changelog/20211016051901_added_entity_AidasCustomer.xml" relativeToChangelogFile="false"/>-->

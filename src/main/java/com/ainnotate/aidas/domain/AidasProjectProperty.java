@@ -37,7 +37,7 @@ public class AidasProjectProperty extends AbstractAuditingEntity  implements Ser
     private Integer status;
 
     @Column
-    private Boolean optional;
+    private Integer optional;
 
     @Override
     public Integer getStatus() {
@@ -49,11 +49,11 @@ public class AidasProjectProperty extends AbstractAuditingEntity  implements Ser
         this.status = status;
     }
 
-    public Boolean getOptional() {
+    public Integer getOptional() {
         return optional;
     }
 
-    public void setOptional(Boolean optional) {
+    public void setOptional(Integer optional) {
         this.optional = optional;
     }
 
