@@ -45,11 +45,11 @@ class AidasPropertiesResourceIT {
     private static final String DEFAULT_VALUE = "AAAAAAAAAA";
     private static final String UPDATED_VALUE = "BBBBBBBBBB";
 
-    private static final Boolean DEFAULT_SYSTEM_PROPERTY = false;
-    private static final Boolean UPDATED_SYSTEM_PROPERTY = true;
+    private static final Integer DEFAULT_SYSTEM_PROPERTY = 1;
+    private static final Integer UPDATED_SYSTEM_PROPERTY = 0;
 
-    private static final Boolean DEFAULT_OPTIONAL = false;
-    private static final Boolean UPDATED_OPTIONAL = true;
+    private static final Integer DEFAULT_OPTIONAL = 0;
+    private static final Integer UPDATED_OPTIONAL = 1;
 
     private static final String DEFAULT_DESCRIPTION = "AAAAAAAAAA";
     private static final String UPDATED_DESCRIPTION = "BBBBBBBBBB";
@@ -273,8 +273,8 @@ class AidasPropertiesResourceIT {
             .andExpect(jsonPath("$.[*].id").value(hasItem(aidasProperties.getId().intValue())))
             .andExpect(jsonPath("$.[*].name").value(hasItem(DEFAULT_NAME)))
             .andExpect(jsonPath("$.[*].value").value(hasItem(DEFAULT_VALUE)))
-            .andExpect(jsonPath("$.[*].systemProperty").value(hasItem(DEFAULT_SYSTEM_PROPERTY.booleanValue())))
-            .andExpect(jsonPath("$.[*].optional").value(hasItem(DEFAULT_OPTIONAL.booleanValue())))
+            .andExpect(jsonPath("$.[*].systemProperty").value(hasItem(DEFAULT_SYSTEM_PROPERTY.intValue())))
+            .andExpect(jsonPath("$.[*].optional").value(hasItem(DEFAULT_OPTIONAL.intValue())))
             .andExpect(jsonPath("$.[*].description").value(hasItem(DEFAULT_DESCRIPTION)));
     }
 
@@ -292,8 +292,8 @@ class AidasPropertiesResourceIT {
             .andExpect(jsonPath("$.id").value(aidasProperties.getId().intValue()))
             .andExpect(jsonPath("$.name").value(DEFAULT_NAME))
             .andExpect(jsonPath("$.value").value(DEFAULT_VALUE))
-            .andExpect(jsonPath("$.systemProperty").value(DEFAULT_SYSTEM_PROPERTY.booleanValue()))
-            .andExpect(jsonPath("$.optional").value(DEFAULT_OPTIONAL.booleanValue()))
+            .andExpect(jsonPath("$.systemProperty").value(DEFAULT_SYSTEM_PROPERTY.intValue()))
+            .andExpect(jsonPath("$.optional").value(DEFAULT_OPTIONAL.intValue()))
             .andExpect(jsonPath("$.description").value(DEFAULT_DESCRIPTION));
     }
 
@@ -601,8 +601,8 @@ class AidasPropertiesResourceIT {
             .andExpect(jsonPath("$.[*].id").value(hasItem(aidasProperties.getId().intValue())))
             .andExpect(jsonPath("$.[*].name").value(hasItem(DEFAULT_NAME)))
             .andExpect(jsonPath("$.[*].value").value(hasItem(DEFAULT_VALUE)))
-            .andExpect(jsonPath("$.[*].systemProperty").value(hasItem(DEFAULT_SYSTEM_PROPERTY.booleanValue())))
-            .andExpect(jsonPath("$.[*].optional").value(hasItem(DEFAULT_OPTIONAL.booleanValue())))
+            .andExpect(jsonPath("$.[*].systemProperty").value(hasItem(DEFAULT_SYSTEM_PROPERTY.intValue())))
+            .andExpect(jsonPath("$.[*].optional").value(hasItem(DEFAULT_OPTIONAL.intValue())))
             .andExpect(jsonPath("$.[*].description").value(hasItem(DEFAULT_DESCRIPTION)));
     }
 }

@@ -102,12 +102,28 @@ public class AidasObjectResource {
                 throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
             }
         }
-        List<AidasProperties> aidasProperties = aidasPropertiesRepository.findAll();
+        if(aidasObject.getAidasObjectProperties()!=null){
+            AidasProperties ap=null;
+            for(AidasObjectProperty aop:aidasObject.getAidasObjectProperties()){
+                if(aop.getAidasProperties()!=null && aop.getAidasProperties().getId()!=null){
+                    ap = aidasPropertiesRepository.getById(aop.getId());
+                    aop.setAidasProperties(ap);
+                    aop.setAidasObject(aidasObject);
+                }else{
+                    ap = aidasPropertiesRepository.save(aop.getAidasProperties());
+                    aop.setAidasProperties(ap);
+                    aop.setAidasObject(aidasObject);
+                }
+            }
+        }
+
+        List<AidasProperties> aidasProperties = aidasPropertiesRepository.findAllDefaultProps();
         for(AidasProperties ap:aidasProperties){
             AidasObjectProperty app = new AidasObjectProperty();
             app.setAidasObject(aidasObject);
             app.setAidasProperties(ap);
             app.setValue(ap.getValue());
+            app.setOptional(ap.getOptional());
             aidasObject.addAidasObjectProperty(app);
         }
         if(aidasObject.getBufferPercent()==null){

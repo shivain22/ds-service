@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.5.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+    <changeSet author="shiva (generated)" id="1649822751914-45">
+        <modifyDataType  catalogName="ainnotateservice"
+                         columnName="system_property"
+                         newDataType="int"
+                         schemaName="ainnotateservice"
+                         tableName="aidas_properties"/>
+        <modifyDataType  catalogName="ainnotateservice"
+                         columnName="system_property"
+                         newDataType="int"
+                         schemaName="ainnotateservice"
+                         tableName="aidas_properties_aud"/>
+
+        <modifyDataType  catalogName="ainnotateservice"
+                         columnName="optional"
+                         newDataType="int"
+                         schemaName="ainnotateservice"
+                         tableName="aidas_properties"/>
+        <modifyDataType  catalogName="ainnotateservice"
+                         columnName="optional"
+                         newDataType="int"
+                         schemaName="ainnotateservice"
+                         tableName="aidas_properties_aud"/>
+
+        <modifyDataType  catalogName="ainnotateservice"
+                         columnName="optional"
+                         newDataType="int"
+                         schemaName="ainnotateservice"
+                         tableName="aidas_object_property"/>
+        <modifyDataType  catalogName="ainnotateservice"
+                         columnName="optional"
+                         newDataType="int"
+                         schemaName="ainnotateservice"
+                         tableName="aidas_object_property_aud"/>
+
+        <modifyDataType  catalogName="ainnotateservice"
+                         columnName="optional"
+                         newDataType="int"
+                         schemaName="ainnotateservice"
+                         tableName="aidas_project_property"/>
+        <modifyDataType  catalogName="ainnotateservice"
+                         columnName="optional"
+                         newDataType="int"
+                         schemaName="ainnotateservice"
+                         tableName="aidas_project_property_aud"/>
+    </changeSet>
+</databaseChangeLog>

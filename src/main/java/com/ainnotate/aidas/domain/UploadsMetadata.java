@@ -1,10 +1,15 @@
 package com.ainnotate.aidas.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.util.List;
 
 public class UploadsMetadata {
+
     AidasUpload aidasUploads;
+    @JsonIgnoreProperties(value = {"aidasProject"})
     List<AidasProjectProperty> aidasProjectProperties;
+    @JsonIgnoreProperties(value = {"aidasObject"})
     List<AidasObjectProperty> aidasObjectProperties;
 
     public AidasUpload getAidasUploads() {

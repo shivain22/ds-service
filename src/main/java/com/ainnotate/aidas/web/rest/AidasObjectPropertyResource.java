@@ -100,7 +100,7 @@ public class AidasObjectPropertyResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/aidas-object-properties/dto")
-    public ResponseEntity<AidasObjectProperty> createAidasProjectProperty(@Valid @RequestBody AidasObjectPropertyDTO aidasObjectPropertyDTO)
+    public ResponseEntity<AidasObjectProperty> createAidasObjectProperty(@Valid @RequestBody AidasObjectPropertyDTO aidasObjectPropertyDTO)
         throws URISyntaxException {
         log.debug("REST request to save AidasProjectProperty : {}", aidasObjectPropertyDTO);
         AidasObject aidasObject = aidasObjectRepository.getById(aidasObjectPropertyDTO.getAidasObjectId());
@@ -133,7 +133,7 @@ public class AidasObjectPropertyResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/aidas-object-properties/dtos")
-    public ResponseEntity<String> createAidasProjectProperties(@Valid @RequestBody List<AidasObjectPropertyDTO> aidasObjectPropertyDTOs)
+    public ResponseEntity<String> createAidasObjectProperties(@Valid @RequestBody List<AidasObjectPropertyDTO> aidasObjectPropertyDTOs)
         throws URISyntaxException {
         log.debug("REST request to save AidasProjectProperty : {}", aidasObjectPropertyDTOs);
         int i=0;
@@ -171,7 +171,7 @@ public class AidasObjectPropertyResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/aidas-properties-aidas-object-properties/dtos")
-    public ResponseEntity<String> createAidasPropertiesAidasProjectProperties(@Valid @RequestBody List<AidasPropertiesAidasObjectPropertyDTO> aidasPropertiesAidasObjectPropertyDTOs)
+    public ResponseEntity<String> createAidasPropertiesAidasObjectProperties(@Valid @RequestBody List<AidasPropertiesAidasObjectPropertyDTO> aidasPropertiesAidasObjectPropertyDTOs)
         throws URISyntaxException {
         log.debug("REST request to save AidasProjectProperty : {}", aidasPropertiesAidasObjectPropertyDTOs);
         int i=0;
@@ -216,7 +216,7 @@ public class AidasObjectPropertyResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/aidas-object-properties/dto/update")
-    public ResponseEntity<AidasObjectProperty> updateAidasProjectProperty(@Valid @RequestBody AidasObjectPropertyDTO aidasObjectPropertyDTO)
+    public ResponseEntity<AidasObjectProperty> updateAidasObjectProperty(@Valid @RequestBody AidasObjectPropertyDTO aidasObjectPropertyDTO)
         throws URISyntaxException {
         log.debug("REST request to save AidasProjectProperty : {}", aidasObjectPropertyDTO);
         AidasObjectProperty aidasObjectProperty =  aidasObjectPropertyRepository.findByAidasObject_IdAndAidasProperties_Id(aidasObjectPropertyDTO.getAidasObjectId(),aidasObjectPropertyDTO.getAidasPropertiesId());
@@ -246,7 +246,7 @@ public class AidasObjectPropertyResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/aidas-object-properties/dtos/update")
-    public ResponseEntity<String> updateAidasProjectProperties(@Valid @RequestBody List<AidasObjectPropertyDTO> aidasObjectPropertyDTOs)
+    public ResponseEntity<String> updateAidasObjectProperties(@Valid @RequestBody List<AidasObjectPropertyDTO> aidasObjectPropertyDTOs)
         throws URISyntaxException {
         log.debug("REST request to save AidasProjectProperty : {}", aidasObjectPropertyDTOs);
         try {

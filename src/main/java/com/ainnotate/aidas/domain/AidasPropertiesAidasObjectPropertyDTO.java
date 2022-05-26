@@ -5,9 +5,9 @@ public class AidasPropertiesAidasObjectPropertyDTO {
 
     private String name;
     private String value;
-    private Boolean systemProperty;
+    private Integer systemProperty;
     private Long propertyType;
-    private Boolean optional;
+    private Integer optional;
     private String description;
     private Integer defaultProp;
     private Long aidasObjectId;
@@ -37,14 +37,6 @@ public class AidasPropertiesAidasObjectPropertyDTO {
         this.value = value;
     }
 
-    public Boolean getSystemProperty() {
-        return systemProperty;
-    }
-
-    public void setSystemProperty(Boolean systemProperty) {
-        this.systemProperty = systemProperty;
-    }
-
     public Long getPropertyType() {
         return propertyType;
     }
@@ -53,11 +45,19 @@ public class AidasPropertiesAidasObjectPropertyDTO {
         this.propertyType = propertyType;
     }
 
-    public Boolean getOptional() {
+    public Integer getSystemProperty() {
+        return systemProperty;
+    }
+
+    public void setSystemProperty(Integer systemProperty) {
+        this.systemProperty = systemProperty;
+    }
+
+    public Integer getOptional() {
         return optional;
     }
 
-    public void setOptional(Boolean optional) {
+    public void setOptional(Integer optional) {
         this.optional = optional;
     }
 

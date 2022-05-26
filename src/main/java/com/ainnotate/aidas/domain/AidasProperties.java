@@ -34,7 +34,7 @@ public class AidasProperties extends AbstractAuditingEntity  implements Serializ
 
     @NotNull
     @Column(name = "system_property", nullable = false)
-    private Boolean systemProperty;
+    private Integer systemProperty;
 
     @NotNull
     @Column(name="property_type", nullable = false)
@@ -42,7 +42,7 @@ public class AidasProperties extends AbstractAuditingEntity  implements Serializ
 
     @NotNull
     @Column(name = "optional", nullable = false)
-    private Boolean optional;
+    private Integer optional;
 
     @Column(name = "description")
     private String description;
@@ -106,29 +106,31 @@ public class AidasProperties extends AbstractAuditingEntity  implements Serializ
         this.value = value;
     }
 
-    public Boolean getSystemProperty() {
-        return this.systemProperty;
-    }
 
-    public AidasProperties systemProperty(Boolean systemProperty) {
+
+    public AidasProperties systemProperty(Integer systemProperty) {
         this.setSystemProperty(systemProperty);
         return this;
     }
 
-    public void setSystemProperty(Boolean systemProperty) {
+    public Integer getSystemProperty() {
+        return systemProperty;
+    }
+
+    public void setSystemProperty(Integer systemProperty) {
         this.systemProperty = systemProperty;
     }
 
-    public Boolean getOptional() {
-        return this.optional;
-    }
-
-    public AidasProperties optional(Boolean optional) {
+    public AidasProperties optional(Integer optional) {
         this.setOptional(optional);
         return this;
     }
 
-    public void setOptional(Boolean optional) {
+    public Integer getOptional() {
+        return optional;
+    }
+
+    public void setOptional(Integer optional) {
         this.optional = optional;
     }
 
