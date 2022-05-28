@@ -52,7 +52,7 @@ public interface AidasObjectRepository extends JpaRepository<AidasObject, Long> 
     @Query(value="select count(*) from (select ao.id,count(*) from aidas_user_obj_map auom, aidas_user au, aidas_object ao where auom.aidas_object_id=ao.id and auom.aidas_user_id=au.id and au.aidas_vendor_id=?1 group by ao.id)a",nativeQuery = true)
     Long countAidasObjectByVendor(Long aidasVendorId);
 
-    @Query(value="select count(*) from (select ao.id from aidas_upload au,aidas_user_obj_map auom, aidas_object ao where  auom.aidas_object_id=ao.id and au.aidas_user_aidas_object_mapping_id=auom.id and auom.aidas_user_id=?1 group by ao.id)a;",nativeQuery = true)
+    @Query(value=" select count(*) from (select ao.id from aidas_user_obj_map auom, aidas_object ao where  auom.aidas_object_id=ao.id and auom.aidas_user_id=?1 group by ao.id)a",nativeQuery = true)
     Long countAidasProjectByVendorUser(Long aidasVendorUserId);
 
     @Query(value="select ao.id as objectId ,count(au.id) totalUploaded, SUM(CASE WHEN au.status = 1 THEN 1 ELSE 0 END) AS totalApproved, SUM(CASE WHEN au.status = 0 THEN 1 ELSE 0 END) AS totalRejected, SUM(CASE WHEN au.status = 2 THEN 1 ELSE 0 END) AS totalPending from aidas_object ao left  join  aidas_user_obj_map am on am.aidas_object_id=ao.id left  join aidas_upload au on au.aidas_user_aidas_object_mapping_id=am.id where  am.aidas_user_id= ?1 and ao.id=?2 group by ao.id " +
