@@ -1,17 +1,17 @@
-package com.ainnotate.aidas.domain;
+package com.ainnotate.aidas.dto;
 
-public class AidasObjectPropertyDTO {
+public class AidasProjectPropertyDTO {
 
-    private Long aidasObjectId;
+    private Long aidasProjectId;
     private Long aidasPropertiesId;
     private String value;
 
-    public Long getAidasObjectId() {
-        return aidasObjectId;
+    public Long getAidasProjectId() {
+        return aidasProjectId;
     }
 
-    public void setAidasObjectId(Long aidasObjectId) {
-        this.aidasObjectId = aidasObjectId;
+    public void setAidasProjectId(Long aidasProjectId) {
+        this.aidasProjectId = aidasProjectId;
     }
 
     public Long getAidasPropertiesId() {

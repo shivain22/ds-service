@@ -1,4 +1,4 @@
-package com.ainnotate.aidas.domain;
+package com.ainnotate.aidas.dto;
 
 import javax.persistence.Column;
 import javax.validation.constraints.NotNull;

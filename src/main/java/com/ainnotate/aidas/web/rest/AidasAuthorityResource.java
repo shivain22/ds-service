@@ -1,6 +1,7 @@
 package com.ainnotate.aidas.web.rest;
 
 import com.ainnotate.aidas.domain.AidasAuthority;
+import com.ainnotate.aidas.domain.AidasObject;
 import com.ainnotate.aidas.domain.AidasUser;
 import com.ainnotate.aidas.repository.AidasAuthorityRepository;
 import com.ainnotate.aidas.repository.AidasUserRepository;
@@ -220,8 +221,13 @@ public class AidasAuthorityResource {
     @DeleteMapping("/aidas-authorities/{id}")
     public ResponseEntity<Void> deleteAidasAuthority(@PathVariable Long id) {
         log.debug("REST request to delete AidasAuthority : {}", id);
-        aidasAuthorityRepository.deleteById(id);
-        aidasAuthoritySearchRepository.deleteById(id);
+        AidasAuthority aidasAuthority = aidasAuthorityRepository.getById(id);
+        if(aidasAuthority!=null) {
+            aidasAuthority.setStatus(0);
+            aidasAuthorityRepository.save(aidasAuthority);
+        }
+        //aidasAuthorityRepository.deleteById(id);
+        //aidasAuthoritySearchRepository.deleteById(id);
         return ResponseEntity
             .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))

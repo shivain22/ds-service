@@ -263,13 +263,17 @@ public class AidasCustomerResource {
     public ResponseEntity<Void> deleteAidasCustomer(@PathVariable Long id) {
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to delete AidasCustomer : {}", id);
-        AidasCustomer aidasCustomer = aidasCustomerRepository.findById(id).get();
+        AidasCustomer aidasCustomer = aidasCustomerRepository.getById(id);
         if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.ADMIN) ||
             !(aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null && aidasUser.getAidasOrganisation().equals(aidasCustomer.getAidasOrganisation()))||
             !(aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN) && aidasUser.getAidasCustomer().equals(aidasCustomer))
         ) {
-            aidasCustomerRepository.deleteById(id);
-            aidasCustomerSearchRepository.deleteById(id);
+            //aidasCustomerRepository.deleteById(id);
+            //aidasCustomerSearchRepository.deleteById(id);
+            if(aidasCustomer!=null) {
+                aidasCustomer.setStatus(0);
+                aidasCustomerRepository.save(aidasCustomer);
+            }
             return ResponseEntity
                 .noContent()
                 .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))

@@ -199,8 +199,13 @@ public class AidasVendorResource {
     @DeleteMapping("/aidas-vendors/{id}")
     public ResponseEntity<Void> deleteAidasVendor(@PathVariable Long id) {
         log.debug("REST request to delete AidasVendor : {}", id);
-        aidasVendorRepository.deleteById(id);
-        aidasVendorSearchRepository.deleteById(id);
+        //aidasVendorRepository.deleteById(id);
+        //aidasVendorSearchRepository.deleteById(id);
+        AidasVendor aidasVendor = aidasVendorRepository.getById(id);
+        if(aidasVendor!=null){
+            aidasVendor.setStatus(0);
+            aidasVendorRepository.save(aidasVendor);
+        }
         return ResponseEntity
             .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))

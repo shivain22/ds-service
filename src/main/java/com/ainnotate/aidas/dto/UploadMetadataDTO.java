@@ -1,4 +1,4 @@
-package com.ainnotate.aidas.domain;
+package com.ainnotate.aidas.dto;
 
 public class UploadMetadataDTO {
     private Long uploadId;

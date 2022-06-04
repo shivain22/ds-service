@@ -3,6 +3,7 @@ package com.ainnotate.aidas.web.rest;
 import com.ainnotate.aidas.domain.*;
 import com.ainnotate.aidas.dto.UploadByUserObjectMappingDto;
 import com.ainnotate.aidas.dto.UploadDto;
+import com.ainnotate.aidas.dto.UploadMetadataDTO;
 import com.ainnotate.aidas.repository.*;
 import com.ainnotate.aidas.repository.search.AidasUploadSearchRepository;
 import com.ainnotate.aidas.constants.AidasConstants;
@@ -23,7 +24,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -857,8 +857,13 @@ public class AidasUploadResource {
         if(aidasAuthority.getName().equals(AidasConstants.VENDOR_USER)){
 
         }
-        aidasUploadRepository.deleteById(id);
-        aidasUploadSearchRepository.deleteById(id);
+        //aidasUploadRepository.deleteById(id);
+        //aidasUploadSearchRepository.deleteById(id);
+        AidasUpload aidasUpload = aidasUploadRepository.getById(id);
+        if(aidasUpload!=null){
+            aidasUpload.setStatus(0);
+            aidasUploadRepository.save(aidasUpload);
+        }
         return ResponseEntity
             .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))

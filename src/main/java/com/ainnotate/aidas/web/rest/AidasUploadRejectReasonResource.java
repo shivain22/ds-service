@@ -212,8 +212,13 @@ public class AidasUploadRejectReasonResource {
     @DeleteMapping("/aidas-upload-reject-reason/{id}")
     public ResponseEntity<Void> deleteAidasUploadRejectReason(@PathVariable Long id) {
         log.debug("REST request to delete AidasUploadRejectReason : {}", id);
-        aidasUploadRejectReasonRepository.deleteById(id);
-        aidasUploadRejectReasonSearchRepository.deleteById(id);
+        //aidasUploadRejectReasonRepository.deleteById(id);
+        //aidasUploadRejectReasonSearchRepository.deleteById(id);
+        AidasUploadRejectReason aidasUploadRejectReason = aidasUploadRejectReasonRepository.getById(id);
+        if(aidasUploadRejectReason!=null){
+            aidasUploadRejectReason.setStatus(0);
+            aidasUploadRejectReasonRepository.save(aidasUploadRejectReason);
+        }
         return ResponseEntity
             .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))

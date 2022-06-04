@@ -325,8 +325,13 @@ public class AidasUserAidasObjectMappingResource {
     @DeleteMapping("/aidas-user-aidas-object-mappings/{id}")
     public ResponseEntity<Void> deleteAidasUserAidasObjectMapping(@PathVariable Long id) {
         log.debug("REST request to delete AidasUserAidasObjectMapping : {}", id);
-        aidasUserAidasObjectMappingRepository.deleteById(id);
-        aidasUserAidasObjectMappingSearchRepository.deleteById(id);
+        //aidasUserAidasObjectMappingRepository.deleteById(id);
+        //aidasUserAidasObjectMappingSearchRepository.deleteById(id);
+        AidasUserAidasObjectMapping aidasUserAidasObjectMapping = aidasUserAidasObjectMappingRepository.getById(id);
+        if(aidasUserAidasObjectMapping!=null){
+            aidasUserAidasObjectMapping.setStatus(0);
+            aidasUserAidasObjectMappingRepository.save(aidasUserAidasObjectMapping);
+        }
         return ResponseEntity
             .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))

@@ -246,8 +246,13 @@ public class AidasOrganisationResource {
     @DeleteMapping("/aidas-organisations/{id}")
     public ResponseEntity<Void> deleteAidasOrganisation(@PathVariable Long id) {
         log.debug("REST request to delete AidasOrganisation : {}", id);
-        aidasOrganisationRepository.deleteById(id);
-        aidasOrganisationSearchRepository.deleteById(id);
+        AidasOrganisation aidasOrganisation = aidasOrganisationRepository.getById(id);
+        if(aidasOrganisation!=null) {
+            aidasOrganisation.setStatus(0);
+            aidasOrganisationRepository.save(aidasOrganisation);
+        }
+        //aidasOrganisationRepository.deleteById(id);
+        //aidasOrganisationSearchRepository.deleteById(id);
         return ResponseEntity
             .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))

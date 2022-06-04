@@ -1,6 +1,8 @@
 package com.ainnotate.aidas.web.rest;
 
 import com.ainnotate.aidas.domain.*;
+import com.ainnotate.aidas.dto.ObjectVendorMappingDTO;
+import com.ainnotate.aidas.dto.ProjectVendorMappingDTO;
 import com.ainnotate.aidas.repository.*;
 import com.ainnotate.aidas.repository.search.AidasObjectSearchRepository;
 import com.ainnotate.aidas.constants.AidasConstants;
@@ -139,6 +141,65 @@ public class AidasObjectResource {
     }
 
 
+    /**
+     * {@code POST  /aidas-objects/vendormapping/add} : Create a new aidasProject.
+     *
+     * @param objectVendorMappingDTO the objectVendorMappings to create.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new aidasObject, or with status {@code 400 (Bad Request)} if the aidasProject has already an ID.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @Secured({AidasConstants.ADMIN, AidasConstants.ORG_ADMIN, AidasConstants.CUSTOMER_ADMIN})
+    @PostMapping("/aidas-objects/vendormapping/add")
+    public ResponseEntity<String> createAidasObjectAidasVendorMapping(@Valid @RequestBody ObjectVendorMappingDTO objectVendorMappingDTO) throws URISyntaxException {
+        AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        log.debug("REST request to map AidasObject to AidasVendor: {}", objectVendorMappingDTO);
+        if (objectVendorMappingDTO.getAidasObjectId() == null) {
+            throw new BadRequestAlertException("A new aidasProject cannot already have an ID", ENTITY_NAME, "idexists");
+        }
+        AidasObject aidasObject = aidasObjectRepository.getById(objectVendorMappingDTO.getAidasObjectId());
+        for(Long aidasVendorId:objectVendorMappingDTO.getAidasVendorIds()){
+            List<AidasUser> aidasUsers = aidasUserRepository.findAllByAidasVendor_Id(aidasVendorId);
+            for(AidasUser au: aidasUsers){
+                    AidasUserAidasObjectMapping auaom = aidasUserAidasObjectMappingRepository.findByAidasUser_IdAndAidasObject_Id(au.getId(),aidasObject.getId());
+                    if(auaom==null){
+                        auaom = new AidasUserAidasObjectMapping();
+                        auaom.setAidasUser(au);
+                        auaom.setAidasObject(aidasObject);
+                        aidasUserAidasObjectMappingRepository.save(auaom);
+                    }
+            }
+        }
+        return ResponseEntity.ok().body("Successfully mapped vendors to project");
+    }
+
+    /**
+     * {@code POST  /aidas-objects/vendormapping/remove} : Create a new aidasProject.
+     *
+     * @param objectVendorMappingDTO the projectVendorMappings to create.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new aidasProject, or with status {@code 400 (Bad Request)} if the aidasProject has already an ID.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @Secured({AidasConstants.ADMIN, AidasConstants.ORG_ADMIN, AidasConstants.CUSTOMER_ADMIN})
+    @PostMapping("/aidas-objects/vendormapping/remove")
+    public ResponseEntity<String> removeAidasObjectAidasVendorMapping(@Valid @RequestBody ObjectVendorMappingDTO objectVendorMappingDTO) throws URISyntaxException {
+        AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        log.debug("REST request to map AidasProject to AidasVendor: {}", objectVendorMappingDTO);
+        if (objectVendorMappingDTO.getAidasObjectId() == null) {
+            throw new BadRequestAlertException("A new aidasProject cannot already have an ID", ENTITY_NAME, "idexists");
+        }
+        AidasObject aidasObject = aidasObjectRepository.getById(objectVendorMappingDTO.getAidasObjectId());
+        for(Long aidasVendorId:objectVendorMappingDTO.getAidasVendorIds()){
+            List<AidasUser> aidasUsers = aidasUserRepository.findAllByAidasVendor_Id(aidasVendorId);
+            for(AidasUser au: aidasUsers){
+                    AidasUserAidasObjectMapping auaom = aidasUserAidasObjectMappingRepository.findByAidasUser_IdAndAidasObject_Id(au.getId(),aidasObject.getId());
+                    if(auaom!=null){
+                        auaom.setStatus(0);
+                        aidasUserAidasObjectMappingRepository.save(auaom);
+                    }
+            }
+        }
+        return ResponseEntity.ok().body("Successfully mapped vendors to project");
+    }
 
 
     /**
@@ -593,8 +654,8 @@ public class AidasObjectResource {
         log.debug("REST request to delete AidasObject : {}", id);
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         AidasObject aidasObject = aidasObjectRepository.getById(id);
-        aidasObjectRepository.deleteById(id);
-        aidasObjectSearchRepository.deleteById(id);
+        //aidasObjectRepository.deleteById(id);
+        //aidasObjectSearchRepository.deleteById(id);
         if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null ){
             Optional<AidasCustomer> aidasCustomer = aidasCustomerRepository.findById(aidasObject.getAidasProject().getAidasCustomer().getId());
             if(aidasCustomer.isPresent()){
@@ -609,6 +670,10 @@ public class AidasObjectResource {
             if(aidasUser.getAidasCustomer()!=null && !aidasUser.getAidasCustomer().equals(aidasObject.getAidasProject().getAidasCustomer())){
                 throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
             }
+        }
+        if(aidasObject!=null) {
+            aidasObject.setStatus(0);
+            aidasObjectRepository.save(aidasObject);
         }
         return ResponseEntity
             .noContent()

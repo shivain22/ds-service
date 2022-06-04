@@ -510,9 +510,14 @@ public class AidasUserResource {
                 throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
             }
         }
-        deleteUserFromKeyCloak(aidasUser);
-        aidasUser.setDeleted(true);
-        aidasUserRepository.save(aidasUser);
+        //deleteUserFromKeyCloak(aidasUser);
+
+        if(aidasUser!=null){
+            aidasUser.setDeleted(true);
+            aidasUser.setStatus(0);
+            aidasUserRepository.save(aidasUser);
+        }
+
         //aidasUserRepository.deleteById(id);
         //aidasUserSearchRepository.deleteById(id);
         return ResponseEntity

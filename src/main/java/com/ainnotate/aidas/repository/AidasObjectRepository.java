@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -48,6 +49,9 @@ public interface AidasObjectRepository extends JpaRepository<AidasObject, Long> 
     Long countAidasObjectByAidasProject_AidasCustomer_AidasOrganisation(AidasOrganisation aidasOrganisation);
 
     Long countAidasObjectByAidasProject_AidasCustomer(AidasCustomer aidasCustomer);
+
+    @Query(value = "select ao.* from aidas_object ao where ao.aidas_project_id=?1",nativeQuery = true)
+    List<AidasObject> findAllObjectsOfProject(Long aidasProjectId);
 
     @Query(value="select count(*) from (select ao.id,count(*) from aidas_user_obj_map auom, aidas_user au, aidas_object ao where auom.aidas_object_id=ao.id and auom.aidas_user_id=au.id and au.aidas_vendor_id=?1 group by ao.id)a",nativeQuery = true)
     Long countAidasObjectByVendor(Long aidasVendorId);

@@ -240,8 +240,13 @@ public class AidasPropertiesResource {
     @DeleteMapping("/aidas-properties/{id}")
     public ResponseEntity<Void> deleteAidasProperties(@PathVariable Long id) {
         log.debug("REST request to delete AidasProperties : {}", id);
-        aidasPropertiesRepository.deleteById(id);
-        aidasPropertiesSearchRepository.deleteById(id);
+        //aidasPropertiesRepository.deleteById(id);
+        //aidasPropertiesSearchRepository.deleteById(id);
+        AidasProperties aidasProperties = aidasPropertiesRepository.getById(id);
+        if(aidasProperties!=null){
+            aidasProperties.setStatus(0);
+            aidasPropertiesRepository.save(aidasProperties);
+        }
         return ResponseEntity
             .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))

@@ -1,6 +1,7 @@
 package com.ainnotate.aidas.web.rest;
 
 import com.ainnotate.aidas.domain.*;
+import com.ainnotate.aidas.dto.ProjectVendorMappingDTO;
 import com.ainnotate.aidas.repository.*;
 import com.ainnotate.aidas.repository.search.AidasProjectSearchRepository;
 import com.ainnotate.aidas.constants.AidasConstants;
@@ -51,6 +52,12 @@ public class AidasProjectResource {
 
     @Autowired
     private AidasUserRepository aidasUserRepository;
+
+    @Autowired
+    private AidasObjectRepository aidasObjectRepository;
+
+    @Autowired
+    private AidasUserAidasObjectMappingRepository aidasUserAidasObjectMappingRepository;
 
     @Autowired
     private AidasPropertiesRepository aidasPropertiesRepository;
@@ -127,6 +134,75 @@ public class AidasProjectResource {
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
             .body(result);
     }
+
+
+
+    /**
+     * {@code POST  /aidas-projects/vendormapping/add} : Create a new aidasProject.
+     *
+     * @param projectVendorMappingDTO the projectVendorMappings to create.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new aidasProject, or with status {@code 400 (Bad Request)} if the aidasProject has already an ID.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @Secured({AidasConstants.ADMIN, AidasConstants.ORG_ADMIN, AidasConstants.CUSTOMER_ADMIN})
+    @PostMapping("/aidas-projects/vendormapping/add")
+    public ResponseEntity<String> createAidasProjectAidasVendorMapping(@Valid @RequestBody ProjectVendorMappingDTO projectVendorMappingDTO) throws URISyntaxException {
+        AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        log.debug("REST request to map AidasProject to AidasVendor: {}", projectVendorMappingDTO);
+        if (projectVendorMappingDTO.getAidasProjectId() == null) {
+            throw new BadRequestAlertException("A new aidasProject cannot already have an ID", ENTITY_NAME, "idexists");
+        }
+        AidasProject aidasProject = aidasProjectRepository.getById(projectVendorMappingDTO.getAidasProjectId());
+        for(Long aidasVendorId:projectVendorMappingDTO.getAidasVendorIds()){
+            List<AidasUser> aidasUsers = aidasUserRepository.findAllByAidasVendor_Id(aidasVendorId);
+            List<AidasObject> aidasObjects = aidasObjectRepository.findAllObjectsOfProject(aidasProject.getId());
+            for(AidasUser au: aidasUsers){
+                for(AidasObject ao:aidasObjects){
+                    AidasUserAidasObjectMapping auaom = aidasUserAidasObjectMappingRepository.findByAidasUser_IdAndAidasObject_Id(au.getId(),ao.getId());
+                    if(auaom==null){
+                        auaom = new AidasUserAidasObjectMapping();
+                        auaom.setAidasUser(au);
+                        auaom.setAidasObject(ao);
+                        aidasUserAidasObjectMappingRepository.save(auaom);
+                    }
+                }
+            }
+        }
+        return ResponseEntity.ok().body("Successfully mapped vendors to project");
+    }
+
+    /**
+     * {@code POST  /aidas-projects/vendormapping/remove} : Create a new aidasProject.
+     *
+     * @param projectVendorMappingDTO the projectVendorMappings to create.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new aidasProject, or with status {@code 400 (Bad Request)} if the aidasProject has already an ID.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @Secured({AidasConstants.ADMIN, AidasConstants.ORG_ADMIN, AidasConstants.CUSTOMER_ADMIN})
+    @PostMapping("/aidas-projects/vendormapping/remove")
+    public ResponseEntity<String> removeAidasProjectAidasVendorMapping(@Valid @RequestBody ProjectVendorMappingDTO projectVendorMappingDTO) throws URISyntaxException {
+        AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        log.debug("REST request to map AidasProject to AidasVendor: {}", projectVendorMappingDTO);
+        if (projectVendorMappingDTO.getAidasProjectId() == null) {
+            throw new BadRequestAlertException("A new aidasProject cannot already have an ID", ENTITY_NAME, "idexists");
+        }
+        AidasProject aidasProject = aidasProjectRepository.getById(projectVendorMappingDTO.getAidasProjectId());
+        for(Long aidasVendorId:projectVendorMappingDTO.getAidasVendorIds()){
+            List<AidasUser> aidasUsers = aidasUserRepository.findAllByAidasVendor_Id(aidasVendorId);
+            List<AidasObject> aidasObjects = aidasObjectRepository.findAllObjectsOfProject(aidasProject.getId());
+            for(AidasUser au: aidasUsers){
+                for(AidasObject ao:aidasObjects){
+                    AidasUserAidasObjectMapping auaom = aidasUserAidasObjectMappingRepository.findByAidasUser_IdAndAidasObject_Id(au.getId(),ao.getId());
+                    if(auaom!=null){
+                        auaom.setStatus(0);
+                        aidasUserAidasObjectMappingRepository.save(auaom);
+                    }
+                }
+            }
+        }
+        return ResponseEntity.ok().body("Successfully mapped vendors to project");
+    }
+
 
     /**
      * {@code POST  /aidas-projects/{id}} : Update aidas Project properties to default value.
@@ -466,8 +542,12 @@ public class AidasProjectResource {
                 throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
             }
         }
-        aidasProjectRepository.deleteById(id);
-        aidasProjectSearchRepository.deleteById(id);
+        //aidasProjectRepository.deleteById(id);
+        //aidasProjectSearchRepository.deleteById(id);
+        if(aidasProject!=null){
+            aidasProject.setStatus(0);
+            aidasProjectRepository.save(aidasProject);
+        }
         return ResponseEntity
             .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))

@@ -1,8 +1,8 @@
 package com.ainnotate.aidas.web.rest;
 
-import static org.elasticsearch.index.query.QueryBuilders.*;
-
 import com.ainnotate.aidas.domain.*;
+import com.ainnotate.aidas.dto.AidasObjectPropertyDTO;
+import com.ainnotate.aidas.dto.AidasPropertiesAidasObjectPropertyDTO;
 import com.ainnotate.aidas.repository.AidasObjectPropertyRepository;
 import com.ainnotate.aidas.repository.AidasObjectRepository;
 import com.ainnotate.aidas.repository.AidasPropertiesRepository;
@@ -13,8 +13,6 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import org.slf4j.Logger;
@@ -25,7 +23,6 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -394,10 +391,14 @@ public class AidasObjectPropertyResource {
     public ResponseEntity<Void> deleteAidasObjectProperty(@PathVariable Long id) {
         log.debug("REST request to delete AidasObjectProperty : {}", id);
         AidasObjectProperty aidasObjectProperty = aidasObjectPropertyRepository.getById(id);
-        AidasObject aidasObject = aidasObjectProperty.getAidasObject();
-        aidasObject.removeAidasObjectProperty(aidasObjectProperty);
-        aidasObjectRepository.save(aidasObject);
-        aidasObjectPropertyRepository.deleteById(id);
+        //AidasObject aidasObject = aidasObjectProperty.getAidasObject();
+        if(aidasObjectProperty!=null) {
+            aidasObjectProperty.setStatus(0);
+            aidasObjectPropertyRepository.save(aidasObjectProperty);
+        }
+        //aidasObject.removeAidasObjectProperty(aidasObjectProperty);
+        //aidasObjectRepository.save(aidasObject);
+        //aidasObjectPropertyRepository.deleteById(id);
         //aidasObjectPropertySearchRepository.deleteById(id);
         return ResponseEntity
             .noContent()

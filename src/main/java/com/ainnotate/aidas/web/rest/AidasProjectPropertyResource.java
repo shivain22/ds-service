@@ -1,6 +1,8 @@
 package com.ainnotate.aidas.web.rest;
 
 import com.ainnotate.aidas.domain.*;
+import com.ainnotate.aidas.dto.AidasProjectPropertyDTO;
+import com.ainnotate.aidas.dto.AidasPropertiesAidasProjectPropertyDTO;
 import com.ainnotate.aidas.repository.AidasProjectPropertyRepository;
 import com.ainnotate.aidas.repository.AidasProjectRepository;
 import com.ainnotate.aidas.repository.AidasPropertiesRepository;
@@ -391,10 +393,14 @@ public class AidasProjectPropertyResource {
     public ResponseEntity<Void> deleteAidasProjectProperty(@PathVariable Long id) {
         log.debug("REST request to delete AidasProjectProperty : {}", id);
         AidasProjectProperty aidasProjectProperty = aidasProjectPropertyRepository.getById(id);
-        AidasProject aidasProject = aidasProjectProperty.getAidasProject();
-        aidasProject.removeAidasProjectProperty(aidasProjectProperty);
-        aidasProjectRepository.save(aidasProject);
-        aidasProjectPropertyRepository.deleteById(id);
+        //AidasProject aidasProject = aidasProjectProperty.getAidasProject();
+        //aidasProject.removeAidasProjectProperty(aidasProjectProperty);
+        //aidasProjectRepository.save(aidasProject);
+        //aidasProjectPropertyRepository.deleteById(id);
+        if(aidasProjectProperty!=null){
+            aidasProjectProperty.setStatus(0);
+            aidasProjectPropertyRepository.save(aidasProjectProperty);
+        }
         return ResponseEntity
             .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))

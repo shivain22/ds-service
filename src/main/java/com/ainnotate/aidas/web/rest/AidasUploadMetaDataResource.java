@@ -201,8 +201,13 @@ public class AidasUploadMetaDataResource {
     @DeleteMapping("/aidas-upload-meta-data/{id}")
     public ResponseEntity<Void> deleteAidasUploadMetaData(@PathVariable Long id) {
         log.debug("REST request to delete AidasUploadMetaData : {}", id);
-        aidasUploadMetaDataRepository.deleteById(id);
-        aidasUploadMetaDataSearchRepository.deleteById(id);
+        //aidasUploadMetaDataRepository.deleteById(id);
+        //aidasUploadMetaDataSearchRepository.deleteById(id);
+        AidasUploadMetaData aidasUploadMetaData = aidasUploadMetaDataRepository.getById(id);
+        if(aidasUploadMetaData!=null){
+            aidasUploadMetaData.setStatus(0);
+            aidasUploadMetaDataRepository.save(aidasUploadMetaData);
+        }
         return ResponseEntity
             .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))

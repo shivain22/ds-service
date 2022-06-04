@@ -75,6 +75,17 @@ public class AidasUpload extends AbstractAuditingEntity  implements Serializable
     @Column(name="status", nullable=false)
     private Integer status;
 
+    @Column(name="approval_status",nullable = false)
+    private Integer approvalStatus;
+
+    public Integer getApprovalStatus() {
+        return approvalStatus;
+    }
+
+    public void setApprovalStatus(Integer approvalStatus) {
+        this.approvalStatus = approvalStatus;
+    }
+
     @Column(name="qc_status", nullable=false)
     private Integer qcStatus;
 
