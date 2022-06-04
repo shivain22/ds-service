@@ -7,8 +7,6 @@ public final class AidasConstants {
 
     public static final String ADMIN = "ROLE_ADMIN";
 
-    public static final String USER = "ROLE_USER";
-
     public static final String ORG_ADMIN = "ROLE_ORG_ADMIN";
 
     public static final String CUSTOMER_ADMIN = "ROLE_CUSTOMER_ADMIN";
@@ -37,9 +35,19 @@ public final class AidasConstants {
 
     public static final Integer AIDAS_PROPERTY_REQUIRED=1;
 
+    public static final Integer AIDAS_PROPERTY=0;
+
     public static final Integer AIDAS_SYSTEM_PROPERTY=1;
 
     public static final Integer AIDAS_METADATA_PROPERTY=2;
+
+    public static final Integer DEFAULT_STATUS=1;
+
+    public static final Integer STATUS_ENABLED=1;
+
+    public static final Integer STATUS_DISABLED=1;
+
+
 
     private AidasConstants() {}
 }

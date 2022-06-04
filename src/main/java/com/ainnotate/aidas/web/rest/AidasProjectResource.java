@@ -96,12 +96,28 @@ public class AidasProjectResource {
                 throw new BadRequestAlertException("Not Authorized", ENTITY_NAME, "idexists");
             }
         }
-        List<AidasProperties> aidasProperties = aidasPropertiesRepository.findAll();
+        if(aidasProject.getAidasProjectProperties()!=null){
+            AidasProperties ap=null;
+            for(AidasProjectProperty app:aidasProject.getAidasProjectProperties()){
+                if(app.getAidasProperties()!=null && app.getAidasProperties().getId()!=null){
+                    ap = aidasPropertiesRepository.getById(app.getId());
+                    app.setAidasProperties(ap);
+                    app.setAidasProject(aidasProject);
+                }else{
+                    ap = aidasPropertiesRepository.save(app.getAidasProperties());
+                    app.setAidasProperties(ap);
+                    app.setAidasProject(aidasProject);
+                }
+            }
+        }
+
+        List<AidasProperties> aidasProperties = aidasPropertiesRepository.findAllDefaultProps();
         for(AidasProperties ap:aidasProperties){
             AidasProjectProperty app = new AidasProjectProperty();
             app.setAidasProject(aidasProject);
             app.setAidasProperties(ap);
             app.setValue(ap.getValue());
+            app.setOptional(ap.getOptional());
             aidasProject.addAidasProjectProperty(app);
         }
         AidasProject result = aidasProjectRepository.save(aidasProject);
@@ -379,9 +395,7 @@ public class AidasProjectResource {
                 ap.setTotalPending(pu.getTotalPending());
             }
         }
-        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.USER)){
-            page =  aidasProjectRepository.findAllProjectsByVendorUser(pageable,aidasUser);
-        }
+
         if(page!=null) {
             HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
             return ResponseEntity.ok().headers(headers).body(page.getContent());
@@ -417,9 +431,7 @@ public class AidasProjectResource {
         if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.VENDOR_ADMIN )|| aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.VENDOR_USER)){
             aidasProject = aidasProjectRepository.findAllProjectsByVendorAdminProject(aidasUser.getAidasVendor(),id);
         }
-        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.USER)){
-            aidasProject = aidasProjectRepository.findAllProjectsByVendorUserProject(aidasUser,id);
-        }
+
         if(aidasProject.isPresent()) {
             return ResponseUtil.wrapOrNotFound(aidasProject);
         }else{

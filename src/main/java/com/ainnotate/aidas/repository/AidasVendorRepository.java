@@ -17,4 +17,12 @@ public interface AidasVendorRepository extends JpaRepository<AidasVendor, Long> 
 
     @Query(value = "select count(*) from aidas_vendor where id>0", nativeQuery = true)
     Long countAllVendorsForSuperAdmin();
+
+    @Query(value = "select count(*) from aidas_vendor where id>0", nativeQuery = true)
+    Long countAllVendorsForOrgAdmin();
+
+    @Query(value = "select count(*) from aidas_vendor where id>0", nativeQuery = true)
+    Long countAllVendorsForCustomerAdmin();
+
+
 }

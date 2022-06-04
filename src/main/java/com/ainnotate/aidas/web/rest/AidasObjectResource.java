@@ -397,7 +397,7 @@ public class AidasObjectResource {
         if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.VENDOR_ADMIN) || aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.VENDOR_USER)){
             page = aidasObjectRepository.findAllObjectsByVendorAdmin(pageable,aidasUser.getAidasVendor());
         }
-        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.USER)){
+        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.VENDOR_USER)){
             page = aidasObjectRepository.findAllObjectsByVendorUser(pageable,aidasUser);
         }
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
@@ -548,9 +548,7 @@ public class AidasObjectResource {
             }
             throw new BadRequestAlertException("The object is not assigned to this vendor user", ENTITY_NAME, "idexists");
         }
-        if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.USER)){
-            throw new BadRequestAlertException("The object is not assigned to user", ENTITY_NAME, "idexists");
-        }
+
         throw new BadRequestAlertException("The object is not assigned  user", ENTITY_NAME, "idexists");
 
     }

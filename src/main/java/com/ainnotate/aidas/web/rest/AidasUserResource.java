@@ -421,7 +421,7 @@ public class AidasUserResource {
         if(loggedInUser.getCurrentAidasAuthority().getName().equals(AidasConstants.VENDOR_ADMIN) || loggedInUser.getCurrentAidasAuthority().getName().equals(AidasConstants.VENDOR_USER)){
             page = aidasUserRepository.findAllByDeletedIsFalseAndAidasVendor(pageable,loggedInUser.getAidasVendor());
         }
-        if(loggedInUser.getCurrentAidasAuthority().getName().equals(AidasConstants.USER)){
+        if(loggedInUser.getCurrentAidasAuthority().getName().equals(AidasConstants.VENDOR_USER)){
 
         }
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
@@ -643,9 +643,9 @@ public class AidasUserResource {
         UserResource userResource = usersRessource.get(userId);
         userResource.resetPassword(passwordCred);
         //userResource.sendVerifyEmail();
-        RoleRepresentation userRealmRole = realmResource.roles().get(AidasConstants.USER).toRepresentation();
+        RoleRepresentation userRealmRole = realmResource.roles().get(AidasConstants.VENDOR_USER).toRepresentation();
         userResource.roles().realmLevel().add(Arrays.asList(userRealmRole));
-        AidasAuthority currentAidasAuthority = aidasAuthorityRepository.findByName("ROLE_USER");
+        AidasAuthority currentAidasAuthority = aidasAuthorityRepository.findByName("ROLE_VENDOR_USER");
         aidasUser.setCurrentAidasAuthority(currentAidasAuthority);
     }
 
@@ -658,6 +658,9 @@ public class AidasUserResource {
         List<String> userAttrsVals = new ArrayList<>();
         userAttrsVals.add(String.valueOf(aidasUser.getId()));
         userAttrs.put("aidas_id",userAttrsVals);
+        userAttrsVals = new ArrayList<>();
+        userAttrsVals.add(String.valueOf(aidasUser.getCurrentAidasAuthority().getName()));
+        userAttrs.put("current_role",userAttrsVals);
         user.setAttributes(userAttrs);
         user.setEnabled(true);
         user.setUsername(aidasUser.getEmail());

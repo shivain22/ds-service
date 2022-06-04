@@ -274,7 +274,7 @@ public class DownloadUploadS3  implements  Runnable{
             try {
                 helper = new MimeMessageHelper(msg, true);
                 helper.setTo(aidasUser.getEmail());
-                helper.setSubject("Unable to create donloadable objects"+this.zipFileKey);
+                helper.setSubject("Unable to create downloadable objects"+this.zipFileKey);
                 helper.setText("<h1>Unable to create downloadable zip.  Please try again</h1>", true);
                 javaMailSender.send(msg);
             } catch (MessagingException ex) {
