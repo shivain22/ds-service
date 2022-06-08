@@ -44,7 +44,17 @@ public class AidasUpload extends AbstractAuditingEntity  implements Serializable
     @Column(name = "date_uploaded")
     private Instant dateUploaded;
 
+    @ManyToOne(optional = true)
+    @JsonIgnoreProperties(value = { "aidasObject" }, allowSetters = true)
+    private AidasUpload reworkAidasUplaod;
 
+    public AidasUpload getReworkAidasUplaod() {
+        return reworkAidasUplaod;
+    }
+
+    public void setReworkAidasUplaod(AidasUpload reworkAidasUplaod) {
+        this.reworkAidasUplaod = reworkAidasUplaod;
+    }
 
     @Column(name = "status_modified_date")
     private ZonedDateTime statusModifiedDate;
@@ -86,19 +96,19 @@ public class AidasUpload extends AbstractAuditingEntity  implements Serializable
         this.approvalStatus = approvalStatus;
     }
 
-    @Column(name="qc_status", nullable=false)
+    @Column(name="qc_status", nullable=true)
     private Integer qcStatus;
 
-    @Column(name="metadata_status", nullable=false)
+    @Column(name="metadata_status", nullable=true)
     private Integer metadataStatus;
 
-    @Column(name="qc_done_by", nullable=false)
+    @Column(name="qc_done_by", nullable=true)
     private Long qcDoneBy;
 
-    @Column(name="qc_start_date", nullable=false)
+    @Column(name="qc_start_date", nullable=true)
     private Instant qcStartDate;
 
-    @Column(name="qc_end_date", nullable=false)
+    @Column(name="qc_end_date", nullable=true)
     private Instant qcEndDate;
 
     public Set<AidasUploadMetaData> getAidasUploadMetaDataSet() {

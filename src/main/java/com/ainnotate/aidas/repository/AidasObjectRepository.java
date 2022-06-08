@@ -20,13 +20,17 @@ public interface AidasObjectRepository extends JpaRepository<AidasObject, Long> 
 
     Page<AidasObject> findAllByAidasProject_AidasCustomer_AidasOrganisationAndAidasProject_Id (Pageable pageable, AidasOrganisation aidasOrganisation,Long projectId);
 
+    List<AidasObject> getAllByAidasProject_AidasCustomer_AidasOrganisationAndAidasProject_Id (AidasOrganisation aidasOrganisation,Long projectId);
+
     Page<AidasObject> findAllByAidasProject_AidasCustomer(Pageable pageable, AidasCustomer aidasCustomer);
 
-    Page<AidasObject> findAllByAidasProject_AidasCustomerAndAidasProject_Id(Pageable pageable, AidasCustomer aidasCustomer,Long projectId);
+    List<AidasObject> getAllByAidasProject_AidasCustomerAndAidasProject_Id(AidasCustomer aidasCustomer,Long projectId);
 
     Page<AidasObject> findAllByIdGreaterThan(Long id, Pageable page);
 
     Page<AidasObject> findAllByIdGreaterThanAndAidasProject_Id(Long id,Long projectId, Pageable page);
+
+    List<AidasObject> getAllByIdGreaterThanAndAidasProject_Id(Long id,Long projectId);
 
     @Query(value="select o.* from aidas_project p, aidas_object o,  aidas_user_obj_map am ,aidas_user u where  am.aidas_object_id=o.id and o.aidas_project_id=p.id and am.aidas_user_id=u.id and u.id= ?1",nativeQuery = true)
     Page<AidasObject> findAllObjectsByVendorUser(Pageable page, AidasUser aidasUser);
@@ -39,6 +43,9 @@ public interface AidasObjectRepository extends JpaRepository<AidasObject, Long> 
 
     @Query(value="select o.* from aidas_project p, aidas_object o,  aidas_user_obj_map am ,aidas_user u where  am.aidas_object_id=o.id and o.aidas_project_id=p.id and am.aidas_user_id=u.id and u.aidas_vendor_id= ?1 and p.id=?2 and o.id>-1",nativeQuery = true)
     Page<AidasObject> findAllObjectsByVendorAdminProject(Pageable pageable, AidasVendor aidasVendor, Long aidasProjectId);
+
+    @Query(value="select o.* from aidas_project p, aidas_object o,  aidas_user_obj_map am ,aidas_user u where  am.aidas_object_id=o.id and o.aidas_project_id=p.id and am.aidas_user_id=u.id and u.aidas_vendor_id= ?1 and p.id=?2 and o.id>-1 group by o.id",nativeQuery = true)
+    List<AidasObject> getAllObjectsByVendorAdminProject(AidasVendor aidasVendor, Long aidasProjectId);
 
     @Query(value="select o.* from aidas_project p, aidas_object o,  aidas_user_obj_map am ,aidas_user u where  am.aidas_object_id=o.id and o.aidas_project_id=p.id and am.aidas_user_id=u.id and u.id= ?1 and p.id=?2",nativeQuery = true)
     Page<AidasObject> findAllObjectsByCustomerAdminProject(Pageable pageable,AidasCustomer aidasCustomer,Long aidasProjectId);

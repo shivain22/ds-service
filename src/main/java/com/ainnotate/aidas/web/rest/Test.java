@@ -1,6 +1,9 @@
 package com.ainnotate.aidas.web.rest;
 
+import liquibase.pro.packaged.A;
+
 import java.sql.*;
+import java.util.ArrayList;
 
 public class Test {
     public static void main(String[] args){
@@ -8,18 +11,11 @@ public class Test {
             "jdbc:mysql://localhost:3308/ainnotateservice", "root", "")) {
 
             if (conn != null) {
-                String query ="SELECT table_name FROM information_schema.tables WHERE  table_schema='ainnotateservice'";
+                String query ="select id,id,-1,value from aidas_properties order by id";
                 PreparedStatement ps = conn.prepareStatement(query);
                 ResultSet rs = ps.executeQuery();
-                while(rs.next()){
-                    //if(rs.getString(1).contains("_aud")) {
-                        String output = "<update catalogName=\"ainnotateservice\"\n" +
-                                        "      schemaName=\"ainnotateservice\"\n" +
-                                        "      tableName=\""+rs.getString(1)+"\">\n" +
-                                        "      <column name=\"status\" value=\"1\"/>\n" +
-                                        "</update>\n";
-                        System.out.println(output);
-                   // }
+                while(rs.next()) {
+                    System.out.println(rs.getInt(1)+";"+rs.getInt(2)+";"+rs.getInt(3)+";"+rs.getString(4));
                 }
             }
         } catch (SQLException e) {

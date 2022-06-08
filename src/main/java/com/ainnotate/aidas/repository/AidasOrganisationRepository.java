@@ -14,6 +14,8 @@ import org.springframework.stereotype.Repository;
 public interface AidasOrganisationRepository extends JpaRepository<AidasOrganisation, Long> {
 
     Page<AidasOrganisation> findAllById(Long id, Pageable page);
+
+    @Query(value = "select * from aidas_organisation where id>?1 and status=1",countQuery = "select count(*) from aidas_organisation where id>?1 and status=1",nativeQuery = true)
     Page<AidasOrganisation> findAllByIdGreaterThan(Long id, Pageable page);
 
     @Query(value = "select * from aidas_organisation where id=?1",nativeQuery = true)

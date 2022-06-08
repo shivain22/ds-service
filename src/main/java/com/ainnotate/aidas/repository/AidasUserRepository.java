@@ -18,6 +18,9 @@ public interface AidasUserRepository extends JpaRepository<AidasUser, Long> {
 
     Optional<AidasUser> findByLogin(String login);
 
+    AidasUser getAidasUserByLogin(String login);
+
+
     Optional<AidasUser> findOneByLogin(String login);
 
     Page<AidasUser> findAllByDeletedIsFalseAndAidasCustomer(Pageable pageable, AidasCustomer aidasCustomer);
@@ -26,7 +29,8 @@ public interface AidasUserRepository extends JpaRepository<AidasUser, Long> {
 
     Page<AidasUser> findAllByIdGreaterThanAndDeletedIsFalse(Long id,Pageable page);
 
-    List<AidasUser>findAllByAidasAuthoritiesEquals(AidasAuthority aidasAuthority);
+    @Query(value = "select au.* from aidas_authority au, aidas_user_aidas_authority auaa where auaa.aidas_user_id=au.id and auaa.aidas_authority_id=?1", nativeQuery = true)
+    List<AidasUser>findAllByAidasAuthoritiesEquals(Long aidasAuthorityId);
 
     Long countAllByAidasOrganisation(AidasOrganisation aidasOrganisation);
     Long countAllByAidasCustomer(AidasCustomer aidasCustomer);

@@ -6,6 +6,9 @@ import java.time.Instant;
 import javax.persistence.Column;
 import javax.persistence.EntityListeners;
 import javax.persistence.MappedSuperclass;
+
+import org.hibernate.annotations.Where;
+import org.hibernate.envers.Audited;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -17,7 +20,9 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
  * last modified by attributes.
  */
 @MappedSuperclass
+@Where(clause = "status=1 and id>0")
 @EntityListeners(AuditingEntityListener.class)
+@Audited
 public abstract class AbstractAuditingEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -42,8 +47,8 @@ public abstract class AbstractAuditingEntity implements Serializable {
     @JsonIgnore
     private Instant lastModifiedDate = Instant.now();
 
-    @Column(name = "status")
-    private Integer status;
+    @Column(name = "status", columnDefinition = "bigint default 1")
+    private Integer status=1;
 
     public Integer getStatus() {
         return status;

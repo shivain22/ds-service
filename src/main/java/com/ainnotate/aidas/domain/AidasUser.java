@@ -110,15 +110,99 @@ public class AidasUser extends AbstractAuditingEntity implements Serializable {
         this.currentAidasAuthority = currentAidasAuthority;
     }
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-        name = "aidas_user_aidas_authority",
-        joinColumns = { @JoinColumn(name = "aidas_user_id", referencedColumnName = "id") },
-        inverseJoinColumns = { @JoinColumn(name = "aidas_authority_id", referencedColumnName = "id") }
-    )
-    private Set<AidasAuthority> aidasAuthorities = new HashSet<>();
+    @OneToMany(mappedBy = "aidasUser",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+    @JsonIgnoreProperties(value = { "aidasUser" }, allowSetters = true)
+    private Set<AidasUserAidasAuthorityMapping> aidasUserAidasAuthorityMappings= new HashSet<>();
+
+    @OneToMany(mappedBy = "aidasUser",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+    @JsonIgnoreProperties(value = { "aidasUser" }, allowSetters = true)
+    private Set<AidasUserAidasOrganisationMapping> aidasUserAidasOrganisationMappings = new HashSet<>();
+
+    @OneToMany(mappedBy = "aidasUser",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+    @JsonIgnoreProperties(value = { "aidasUser" }, allowSetters = true)
+    private Set<AidasUserAidasCustomerMapping> aidasUserAidasCustomerMappings = new HashSet<>();
+
+    @OneToMany(mappedBy = "aidasUser",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+    @JsonIgnoreProperties(value = { "aidasUser" }, allowSetters = true)
+    private Set<AidasUserAidasVendorMapping> aidasUserAidasVendorMappings = new HashSet<>();
 
 
+
+    private transient Set<AidasAuthority> aidasAuthorities = new HashSet<>();
+    private transient Set<AidasOrganisation> aidasOrganisations = new HashSet<>();
+    private transient Set<AidasCustomer> aidasCustomers = new HashSet<>();
+    private transient Set<AidasVendor> aidasVendors = new HashSet<>();
+
+    public Set<AidasUserAidasAuthorityMapping> getAidasUserAidasAuthorityMappings() {
+        return aidasUserAidasAuthorityMappings;
+    }
+
+    public void setAidasUserAidasAuthorityMappings(Set<AidasUserAidasAuthorityMapping> aidasUserAidasAuthorityMappings) {
+        this.aidasUserAidasAuthorityMappings = aidasUserAidasAuthorityMappings;
+    }
+
+    public Set<AidasUserAidasOrganisationMapping> getAidasUserAidasOrganisationMappings() {
+        return aidasUserAidasOrganisationMappings;
+    }
+
+    public void setAidasUserAidasOrganisationMappings(Set<AidasUserAidasOrganisationMapping> aidasUserAidasOrganisationMappings) {
+        this.aidasUserAidasOrganisationMappings = aidasUserAidasOrganisationMappings;
+    }
+
+    public Set<AidasUserAidasCustomerMapping> getAidasUserAidasCustomerMappings() {
+        return aidasUserAidasCustomerMappings;
+    }
+
+    public void setAidasUserAidasCustomerMappings(Set<AidasUserAidasCustomerMapping> aidasUserAidasCustomerMappings) {
+        this.aidasUserAidasCustomerMappings = aidasUserAidasCustomerMappings;
+    }
+
+    public Set<AidasUserAidasVendorMapping> getAidasUserAidasVendorMappings() {
+        return aidasUserAidasVendorMappings;
+    }
+
+    public void setAidasUserAidasVendorMappings(Set<AidasUserAidasVendorMapping> aidasUserAidasVendorMappings) {
+        this.aidasUserAidasVendorMappings = aidasUserAidasVendorMappings;
+    }
+
+    public Set<AidasOrganisation> getAidasOrganisations() {
+        if(aidasUserAidasOrganisationMappings !=null && aidasUserAidasOrganisationMappings.size()>0){
+            for(AidasUserAidasOrganisationMapping auaom:aidasUserAidasOrganisationMappings){
+                aidasOrganisations.add(auaom.getAidasOrganisation());
+            }
+        }
+        return aidasOrganisations;
+    }
+
+    public void setAidasOrganisations(Set<AidasOrganisation> aidasOrganisations) {
+        this.aidasOrganisations = aidasOrganisations;
+    }
+
+    public Set<AidasCustomer> getAidasCustomers() {
+        if(aidasUserAidasCustomerMappings !=null && aidasUserAidasCustomerMappings.size()>0){
+            for(AidasUserAidasCustomerMapping auacm: aidasUserAidasCustomerMappings){
+                aidasCustomers.add(auacm.getAidasCustomer());
+            }
+        }
+        return aidasCustomers;
+    }
+
+    public void setAidasCustomers(Set<AidasCustomer> aidasCustomers) {
+        this.aidasCustomers = aidasCustomers;
+    }
+
+    public Set<AidasVendor> getAidasVendors() {
+        if(aidasUserAidasVendorMappings !=null && aidasUserAidasVendorMappings.size()>0){
+            for(AidasUserAidasVendorMapping auavm: aidasUserAidasVendorMappings){
+                aidasVendors.add(auavm.getAidasVendor());
+            }
+        }
+        return aidasVendors;
+    }
+
+    public void setAidasVendors(Set<AidasVendor> aidasVendors) {
+        this.aidasVendors = aidasVendors;
+    }
 
     @Size(min = 1, max = 50)
     @Column(length = 50, unique = true, nullable = false)
@@ -285,6 +369,11 @@ public class AidasUser extends AbstractAuditingEntity implements Serializable {
     }
 
     public Set<AidasAuthority> getAidasAuthorities() {
+        if(aidasUserAidasAuthorityMappings !=null && aidasUserAidasAuthorityMappings.size()>0){
+            for(AidasUserAidasAuthorityMapping auaam:aidasUserAidasAuthorityMappings){
+                aidasAuthorities.add(auaam.getAidasAuthority());
+            }
+        }
         return aidasAuthorities;
     }
 

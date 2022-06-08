@@ -112,6 +112,10 @@ public class AidasUserResource {
     public ResponseEntity<AidasUser> createAidasUser(@Valid @RequestBody AidasUser aidasUser) throws URISyntaxException {
         log.debug("REST request to save AidasUser : {}", aidasUser);
         AidasUser loggedInUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        AidasUser tmp = aidasUserRepository.getAidasUserByLogin(aidasUser.getEmail());
+        if(tmp!=null){
+            throw new BadRequestAlertException("User with login is already available in the system.  Please contact admin to reset your account.", ENTITY_NAME, "idexists");
+        }
         if (aidasUser.getId() != null) {
             throw new BadRequestAlertException("A new aidasUser cannot already have an ID", ENTITY_NAME, "idexists");
         }
@@ -144,6 +148,43 @@ public class AidasUserResource {
             }
         }
 
+
+        for(AidasAuthority aa:aidasUser.getAidasAuthorities()){
+            if(aa!=null && aa.getId()!=null){
+                AidasUserAidasAuthorityMapping auaam = new AidasUserAidasAuthorityMapping();
+                auaam.setAidasUser(aidasUser);
+                auaam.setAidasAuthority(aa);
+                aidasUser.getAidasUserAidasAuthorityMappings().add(auaam);
+                aidasUser.setCurrentAidasAuthority(aa);
+            }
+        }
+        for(AidasOrganisation ao:aidasUser.getAidasOrganisations()){
+            if(ao!=null && ao.getId()!=null){
+                AidasUserAidasOrganisationMapping auaom = new AidasUserAidasOrganisationMapping();
+                auaom.setAidasUser(aidasUser);
+                auaom.setAidasOrganisation(ao);
+                aidasUser.getAidasUserAidasOrganisationMappings().add(auaom);
+                aidasUser.setAidasOrganisation(ao);
+            }
+        }
+        for(AidasCustomer ac:aidasUser.getAidasCustomers()){
+            if(ac!=null && ac.getId()!=null){
+                AidasUserAidasCustomerMapping auacm = new AidasUserAidasCustomerMapping();
+                auacm.setAidasUser(aidasUser);
+                auacm.setAidasCustomer(ac);
+                aidasUser.getAidasUserAidasCustomerMappings().add(auacm);
+                aidasUser.setAidasCustomer(ac);
+            }
+        }
+        for(AidasVendor av:aidasUser.getAidasVendors()){
+            if(av!=null && av.getId()!=null){
+                AidasUserAidasVendorMapping auavm = new AidasUserAidasVendorMapping();
+                auavm.setAidasUser(aidasUser);
+                auavm.setAidasVendor(av);
+                aidasUser.getAidasUserAidasVendorMappings().add(auavm);
+                aidasUser.setAidasVendor(av);
+            }
+        }
         addUserToKeyCloak(aidasUser);
         aidasUser.setDeleted(false);
         AidasUser result = aidasUserRepository.save(aidasUser);
@@ -151,7 +192,7 @@ public class AidasUserResource {
         AidasObject defaultObject = aidasObjectRepository.getById(-1l);
         auao.setAidasUser(result);
         auao.setAidasObject(defaultObject);
-        aidasUserSearchRepository.save(result);
+        //aidasUserSearchRepository.save(result);
         updateUserToKeyCloak(result);
 
         /*String bucketName = "objects-upload";
@@ -438,7 +479,7 @@ public class AidasUserResource {
         log.debug("REST request to get a page of AidasUsers");
         AidasUser loggedInUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         AidasAuthority aidasAuthority = aidasAuthorityRepository.findByName(AidasConstants.VENDOR_USER);
-        List<AidasUser> aidasUsers = aidasUserRepository.findAllByAidasAuthoritiesEquals(aidasAuthority);
+        List<AidasUser> aidasUsers = aidasUserRepository.findAllByAidasAuthoritiesEquals(aidasAuthority.getId());
         return ResponseEntity.ok().body(aidasUsers);
     }
 
@@ -605,7 +646,10 @@ public class AidasUserResource {
         List<RoleRepresentation> roleRepresentationList = realmResource.roles().list();
         for (RoleRepresentation roleRepresentation : roleRepresentationList)
         {
+            System.out.println(roleRepresentation.getName());
+            System.out.println(aidasUser.getAidasAuthorities().size());
             for(AidasAuthority aa:aidasUser.getAidasAuthorities()){
+                System.out.println(aa.getName()+""+roleRepresentation.getName());
                 if (roleRepresentation.getName().equals(aa.getName()))
                 {
                     userResource.roles().realmLevel().add(Arrays.asList(roleRepresentation));

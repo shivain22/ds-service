@@ -5,8 +5,6 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.envers.Audited;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -14,10 +12,10 @@ import java.util.Objects;
  * An authority (a security role) used by Spring Security.
  */
 @Entity
-@Table(name = "aidas_upload_reject_reason")
+@Table(name = "aidas_user_aidas_vendor_mapping")
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @Audited
-public class AidasUploadRejectReason extends AbstractAuditingEntity  implements Serializable {
+public class AidasUserAidasVendorMapping extends AbstractAuditingEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -27,22 +25,28 @@ public class AidasUploadRejectReason extends AbstractAuditingEntity  implements 
     @Column(name = "id")
     private Long id;
 
-    @NotNull
-    @Size(max = 500)
-    @Column(length = 500)
-    private String reason;
+    @ManyToOne
+    private AidasVendor aidasVendor;
 
-    @NotNull
-    @Size(max = 500)
-    @Column(length = 500)
-    private String description;
+    @ManyToOne
+    private AidasUser aidasUser;
 
-    public String getReason() {
-        return reason;
+
+
+    public AidasVendor getAidasVendor() {
+        return aidasVendor;
     }
 
-    public void setReason(String reason) {
-        this.reason = reason;
+    public void setAidasVendor(AidasVendor aidasVendor) {
+        this.aidasVendor = aidasVendor;
+    }
+
+    public AidasUser getAidasUser() {
+        return aidasUser;
+    }
+
+    public void setAidasUser(AidasUser aidasUser) {
+        this.aidasUser = aidasUser;
     }
 
     @Override
@@ -50,10 +54,10 @@ public class AidasUploadRejectReason extends AbstractAuditingEntity  implements 
         if (this == o) {
             return true;
         }
-        if (!(o instanceof AidasUploadRejectReason)) {
+        if (!(o instanceof AidasUserAidasVendorMapping)) {
             return false;
         }
-        return Objects.equals(reason, ((AidasUploadRejectReason) o).reason);
+        return Objects.equals(id, ((AidasUserAidasVendorMapping) o).id);
     }
 
     public Long getId() {
@@ -66,14 +70,14 @@ public class AidasUploadRejectReason extends AbstractAuditingEntity  implements 
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(reason);
+        return Objects.hashCode(id);
     }
 
     // prettier-ignore
     @Override
     public String toString() {
-        return "Authority{" +
-            "name='" + reason + '\'' +
+        return "AidasQcProjectMapping{" +
+            "name='" + id + '\'' +
             "}";
     }
 }

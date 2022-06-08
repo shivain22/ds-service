@@ -61,6 +61,12 @@ public class AidasProject extends AbstractAuditingEntity  implements Serializabl
     @Column(name = "project_type")
     private String projectType;
 
+    @Column(name = "rework_status")
+    private Long reworkStatus;
+
+    @Column(name = "qc_levels")
+    private Long qcLevels;
+
     @Transient
     @Column (name = "total_uploaded")
     @JsonProperty
@@ -80,6 +86,33 @@ public class AidasProject extends AbstractAuditingEntity  implements Serializabl
     @Column(name = "total_pending")
     @JsonProperty
     private Integer totalPending;
+
+
+    @Transient
+    @JsonProperty
+    private Boolean autoCreateObjects;
+
+    @Transient
+    @JsonProperty
+    private Integer numOfObjects;
+
+    @Transient
+    @JsonProperty
+    private String objectPrefix;
+
+    @Transient
+    @JsonProperty
+    private Boolean objectSuffix;
+
+    public Long getReworkStatus() {
+        return reworkStatus;
+    }
+
+    public void setReworkStatus(Long reworkStatus) {
+        this.reworkStatus = reworkStatus;
+    }
+
+
 
     public Integer getTotalUploaded() {
         return totalUploaded;

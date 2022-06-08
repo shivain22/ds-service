@@ -469,11 +469,11 @@ public class AidasObjectResource {
     public ResponseEntity<List<AidasObject>> getAllAidasObjectsOfProject(Pageable pageable,@PathVariable(value = "id", required = false) final Long projectId) {
         log.debug("REST request to get a page of AidasObjects");
         AidasUser aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-        Page<AidasObject> page =null;
+        List<AidasObject> objects =null;
         if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.ADMIN)){
-            page = aidasObjectRepository.findAllByIdGreaterThanAndAidasProject_Id(0l,projectId,pageable);
-            if(page!=null && page.getContent()!=null && page.getContent().size()>0){
-                for(AidasObject aidasObject: page.getContent()){
+            objects = aidasObjectRepository.getAllByIdGreaterThanAndAidasProject_Id(0l,projectId);
+            if(objects!=null && objects.size()>0){
+                for(AidasObject aidasObject: objects){
                     Integer uploadsCompleted = aidasUploadRepository.countAidasUploadByAidasUserAidasObjectMapping_AidasObject(aidasObject);
                     aidasObject.setUploadsCompleted(uploadsCompleted);
                     Integer uploadsRemaining = (aidasObject.getNumberOfUploadReqd()+((aidasObject.getNumberOfUploadReqd()*(aidasObject.getBufferPercent())/100))-uploadsCompleted);
@@ -487,9 +487,9 @@ public class AidasObjectResource {
             }
         }
         if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.ORG_ADMIN) && aidasUser.getAidasOrganisation()!=null ){
-            page = aidasObjectRepository.findAllByAidasProject_AidasCustomer_AidasOrganisationAndAidasProject_Id(pageable,aidasUser.getAidasOrganisation(),projectId);
-            if(page!=null && page.getContent()!=null && page.getContent().size()>0){
-                for(AidasObject aidasObject: page.getContent()){
+            objects = aidasObjectRepository.getAllByAidasProject_AidasCustomer_AidasOrganisationAndAidasProject_Id(aidasUser.getAidasOrganisation(),projectId);
+            if(objects!=null && objects.size()>0){
+                for(AidasObject aidasObject: objects){
                     Integer uploadsCompleted = aidasUploadRepository.countAidasUploadByAidasUserAidasObjectMapping_AidasObject(aidasObject);
                     aidasObject.setUploadsCompleted(uploadsCompleted);
                     Integer uploadsRemaining = (aidasObject.getNumberOfUploadReqd()+((aidasObject.getNumberOfUploadReqd()*(aidasObject.getBufferPercent())/100))-uploadsCompleted);
@@ -503,9 +503,9 @@ public class AidasObjectResource {
             }
         }
         if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN) && aidasUser.getAidasCustomer()!=null ){
-            page = aidasObjectRepository.findAllByAidasProject_AidasCustomerAndAidasProject_Id(pageable,aidasUser.getAidasCustomer(),projectId);
-            if(page!=null && page.getContent()!=null && page.getContent().size()>0){
-                for(AidasObject aidasObject: page.getContent()){
+            objects = aidasObjectRepository.getAllByAidasProject_AidasCustomerAndAidasProject_Id(aidasUser.getAidasCustomer(),projectId);
+            if(objects!=null && objects.size()>0){
+                for(AidasObject aidasObject: objects){
                     Integer uploadsCompleted = aidasUploadRepository.countAidasUploadByAidasUserAidasObjectMapping_AidasObject(aidasObject);
                     aidasObject.setUploadsCompleted(uploadsCompleted);
                     Integer uploadsRemaining = (aidasObject.getNumberOfUploadReqd()+((aidasObject.getNumberOfUploadReqd()*(aidasObject.getBufferPercent())/100))-uploadsCompleted);
@@ -519,9 +519,9 @@ public class AidasObjectResource {
             }
         }
         if(aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.VENDOR_ADMIN) ){
-            page = aidasObjectRepository.findAllObjectsByVendorAdminProject(pageable,aidasUser.getAidasVendor(),projectId);
-            if(page!=null && page.getContent()!=null && page.getContent().size()>0){
-                for(AidasObject aidasObject: page.getContent()){
+            objects = aidasObjectRepository.getAllObjectsByVendorAdminProject(aidasUser.getAidasVendor(),projectId);
+            if(objects!=null && objects.size()>0){
+                for(AidasObject aidasObject: objects){
                     Integer uploadsCompleted = aidasUploadRepository.countAidasUploadByAidasUserAidasObjectMapping_AidasObject(aidasObject);
                     aidasObject.setUploadsCompleted(uploadsCompleted);
                     Integer uploadsRemaining = (aidasObject.getNumberOfUploadReqd()+((aidasObject.getNumberOfUploadReqd()*(aidasObject.getBufferPercent())/100))-uploadsCompleted);
@@ -535,9 +535,9 @@ public class AidasObjectResource {
             }
         }
         if( aidasUser.getCurrentAidasAuthority().getName().equals(AidasConstants.VENDOR_USER)){
-            page = aidasObjectRepository.findAllObjectsByVendorAdminProject(pageable,aidasUser.getAidasVendor(),projectId);
-            if(page!=null && page.getContent()!=null && page.getContent().size()>0){
-                for(AidasObject aidasObject: page.getContent()){
+            objects = aidasObjectRepository.getAllObjectsByVendorAdminProject(aidasUser.getAidasVendor(),projectId);
+            if(objects!=null && objects.size()>0){
+                for(AidasObject aidasObject: objects){
                     Integer uploadsCompleted = aidasUploadRepository.countAidasUploadByAidasUserAidasObjectMapping_AidasObject(aidasObject);
                     aidasObject.setUploadsCompleted(uploadsCompleted);
                     Integer uploadsRemaining = (aidasObject.getNumberOfUploadReqd()+((aidasObject.getNumberOfUploadReqd()*(aidasObject.getBufferPercent())/100))-uploadsCompleted);
@@ -550,9 +550,7 @@ public class AidasObjectResource {
                 }
             }
         }
-
-        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
-        return ResponseEntity.ok().headers(headers).body(page.getContent());
+        return ResponseEntity.ok().body(objects);
     }
 
     /**

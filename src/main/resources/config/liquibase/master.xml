@@ -14,51 +14,6 @@
     <property name="datetimeType" value="datetime(6)" dbms="mysql, mariadb"/>
     <property name="datetimeType" value="datetime" dbms="oracle, mssql, postgresql, h2"/>
 
-    <include file="config/liquibase/changelog/00000000000000_initial_schema.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/aidasProperties-addColumn.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/aidas-upload-metadata-addColumn.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/aidas_upload_aidas_meta_dropTable.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/aidas_upload_nullable_columns.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/aidas_upload_aud_nullable_columns.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/aidas_obj_proj_prop_optional_col_change.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/aidas_app_properties_table.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/aidas_properties_modify_boolean_columns.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/aidas_status_default_value_change.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/changelog.mysql.xml" relativeToChangelogFile="false"/>
 
-
-<!--    <include file="config/liquibase/changelog/20211016051901_added_entity_AidasCustomer.xml" relativeToChangelogFile="false"/>-->
-<!--    <include file="config/liquibase/changelog/20211016052104_added_entity_AidasProject.xml" relativeToChangelogFile="false"/>-->
-<!--    <include file="config/liquibase/changelog/20211016052218_added_entity_AidasObject.xml" relativeToChangelogFile="false"/>-->
-<!--    <include file="config/liquibase/changelog/20211016052352_added_entity_AidasVendor.xml" relativeToChangelogFile="false"/>-->
-<!--    <include file="config/liquibase/changelog/20211016053759_added_entity_AidasUser.xml" relativeToChangelogFile="false"/>-->
-<!--    <include file="config/liquibase/changelog/20211016054047_added_entity_AidasUpload.xml" relativeToChangelogFile="false"/>-->
-<!--    <include file="config/liquibase/changelog/20211016054418_added_entity_AidasProperties.xml" relativeToChangelogFile="false"/>-->
-<!--    <include file="config/liquibase/changelog/20211021123244_added_entity_AidasProjectProperty.xml" relativeToChangelogFile="false"/>-->
-<!--    <include file="config/liquibase/changelog/20211021123407_added_entity_AidasObjectProperty.xml" relativeToChangelogFile="false"/>-->
-<!--    <include file="config/liquibase/changelog/20211111005450_added_entity_AidasUploadMetaData.xml" relativeToChangelogFile="false"/>-->
-<!--    <include file="config/liquibase/changelog/20211016054047_added_entity_AidasUserAidasObjectMapping.xml" relativeToChangelogFile="false"/>-->
-<!--    &lt;!&ndash; jhipster-needle-liquibase-add-changelog - JHipster will add liquibase changelogs here &ndash;&gt;-->
-<!--    <include file="config/liquibase/changelog/20211016051901_added_entity_constraints_AidasCustomer.xml" relativeToChangelogFile="false"/>-->
-<!--    <include file="config/liquibase/changelog/20211016052104_added_entity_constraints_AidasProject.xml" relativeToChangelogFile="false"/>-->
-<!--    <include file="config/liquibase/changelog/20211016052218_added_entity_constraints_AidasObject.xml" relativeToChangelogFile="false"/>-->
-<!--    <include file="config/liquibase/changelog/20211016053759_added_entity_constraints_AidasUser.xml" relativeToChangelogFile="false"/>-->
-<!--    <include file="config/liquibase/changelog/20211016054047_added_entity_constraints_AidasUpload.xml" relativeToChangelogFile="false"/>-->
-<!--    <include file="config/liquibase/changelog/20211021123244_added_entity_constraints_AidasProjectProperty.xml" relativeToChangelogFile="false"/>-->
-<!--    <include file="config/liquibase/changelog/20211021123407_added_entity_constraints_AidasObjectProperty.xml" relativeToChangelogFile="false"/>-->
-<!--    <include file="config/liquibase/changelog/20211111005450_added_entity_constraints_AidasUploadMetaData.xml" relativeToChangelogFile="false"/>-->
-<!--    <include file="config/liquibase/changelog/20211129052737_changelog.xml" relativeToChangelogFile="false"/>-->
-<!--    <include file="config/liquibase/changelog/20211016054047_added_entity_constraints_AidasUserAidasObjectMapping.xml" relativeToChangelogFile="false"/>-->
-<!--    <include file="config/liquibase/changelog/20211208062634_changelog.xml" relativeToChangelogFile="false"/>-->
-<!--    <include file="config/liquibase/changelog/20220104062634_changelog.xml" relativeToChangelogFile="false"/>-->
-<!--    <include file="config/liquibase/changelog/20220110062634_changelog.xml" relativeToChangelogFile="false"/>-->
-<!--    <include file="config/liquibase/changelog/20220122062634_changelog.xml" relativeToChangelogFile="false"/>-->
-<!--    <include file="config/liquibase/changelog/20220124062634_changelog.xml" relativeToChangelogFile="false"/>-->
-<!--    <include file="config/liquibase/changelog/20220127062634_changelog.xml" relativeToChangelogFile="false"/>-->
-<!--    <include file="config/liquibase/changelog/20220215062634_changelog.xml" relativeToChangelogFile="false"/>-->
-<!--    <include file="config/liquibase/changelog/20220322062634_changelog.xml" relativeToChangelogFile="false"/>-->
-<!--    <include file="config/liquibase/changelog/20220322082634_changelog.xml" relativeToChangelogFile="false"/>-->
-<!--    <include file="config/liquibase/changelog/20220322092634_changelog.xml" relativeToChangelogFile="false"/>-->
-
-    <!-- jhipster-needle-liquibase-add-constraints-changelog - JHipster will add liquibase constraints changelogs here -->
-    <!-- jhipster-needle-liquibase-add-incremental-changelog - JHipster will add incremental liquibase changelogs here -->
 </databaseChangeLog>

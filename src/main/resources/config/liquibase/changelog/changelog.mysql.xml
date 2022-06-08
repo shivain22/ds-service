@@ -5,8 +5,43 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.5.xsd
                         http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
-
-<changeSet author="shiva (generated)" id="1649822751914-1">
+    <changeSet author="shiva (generated)" id="1654574760819-1">
+        <createTable tableName="aidas_app_properties">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="created_by" type="VARCHAR(50)"/>
+            <column name="created_date" type="datetime"/>
+            <column name="last_modified_by" type="VARCHAR(50)"/>
+            <column name="last_modified_date" type="datetime"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
+            <column name="name" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="value" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1654574760819-2">
+        <createTable tableName="aidas_app_properties_aud">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="rev" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="revtype" type="TINYINT(3)"/>
+            <column name="created_by" type="VARCHAR(50)"/>
+            <column name="created_date" type="datetime"/>
+            <column name="last_modified_by" type="VARCHAR(50)"/>
+            <column name="last_modified_date" type="datetime"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
+            <column name="name" type="VARCHAR(50)"/>
+            <column name="value" type="VARCHAR(50)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1654574760819-3">
         <createTable tableName="aidas_authority">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -15,13 +50,13 @@
             <column name="created_date" type="datetime"/>
             <column name="last_modified_by" type="VARCHAR(50)"/>
             <column name="last_modified_date" type="datetime"/>
-            <column name="status" type="INT"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
             <column name="name" type="VARCHAR(50)">
                 <constraints nullable="false"/>
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-2">
+    <changeSet author="shiva (generated)" id="1654574760819-4">
         <createTable tableName="aidas_authority_aud">
             <column name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -30,10 +65,15 @@
                 <constraints nullable="false" primaryKey="true"/>
             </column>
             <column name="revtype" type="TINYINT(3)"/>
+            <column name="created_by" type="VARCHAR(50)"/>
+            <column name="created_date" type="datetime"/>
+            <column name="last_modified_by" type="VARCHAR(50)"/>
+            <column name="last_modified_date" type="datetime"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
             <column name="name" type="VARCHAR(50)"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-3">
+    <changeSet author="shiva (generated)" id="1654574760819-5">
         <createTable tableName="aidas_customer">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -42,7 +82,7 @@
             <column name="created_date" type="datetime"/>
             <column name="last_modified_by" type="VARCHAR(50)"/>
             <column name="last_modified_date" type="datetime"/>
-            <column name="status" type="INT"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
             <column name="description" type="VARCHAR(255)"/>
             <column name="name" type="VARCHAR(500)">
                 <constraints nullable="false" unique="true"/>
@@ -52,7 +92,7 @@
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-4">
+    <changeSet author="shiva (generated)" id="1654574760819-6">
         <createTable tableName="aidas_customer_aud">
             <column name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -61,12 +101,17 @@
                 <constraints nullable="false" primaryKey="true"/>
             </column>
             <column name="revtype" type="TINYINT(3)"/>
+            <column name="created_by" type="VARCHAR(50)"/>
+            <column name="created_date" type="datetime"/>
+            <column name="last_modified_by" type="VARCHAR(50)"/>
+            <column name="last_modified_date" type="datetime"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
             <column name="description" type="VARCHAR(255)"/>
             <column name="name" type="VARCHAR(500)"/>
             <column name="aidas_organisation_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-5">
+    <changeSet author="shiva (generated)" id="1654574760819-7">
         <createTable tableName="aidas_download">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -75,7 +120,7 @@
             <column name="created_date" type="datetime"/>
             <column name="last_modified_by" type="VARCHAR(50)"/>
             <column name="last_modified_date" type="datetime"/>
-            <column name="status" type="INT"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
             <column name="aws_key" type="VARCHAR(150)">
                 <constraints nullable="false"/>
             </column>
@@ -108,7 +153,7 @@
             <column name="aidas_project_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-6">
+    <changeSet author="shiva (generated)" id="1654574760819-8">
         <createTable tableName="aidas_download_aud">
             <column name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -117,6 +162,11 @@
                 <constraints nullable="false" primaryKey="true"/>
             </column>
             <column name="revtype" type="TINYINT(3)"/>
+            <column name="created_by" type="VARCHAR(50)"/>
+            <column name="created_date" type="datetime"/>
+            <column name="last_modified_by" type="VARCHAR(50)"/>
+            <column name="last_modified_date" type="datetime"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
             <column name="aws_key" type="VARCHAR(150)"/>
             <column name="aws_secret" type="VARCHAR(150)"/>
             <column name="bucket_name" type="VARCHAR(150)"/>
@@ -131,7 +181,7 @@
             <column name="aidas_project_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-7">
+    <changeSet author="shiva (generated)" id="1654574760819-9">
         <createTable tableName="aidas_object">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -140,7 +190,7 @@
             <column name="created_date" type="datetime"/>
             <column name="last_modified_by" type="VARCHAR(50)"/>
             <column name="last_modified_date" type="datetime"/>
-            <column name="status" type="INT"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
             <column name="buffer_percent" type="INT"/>
             <column name="description" type="VARCHAR(255)"/>
             <column name="name" type="VARCHAR(500)">
@@ -149,12 +199,13 @@
             <column name="number_of_upload_reqd" type="INT">
                 <constraints nullable="false"/>
             </column>
+            <column name="parent_aidas_object_id" type="BIGINT"/>
             <column name="aidas_project_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-8">
+    <changeSet author="shiva (generated)" id="1654574760819-10">
         <createTable tableName="aidas_object_aud">
             <column name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -163,15 +214,20 @@
                 <constraints nullable="false" primaryKey="true"/>
             </column>
             <column name="revtype" type="TINYINT(3)"/>
-            <column name="status" type="INT"/>
+            <column name="created_by" type="VARCHAR(50)"/>
+            <column name="created_date" type="datetime"/>
+            <column name="last_modified_by" type="VARCHAR(50)"/>
+            <column name="last_modified_date" type="datetime"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
             <column name="buffer_percent" type="INT"/>
             <column name="description" type="VARCHAR(255)"/>
             <column name="name" type="VARCHAR(500)"/>
             <column name="number_of_upload_reqd" type="INT"/>
+            <column name="parent_aidas_object_id" type="BIGINT"/>
             <column name="aidas_project_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-9">
+    <changeSet author="shiva (generated)" id="1654574760819-11">
         <createTable tableName="aidas_object_property">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -180,8 +236,8 @@
             <column name="created_date" type="datetime"/>
             <column name="last_modified_by" type="VARCHAR(50)"/>
             <column name="last_modified_date" type="datetime"/>
-            <column name="status" type="INT"/>
-            <column name="optional" type="BIT(1)"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
+            <column name="optional" type="INT"/>
             <column name="value" type="VARCHAR(255)"/>
             <column name="aidas_object_id" type="BIGINT">
                 <constraints nullable="false"/>
@@ -191,7 +247,7 @@
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-10">
+    <changeSet author="shiva (generated)" id="1654574760819-12">
         <createTable tableName="aidas_object_property_aud">
             <column name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -200,14 +256,18 @@
                 <constraints nullable="false" primaryKey="true"/>
             </column>
             <column name="revtype" type="TINYINT(3)"/>
-            <column name="status" type="INT"/>
-            <column name="optional" type="BIT(1)"/>
+            <column name="created_by" type="VARCHAR(50)"/>
+            <column name="created_date" type="datetime"/>
+            <column name="last_modified_by" type="VARCHAR(50)"/>
+            <column name="last_modified_date" type="datetime"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
+            <column name="optional" type="INT"/>
             <column name="value" type="VARCHAR(255)"/>
             <column name="aidas_object_id" type="BIGINT"/>
             <column name="aidas_properties_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-11">
+    <changeSet author="shiva (generated)" id="1654574760819-13">
         <createTable tableName="aidas_organisation">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -216,14 +276,14 @@
             <column name="created_date" type="datetime"/>
             <column name="last_modified_by" type="VARCHAR(50)"/>
             <column name="last_modified_date" type="datetime"/>
-            <column name="status" type="INT"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
             <column name="description" type="VARCHAR(255)"/>
             <column name="name" type="VARCHAR(500)">
                 <constraints nullable="false" unique="true"/>
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-12">
+    <changeSet author="shiva (generated)" id="1654574760819-14">
         <createTable tableName="aidas_organisation_aud">
             <column name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -232,11 +292,16 @@
                 <constraints nullable="false" primaryKey="true"/>
             </column>
             <column name="revtype" type="TINYINT(3)"/>
+            <column name="created_by" type="VARCHAR(50)"/>
+            <column name="created_date" type="datetime"/>
+            <column name="last_modified_by" type="VARCHAR(50)"/>
+            <column name="last_modified_date" type="datetime"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
             <column name="description" type="VARCHAR(255)"/>
             <column name="name" type="VARCHAR(500)"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-13">
+    <changeSet author="shiva (generated)" id="1654574760819-15">
         <createTable tableName="aidas_project">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -245,18 +310,20 @@
             <column name="created_date" type="datetime"/>
             <column name="last_modified_by" type="VARCHAR(50)"/>
             <column name="last_modified_date" type="datetime"/>
-            <column name="status" type="INT"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
             <column name="description" type="VARCHAR(255)"/>
             <column name="name" type="VARCHAR(500)">
                 <constraints nullable="false"/>
             </column>
             <column name="project_type" type="VARCHAR(255)"/>
+            <column name="qc_levels" type="BIGINT"/>
+            <column name="rework_status" type="BIGINT"/>
             <column name="aidas_customer_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-14">
+    <changeSet author="shiva (generated)" id="1654574760819-16">
         <createTable tableName="aidas_project_aud">
             <column name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -265,13 +332,20 @@
                 <constraints nullable="false" primaryKey="true"/>
             </column>
             <column name="revtype" type="TINYINT(3)"/>
+            <column name="created_by" type="VARCHAR(50)"/>
+            <column name="created_date" type="datetime"/>
+            <column name="last_modified_by" type="VARCHAR(50)"/>
+            <column name="last_modified_date" type="datetime"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
             <column name="description" type="VARCHAR(255)"/>
             <column name="name" type="VARCHAR(500)"/>
             <column name="project_type" type="VARCHAR(255)"/>
+            <column name="qc_levels" type="BIGINT"/>
+            <column name="rework_status" type="BIGINT"/>
             <column name="aidas_customer_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-15">
+    <changeSet author="shiva (generated)" id="1654574760819-17">
         <createTable tableName="aidas_project_property">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -280,8 +354,8 @@
             <column name="created_date" type="datetime"/>
             <column name="last_modified_by" type="VARCHAR(50)"/>
             <column name="last_modified_date" type="datetime"/>
-            <column name="status" type="INT"/>
-            <column name="optional" type="BIT(1)"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
+            <column name="optional" type="INT"/>
             <column name="value" type="VARCHAR(255)"/>
             <column name="aidas_project_id" type="BIGINT">
                 <constraints nullable="false"/>
@@ -289,7 +363,7 @@
             <column name="aidas_properties_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-16">
+    <changeSet author="shiva (generated)" id="1654574760819-18">
         <createTable tableName="aidas_project_property_aud">
             <column name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -298,14 +372,18 @@
                 <constraints nullable="false" primaryKey="true"/>
             </column>
             <column name="revtype" type="TINYINT(3)"/>
-            <column name="status" type="INT"/>
-            <column name="optional" type="BIT(1)"/>
+            <column name="created_by" type="VARCHAR(50)"/>
+            <column name="created_date" type="datetime"/>
+            <column name="last_modified_by" type="VARCHAR(50)"/>
+            <column name="last_modified_date" type="datetime"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
+            <column name="optional" type="INT"/>
             <column name="value" type="VARCHAR(255)"/>
             <column name="aidas_project_id" type="BIGINT"/>
             <column name="aidas_properties_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-17">
+    <changeSet author="shiva (generated)" id="1654574760819-19">
         <createTable tableName="aidas_properties">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -314,18 +392,20 @@
             <column name="created_date" type="datetime"/>
             <column name="last_modified_by" type="VARCHAR(50)"/>
             <column name="last_modified_date" type="datetime"/>
-            <column name="status" type="INT"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
+            <column name="default_prop" type="INT"/>
             <column name="description" type="VARCHAR(255)"/>
+            <column name="aidas_user_id" type="bigint"/>
             <column name="name" type="VARCHAR(100)">
                 <constraints nullable="false" unique="true"/>
             </column>
-            <column name="optional" type="BIT(1)">
+            <column name="optional" type="INT">
                 <constraints nullable="false"/>
             </column>
             <column name="property_type" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
-            <column name="system_property" type="BIT(1)">
+            <column name="system_property" type="INT">
                 <constraints nullable="false"/>
             </column>
             <column name="value" type="VARCHAR(100)">
@@ -333,7 +413,7 @@
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-18">
+    <changeSet author="shiva (generated)" id="1654574760819-20">
         <createTable tableName="aidas_properties_aud">
             <column name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -342,15 +422,56 @@
                 <constraints nullable="false" primaryKey="true"/>
             </column>
             <column name="revtype" type="TINYINT(3)"/>
+            <column name="created_by" type="VARCHAR(50)"/>
+            <column name="created_date" type="datetime"/>
+            <column name="last_modified_by" type="VARCHAR(50)"/>
+            <column name="last_modified_date" type="datetime"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
+            <column name="default_prop" type="INT"/>
             <column name="description" type="VARCHAR(255)"/>
             <column name="name" type="VARCHAR(100)"/>
-            <column name="optional" type="BIT(1)"/>
-            <column name="property_type" type="VARCHAR(255)"/>
-            <column name="system_property" type="BIT(1)"/>
+            <column name="optional" type="INT"/>
+            <column name="property_type" type="BIGINT"/>
+            <column name="system_property" type="INT"/>
             <column name="value" type="VARCHAR(100)"/>
+            <column name="aidas_user_id" type="bigint"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-19">
+    <changeSet author="shiva (generated)" id="1654574760819-21">
+        <createTable tableName="aidas_qc_project_mapping">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="created_by" type="VARCHAR(50)"/>
+            <column name="created_date" type="datetime"/>
+            <column name="last_modified_by" type="VARCHAR(50)"/>
+            <column name="last_modified_date" type="datetime"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
+            <column name="qc_level" type="BIGINT"/>
+            <column name="aidas_project_id" type="BIGINT"/>
+            <column name="aidas_user_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1654574760819-22">
+        <createTable tableName="aidas_qc_project_mapping_aud">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="rev" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="revtype" type="TINYINT(3)"/>
+            <column name="created_by" type="VARCHAR(50)"/>
+            <column name="created_date" type="datetime"/>
+            <column name="last_modified_by" type="VARCHAR(50)"/>
+            <column name="last_modified_date" type="datetime"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
+            <column name="qc_level" type="BIGINT"/>
+            <column name="aidas_project_id" type="BIGINT"/>
+            <column name="aidas_user_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1654574760819-23">
         <createTable tableName="aidas_upload">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -359,21 +480,27 @@
             <column name="created_date" type="datetime"/>
             <column name="last_modified_by" type="VARCHAR(50)"/>
             <column name="last_modified_date" type="datetime"/>
-            <column name="status" type="INT"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
+            <column name="approval_status" type="INT">
+                <constraints nullable="false"/>
+            </column>
             <column name="date_uploaded" type="datetime"/>
+            <column name="metadata_status" type="INT">
+                <constraints nullable="false"/>
+            </column>
             <column name="name" type="VARCHAR(500)">
                 <constraints nullable="false"/>
             </column>
             <column name="object_key" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
-            <column name="qc_done_by" type="INT">
+            <column name="qc_done_by" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
-            <column name="qc_end_date" type="INT">
+            <column name="qc_end_date" type="datetime">
                 <constraints nullable="false"/>
             </column>
-            <column name="qc_start_date" type="INT">
+            <column name="qc_start_date" type="datetime">
                 <constraints nullable="false"/>
             </column>
             <column name="qc_status" type="INT">
@@ -391,42 +518,43 @@
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-20">
+    <changeSet author="shiva (generated)" id="1654574760819-24">
         <createTable tableName="aidas_upload_aidas_rej_reason">
-            <column name="id" type="BIGINT">
-                <constraints nullable="false"/>
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true"/>
             </column>
             <column name="created_by" type="VARCHAR(50)"/>
             <column name="created_date" type="datetime"/>
             <column name="last_modified_by" type="VARCHAR(50)"/>
             <column name="last_modified_date" type="datetime"/>
-            <column name="status" type="INT"/>
-            <column autoIncrement="true" name="aidas_upload_id" type="BIGINT">
-                <constraints nullable="false" primaryKey="true"/>
-            </column>
-            <column name="aidas_upload_reject_reason_id" type="BIGINT">
-                <constraints nullable="false" primaryKey="true"/>
-            </column>
-        </createTable>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-21">
-        <createTable tableName="aidas_upload_aidas_rej_reason_aud">
-            <column name="rev" type="INT">
-                <constraints nullable="false"/>
-            </column>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
             <column name="aidas_upload_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
             <column name="aidas_upload_reject_reason_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
-            <column name="revtype" type="TINYINT(3)"/>
-            <column name="id" type="BIGINT">
-                <constraints nullable="false"/>
-            </column>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-22">
+    <changeSet author="shiva (generated)" id="1654574760819-25">
+        <createTable tableName="aidas_upload_aidas_rej_reason_aud">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="rev" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="revtype" type="TINYINT(3)"/>
+            <column name="created_by" type="VARCHAR(50)"/>
+            <column name="created_date" type="datetime"/>
+            <column name="last_modified_by" type="VARCHAR(50)"/>
+            <column name="last_modified_date" type="datetime"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
+            <column name="aidas_upload_id" type="BIGINT"/>
+            <column name="aidas_upload_reject_reason_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1654574760819-26">
         <createTable tableName="aidas_upload_aud">
             <column name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -435,13 +563,19 @@
                 <constraints nullable="false" primaryKey="true"/>
             </column>
             <column name="revtype" type="TINYINT(3)"/>
-            <column name="status" type="INT"/>
+            <column name="created_by" type="VARCHAR(50)"/>
+            <column name="created_date" type="datetime"/>
+            <column name="last_modified_by" type="VARCHAR(50)"/>
+            <column name="last_modified_date" type="datetime"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
+            <column name="approval_status" type="INT"/>
             <column name="date_uploaded" type="datetime"/>
+            <column name="metadata_status" type="INT"/>
             <column name="name" type="VARCHAR(500)"/>
             <column name="object_key" type="VARCHAR(255)"/>
-            <column name="qc_done_by" type="INT"/>
-            <column name="qc_end_date" type="INT"/>
-            <column name="qc_start_date" type="INT"/>
+            <column name="qc_done_by" type="BIGINT"/>
+            <column name="qc_end_date" type="datetime"/>
+            <column name="qc_start_date" type="datetime"/>
             <column name="qc_status" type="INT"/>
             <column name="status_modified_date" type="datetime"/>
             <column name="upload_etag" type="VARCHAR(255)"/>
@@ -449,7 +583,7 @@
             <column name="aidas_user_aidas_object_mapping_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-23">
+    <changeSet author="shiva (generated)" id="1654574760819-27">
         <createTable tableName="aidas_upload_meta_data">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -458,14 +592,15 @@
             <column name="created_date" type="datetime"/>
             <column name="last_modified_by" type="VARCHAR(50)"/>
             <column name="last_modified_date" type="datetime"/>
-            <column name="status" type="INT"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
             <column name="name" type="VARCHAR(255)"/>
             <column name="value" type="VARCHAR(255)"/>
+            <column name="aidas_object_property_id" type="BIGINT"/>
             <column name="aidas_project_property_id" type="BIGINT"/>
             <column name="aidas_upload_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-24">
+    <changeSet author="shiva (generated)" id="1654574760819-28">
         <createTable tableName="aidas_upload_meta_data_aud">
             <column name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -474,13 +609,19 @@
                 <constraints nullable="false" primaryKey="true"/>
             </column>
             <column name="revtype" type="TINYINT(3)"/>
+            <column name="created_by" type="VARCHAR(50)"/>
+            <column name="created_date" type="datetime"/>
+            <column name="last_modified_by" type="VARCHAR(50)"/>
+            <column name="last_modified_date" type="datetime"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
             <column name="name" type="VARCHAR(255)"/>
             <column name="value" type="VARCHAR(255)"/>
+            <column name="aidas_object_property_id" type="BIGINT"/>
             <column name="aidas_project_property_id" type="BIGINT"/>
             <column name="aidas_upload_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-25">
+    <changeSet author="shiva (generated)" id="1654574760819-29">
         <createTable tableName="aidas_upload_reject_reason">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -489,7 +630,7 @@
             <column name="created_date" type="datetime"/>
             <column name="last_modified_by" type="VARCHAR(50)"/>
             <column name="last_modified_date" type="datetime"/>
-            <column name="status" type="INT"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
             <column name="reason" type="VARCHAR(500)">
                 <constraints nullable="false"/>
             </column>
@@ -498,7 +639,7 @@
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-26">
+    <changeSet author="shiva (generated)" id="1654574760819-30">
         <createTable tableName="aidas_upload_reject_reason_aud">
             <column name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -507,10 +648,16 @@
                 <constraints nullable="false" primaryKey="true"/>
             </column>
             <column name="revtype" type="TINYINT(3)"/>
+            <column name="created_by" type="VARCHAR(50)"/>
+            <column name="created_date" type="datetime"/>
+            <column name="last_modified_by" type="VARCHAR(50)"/>
+            <column name="last_modified_date" type="datetime"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
             <column name="reason" type="VARCHAR(500)"/>
+            <column name="description" type="VARCHAR(500)" />
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-27">
+    <changeSet author="shiva (generated)" id="1654574760819-31">
         <createTable tableName="aidas_user">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -519,7 +666,7 @@
             <column name="created_date" type="datetime"/>
             <column name="last_modified_by" type="VARCHAR(50)"/>
             <column name="last_modified_date" type="datetime"/>
-            <column name="status" type="INT"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
             <column name="activated" type="BIT(1)">
                 <constraints nullable="false"/>
             </column>
@@ -553,31 +700,135 @@
             <column name="current_aidas_authority_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-28">
-        <createTable tableName="aidas_user_aidas_authority">
-            <column name="aidas_user_id" type="BIGINT">
+    <changeSet author="shiva (generated)" id="1654574760819-32">
+        <createTable tableName="aidas_user_aidas_authority_mapping">
+            <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
             </column>
-            <column name="aidas_authority_id" type="BIGINT">
-                <constraints nullable="false" primaryKey="true"/>
-            </column>
+            <column name="created_by" type="VARCHAR(50)"/>
+            <column name="created_date" type="datetime"/>
+            <column name="last_modified_by" type="VARCHAR(50)"/>
+            <column name="last_modified_date" type="datetime"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
+            <column name="aidas_authority_id" type="BIGINT"/>
+            <column name="aidas_user_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-29">
-        <createTable tableName="aidas_user_aidas_authority_aud">
+    <changeSet author="shiva (generated)" id="1654574760819-33">
+        <createTable tableName="aidas_user_aidas_authority_mapping_aud">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
             <column name="rev" type="INT">
                 <constraints nullable="false" primaryKey="true"/>
             </column>
-            <column name="aidas_user_id" type="BIGINT">
+            <column name="revtype" type="TINYINT(3)"/>
+            <column name="created_by" type="VARCHAR(50)"/>
+            <column name="created_date" type="datetime"/>
+            <column name="last_modified_by" type="VARCHAR(50)"/>
+            <column name="last_modified_date" type="datetime"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
+            <column name="aidas_authority_id" type="BIGINT"/>
+            <column name="aidas_user_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1654574760819-34">
+        <createTable tableName="aidas_user_aidas_customer_mapping">
+            <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
             </column>
-            <column name="aidas_authority_id" type="BIGINT">
+            <column name="created_by" type="VARCHAR(50)"/>
+            <column name="created_date" type="datetime"/>
+            <column name="last_modified_by" type="VARCHAR(50)"/>
+            <column name="last_modified_date" type="datetime"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
+            <column name="aidas_customer_id" type="BIGINT"/>
+            <column name="aidas_user_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1654574760819-35">
+        <createTable tableName="aidas_user_aidas_customer_mapping_aud">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="rev" type="INT">
                 <constraints nullable="false" primaryKey="true"/>
             </column>
             <column name="revtype" type="TINYINT(3)"/>
+            <column name="created_by" type="VARCHAR(50)"/>
+            <column name="created_date" type="datetime"/>
+            <column name="last_modified_by" type="VARCHAR(50)"/>
+            <column name="last_modified_date" type="datetime"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
+            <column name="aidas_customer_id" type="BIGINT"/>
+            <column name="aidas_user_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-30">
+    <changeSet author="shiva (generated)" id="1654574760819-36">
+        <createTable tableName="aidas_user_aidas_org_mapping">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="created_by" type="VARCHAR(50)"/>
+            <column name="created_date" type="datetime"/>
+            <column name="last_modified_by" type="VARCHAR(50)"/>
+            <column name="last_modified_date" type="datetime"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
+            <column name="aidas_organisation_id" type="BIGINT"/>
+            <column name="aidas_user_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1654574760819-37">
+        <createTable tableName="aidas_user_aidas_org_mapping_aud">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="rev" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="revtype" type="TINYINT(3)"/>
+            <column name="created_by" type="VARCHAR(50)"/>
+            <column name="created_date" type="datetime"/>
+            <column name="last_modified_by" type="VARCHAR(50)"/>
+            <column name="last_modified_date" type="datetime"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
+            <column name="aidas_organisation_id" type="BIGINT"/>
+            <column name="aidas_user_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1654574760819-38">
+        <createTable tableName="aidas_user_aidas_vendor_mapping">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="created_by" type="VARCHAR(50)"/>
+            <column name="created_date" type="datetime"/>
+            <column name="last_modified_by" type="VARCHAR(50)"/>
+            <column name="last_modified_date" type="datetime"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
+            <column name="aidas_user_id" type="BIGINT"/>
+            <column name="aidas_vendor_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1654574760819-39">
+        <createTable tableName="aidas_user_aidas_vendor_mapping_aud">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="rev" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="revtype" type="TINYINT(3)"/>
+            <column name="created_by" type="VARCHAR(50)"/>
+            <column name="created_date" type="datetime"/>
+            <column name="last_modified_by" type="VARCHAR(50)"/>
+            <column name="last_modified_date" type="datetime"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
+            <column name="aidas_user_id" type="BIGINT"/>
+            <column name="aidas_vendor_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1654574760819-40">
         <createTable tableName="aidas_user_aud">
             <column name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -586,6 +837,11 @@
                 <constraints nullable="false" primaryKey="true"/>
             </column>
             <column name="revtype" type="TINYINT(3)"/>
+            <column name="created_by" type="VARCHAR(50)"/>
+            <column name="created_date" type="datetime"/>
+            <column name="last_modified_by" type="VARCHAR(50)"/>
+            <column name="last_modified_date" type="datetime"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
             <column name="activated" type="BIT(1)"/>
             <column name="deleted" type="BIT(1)"/>
             <column name="email" type="VARCHAR(200)"/>
@@ -603,7 +859,7 @@
             <column name="current_aidas_authority_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-31">
+    <changeSet author="shiva (generated)" id="1654574760819-41">
         <createTable tableName="aidas_user_json_storage">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -612,12 +868,12 @@
             <column name="created_date" type="datetime"/>
             <column name="last_modified_by" type="VARCHAR(50)"/>
             <column name="last_modified_date" type="datetime"/>
-            <column name="status" type="INT"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
             <column name="json_pay_load" type="LONGTEXT"/>
             <column name="aidas_user_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-32">
+    <changeSet author="shiva (generated)" id="1654574760819-42">
         <createTable tableName="aidas_user_json_storage_aud">
             <column name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -626,11 +882,16 @@
                 <constraints nullable="false" primaryKey="true"/>
             </column>
             <column name="revtype" type="TINYINT(3)"/>
+            <column name="created_by" type="VARCHAR(50)"/>
+            <column name="created_date" type="datetime"/>
+            <column name="last_modified_by" type="VARCHAR(50)"/>
+            <column name="last_modified_date" type="datetime"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
             <column name="json_pay_load" type="LONGTEXT"/>
             <column name="aidas_user_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-33">
+    <changeSet author="shiva (generated)" id="1654574760819-43">
         <createTable tableName="aidas_user_obj_map">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -639,7 +900,7 @@
             <column name="created_date" type="datetime"/>
             <column name="last_modified_by" type="VARCHAR(50)"/>
             <column name="last_modified_date" type="datetime"/>
-            <column name="status" type="INT"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
             <column name="date_assigned" type="datetime"/>
             <column name="aidas_object_id" type="BIGINT">
                 <constraints nullable="false"/>
@@ -649,7 +910,7 @@
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-34">
+    <changeSet author="shiva (generated)" id="1654574760819-44">
         <createTable tableName="aidas_user_obj_map_aud">
             <column name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -658,12 +919,17 @@
                 <constraints nullable="false" primaryKey="true"/>
             </column>
             <column name="revtype" type="TINYINT(3)"/>
+            <column name="created_by" type="VARCHAR(50)"/>
+            <column name="created_date" type="datetime"/>
+            <column name="last_modified_by" type="VARCHAR(50)"/>
+            <column name="last_modified_date" type="datetime"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
             <column name="date_assigned" type="datetime"/>
             <column name="aidas_object_id" type="BIGINT"/>
             <column name="aidas_user_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-35">
+    <changeSet author="shiva (generated)" id="1654574760819-45">
         <createTable tableName="aidas_vendor">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -672,14 +938,14 @@
             <column name="created_date" type="datetime"/>
             <column name="last_modified_by" type="VARCHAR(50)"/>
             <column name="last_modified_date" type="datetime"/>
-            <column name="status" type="INT"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
             <column name="description" type="VARCHAR(255)"/>
             <column name="name" type="VARCHAR(500)">
                 <constraints nullable="false" unique="true"/>
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-36">
+    <changeSet author="shiva (generated)" id="1654574760819-46">
         <createTable tableName="aidas_vendor_aud">
             <column name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -688,11 +954,16 @@
                 <constraints nullable="false" primaryKey="true"/>
             </column>
             <column name="revtype" type="TINYINT(3)"/>
+            <column name="created_by" type="VARCHAR(50)"/>
+            <column name="created_date" type="datetime"/>
+            <column name="last_modified_by" type="VARCHAR(50)"/>
+            <column name="last_modified_date" type="datetime"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
             <column name="description" type="VARCHAR(255)"/>
             <column name="name" type="VARCHAR(500)"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-37">
+    <changeSet author="shiva (generated)" id="1654574760819-47">
         <createTable tableName="revinfo">
             <column autoIncrement="true" name="rev" type="INT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -700,320 +971,444 @@
             <column name="revtstmp" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-38">
-        <addPrimaryKey columnNames="id, rev" constraintName="PRIMARY" tableName="aidas_upload_aidas_rej_reason_aud"/>
+    <changeSet author="shiva (generated)" id="1654574760819-48">
+        <createIndex indexName="FK206pop6rafoweoli2ca8igud1" tableName="aidas_user_aidas_org_mapping_aud">
+            <column name="rev"/>
+        </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-39">
+    <changeSet author="shiva (generated)" id="1654574760819-49">
         <createIndex indexName="FK2ljdxgxwp9x6k9w2i5sff0n5j" tableName="aidas_user">
             <column name="current_aidas_authority_id"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-40">
+    <changeSet author="shiva (generated)" id="1654574760819-50">
+        <createIndex indexName="FK2w97yw6cs88da816rx8u1t0gr" tableName="aidas_user_aidas_customer_mapping">
+            <column name="aidas_user_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1654574760819-51">
         <createIndex indexName="FK35rq03dotua1mllke6n7yqao4" tableName="aidas_user_obj_map">
             <column name="aidas_user_id"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-41">
+    <changeSet author="shiva (generated)" id="1654574760819-52">
+        <createIndex indexName="FK3vx8icxn8f1gx8rsmk4rcvy2w" tableName="aidas_user_aidas_customer_mapping_aud">
+            <column name="rev"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1654574760819-53">
         <createIndex indexName="FK3ywavmf4v8co7ylo2id1ddlhu" tableName="aidas_download">
             <column name="aidas_project_id"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-42">
+    <changeSet author="shiva (generated)" id="1654574760819-54">
+        <createIndex indexName="FK42ii48tc987ot1fuydicb8wfg" tableName="aidas_user_aidas_authority_mapping">
+            <column name="aidas_user_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1654574760819-55">
         <createIndex indexName="FK4bd8n9f2tbm4864i8nybqiu4u" tableName="aidas_upload_meta_data">
             <column name="aidas_upload_id"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-43">
+    <changeSet author="shiva (generated)" id="1654574760819-56">
         <createIndex indexName="FK4gtbkx04psoowofealm2ahqc6" tableName="aidas_project_aud">
             <column name="rev"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-44">
+    <changeSet author="shiva (generated)" id="1654574760819-57">
         <createIndex indexName="FK4qcnqwcn5u6lxb3c80kwra3ia" tableName="aidas_upload_aud">
             <column name="rev"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-45">
+    <changeSet author="shiva (generated)" id="1654574760819-58">
+        <createIndex indexName="FK52exnojmkbs5tkci9wc99qcf0" tableName="aidas_qc_project_mapping">
+            <column name="aidas_user_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1654574760819-59">
         <createIndex indexName="FK5lqesps3u603b2wwm79b8jm19" tableName="aidas_customer">
             <column name="aidas_organisation_id"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-46">
+    <changeSet author="shiva (generated)" id="1654574760819-60">
         <createIndex indexName="FK5mj39h3hl4ri8jdb1mal3cccq" tableName="aidas_user_json_storage_aud">
             <column name="rev"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-47">
+    <changeSet author="shiva (generated)" id="1654574760819-61">
         <createIndex indexName="FK60a2918wqvs2pdren00nheqxa" tableName="aidas_upload_aidas_rej_reason_aud">
             <column name="rev"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-48">
+    <changeSet author="shiva (generated)" id="1654574760819-62">
+        <createIndex indexName="FK6epv9yrkpt4t14e1jv43jd9op" tableName="aidas_qc_project_mapping">
+            <column name="aidas_project_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1654574760819-63">
         <createIndex indexName="FK72w15b8163oka2c3s4m8kuio2" tableName="aidas_vendor_aud">
             <column name="rev"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-49">
+    <changeSet author="shiva (generated)" id="1654574760819-64">
         <createIndex indexName="FK7fjpj7fnja4xd7erabjyyy02c" tableName="aidas_user">
             <column name="aidas_organisation_id"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-50">
+    <changeSet author="shiva (generated)" id="1654574760819-65">
         <createIndex indexName="FK7q6eoyislr6i7iuau5hdjlo7a" tableName="aidas_upload_reject_reason_aud">
             <column name="rev"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-51">
+    <changeSet author="shiva (generated)" id="1654574760819-66">
         <createIndex indexName="FK87txmb2t6ion1iepc6b1ite68" tableName="aidas_project_property">
             <column name="aidas_properties_id"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-52">
+    <changeSet author="shiva (generated)" id="1654574760819-67">
+        <createIndex indexName="FKa1eruqovdh09wvtmtll19o1p1" tableName="aidas_user_aidas_customer_mapping">
+            <column name="aidas_customer_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1654574760819-68">
+        <createIndex indexName="FKa3413lajlts2lf44s3o3aym3f" tableName="aidas_user_aidas_org_mapping">
+            <column name="aidas_organisation_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1654574760819-69">
         <createIndex indexName="FKbf4g63pimrh2licso3sbu7e6n" tableName="aidas_user_obj_map">
             <column name="aidas_object_id"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-53">
+    <changeSet author="shiva (generated)" id="1654574760819-70">
+        <createIndex indexName="FKbxhdj90fa1c14jt30eqbp0f9w" tableName="aidas_user_aidas_vendor_mapping">
+            <column name="aidas_vendor_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1654574760819-71">
+        <createIndex indexName="FKcbnscjnwe0h7obisisw9wqdti" tableName="aidas_user_aidas_authority_mapping_aud">
+            <column name="rev"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1654574760819-72">
         <createIndex indexName="FKd52esvq3q6y248spkj105195n" tableName="aidas_project_property_aud">
             <column name="rev"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-54">
+    <changeSet author="shiva (generated)" id="1654574760819-73">
+        <createIndex indexName="FKe586042y4afrmmy8rweux1ywp" tableName="aidas_app_properties_aud">
+            <column name="rev"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1654574760819-74">
         <createIndex indexName="FKefjaky27avahq2tq8pl490dww" tableName="aidas_user_json_storage">
             <column name="aidas_user_id"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-55">
+    <changeSet author="shiva (generated)" id="1654574760819-75">
         <createIndex indexName="FKeqblelylrbxuts1wjlxquqsm1" tableName="aidas_download_aud">
             <column name="rev"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-56">
+    <changeSet author="shiva (generated)" id="1654574760819-76">
         <createIndex indexName="FKfyt92lt6xu2v2b3p0qpp666dx" tableName="aidas_upload_aidas_rej_reason">
             <column name="aidas_upload_reject_reason_id"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-57">
+    <changeSet author="shiva (generated)" id="1654574760819-77">
         <createIndex indexName="FKgh3hwievnpyd2nt19dtxaudm7" tableName="aidas_project">
             <column name="aidas_customer_id"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-58">
+    <changeSet author="shiva (generated)" id="1654574760819-78">
+        <createIndex indexName="FKi0ys7f5jfrdjhm49u120xpxku" tableName="aidas_user_aidas_authority_mapping">
+            <column name="aidas_authority_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1654574760819-79">
         <createIndex indexName="FKiw4egxqqdek96ct25ogrig4bq" tableName="aidas_user">
             <column name="aidas_vendor_id"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-59">
+    <changeSet author="shiva (generated)" id="1654574760819-80">
         <createIndex indexName="FKj5hld8vxdigfo1t5pmnha2w14" tableName="aidas_customer_aud">
             <column name="rev"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-60">
+    <changeSet author="shiva (generated)" id="1654574760819-81">
         <createIndex indexName="FKjo3qhkdb4qku9dd5bhsnc1asf" tableName="aidas_object_property">
             <column name="aidas_properties_id"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-61">
+    <changeSet author="shiva (generated)" id="1654574760819-82">
         <createIndex indexName="FKjsfwca7iaco8kldtnwaofy44u" tableName="aidas_authority_aud">
             <column name="rev"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-62">
+    <changeSet author="shiva (generated)" id="1654574760819-83">
         <createIndex indexName="FKjtv0fjbwosyq29xo8ahi32uw7" tableName="aidas_upload">
             <column name="aidas_user_aidas_object_mapping_id"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-63">
+    <changeSet author="shiva (generated)" id="1654574760819-84">
+        <createIndex indexName="FKjx5tu0l81taj7m2io8cb4ut6q" tableName="aidas_user_aidas_org_mapping">
+            <column name="aidas_user_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1654574760819-85">
         <createIndex indexName="FKker1px2dfd6gq1cy3nx7vgwqy" tableName="aidas_upload_meta_data">
             <column name="aidas_project_property_id"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-64">
+    <changeSet author="shiva (generated)" id="1654574760819-86">
         <createIndex indexName="FKkj4ba5ix8uo9d1edcs8nnfmh3" tableName="aidas_upload_meta_data_aud">
             <column name="rev"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-65">
+    <changeSet author="shiva (generated)" id="1654574760819-87">
+        <createIndex indexName="FKlcyofx5sjd83vejnj3hltw9bd" tableName="aidas_user_aidas_vendor_mapping_aud">
+            <column name="rev"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1654574760819-88">
         <createIndex indexName="FKljy15435tefthp8bh6c4xddph" tableName="aidas_object_property_aud">
             <column name="rev"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-66">
+    <changeSet author="shiva (generated)" id="1654574760819-89">
         <createIndex indexName="FKn4lywsaawbtgxdw1usnkr6cil" tableName="aidas_properties_aud">
             <column name="rev"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-67">
+    <changeSet author="shiva (generated)" id="1654574760819-90">
         <createIndex indexName="FKomsmbuo6v92xtl6gdi398tckk" tableName="aidas_download">
             <column name="aidas_object_id"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-68">
+    <changeSet author="shiva (generated)" id="1654574760819-91">
+        <createIndex indexName="FKoujkhm7yiv424v5rop2royuyq" tableName="aidas_upload_meta_data">
+            <column name="aidas_object_property_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1654574760819-92">
         <createIndex indexName="FKp8lxbg1vmi2by9s11gdv6md31" tableName="aidas_user_obj_map_aud">
             <column name="rev"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-69">
+    <changeSet author="shiva (generated)" id="1654574760819-93">
         <createIndex indexName="FKpa9qsv4gtcfv32duxm2fovctr" tableName="aidas_object_property">
             <column name="aidas_object_id"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-70">
-        <createIndex indexName="FKptn444vgug1umrvjrc6qttm2i" tableName="aidas_user_aidas_authority">
-            <column name="aidas_authority_id"/>
+    <changeSet author="shiva (generated)" id="1654574760819-94">
+        <createIndex indexName="FKpwhkrne7es5sl0wj9rdw1mji6" tableName="aidas_qc_project_mapping_aud">
+            <column name="rev"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-71">
+    <changeSet author="shiva (generated)" id="1654574760819-95">
         <createIndex indexName="FKq1fepvd680dngtp6vit95fry1" tableName="aidas_object_aud">
             <column name="rev"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-72">
+    <changeSet author="shiva (generated)" id="1654574760819-96">
         <createIndex indexName="FKrtjkh338n5mtnvsmp504swqfr" tableName="aidas_organisation_aud">
             <column name="rev"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-73">
+    <changeSet author="shiva (generated)" id="1654574760819-97">
         <createIndex indexName="FKrwvu3pcbt96xshrlphd0hglgs" tableName="aidas_user">
             <column name="aidas_customer_id"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-74">
+    <changeSet author="shiva (generated)" id="1654574760819-98">
+        <createIndex indexName="FKs6mphh43axnxn1ao7xgoxtghl" tableName="aidas_upload_aidas_rej_reason">
+            <column name="aidas_upload_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1654574760819-99">
         <createIndex indexName="FKs92wvfmjmi9ev32nqoaucvnsw" tableName="aidas_user_aud">
             <column name="rev"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-75">
+    <changeSet author="shiva (generated)" id="1654574760819-100">
+        <createIndex indexName="FKshyuhgeuqe0tn45vk6qalj9hl" tableName="aidas_user_aidas_vendor_mapping">
+            <column name="aidas_user_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1654574760819-101">
         <createIndex indexName="FKtgww7b7q91ktutvjonq4a6it7" tableName="aidas_object">
             <column name="aidas_project_id"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-76">
+    <changeSet author="shiva (generated)" id="1654574760819-102">
         <createIndex indexName="FKtqee5v5bk54wvfm30x7bh86yt" tableName="aidas_project_property">
             <column name="aidas_project_id"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-77">
+    <changeSet author="shiva (generated)" id="1654574760819-103">
+        <addForeignKeyConstraint baseColumnNames="rev" baseTableName="aidas_user_aidas_org_mapping_aud" constraintName="FK206pop6rafoweoli2ca8igud1" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1654574760819-104">
         <addForeignKeyConstraint baseColumnNames="current_aidas_authority_id" baseTableName="aidas_user" constraintName="FK2ljdxgxwp9x6k9w2i5sff0n5j" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="aidas_authority" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-78">
+    <changeSet author="shiva (generated)" id="1654574760819-105">
+        <addForeignKeyConstraint baseColumnNames="aidas_user_id" baseTableName="aidas_user_aidas_customer_mapping" constraintName="FK2w97yw6cs88da816rx8u1t0gr" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="aidas_user" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1654574760819-106">
         <addForeignKeyConstraint baseColumnNames="aidas_user_id" baseTableName="aidas_user_obj_map" constraintName="FK35rq03dotua1mllke6n7yqao4" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="aidas_user" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-79">
+    <changeSet author="shiva (generated)" id="1654574760819-107">
+        <addForeignKeyConstraint baseColumnNames="rev" baseTableName="aidas_user_aidas_customer_mapping_aud" constraintName="FK3vx8icxn8f1gx8rsmk4rcvy2w" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1654574760819-108">
         <addForeignKeyConstraint baseColumnNames="aidas_project_id" baseTableName="aidas_download" constraintName="FK3ywavmf4v8co7ylo2id1ddlhu" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="aidas_project" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-80">
+    <changeSet author="shiva (generated)" id="1654574760819-109">
+        <addForeignKeyConstraint baseColumnNames="aidas_user_id" baseTableName="aidas_user_aidas_authority_mapping" constraintName="FK42ii48tc987ot1fuydicb8wfg" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="aidas_user" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1654574760819-110">
         <addForeignKeyConstraint baseColumnNames="aidas_upload_id" baseTableName="aidas_upload_meta_data" constraintName="FK4bd8n9f2tbm4864i8nybqiu4u" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="aidas_upload" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-81">
+    <changeSet author="shiva (generated)" id="1654574760819-111">
         <addForeignKeyConstraint baseColumnNames="rev" baseTableName="aidas_project_aud" constraintName="FK4gtbkx04psoowofealm2ahqc6" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-82">
+    <changeSet author="shiva (generated)" id="1654574760819-112">
         <addForeignKeyConstraint baseColumnNames="rev" baseTableName="aidas_upload_aud" constraintName="FK4qcnqwcn5u6lxb3c80kwra3ia" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-83">
-        <addForeignKeyConstraint baseColumnNames="rev" baseTableName="aidas_user_aidas_authority_aud" constraintName="FK548yinere6kx7pim0f6bro3na" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
+    <changeSet author="shiva (generated)" id="1654574760819-113">
+        <addForeignKeyConstraint baseColumnNames="aidas_user_id" baseTableName="aidas_qc_project_mapping" constraintName="FK52exnojmkbs5tkci9wc99qcf0" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="aidas_user" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-84">
+    <changeSet author="shiva (generated)" id="1654574760819-114">
         <addForeignKeyConstraint baseColumnNames="aidas_organisation_id" baseTableName="aidas_customer" constraintName="FK5lqesps3u603b2wwm79b8jm19" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="aidas_organisation" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-85">
+    <changeSet author="shiva (generated)" id="1654574760819-115">
         <addForeignKeyConstraint baseColumnNames="rev" baseTableName="aidas_user_json_storage_aud" constraintName="FK5mj39h3hl4ri8jdb1mal3cccq" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-86">
+    <changeSet author="shiva (generated)" id="1654574760819-116">
         <addForeignKeyConstraint baseColumnNames="rev" baseTableName="aidas_upload_aidas_rej_reason_aud" constraintName="FK60a2918wqvs2pdren00nheqxa" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-87">
+    <changeSet author="shiva (generated)" id="1654574760819-117">
+        <addForeignKeyConstraint baseColumnNames="aidas_project_id" baseTableName="aidas_qc_project_mapping" constraintName="FK6epv9yrkpt4t14e1jv43jd9op" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="aidas_project" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1654574760819-118">
         <addForeignKeyConstraint baseColumnNames="rev" baseTableName="aidas_vendor_aud" constraintName="FK72w15b8163oka2c3s4m8kuio2" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-88">
+    <changeSet author="shiva (generated)" id="1654574760819-119">
         <addForeignKeyConstraint baseColumnNames="aidas_organisation_id" baseTableName="aidas_user" constraintName="FK7fjpj7fnja4xd7erabjyyy02c" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="aidas_organisation" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-89">
+    <changeSet author="shiva (generated)" id="1654574760819-120">
         <addForeignKeyConstraint baseColumnNames="rev" baseTableName="aidas_upload_reject_reason_aud" constraintName="FK7q6eoyislr6i7iuau5hdjlo7a" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-90">
+    <changeSet author="shiva (generated)" id="1654574760819-121">
         <addForeignKeyConstraint baseColumnNames="aidas_properties_id" baseTableName="aidas_project_property" constraintName="FK87txmb2t6ion1iepc6b1ite68" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="aidas_properties" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-91">
+    <changeSet author="shiva (generated)" id="1654574760819-122">
+        <addForeignKeyConstraint baseColumnNames="aidas_customer_id" baseTableName="aidas_user_aidas_customer_mapping" constraintName="FKa1eruqovdh09wvtmtll19o1p1" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="aidas_customer" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1654574760819-123">
+        <addForeignKeyConstraint baseColumnNames="aidas_organisation_id" baseTableName="aidas_user_aidas_org_mapping" constraintName="FKa3413lajlts2lf44s3o3aym3f" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="aidas_organisation" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1654574760819-124">
         <addForeignKeyConstraint baseColumnNames="aidas_object_id" baseTableName="aidas_user_obj_map" constraintName="FKbf4g63pimrh2licso3sbu7e6n" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="aidas_object" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-92">
+    <changeSet author="shiva (generated)" id="1654574760819-125">
+        <addForeignKeyConstraint baseColumnNames="aidas_vendor_id" baseTableName="aidas_user_aidas_vendor_mapping" constraintName="FKbxhdj90fa1c14jt30eqbp0f9w" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="aidas_vendor" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1654574760819-126">
+        <addForeignKeyConstraint baseColumnNames="rev" baseTableName="aidas_user_aidas_authority_mapping_aud" constraintName="FKcbnscjnwe0h7obisisw9wqdti" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1654574760819-127">
         <addForeignKeyConstraint baseColumnNames="rev" baseTableName="aidas_project_property_aud" constraintName="FKd52esvq3q6y248spkj105195n" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-93">
+    <changeSet author="shiva (generated)" id="1654574760819-128">
+        <addForeignKeyConstraint baseColumnNames="rev" baseTableName="aidas_app_properties_aud" constraintName="FKe586042y4afrmmy8rweux1ywp" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1654574760819-129">
         <addForeignKeyConstraint baseColumnNames="aidas_user_id" baseTableName="aidas_user_json_storage" constraintName="FKefjaky27avahq2tq8pl490dww" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="aidas_user" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-94">
+    <changeSet author="shiva (generated)" id="1654574760819-130">
         <addForeignKeyConstraint baseColumnNames="rev" baseTableName="aidas_download_aud" constraintName="FKeqblelylrbxuts1wjlxquqsm1" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-95">
+    <changeSet author="shiva (generated)" id="1654574760819-131">
         <addForeignKeyConstraint baseColumnNames="aidas_upload_reject_reason_id" baseTableName="aidas_upload_aidas_rej_reason" constraintName="FKfyt92lt6xu2v2b3p0qpp666dx" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="aidas_upload_reject_reason" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-96">
+    <changeSet author="shiva (generated)" id="1654574760819-132">
         <addForeignKeyConstraint baseColumnNames="aidas_customer_id" baseTableName="aidas_project" constraintName="FKgh3hwievnpyd2nt19dtxaudm7" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="aidas_customer" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-97">
-        <addForeignKeyConstraint baseColumnNames="aidas_user_id" baseTableName="aidas_user_aidas_authority" constraintName="FKihjyhofg97tnnhrntx4hr5vhf" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="aidas_user" validate="true"/>
+    <changeSet author="shiva (generated)" id="1654574760819-133">
+        <addForeignKeyConstraint baseColumnNames="aidas_authority_id" baseTableName="aidas_user_aidas_authority_mapping" constraintName="FKi0ys7f5jfrdjhm49u120xpxku" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="aidas_authority" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-98">
+    <changeSet author="shiva (generated)" id="1654574760819-134">
         <addForeignKeyConstraint baseColumnNames="aidas_vendor_id" baseTableName="aidas_user" constraintName="FKiw4egxqqdek96ct25ogrig4bq" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="aidas_vendor" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-99">
+    <changeSet author="shiva (generated)" id="1654574760819-135">
         <addForeignKeyConstraint baseColumnNames="rev" baseTableName="aidas_customer_aud" constraintName="FKj5hld8vxdigfo1t5pmnha2w14" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-100">
+    <changeSet author="shiva (generated)" id="1654574760819-136">
         <addForeignKeyConstraint baseColumnNames="aidas_properties_id" baseTableName="aidas_object_property" constraintName="FKjo3qhkdb4qku9dd5bhsnc1asf" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="aidas_properties" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-101">
+    <changeSet author="shiva (generated)" id="1654574760819-137">
         <addForeignKeyConstraint baseColumnNames="rev" baseTableName="aidas_authority_aud" constraintName="FKjsfwca7iaco8kldtnwaofy44u" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-102">
+    <changeSet author="shiva (generated)" id="1654574760819-138">
         <addForeignKeyConstraint baseColumnNames="aidas_user_aidas_object_mapping_id" baseTableName="aidas_upload" constraintName="FKjtv0fjbwosyq29xo8ahi32uw7" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="aidas_user_obj_map" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-103">
+    <changeSet author="shiva (generated)" id="1654574760819-139">
+        <addForeignKeyConstraint baseColumnNames="aidas_user_id" baseTableName="aidas_user_aidas_org_mapping" constraintName="FKjx5tu0l81taj7m2io8cb4ut6q" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="aidas_user" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1654574760819-140">
         <addForeignKeyConstraint baseColumnNames="aidas_project_property_id" baseTableName="aidas_upload_meta_data" constraintName="FKker1px2dfd6gq1cy3nx7vgwqy" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="aidas_project_property" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-104">
+    <changeSet author="shiva (generated)" id="1654574760819-141">
         <addForeignKeyConstraint baseColumnNames="rev" baseTableName="aidas_upload_meta_data_aud" constraintName="FKkj4ba5ix8uo9d1edcs8nnfmh3" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-105">
+    <changeSet author="shiva (generated)" id="1654574760819-142">
+        <addForeignKeyConstraint baseColumnNames="rev" baseTableName="aidas_user_aidas_vendor_mapping_aud" constraintName="FKlcyofx5sjd83vejnj3hltw9bd" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1654574760819-143">
         <addForeignKeyConstraint baseColumnNames="rev" baseTableName="aidas_object_property_aud" constraintName="FKljy15435tefthp8bh6c4xddph" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-106">
+    <changeSet author="shiva (generated)" id="1654574760819-144">
         <addForeignKeyConstraint baseColumnNames="rev" baseTableName="aidas_properties_aud" constraintName="FKn4lywsaawbtgxdw1usnkr6cil" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-107">
+    <changeSet author="shiva (generated)" id="1654574760819-145">
         <addForeignKeyConstraint baseColumnNames="aidas_object_id" baseTableName="aidas_download" constraintName="FKomsmbuo6v92xtl6gdi398tckk" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="aidas_object" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-108">
+    <changeSet author="shiva (generated)" id="1654574760819-146">
+        <addForeignKeyConstraint baseColumnNames="aidas_object_property_id" baseTableName="aidas_upload_meta_data" constraintName="FKoujkhm7yiv424v5rop2royuyq" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="aidas_object_property" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1654574760819-147">
         <addForeignKeyConstraint baseColumnNames="rev" baseTableName="aidas_user_obj_map_aud" constraintName="FKp8lxbg1vmi2by9s11gdv6md31" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-109">
+    <changeSet author="shiva (generated)" id="1654574760819-148">
         <addForeignKeyConstraint baseColumnNames="aidas_object_id" baseTableName="aidas_object_property" constraintName="FKpa9qsv4gtcfv32duxm2fovctr" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="aidas_object" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-110">
-        <addForeignKeyConstraint baseColumnNames="aidas_authority_id" baseTableName="aidas_user_aidas_authority" constraintName="FKptn444vgug1umrvjrc6qttm2i" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="aidas_authority" validate="true"/>
+    <changeSet author="shiva (generated)" id="1654574760819-149">
+        <addForeignKeyConstraint baseColumnNames="rev" baseTableName="aidas_qc_project_mapping_aud" constraintName="FKpwhkrne7es5sl0wj9rdw1mji6" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-111">
+    <changeSet author="shiva (generated)" id="1654574760819-150">
         <addForeignKeyConstraint baseColumnNames="rev" baseTableName="aidas_object_aud" constraintName="FKq1fepvd680dngtp6vit95fry1" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-112">
+    <changeSet author="shiva (generated)" id="1654574760819-151">
         <addForeignKeyConstraint baseColumnNames="rev" baseTableName="aidas_organisation_aud" constraintName="FKrtjkh338n5mtnvsmp504swqfr" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-113">
+    <changeSet author="shiva (generated)" id="1654574760819-152">
         <addForeignKeyConstraint baseColumnNames="aidas_customer_id" baseTableName="aidas_user" constraintName="FKrwvu3pcbt96xshrlphd0hglgs" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="aidas_customer" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-114">
+    <changeSet author="shiva (generated)" id="1654574760819-153">
         <addForeignKeyConstraint baseColumnNames="aidas_upload_id" baseTableName="aidas_upload_aidas_rej_reason" constraintName="FKs6mphh43axnxn1ao7xgoxtghl" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="aidas_upload" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-115">
+    <changeSet author="shiva (generated)" id="1654574760819-154">
         <addForeignKeyConstraint baseColumnNames="rev" baseTableName="aidas_user_aud" constraintName="FKs92wvfmjmi9ev32nqoaucvnsw" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-116">
+    <changeSet author="shiva (generated)" id="1654574760819-155">
+        <addForeignKeyConstraint baseColumnNames="aidas_user_id" baseTableName="aidas_user_aidas_vendor_mapping" constraintName="FKshyuhgeuqe0tn45vk6qalj9hl" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="aidas_user" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1654574760819-156">
         <addForeignKeyConstraint baseColumnNames="aidas_project_id" baseTableName="aidas_object" constraintName="FKtgww7b7q91ktutvjonq4a6it7" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="aidas_project" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-117">
+    <changeSet author="shiva (generated)" id="1654574760819-157">
         <addForeignKeyConstraint baseColumnNames="aidas_project_id" baseTableName="aidas_project_property" constraintName="FKtqee5v5bk54wvfm30x7bh86yt" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="aidas_project" validate="true"/>
     </changeSet>
 
@@ -1125,6 +1520,8 @@
             <column name="system_property" type="boolean"/>
             <column name="optional" type="boolean"/>
             <column name="description" type="string"/>
+            <column name="default_prop" type="numeric"/>
+            <column name="aidas_user_id" type="numeric"/>
             <!-- jhipster-needle-liquibase-add-loadcolumn - JHipster (and/or extensions) can add load columns here -->
         </loadData>
     </changeSet>
@@ -1135,8 +1532,7 @@
                   tableName="aidas_project_property"
                   usePreparedStatements="true">
             <column name="id" type="numeric"/>
-            <column name="name" type="string"/>
-            <column name="description" type="string"/>
+            <column name="aidas_properties_id" type="numeric"/>
             <column name="value" type="string"/>
             <column name="aidas_project_id" type="numeric"/>
             <!-- jhipster-needle-liquibase-add-loadcolumn - JHipster (and/or extensions) can add load columns here -->
@@ -1149,26 +1545,13 @@
                   tableName="aidas_object_property"
                   usePreparedStatements="true">
             <column name="id" type="numeric"/>
-            <column name="name" type="string"/>
-            <column name="description" type="string"/>
+            <column name="aidas_properties_id" type="numeric"/>
             <column name="value" type="string"/>
             <column name="aidas_object_id" type="numeric"/>
-            <column name="aidas_properties_id" type="numeric"/>
             <!-- jhipster-needle-liquibase-add-loadcolumn - JHipster (and/or extensions) can add load columns here -->
         </loadData>
     </changeSet>
-	<changeSet author="shiva (generated)" id="1649822751914-128">
-        <loadData
-                  file="config/liquibase/fake-data/aidas_upload_meta_data.csv"
-                  separator=";"
-                  tableName="aidas_upload_meta_data"
-                  usePreparedStatements="true">
-            <column name="id" type="numeric"/>
-            <column name="name" type="string"/>
-            <column name="value" type="string"/>
-            <!-- jhipster-needle-liquibase-add-loadcolumn - JHipster (and/or extensions) can add load columns here -->
-        </loadData>
-    </changeSet>
+
 	<changeSet author="shiva (generated)" id="1649822751914-129">
         <loadData
             file="config/liquibase/fake-data/aidas_authority.csv"
@@ -1194,16 +1577,7 @@
             <!-- jhipster-needle-liquibase-add-loadcolumn - JHipster (and/or extensions) can add load columns here -->
         </loadData>
     </changeSet>
-	<changeSet author="shiva (generated)" id="1649822751914-131">
-        <loadData
-            file="config/liquibase/fake-data/aidas_user_aidas_authority.csv"
-            separator=";"
-            tableName="aidas_user_aidas_authority"
-            usePreparedStatements="true">
-            <column name="aidas_user_id" type="numeric"/>
-            <column name="aidas_authority_id" type="numeric"/>
-        </loadData>
-    </changeSet>
+
 	<changeSet author="shiva (generated)" id="1649822751914-132">
        <loadData
             file="config/liquibase/fake-data/aidas_upload_reject_reasons.csv"
@@ -1213,6 +1587,18 @@
             <column name="id" type="numeric"/>
             <column name="reason" type="string"/>
            <column name="description" type="string"/>
+            <!-- jhipster-needle-liquibase-add-loadcolumn - JHipster (and/or extensions) can add load columns here -->
+        </loadData>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1649822751914-133">
+        <loadData
+            file="config/liquibase/fake-data/aidas_user_aidas_authority_mapping.csv"
+            separator=";"
+            tableName="aidas_user_aidas_authority_mapping"
+            usePreparedStatements="true">
+            <column name="id" type="numeric"/>
+            <column name="aidas_authority_id" type="numeric"/>
+            <column name="aidas_user_id" type="numeric"/>
             <!-- jhipster-needle-liquibase-add-loadcolumn - JHipster (and/or extensions) can add load columns here -->
         </loadData>
     </changeSet>

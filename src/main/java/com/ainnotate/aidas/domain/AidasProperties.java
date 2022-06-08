@@ -50,6 +50,9 @@ public class AidasProperties extends AbstractAuditingEntity  implements Serializ
     @Column(name = "default_prop")
     private Integer defaultProp;
 
+    @ManyToOne
+    private AidasUser aidasUser;
+
     public Integer getDefaultProp() {
         return defaultProp;
     }

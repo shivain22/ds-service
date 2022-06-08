@@ -45,13 +45,23 @@ public class AidasObject extends AbstractAuditingEntity  implements Serializable
     @Column(name = "number_of_upload_reqd", nullable = false)
     private Integer numberOfUploadReqd;
 
-    @Column(name = "status")
-    private Integer status;
-
     @ManyToOne(optional = false)
     @NotNull
     @JsonIgnoreProperties(value = { "aidasCustomer" }, allowSetters = true)
     private AidasProject aidasProject;
+
+
+    @ManyToOne(optional = true)
+    @JsonIgnoreProperties(value = { "aidasProject","aidasCustomer" }, allowSetters = true)
+    private AidasObject parentAidasObject;
+
+    public AidasObject getParentAidasObject() {
+        return parentAidasObject;
+    }
+
+    public void setParentAidasObject(AidasObject parentAidasObject) {
+        this.parentAidasObject = parentAidasObject;
+    }
 
     @Transient
     @JsonProperty

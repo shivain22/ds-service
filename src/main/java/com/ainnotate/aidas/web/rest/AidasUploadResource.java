@@ -122,6 +122,7 @@ public class AidasUploadResource {
             }
             aidasUpload.setStatus(AidasConstants.AIDAS_UPLOAD_PENDING);
             aidasUpload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
+            aidasUpload.setApprovalStatus(AidasConstants.AIDAS_UPLOAD_PENDING);
             AidasUpload result = aidasUploadRepository.save(aidasUpload);
 
             aidasUploadSearchRepository.save(result);
@@ -289,7 +290,7 @@ public class AidasUploadResource {
             aidasUpload.setUploadUrl(uploadDto.getUploadUrl());
             aidasUpload.setUploadEtag(uploadDto.getEtag());
             aidasUpload.setObjectKey(uploadDto.getObjectKey());
-
+            aidasUpload.setApprovalStatus(AidasConstants.AIDAS_UPLOAD_PENDING);
             AidasObject aidasObject = auaom.getAidasObject();
             AidasProject aidasProject = aidasObject.getAidasProject();
             Long mandatoryProjectProperties = aidasProjectPropertyRepository.countAidasProjectPropertiesByAidasProject_IdAndOptionalEquals(aidasProject.getId(),AidasConstants.AIDAS_PROPERTY_REQUIRED);
@@ -474,6 +475,7 @@ public class AidasUploadResource {
         }
         AidasUpload aidasUpload = aidasUploadRepository.getById(id);
         aidasUpload.setStatus(AidasConstants.AIDAS_UPLOAD_APPROVED);
+        aidasUpload.setApprovalStatus(AidasConstants.AIDAS_UPLOAD_APPROVED);
         aidasUpload.setQcEndDate(Instant.now());
         aidasUpload.setQcDoneBy(aidasUser.getId());
         aidasUpload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_COMPLETED);
@@ -540,6 +542,7 @@ public class AidasUploadResource {
         aidasUpload.setQcEndDate(Instant.now());
         aidasUpload.setQcDoneBy(aidasUser.getId());
         aidasUpload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_COMPLETED);
+        aidasUpload.setApprovalStatus(AidasConstants.AIDAS_UPLOAD_REJECTED);
         aidasUploadRepository.save(aidasUpload);
         //aidasUploadSearchRepository.save(result);
         return ResponseEntity
