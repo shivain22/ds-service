@@ -46,14 +46,14 @@ public class AidasUpload extends AbstractAuditingEntity  implements Serializable
 
     @ManyToOne(optional = true)
     @JsonIgnoreProperties(value = { "aidasObject" }, allowSetters = true)
-    private AidasUpload reworkAidasUplaod;
+    private AidasUpload reworkAidasUpload;
 
-    public AidasUpload getReworkAidasUplaod() {
-        return reworkAidasUplaod;
+    public AidasUpload getReworkAidasUpload() {
+        return reworkAidasUpload;
     }
 
-    public void setReworkAidasUplaod(AidasUpload reworkAidasUplaod) {
-        this.reworkAidasUplaod = reworkAidasUplaod;
+    public void setReworkAidasUpload(AidasUpload reworkAidasUpload) {
+        this.reworkAidasUpload = reworkAidasUpload;
     }
 
     @Column(name = "status_modified_date")

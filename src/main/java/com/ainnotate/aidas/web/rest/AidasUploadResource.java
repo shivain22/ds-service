@@ -652,7 +652,7 @@ public class AidasUploadResource {
             page = aidasUploadRepository.findAidasUploadByAidasVendor(aidasUser.getAidasVendor().getId(),pageable);
         }
         if(aidasAuthority.getName().equals(AidasConstants.VENDOR_USER)){
-            page = aidasUploadRepository.findAllByUserAll(aidasUser.getId(),pageable);
+            page = aidasUploadRepository.findAllByUser(aidasUser.getId(),pageable);
         }
 
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
@@ -686,48 +686,45 @@ public class AidasUploadResource {
         if(aidasAuthority.getName().equals(AidasConstants.VENDOR_USER)){
             if(id!=null && type!=null && status!=null){
                 if(id!=null && type.equalsIgnoreCase("o") && status.equalsIgnoreCase("a") ){
-                    page= aidasUploadRepository.findAllByUserAndObjectApproved(aidasUser.getId(),id,pageable);
+                    page= aidasUploadRepository.findAllByUserAndObject(aidasUser.getId(),id,AidasConstants.AIDAS_UPLOAD_APPROVED,pageable);
                 }
                 if(id!=null && type.equalsIgnoreCase("o") && status.equalsIgnoreCase("r") ){
-                    page= aidasUploadRepository.findAllByUserAndObjectRejected(aidasUser.getId(),id,pageable);
+                    page= aidasUploadRepository.findAllByUserAndObject(aidasUser.getId(),id,AidasConstants.AIDAS_UPLOAD_REJECTED,pageable);
                 }
                 if(id!=null && type.equalsIgnoreCase("o") && status.equalsIgnoreCase("p") ){
-                    page= aidasUploadRepository.findAllByUserAndObjectPending(aidasUser.getId(),id,pageable);
+                    page= aidasUploadRepository.findAllByUserAndObject(aidasUser.getId(),id,AidasConstants.AIDAS_UPLOAD_PENDING,pageable);
                 }
                 if(id!=null && type.equalsIgnoreCase("o") && status.equalsIgnoreCase("all") ){
-                    page= aidasUploadRepository.findAllByUserAndObjectAll(aidasUser.getId(),id,pageable);
+                    page= aidasUploadRepository.findAllByUserAndObject(aidasUser.getId(),id,pageable);
                 }
                 if(id!=null && type.equalsIgnoreCase("p") && status.equalsIgnoreCase("a") ){
-                    page= aidasUploadRepository.findAllByUserAndProjectApproved(aidasUser.getId(),id,pageable);
+                    page= aidasUploadRepository.findAllByUserAndProject(aidasUser.getId(),id,AidasConstants.AIDAS_UPLOAD_APPROVED,pageable);
                 }
                 if(id!=null && type.equalsIgnoreCase("p") && status.equalsIgnoreCase("r") ){
-                    page= aidasUploadRepository.findAllByUserAndProjectRejected(aidasUser.getId(),id,pageable);
+                    page= aidasUploadRepository.findAllByUserAndProject(aidasUser.getId(),id,AidasConstants.AIDAS_UPLOAD_REJECTED,pageable);
                 }
                 if(id!=null && type.equalsIgnoreCase("p") && status.equalsIgnoreCase("p") ){
-                    page= aidasUploadRepository.findAllByUserAndProjectPending(aidasUser.getId(),id,pageable);
+                    page= aidasUploadRepository.findAllByUserAndProject(aidasUser.getId(),id,AidasConstants.AIDAS_UPLOAD_PENDING,pageable);
                 }
                 if(id!=null && type.equalsIgnoreCase("p") && status.equalsIgnoreCase("all") ) {
-                    page= aidasUploadRepository.findAllByUserAndProjectAll(aidasUser.getId(),id,pageable);
+                    page= aidasUploadRepository.findAllByUserAndProject(aidasUser.getId(),id,pageable);
                 }
             }
             if(id==null && type==null && status!=null){
                 if(status.equalsIgnoreCase("a")){
-                    page= aidasUploadRepository.findAllByUserApproved(aidasUser.getId(),pageable);
+                    page= aidasUploadRepository.findAllByUser(aidasUser.getId(),AidasConstants.AIDAS_UPLOAD_APPROVED,pageable);
                 }
                 if(status.equalsIgnoreCase("r")){
-                    page= aidasUploadRepository.findAllByUserRejected(aidasUser.getId(),pageable);
+                    page= aidasUploadRepository.findAllByUser(aidasUser.getId(),AidasConstants.AIDAS_UPLOAD_REJECTED,pageable);
                 }
                 if(status.equalsIgnoreCase("p")){
-                    page= aidasUploadRepository.findAllByUserPending(aidasUser.getId(),pageable);
+                    page= aidasUploadRepository.findAllByUser(aidasUser.getId(),AidasConstants.AIDAS_UPLOAD_PENDING,pageable);
                 }
                 if(status.equalsIgnoreCase("all")){
-                    page= aidasUploadRepository.findAllByUserAll(aidasUser.getId(),pageable);
+                    page= aidasUploadRepository.findAllByUser(aidasUser.getId(),pageable);
                 }
             }
-            //page = aidasUploadRepository.findAllByUserAll(aidasUser.getId(),pageable);
-
         }
-
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }

@@ -1,5 +1,6 @@
 package com.ainnotate.aidas.web.rest;
 
+import com.ainnotate.aidas.constants.AidasConstants;
 import com.ainnotate.aidas.domain.*;
 import com.ainnotate.aidas.repository.AidasDownloadRepository;
 import com.ainnotate.aidas.repository.AidasObjectRepository;
@@ -211,19 +212,19 @@ public class DownloadUploadS3  implements  Runnable{
         try {
             if (this.resource.equals("project")) {
                 if (this.status.equals("approved")) {
-                    uploads = this.aidasUploadRepository.getAidasUploadsByAidasUserAidasObjectMapping_AidasObject_AidasProjectAndStatusIsTrue(this.aidasProject);
+                    uploads = this.aidasUploadRepository.getAidasUploadsByProject(this.aidasProject.getId(), AidasConstants.AIDAS_UPLOAD_APPROVED);
                 } else if (this.status.equals("rejected")) {
-                    uploads = this.aidasUploadRepository.getAidasUploadsByAidasUserAidasObjectMapping_AidasObject_AidasProjectAndStatusIsFalse(this.aidasProject);
+                    uploads = this.aidasUploadRepository.getAidasUploadsByProject(this.aidasProject.getId(),AidasConstants.AIDAS_UPLOAD_REJECTED);
                 } else {
-                    uploads = this.aidasUploadRepository.getAidasUploadsByAidasUserAidasObjectMapping_AidasObject_AidasProjectAndStatusIsNull(this.aidasProject);
+                    uploads = this.aidasUploadRepository.getAidasUploadsByProject(this.aidasProject.getId(),AidasConstants.AIDAS_UPLOAD_PENDING);
                 }
             } else if (this.resource.equals("object")) {
                 if (this.status.equals("approved")) {
-                    uploads = this.aidasUploadRepository.getAidasUploadsByAidasUserAidasObjectMapping_AidasObjectAndStatusIsTrue(this.aidasObject);
+                    uploads = this.aidasUploadRepository.getAidasUploadsByObject(this.aidasObject.getId(),AidasConstants.AIDAS_UPLOAD_APPROVED);
                 } else if (this.status.equals("rejected")) {
-                    uploads = this.aidasUploadRepository.getAidasUploadsByAidasUserAidasObjectMapping_AidasObjectAndStatusIsFalse(this.aidasObject);
+                    uploads = this.aidasUploadRepository.getAidasUploadsByObject(this.aidasObject.getId(),AidasConstants.AIDAS_UPLOAD_REJECTED);
                 } else {
-                    uploads = this.aidasUploadRepository.getAidasUploadsByAidasUserAidasObjectMapping_AidasObjectAndStatusIsNull(this.aidasObject);
+                    uploads = this.aidasUploadRepository.getAidasUploadsByObject(this.aidasObject.getId(),AidasConstants.AIDAS_UPLOAD_PENDING);
                 }
             } else if (this.resource.equals("uploads")) {
                 uploads = this.aidasUploadRepository.findAllById(uploadedFileIds);
@@ -275,7 +276,7 @@ public class DownloadUploadS3  implements  Runnable{
                 helper = new MimeMessageHelper(msg, true);
                 helper.setTo(aidasUser.getEmail());
                 helper.setSubject("Unable to create downloadable objects"+this.zipFileKey);
-                helper.setText("<h1>Unable to create downloadable zip.  Please try again</h1>", true);
+                helper.setText("<h1>Unable to create downloadable zip.  Please try again</h1>"+e.getMessage(), true);
                 javaMailSender.send(msg);
             } catch (MessagingException ex) {
                 ex.printStackTrace();
