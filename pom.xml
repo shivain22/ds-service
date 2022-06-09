@@ -166,17 +166,29 @@
             <artifactId>hazelcast-spring</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-ui</artifactId>
+            <version>1.6.9</version>
+        </dependency>
+        <!--&lt;!&ndash; https://mvnrepository.com/artifact/org.springframework.data/spring-data-rest-hal-explorer &ndash;&gt;
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-rest-hal-explorer</artifactId>
+            <version>3.2.0.RC1</version>
+        </dependency>-->
+
+        <!--<dependency>
             <groupId>io.springfox</groupId>
             <artifactId>springfox-oas</artifactId>
-        </dependency>
-        <dependency>
+        </dependency>-->
+        <!--<dependency>
             <groupId>io.springfox</groupId>
             <artifactId>springfox-swagger2</artifactId>
-        </dependency>
-        <dependency>
+        </dependency>-->
+        <!--<dependency>
             <groupId>io.springfox</groupId>
             <artifactId>springfox-bean-validators</artifactId>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>

@@ -16,7 +16,7 @@ import java.time.ZonedDateTime;
 @Entity
 @Table(name = "aidas_download")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-@org.springframework.data.elasticsearch.annotations.Document(indexName = "aidasupload")
+@org.springframework.data.elasticsearch.annotations.Document(indexName = "aidasdownload")
 @Audited
 public class AidasDownload extends AbstractAuditingEntity  implements Serializable {
 

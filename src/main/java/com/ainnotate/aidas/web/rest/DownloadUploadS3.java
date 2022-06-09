@@ -32,6 +32,7 @@ import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequ
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import java.io.*;
+import java.net.URL;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -157,9 +158,9 @@ public class DownloadUploadS3  implements  Runnable{
         String createDate = dateFormatter.format(new Date());
         String separator = FileSystems.getDefault().getSeparator();
         String tmpdir = System.getProperty("java.io.tmpdir");
-        this.tempFolder =  tmpdir+separator+aidasUser.getId()+"_"+aidasProject.getId()+"_"+aidasProject.getName()+"_"+createDate+"_"+this.status;
-        this.zipFile= tmpdir+separator+aidasUser.getId()+"_"+aidasProject.getId()+"_"+aidasProject.getName()+"_"+createDate+"_"+this.status+".zip";
-        this.zipFileKey = aidasUser.getId()+"_"+aidasProject.getId()+"_"+aidasProject.getName()+"_"+createDate+"_"+this.status+".zip";
+        this.tempFolder =  tmpdir+separator+"tmp_"+aidasUser.getId()+"_"+aidasProject.getId()+"_"+aidasProject.getName()+"_"+createDate+"_"+this.status;
+        this.zipFile= tmpdir+separator+"tmp_"+aidasUser.getId()+"_"+aidasProject.getId()+"_"+aidasProject.getName()+"_"+createDate+"_"+this.status+".zip";
+        this.zipFileKey = "tmp_"+aidasUser.getId()+"_"+aidasProject.getId()+"_"+aidasProject.getName()+"_"+createDate+"_"+this.status+".zip";
         File f = new File(this.tempFolder);
         if(!f.exists()){
             f.mkdir();
@@ -176,9 +177,9 @@ public class DownloadUploadS3  implements  Runnable{
         String createDate = dateFormatter.format(new Date());
         String separator = FileSystems.getDefault().getSeparator();
         String tmpdir = System.getProperty("java.io.tmpdir");
-        this.tempFolder =  tmpdir+separator+aidasUser.getId()+"_"+aidasObject.getId()+"_"+aidasObject.getName()+"_"+createDate+"_"+this.status;
-        this.zipFile= tmpdir+separator+aidasUser.getId()+"_"+aidasObject.getId()+"_"+aidasObject.getName()+"_"+createDate+"_"+this.status+".zip";
-        this.zipFileKey = aidasUser.getId()+"_"+aidasObject.getId()+"_"+aidasObject.getName()+"_"+createDate+"_"+this.status+".zip";
+        this.tempFolder =  tmpdir+separator+"tmp_"+aidasUser.getId()+"_"+aidasObject.getId()+"_"+aidasObject.getName()+"_"+createDate+"_"+this.status;
+        this.zipFile= tmpdir+separator+"tmp_"+aidasUser.getId()+"_"+aidasObject.getId()+"_"+aidasObject.getName()+"_"+createDate+"_"+this.status+".zip";
+        this.zipFileKey = "tmp_"+aidasUser.getId()+"_"+aidasObject.getId()+"_"+aidasObject.getName()+"_"+createDate+"_"+this.status+".zip";
         File f = new File(this.tempFolder);
         if(!f.exists()){
             f.mkdir();
@@ -193,9 +194,9 @@ public class DownloadUploadS3  implements  Runnable{
         String createDate = dateFormatter.format(new Date());
         String separator = FileSystems.getDefault().getSeparator();
         String tmpdir = System.getProperty("java.io.tmpdir");
-        this.tempFolder =  tmpdir+aidasUser.getId()+"_"+createDate+"_"+this.status;
-        this.zipFile= tmpdir+aidasUser.getId()+"_"+createDate+"_"+this.status+".zip";
-        this.zipFileKey = aidasUser.getId()+"_"+createDate+"_"+this.status+".zip";
+        this.tempFolder =  tmpdir+separator+"tmp_"+aidasUser.getId()+"_"+createDate+"_"+this.status;
+        this.zipFile= tmpdir+separator+"tmp_"+aidasUser.getId()+"_"+createDate+"_"+this.status+".zip";
+        this.zipFileKey = "tmp_"+aidasUser.getId()+"_"+createDate+"_"+this.status+".zip";
         File f = new File(this.tempFolder);
         if(!f.exists()){
             f.mkdir();
@@ -245,14 +246,16 @@ public class DownloadUploadS3  implements  Runnable{
                             bucketName = aop.getValue();
                         }
                     }
+                    System.out.println("About to get file "+au.getObjectKey()+" from s3");
                     download(accessKey, accessSecret, bucketName, region, au.getObjectKey());
                    }
                     zip();
-                    upload(accessKey, accessSecret, bucketName, region);
+                   URL url =  upload(accessKey, accessSecret, bucketName, region);
 
                 AidasDownload aidasDownload = new AidasDownload();
                 aidasDownload.setName(this.zipFile);
                 aidasDownload.setAwsKey(accessKey);
+                aidasDownload.setUploadUrl(url.toString());
                 aidasDownload.setAwsSecret(accessSecret);
                 aidasDownload.setBucketName(bucketName);
                 aidasDownload.setRegion(region);
@@ -278,6 +281,7 @@ public class DownloadUploadS3  implements  Runnable{
                 helper.setSubject("Unable to create downloadable objects"+this.zipFileKey);
                 helper.setText("<h1>Unable to create downloadable zip.  Please try again</h1>"+e.getMessage(), true);
                 javaMailSender.send(msg);
+                e.printStackTrace();
             } catch (MessagingException ex) {
                 ex.printStackTrace();
             }
@@ -292,7 +296,14 @@ public class DownloadUploadS3  implements  Runnable{
         PipedInputStream is = new PipedInputStream(os);
         AwsBasicCredentials awsCreds = AwsBasicCredentials.create(accessKey, accessSecret);
         S3Client s3client = S3Client.builder().credentialsProvider(StaticCredentialsProvider.create(awsCreds)).region(Region.of(region)).build();
-        GetObjectRequest getObjectRequest = GetObjectRequest.builder().bucket(bucketName).key(key).build();
+        GetObjectRequest getObjectRequest = GetObjectRequest.builder().bucket(bucketName).key("uploads/"+key).build();
+        File f = new File(this.tempFolder+"/"+key);
+        System.out.println("About to get file from s3. File "+key+" status: "+f.exists() );
+        if(f.exists()){
+            System.out.println("File exists");
+            f.delete();
+        }
+
         s3client.getObject(getObjectRequest, ResponseTransformer.toFile(dest));
     }
 
@@ -316,7 +327,7 @@ public class DownloadUploadS3  implements  Runnable{
         }
     }
 
-    private void upload(String accessKey, String accessSecret, String bucketName, String region) throws MessagingException {
+    private URL upload(String accessKey, String accessSecret, String bucketName, String region) throws MessagingException {
         Map<String, String> metadata = new HashMap<>();
         metadata.put("x-amz-meta-file", this.zipFileKey);
         AwsBasicCredentials awsCreds = AwsBasicCredentials.create(accessKey, accessSecret);
@@ -347,7 +358,17 @@ public class DownloadUploadS3  implements  Runnable{
         helper.setText("<h1>Check attachment for zipfiles!</h1>"+presignedGetObjectRequest.url(), true);
         FileSystemResource res = new FileSystemResource(new File(this.zipFile));
         helper.addAttachment(this.zipFileKey, res);
+        File f = new File(this.tempFolder);
+        if(f.exists()){
+            if(f.isDirectory()){
+                for(File f1:f.listFiles()){
+                    f1.delete();
+                }
+            }
+            f.delete();
+        }
         javaMailSender.send(msg);
+        return presignedGetObjectRequest.url();
     }
 
     private static byte[] getObjectFile(String filePath) {
