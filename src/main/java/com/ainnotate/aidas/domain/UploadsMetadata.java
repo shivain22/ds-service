@@ -10,7 +10,7 @@ public class UploadsMetadata {
     @JsonIgnoreProperties(value = {"project"})
     List<ProjectProperty> projectProperties;
     @JsonIgnoreProperties(value = {"object"})
-    List<ObjectProperty> aidasObjectProperties;
+    List<ObjectProperty> objectProperties;
 
     public Upload getAidasUploads() {
         return uploads;
@@ -29,10 +29,10 @@ public class UploadsMetadata {
     }
 
     public List<ObjectProperty> getObjectProperties() {
-        return aidasObjectProperties;
+        return objectProperties;
     }
 
-    public void setAidasObjectProperties(List<ObjectProperty> aidasObjectProperties) {
-        this.aidasObjectProperties = aidasObjectProperties;
+    public void setObjectProperties(List<ObjectProperty> objectProperties) {
+        this.objectProperties = objectProperties;
     }
 }

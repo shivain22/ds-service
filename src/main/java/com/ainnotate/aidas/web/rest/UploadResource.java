@@ -750,10 +750,10 @@ public class UploadResource {
             UploadsMetadata uploadsMetadata = new UploadsMetadata();
             List<ProjectProperty> projectProperties = projectPropertyRepository.findAllAidasProjectPropertyForMetadata(projectId);
             for(Upload au : uploads) {
-                List<ObjectProperty> aidasObjectProperties = objectPropertyRepository.findAllUncommonAidasObjectPropertyForMetadata(au.getAidasUserAidasObjectMapping().getObject().getId(),projectId);
+                List<ObjectProperty> objectProperties = objectPropertyRepository.findAllUncommonAidasObjectPropertyForMetadata(au.getAidasUserAidasObjectMapping().getObject().getId(),projectId);
                 uploadsMetadata.setAidasUploads(au);
                 uploadsMetadata.setProjectProperties(projectProperties);
-                uploadsMetadata.setAidasObjectProperties(aidasObjectProperties);
+                uploadsMetadata.setObjectProperties(objectProperties);
                 uploadsMetadataList.add(uploadsMetadata);
             }
             return ResponseEntity.ok().body(uploadsMetadataList);

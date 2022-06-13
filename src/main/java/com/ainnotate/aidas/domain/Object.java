@@ -153,7 +153,7 @@ public class Object extends AbstractAuditingEntity  implements Serializable {
     @OneToMany(mappedBy = "object",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
     @Filter(name = "objectPropertyStatusFilter",condition="status = 1")
     @JsonIgnoreProperties(value = { "object" }, allowSetters = true)
-    private Set<ObjectProperty> aidasObjectProperties = new HashSet<>();
+    private Set<ObjectProperty> objectProperties = new HashSet<>();
 
     public Integer getBufferPercent() {
         return bufferPercent;
@@ -164,19 +164,19 @@ public class Object extends AbstractAuditingEntity  implements Serializable {
     }
 
     public Set<ObjectProperty> getObjectProperties() {
-        return aidasObjectProperties;
+        return objectProperties;
     }
 
-    public void setAidasObjectProperties(Set<ObjectProperty> aidasObjectProperties) {
-        this.aidasObjectProperties = aidasObjectProperties;
+    public void setObjectProperties(Set<ObjectProperty> objectProperties) {
+        this.objectProperties = objectProperties;
     }
 
     public void addAidasObjectProperty(ObjectProperty objectProperty){
-        this.aidasObjectProperties.add(objectProperty);
+        this.objectProperties.add(objectProperty);
     }
 
     public void removeAidasObjectProperty(ObjectProperty objectProperty){
-        this.aidasObjectProperties.remove(objectProperty);
+        this.objectProperties.remove(objectProperty);
     }
 // jhipster-needle-entity-add-field - JHipster will add fields here
 

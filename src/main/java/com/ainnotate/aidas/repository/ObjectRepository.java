@@ -43,7 +43,7 @@ public interface ObjectRepository extends JpaRepository<Object, Long> {
         countQuery = "select count(*) from object where status=1 and id>0 and is_dummy=0 and object.project_id=?1",nativeQuery = true)
     Page<Object> findAllByIdGreaterThanAndAidasProject_Id(Long id, Long projectId, Pageable page);
 
-    @Query(value = "select * from object where status=1 and is_dummy=0 and id=?1 and project_id=?2",nativeQuery = true)
+    @Query(value = "select * from object where status=1 and is_dummy=0 and id>?1 and project_id=?2",nativeQuery = true)
     List<Object> getAllByIdGreaterThanAndAidasProject_Id(Long id, Long projectId);
 
     @Query(value="select ao.* from project ap, object ao,  user_vendor_mapping_object_mapping auavmaom,user_vendor_mapping auavm ,user au where  auavmaom.object_id=ao.id and ao.project_id=ap.id and auavmaom.user_vendor_mapping_id=auavm.id and auavm.user_id=au.id and au.id= ?1 and ao.status=1 and ao.is_dummy=0",nativeQuery = true)

@@ -91,7 +91,7 @@ class AidasObjectPropertyGatlingTest extends Simulation {
         .check(status.is(200)))
         .pause(10)
         .repeat(2) {
-            exec(http("Get all aidasObjectProperties")
+            exec(http("Get all objectProperties")
             .get("/services/ainnotateservice/api/aidas-object-properties")
             .headers(headers_http_authenticated)
             .check(status.is(200)))

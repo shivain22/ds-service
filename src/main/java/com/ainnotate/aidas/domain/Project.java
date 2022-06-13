@@ -83,17 +83,20 @@ public class Project extends AbstractAuditingEntity  implements Serializable {
 
     @Column(name="object_suffix")
     @JsonProperty
-    private Boolean objectSuffix;
+    private String objectSuffix;
+
     @ManyToOne(optional = false)
     @NotNull
     @JsonIgnoreProperties(value = { "organisation" }, allowSetters = true)
     private Customer customer;
+
     @OneToMany(mappedBy = "project",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
     @JsonIgnoreProperties(value = { "project" }, allowSetters = true)
     private Set<ProjectProperty> projectProperties=new HashSet<>();
 
     @Column
     private Integer numOfUploadsReqd;
+
     @Column(name="buffer_percent")
     private Integer bufferPercent;
 
@@ -131,15 +134,37 @@ public class Project extends AbstractAuditingEntity  implements Serializable {
         this.objectPrefix = objectPrefix;
     }
 
-    public Boolean getObjectSuffix() {
+    public Integer getReworkStatus() {
+        return reworkStatus;
+    }
+
+    public void setReworkStatus(Integer reworkStatus) {
+        this.reworkStatus = reworkStatus;
+    }
+
+    public Integer getQcLevels() {
+        return qcLevels;
+    }
+
+    public void setQcLevels(Integer qcLevels) {
+        this.qcLevels = qcLevels;
+    }
+
+    public String getObjectSuffix() {
         return objectSuffix;
     }
 
-    public void setObjectSuffix(Boolean objectSuffix) {
+    public void setObjectSuffix(String objectSuffix) {
         this.objectSuffix = objectSuffix;
     }
 
+    public Integer getBufferPercent() {
+        return bufferPercent;
+    }
 
+    public void setBufferPercent(Integer bufferPercent) {
+        this.bufferPercent = bufferPercent;
+    }
 
     public Integer getTotalUploaded() {
         return totalUploaded;

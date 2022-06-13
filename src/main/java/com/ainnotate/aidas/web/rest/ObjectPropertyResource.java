@@ -289,10 +289,10 @@ public class ObjectPropertyResource {
     }
 
     /**
-     * {@code GET  /aidas-object-property} : get all the aidasObjectProperties.
+     * {@code GET  /aidas-object-property} : get all the objectProperties.
      *
      * @param pageable the pagination information.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of aidasObjectProperties in body.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of objectProperties in body.
      */
     @GetMapping("/aidas-object-property")
     public ResponseEntity<List<ObjectProperty>> getAllAidasObjectProperties(Pageable pageable) {

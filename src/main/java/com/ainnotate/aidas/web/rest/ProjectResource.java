@@ -2,6 +2,7 @@ package com.ainnotate.aidas.web.rest;
 
 import com.ainnotate.aidas.domain.*;
 import com.ainnotate.aidas.domain.Object;
+import com.ainnotate.aidas.dto.ProjectQcDto;
 import com.ainnotate.aidas.dto.ProjectVendorMappingDTO;
 import com.ainnotate.aidas.repository.*;
 import com.ainnotate.aidas.repository.search.AidasProjectSearchRepository;
@@ -48,6 +49,9 @@ public class ProjectResource {
     private String applicationName;
 
     private final ProjectRepository projectRepository;
+
+    @Autowired
+    private QcProjectMappingRepository qcProjectMappingRepository;
 
     private final AidasProjectSearchRepository aidasProjectSearchRepository;
 
@@ -137,7 +141,10 @@ public class ProjectResource {
                 Object obj = new Object();
                 obj.setName(result.getObjectPrefix()+""+i+""+result.getObjectSuffix());
                 obj.setNumberOfUploadReqd(result.getNumOfUploadsReqd());
-                obj.setDescription(result.getObjectPrefix()+""+i+""+result.getObjectSuffix());
+                obj.setDescription(result.getObjectPrefix()+"_"+i+"_"+result.getObjectSuffix());
+                obj.setProject(result);
+                obj.setBufferPercent(result.getBufferPercent());
+                obj.setDummy(false);
                 objectRepository.save(obj);
             }
         }
@@ -146,6 +153,52 @@ public class ProjectResource {
             .created(new URI("/api/aidas-projects/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
             .body(result);
+    }
+
+
+    /**
+     * {@code POST  /aidas-projects/qc/add} : Add QC to project.
+     *
+     * @param projectQcDtos the project to create.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new project, or with status {@code 400 (Bad Request)} if the project has already an ID.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @Secured({AidasConstants.ADMIN, AidasConstants.ORG_ADMIN, AidasConstants.CUSTOMER_ADMIN})
+    @PostMapping("/aidas-projects/qc/add")
+    public ResponseEntity<String> addQcToProject(@Valid @RequestBody List<ProjectQcDto> projectQcDtos) throws URISyntaxException {
+        User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        log.debug("REST request to add AidasQcUsers : {}", projectQcDtos);
+        for(ProjectQcDto projectQcDto:projectQcDtos ){
+            Project project = projectRepository.getById(projectQcDto.getProjectId());
+            User user1 = userRepository.getById(projectQcDto.getUserId());
+            QcProjectMapping qcProjectMapping = new QcProjectMapping();
+            qcProjectMapping.setProject(project);
+            qcProjectMapping.setUser(user1);
+            qcProjectMapping.setQcLevel(projectQcDto.getQcLevel());
+            qcProjectMapping.setStatus(1);
+            qcProjectMappingRepository.save(qcProjectMapping);
+        }
+        return ResponseEntity.ok().body("Successfully added project qc level");
+    }
+
+    /**
+     * {@code POST  /aidas-projects/qc/remove} : Add QC to project.
+     *
+     * @param projectQcDtos the project to create.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new project, or with status {@code 400 (Bad Request)} if the project has already an ID.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @Secured({AidasConstants.ADMIN, AidasConstants.ORG_ADMIN, AidasConstants.CUSTOMER_ADMIN})
+    @PostMapping("/aidas-projects/qc/remove")
+    public ResponseEntity<String> removeQcToProject(@Valid @RequestBody List<ProjectQcDto> projectQcDtos) throws URISyntaxException {
+        User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        log.debug("REST request to remove AidasQcUsers : {}", projectQcDtos);
+        for(ProjectQcDto projectQcDto:projectQcDtos ){
+            QcProjectMapping qcProjectMapping = qcProjectMappingRepository.getById(projectQcDto.getQcMappingId());
+            qcProjectMapping.setStatus(0);
+            qcProjectMappingRepository.save(qcProjectMapping);
+        }
+        return ResponseEntity.ok().body("Successfully removed project qc level");
     }
 
 
