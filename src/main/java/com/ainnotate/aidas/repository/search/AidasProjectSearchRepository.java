@@ -2,10 +2,10 @@ package com.ainnotate.aidas.repository.search;
 
 import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 
-import com.ainnotate.aidas.domain.AidasProject;
+import com.ainnotate.aidas.domain.Project;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -15,12 +15,12 @@ import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 
 /**
- * Spring Data Elasticsearch repository for the {@link AidasProject} entity.
+ * Spring Data Elasticsearch repository for the {@link Project} entity.
  */
-public interface AidasProjectSearchRepository extends ElasticsearchRepository<AidasProject, Long>, AidasProjectSearchRepositoryInternal {}
+public interface AidasProjectSearchRepository extends ElasticsearchRepository<Project, Long>, AidasProjectSearchRepositoryInternal {}
 
 interface AidasProjectSearchRepositoryInternal {
-    Page<AidasProject> search(String query, Pageable pageable);
+    Page<Project> search(String query, Pageable pageable);
 }
 
 class AidasProjectSearchRepositoryInternalImpl implements AidasProjectSearchRepositoryInternal {
@@ -32,11 +32,11 @@ class AidasProjectSearchRepositoryInternalImpl implements AidasProjectSearchRepo
     }
 
     @Override
-    public Page<AidasProject> search(String query, Pageable pageable) {
+    public Page<Project> search(String query, Pageable pageable) {
         NativeSearchQuery nativeSearchQuery = new NativeSearchQuery(queryStringQuery(query));
         nativeSearchQuery.setPageable(pageable);
-        List<AidasProject> hits = elasticsearchTemplate
-            .search(nativeSearchQuery, AidasProject.class)
+        List<Project> hits = elasticsearchTemplate
+            .search(nativeSearchQuery, Project.class)
             .map(SearchHit::getContent)
             .stream()
             .collect(Collectors.toList());

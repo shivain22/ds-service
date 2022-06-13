@@ -5,7 +5,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.ainnotate.aidas.constants.AidasConstants;
-import com.ainnotate.aidas.repository.AidasUserRepository;
+import com.ainnotate.aidas.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -26,7 +26,7 @@ public final class SecurityUtils {
     private SecurityUtils() {}
 
     @Autowired
-    AidasUserRepository aidasUserRepository;
+    UserRepository userRepository;
     /**
      * Get the login of the current user.
      *

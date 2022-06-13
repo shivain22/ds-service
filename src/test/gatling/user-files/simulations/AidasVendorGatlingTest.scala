@@ -91,12 +91,12 @@ class AidasVendorGatlingTest extends Simulation {
         .check(status.is(200)))
         .pause(10)
         .repeat(2) {
-            exec(http("Get all aidasVendors")
+            exec(http("Get all vendors")
             .get("/services/ainnotateservice/api/aidas-vendors")
             .headers(headers_http_authenticated)
             .check(status.is(200)))
             .pause(10 seconds, 20 seconds)
-            .exec(http("Create new aidasVendor")
+            .exec(http("Create new vendor")
             .post("/services/ainnotateservice/api/aidas-vendors")
             .headers(headers_http_authenticated)
             .body(StringBody("""{
@@ -107,12 +107,12 @@ class AidasVendorGatlingTest extends Simulation {
             .check(headerRegex("Location", "(.*)").saveAs("new_aidasVendor_url"))).exitHereIfFailed
             .pause(10)
             .repeat(5) {
-                exec(http("Get created aidasVendor")
+                exec(http("Get created vendor")
                 .get("/services/ainnotateservice${new_aidasVendor_url}")
                 .headers(headers_http_authenticated))
                 .pause(10)
             }
-            .exec(http("Delete created aidasVendor")
+            .exec(http("Delete created vendor")
             .delete("/services/ainnotateservice${new_aidasVendor_url}")
             .headers(headers_http_authenticated))
             .pause(10)

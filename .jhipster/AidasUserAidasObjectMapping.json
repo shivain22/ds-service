@@ -14,15 +14,15 @@
   ],
   "relationships": [
     {
-      "relationshipName": "aidasUser",
-      "otherEntityName": "aidasUser",
+      "relationshipName": "user",
+      "otherEntityName": "user",
       "relationshipType": "many-to-one",
       "relationshipValidateRules": ["required"],
       "otherEntityField": "firstName"
     },
     {
-      "relationshipName": "aidasObject",
-      "otherEntityName": "aidasObject",
+      "relationshipName": "object",
+      "otherEntityName": "object",
       "relationshipType": "many-to-one",
       "relationshipValidateRules": ["required"],
       "otherEntityField": "name"
@@ -33,5 +33,5 @@
   "pagination": "pagination",
   "name": "AidasUserAidasObjectMapping",
   "changelogDate": "20211016054047",
-  "entityTableName": "aidas_user_obj_map"
+  "entityTableName": "user_obj_map"
 }

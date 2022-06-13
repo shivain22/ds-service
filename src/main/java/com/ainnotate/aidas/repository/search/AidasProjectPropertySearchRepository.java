@@ -2,10 +2,10 @@ package com.ainnotate.aidas.repository.search;
 
 import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 
-import com.ainnotate.aidas.domain.AidasProjectProperty;
+import com.ainnotate.aidas.domain.ProjectProperty;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -15,13 +15,13 @@ import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 
 /**
- * Spring Data Elasticsearch repository for the {@link AidasProjectProperty} entity.
+ * Spring Data Elasticsearch repository for the {@link ProjectProperty} entity.
  */
 public interface AidasProjectPropertySearchRepository
-    extends ElasticsearchRepository<AidasProjectProperty, Long>, AidasProjectPropertySearchRepositoryInternal {}
+    extends ElasticsearchRepository<ProjectProperty, Long>, AidasProjectPropertySearchRepositoryInternal {}
 
 interface AidasProjectPropertySearchRepositoryInternal {
-    Page<AidasProjectProperty> search(String query, Pageable pageable);
+    Page<ProjectProperty> search(String query, Pageable pageable);
 }
 
 class AidasProjectPropertySearchRepositoryInternalImpl implements AidasProjectPropertySearchRepositoryInternal {
@@ -33,11 +33,11 @@ class AidasProjectPropertySearchRepositoryInternalImpl implements AidasProjectPr
     }
 
     @Override
-    public Page<AidasProjectProperty> search(String query, Pageable pageable) {
+    public Page<ProjectProperty> search(String query, Pageable pageable) {
         NativeSearchQuery nativeSearchQuery = new NativeSearchQuery(queryStringQuery(query));
         nativeSearchQuery.setPageable(pageable);
-        List<AidasProjectProperty> hits = elasticsearchTemplate
-            .search(nativeSearchQuery, AidasProjectProperty.class)
+        List<ProjectProperty> hits = elasticsearchTemplate
+            .search(nativeSearchQuery, ProjectProperty.class)
             .map(SearchHit::getContent)
             .stream()
             .collect(Collectors.toList());

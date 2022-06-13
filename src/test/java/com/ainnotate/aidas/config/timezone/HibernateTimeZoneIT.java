@@ -28,7 +28,7 @@ class HibernateTimeZoneIT {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    @Value("${spring.jpa.properties.hibernate.jdbc.time_zone:UTC}")
+    @Value("${spring.jpa.property.hibernate.jdbc.time_zone:UTC}")
     private String zoneId;
 
     private DateTimeWrapper dateTimeWrapper;

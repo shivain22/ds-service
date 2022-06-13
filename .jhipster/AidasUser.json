@@ -39,20 +39,20 @@
   ],
   "relationships": [
     {
-      "relationshipName": "aidasOrganisation",
-      "otherEntityName": "aidasOrganisation",
+      "relationshipName": "organisation",
+      "otherEntityName": "organisation",
       "relationshipType": "many-to-one",
       "otherEntityField": "name"
     },
     {
-      "relationshipName": "aidasCustomer",
-      "otherEntityName": "aidasCustomer",
+      "relationshipName": "customer",
+      "otherEntityName": "customer",
       "relationshipType": "many-to-one",
       "otherEntityField": "name"
     },
     {
-      "relationshipName": "aidasVendor",
-      "otherEntityName": "aidasVendor",
+      "relationshipName": "vendor",
+      "otherEntityName": "vendor",
       "relationshipType": "many-to-one",
       "otherEntityField": "name"
     }

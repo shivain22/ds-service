@@ -91,12 +91,12 @@ class AidasOrganisationGatlingTest extends Simulation {
         .check(status.is(200)))
         .pause(10)
         .repeat(2) {
-            exec(http("Get all aidasOrganisations")
+            exec(http("Get all organisations")
             .get("/services/ainnotateservice/api/aidas-organisations")
             .headers(headers_http_authenticated)
             .check(status.is(200)))
             .pause(10 seconds, 20 seconds)
-            .exec(http("Create new aidasOrganisation")
+            .exec(http("Create new organisation")
             .post("/services/ainnotateservice/api/aidas-organisations")
             .headers(headers_http_authenticated)
             .body(StringBody("""{
@@ -107,12 +107,12 @@ class AidasOrganisationGatlingTest extends Simulation {
             .check(headerRegex("Location", "(.*)").saveAs("new_aidasOrganisation_url"))).exitHereIfFailed
             .pause(10)
             .repeat(5) {
-                exec(http("Get created aidasOrganisation")
+                exec(http("Get created organisation")
                 .get("/services/ainnotateservice${new_aidasOrganisation_url}")
                 .headers(headers_http_authenticated))
                 .pause(10)
             }
-            .exec(http("Delete created aidasOrganisation")
+            .exec(http("Delete created organisation")
             .delete("/services/ainnotateservice${new_aidasOrganisation_url}")
             .headers(headers_http_authenticated))
             .pause(10)

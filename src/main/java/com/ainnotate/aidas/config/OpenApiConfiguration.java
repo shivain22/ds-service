@@ -55,33 +55,33 @@ public class OpenApiConfiguration {
 
     @Bean
     public Docket apiFirstDocket(JHipsterProperties jHipsterProperties) {
-        JHipsterProperties.ApiDocs properties = jHipsterProperties.getApiDocs();
-        Contact contact = new Contact(properties.getContactName(), properties.getContactUrl(), properties.getContactEmail());
+        JHipsterProperties.ApiDocs property = jHipsterProperties.getApiDocs();
+        Contact contact = new Contact(property.getContactName(), property.getContactUrl(), property.getContactEmail());
 
         ApiInfo apiInfo = new ApiInfo(
-            "API First " + properties.getTitle(),
-            properties.getDescription(),
-            properties.getVersion(),
-            properties.getTermsOfServiceUrl(),
+            "API First " + property.getTitle(),
+            property.getDescription(),
+            property.getVersion(),
+            property.getTermsOfServiceUrl(),
             contact,
-            properties.getLicense(),
-            properties.getLicenseUrl(),
+            property.getLicense(),
+            property.getLicenseUrl(),
             new ArrayList<>()
         );
 
         return new Docket(DocumentationType.OAS_30)
             .groupName("openapi")
-            .host(properties.getHost())
-            .protocols(new HashSet<>(Arrays.asList(properties.getProtocols())))
+            .host(property.getHost())
+            .protocols(new HashSet<>(Arrays.asList(property.getProtocols())))
             .apiInfo(apiInfo)
-            .useDefaultResponseMessages(properties.isUseDefaultResponseMessages())
+            .useDefaultResponseMessages(property.isUseDefaultResponseMessages())
             .forCodeGeneration(true)
             .directModelSubstitute(ByteBuffer.class, String.class)
             .genericModelSubstitutes(ResponseEntity.class)
             .ignoredParameterTypes(Pageable.class)
             .select()
             .apis(RequestHandlerSelectors.basePackage("com.ainnotate.aidas.web.api"))
-            .paths(regex(properties.getDefaultIncludePattern()))
+            .paths(regex(property.getDefaultIncludePattern()))
             .build();
     }*/
 }

@@ -91,12 +91,12 @@ class AidasCustomerGatlingTest extends Simulation {
         .check(status.is(200)))
         .pause(10)
         .repeat(2) {
-            exec(http("Get all aidasCustomers")
+            exec(http("Get all customers")
             .get("/services/ainnotateservice/api/aidas-customers")
             .headers(headers_http_authenticated)
             .check(status.is(200)))
             .pause(10 seconds, 20 seconds)
-            .exec(http("Create new aidasCustomer")
+            .exec(http("Create new customer")
             .post("/services/ainnotateservice/api/aidas-customers")
             .headers(headers_http_authenticated)
             .body(StringBody("""{
@@ -107,12 +107,12 @@ class AidasCustomerGatlingTest extends Simulation {
             .check(headerRegex("Location", "(.*)").saveAs("new_aidasCustomer_url"))).exitHereIfFailed
             .pause(10)
             .repeat(5) {
-                exec(http("Get created aidasCustomer")
+                exec(http("Get created customer")
                 .get("/services/ainnotateservice${new_aidasCustomer_url}")
                 .headers(headers_http_authenticated))
                 .pause(10)
             }
-            .exec(http("Delete created aidasCustomer")
+            .exec(http("Delete created customer")
             .delete("/services/ainnotateservice${new_aidasCustomer_url}")
             .headers(headers_http_authenticated))
             .pause(10)

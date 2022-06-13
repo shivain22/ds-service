@@ -2,10 +2,10 @@ package com.ainnotate.aidas.service;
 
 import com.ainnotate.aidas.config.Constants;
 import com.ainnotate.aidas.config.KeycloakConfig;
-import com.ainnotate.aidas.domain.AidasAuthority;
-import com.ainnotate.aidas.domain.AidasUser;
-import com.ainnotate.aidas.repository.AidasAuthorityRepository;
-import com.ainnotate.aidas.repository.AidasUserRepository;
+import com.ainnotate.aidas.domain.Authority;
+import com.ainnotate.aidas.domain.User;
+import com.ainnotate.aidas.repository.AuthorityRepository;
+import com.ainnotate.aidas.repository.UserRepository;
 import com.ainnotate.aidas.repository.search.AidasUserSearchRepository;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.RealmResource;
@@ -32,21 +32,21 @@ public class IdpUserService {
 
     private final Logger log = LoggerFactory.getLogger(IdpUserService.class);
 
-    private final AidasUserRepository aidasUserRepository;
+    private final UserRepository userRepository;
 
     private final AidasUserSearchRepository aidasUserSearchRepository;
 
-    private final AidasAuthorityRepository aidasAuthorityRepository;
+    private final AuthorityRepository authorityRepository;
 
     private final Keycloak keycloak;
 
     @Autowired
     private KeycloakConfig keycloakConfig;
 
-    public IdpUserService(Keycloak keycloak, AidasUserRepository aidasUserRepository, AidasUserSearchRepository aidasUserSearchRepository, AidasAuthorityRepository aidasAuthorityRepository) {
-        this.aidasUserRepository = aidasUserRepository;
+    public IdpUserService(Keycloak keycloak, UserRepository userRepository, AidasUserSearchRepository aidasUserSearchRepository, AuthorityRepository authorityRepository) {
+        this.userRepository = userRepository;
         this.aidasUserSearchRepository = aidasUserSearchRepository;
-        this.aidasAuthorityRepository = aidasAuthorityRepository;
+        this.authorityRepository = authorityRepository;
         this.keycloak = keycloak;
     }
 
@@ -57,8 +57,8 @@ public class IdpUserService {
      * @return a list of all the authorities.
      */
     @Transactional(readOnly = true)
-    public List<AidasAuthority> getAuthorities() {
-        return aidasAuthorityRepository.findAll();
+    public List<Authority> getAuthorities() {
+        return authorityRepository.findAll();
     }
 
     /**
@@ -69,7 +69,7 @@ public class IdpUserService {
      * @return the user from the authentication.
      */
     @Transactional
-    public AidasUser saveNewUserFromAuthentication(AbstractAuthenticationToken authToken) {
+    public User saveNewUserFromAuthentication(AbstractAuthenticationToken authToken) {
         Map<String, Object> attributes;
         if (authToken instanceof OAuth2AuthenticationToken) {
             attributes = ((OAuth2AuthenticationToken) authToken).getPrincipal().getAttributes();
@@ -78,87 +78,87 @@ public class IdpUserService {
         } else {
             throw new IllegalArgumentException("AuthenticationToken is not OAuth2 or JWT!");
         }
-        AidasUser aidasUser = getUser(attributes);
+        User user = getUser(attributes);
         RealmResource realmResource = keycloak.realm(keycloakConfig.getClientRealm());
         UsersResource usersResource = realmResource.users();
-        UserResource userResource = usersResource.get(aidasUser.getKeycloakId());
+        UserResource userResource = usersResource.get(user.getKeycloakId());
         UserRepresentation userRep = userResource.toRepresentation();
         Collection<GrantedAuthority> grantedAuthorities = authToken.getAuthorities();
-        AidasAuthority currentAidasAuthority=null;
+        Authority currentAuthority =null;
         for(GrantedAuthority ga: grantedAuthorities){
-            AidasAuthority aidasAuthority = aidasAuthorityRepository.findByName(ga.getAuthority().trim());
-            if(aidasAuthority==null){
-                aidasAuthority = new AidasAuthority();
-                aidasAuthority.setName(ga.getAuthority());
-                aidasAuthorityRepository.save(aidasAuthority);
+            Authority authority = authorityRepository.findByName(ga.getAuthority().trim());
+            if(authority ==null){
+                authority = new Authority();
+                authority.setName(ga.getAuthority());
+                authorityRepository.save(authority);
             }
-            aidasUser.getAidasAuthorities().add(aidasAuthority);
-            currentAidasAuthority= aidasAuthority;
+            user.getAidasAuthorities().add(authority);
+            currentAuthority = authority;
         }
-        aidasUser.setLocked(false);
-        aidasUser.setCreatedDate(Instant.now());
-        aidasUser.setLastModifiedDate(Instant.now());
-        aidasUser.setCurrentAidasAuthority(currentAidasAuthority);
-        aidasUser.setPassword(" ");
-        aidasUser.setDeleted(false);
-        AidasUser result = aidasUserRepository.save(aidasUser);
+        user.setLocked(false);
+        user.setCreatedDate(Instant.now());
+        user.setLastModifiedDate(Instant.now());
+        user.setCurrentAidasAuthority(currentAuthority);
+        user.setPassword(" ");
+        user.setDeleted(false);
+        User result = userRepository.save(user);
         if(userRep.getAttributes()!=null) {
             List<String> userAttrsVals = new ArrayList<>();
-            userAttrsVals.add(currentAidasAuthority.getName());
+            userAttrsVals.add(currentAuthority.getName());
             userRep.getAttributes().put("current_role", userAttrsVals);
             userAttrsVals = new ArrayList<>();
             userAttrsVals.add(String.valueOf(result.getId()));
-            userRep.getAttributes().put("aidas_id", userAttrsVals);
+            userRep.getAttributes().put("id", userAttrsVals);
         }
         else{
             Map<String,List<String>> userAttrs = new HashMap<>();
             List<String> userAttrsVals = new ArrayList<>();
-            userAttrsVals.add(currentAidasAuthority.getName());
+            userAttrsVals.add(currentAuthority.getName());
             userAttrs.put("current_role",userAttrsVals);
             userAttrsVals = new ArrayList<>();
             userAttrsVals.add(String.valueOf(result.getId()));
-            userAttrs.put("aidas_id",userAttrsVals);
+            userAttrs.put("id",userAttrsVals);
             userRep.setAttributes(userAttrs);
         }
         userResource.update(userRep);
-        return  aidasUserRepository.save(aidasUser);
+        return  userRepository.save(user);
     }
 
-    private static AidasUser getUser(Map<String, Object> details) {
-        AidasUser aidasUser = new AidasUser();
+    private static User getUser(Map<String, Object> details) {
+        User user = new User();
         Boolean activated = Boolean.TRUE;
         if (details.get("uid") != null) {
-            aidasUser.setKeycloakId((String) details.get("uid"));
-            aidasUser.setLogin((String) details.get("sub"));
+            user.setKeycloakId((String) details.get("uid"));
+            user.setLogin((String) details.get("sub"));
         } else {
-            aidasUser.setKeycloakId((String) details.get("sub"));
+            user.setKeycloakId((String) details.get("sub"));
         }
 
         if (details.get("preferred_username") != null) {
-            aidasUser.setLogin(((String) details.get("preferred_username")).toLowerCase());
-        } else if (aidasUser.getLogin() == null) {
-            aidasUser.setLogin(aidasUser.getLogin());
+            user.setLogin(((String) details.get("preferred_username")).toLowerCase());
+        } else if (user.getLogin() == null) {
+            user.setLogin(user.getLogin());
         }
         if (details.get("given_name") != null) {
-            aidasUser.setFirstName((String) details.get("given_name"));
+            user.setFirstName((String) details.get("given_name"));
         } else if (details.get("name") != null) {
-            aidasUser.setFirstName((String) details.get("name"));
+            user.setFirstName((String) details.get("name"));
         }
         if (details.get("family_name") != null) {
-            aidasUser.setLastName((String) details.get("family_name"));
+            user.setLastName((String) details.get("family_name"));
         }
         if (details.get("email_verified") != null) {
             activated = (Boolean) details.get("email_verified");
         }
         if (details.get("email") != null) {
-            aidasUser.setEmail(((String) details.get("email")).toLowerCase());
+            user.setEmail(((String) details.get("email")).toLowerCase());
         } else {
-            aidasUser.setEmail((String) details.get("sub"));
+            user.setEmail((String) details.get("sub"));
         }
 
 
         if (details.get("langKey") != null) {
-            aidasUser.setLangKey((String) details.get("langKey"));
+            user.setLangKey((String) details.get("langKey"));
         } else if (details.get("locale") != null) {
             // trim off country code if it exists
             String locale = (String) details.get("locale");
@@ -167,15 +167,15 @@ public class IdpUserService {
             } else if (locale.contains("-")) {
                 locale = locale.substring(0, locale.indexOf('-'));
             }
-            aidasUser.setLangKey(locale.toLowerCase());
+            user.setLangKey(locale.toLowerCase());
         } else {
             // set langKey to default if not specified by IdP
-            aidasUser.setLangKey(Constants.DEFAULT_LANGUAGE);
+            user.setLangKey(Constants.DEFAULT_LANGUAGE);
         }
         if (details.get("picture") != null) {
-            aidasUser.setImageUrl((String) details.get("picture"));
+            user.setImageUrl((String) details.get("picture"));
         }
-        aidasUser.setActivated(activated);
-        return aidasUser;
+        user.setActivated(activated);
+        return user;
     }
 }

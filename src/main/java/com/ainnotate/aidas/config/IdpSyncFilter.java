@@ -1,7 +1,7 @@
 package com.ainnotate.aidas.config;
 
-import com.ainnotate.aidas.domain.AidasUser;
-import com.ainnotate.aidas.repository.AidasUserRepository;
+import com.ainnotate.aidas.domain.User;
+import com.ainnotate.aidas.repository.UserRepository;
 import com.ainnotate.aidas.security.SecurityUtils;
 import com.ainnotate.aidas.service.IdpUserService;
 import org.keycloak.admin.client.Keycloak;
@@ -19,7 +19,7 @@ import java.io.IOException;
 public class IdpSyncFilter implements Filter {
 
     @Autowired
-    AidasUserRepository aidasUserRepository;
+    UserRepository userRepository;
 
     @Autowired
     private Keycloak keycloak;
@@ -35,10 +35,10 @@ public class IdpSyncFilter implements Filter {
             throws IOException, ServletException {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        AidasUser aidasUser = null;
+        User user = null;
         try {
-            aidasUser = aidasUserRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-            if(aidasUser!=null && aidasUser.getKeycloakId().equals("test")){
+            user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+            if(user !=null && user.getKeycloakId().equals("test")){
 
             }
         }catch (Exception e){

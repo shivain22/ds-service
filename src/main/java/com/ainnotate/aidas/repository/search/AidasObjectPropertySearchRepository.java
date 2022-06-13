@@ -2,10 +2,10 @@ package com.ainnotate.aidas.repository.search;
 
 import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 
-import com.ainnotate.aidas.domain.AidasObjectProperty;
+import com.ainnotate.aidas.domain.ObjectProperty;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -15,13 +15,13 @@ import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 
 /**
- * Spring Data Elasticsearch repository for the {@link AidasObjectProperty} entity.
+ * Spring Data Elasticsearch repository for the {@link ObjectProperty} entity.
  */
 public interface AidasObjectPropertySearchRepository
-    extends ElasticsearchRepository<AidasObjectProperty, Long>, AidasObjectPropertySearchRepositoryInternal {}
+    extends ElasticsearchRepository<ObjectProperty, Long>, AidasObjectPropertySearchRepositoryInternal {}
 
 interface AidasObjectPropertySearchRepositoryInternal {
-    Page<AidasObjectProperty> search(String query, Pageable pageable);
+    Page<ObjectProperty> search(String query, Pageable pageable);
 }
 
 class AidasObjectPropertySearchRepositoryInternalImpl implements AidasObjectPropertySearchRepositoryInternal {
@@ -33,11 +33,11 @@ class AidasObjectPropertySearchRepositoryInternalImpl implements AidasObjectProp
     }
 
     @Override
-    public Page<AidasObjectProperty> search(String query, Pageable pageable) {
+    public Page<ObjectProperty> search(String query, Pageable pageable) {
         NativeSearchQuery nativeSearchQuery = new NativeSearchQuery(queryStringQuery(query));
         nativeSearchQuery.setPageable(pageable);
-        List<AidasObjectProperty> hits = elasticsearchTemplate
-            .search(nativeSearchQuery, AidasObjectProperty.class)
+        List<ObjectProperty> hits = elasticsearchTemplate
+            .search(nativeSearchQuery, ObjectProperty.class)
             .map(SearchHit::getContent)
             .stream()
             .collect(Collectors.toList());

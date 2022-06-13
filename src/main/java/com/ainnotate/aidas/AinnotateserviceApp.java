@@ -7,10 +7,10 @@ import java.util.*;
 import javax.annotation.PostConstruct;
 
 import com.ainnotate.aidas.config.KeycloakConfig;
-import com.ainnotate.aidas.domain.AidasAuthority;
-import com.ainnotate.aidas.domain.AidasUser;
-import com.ainnotate.aidas.repository.AidasAuthorityRepository;
-import com.ainnotate.aidas.repository.AidasUserRepository;
+import com.ainnotate.aidas.domain.Authority;
+import com.ainnotate.aidas.domain.User;
+import com.ainnotate.aidas.repository.AuthorityRepository;
+import com.ainnotate.aidas.repository.UserRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.RealmResource;
@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.liquibase.LiquibaseProperties;
+
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.core.env.Environment;
@@ -49,10 +50,10 @@ public class AinnotateserviceApp {
     private KeycloakConfig keycloakConfig;
 
     @Autowired
-    private AidasUserRepository aidasUserRepository;
+    private UserRepository userRepository;
 
     @Autowired
-    private AidasAuthorityRepository aidasAuthorityRepository;
+    private AuthorityRepository authorityRepository;
 
 
     /**
@@ -66,36 +67,36 @@ public class AinnotateserviceApp {
     public void initApplication() {
         RealmResource realmResource = keycloak.realm(keycloakConfig.getClientRealm());
         UsersResource usersRessource = realmResource.users();
-        List<AidasUser> aidasUsers =  aidasUserRepository.findAll();
+        List<User> aidasUsers =  userRepository.findAll();
         List<UserRepresentation> users = usersRessource.list();
         for(UserRepresentation user:users) {
-            if (aidasUserRepository.findByLogin(user.getUsername()).isPresent()) {
+            if (userRepository.findByLogin(user.getUsername()).isPresent()) {
 
-                AidasUser aidasUser = aidasUserRepository.findByLogin(user.getUsername()).get();
-                if (!aidasUser.getKeycloakId().equals(user.getId())) {
-                    aidasUser.setKeycloakId(user.getId());
-                    aidasUserRepository.save(aidasUser);
+                User myUser = userRepository.findByLogin(user.getUsername()).get();
+                if (!myUser.getKeycloakId().equals(user.getId())) {
+                    myUser.setKeycloakId(user.getId());
+                    userRepository.save(myUser);
                 }
                 List<String> userAttrsVals = new ArrayList<>();
-                if(aidasUser.getCurrentAidasAuthority()!=null && aidasUser.getCurrentAidasAuthority().getName()!=null) {
-                    userAttrsVals.add(aidasUser.getCurrentAidasAuthority().getName());
+                if(myUser.getCurrentAidasAuthority()!=null && myUser.getCurrentAidasAuthority().getName()!=null) {
+                    userAttrsVals.add(myUser.getCurrentAidasAuthority().getName());
                 }
                 else {
-                    AidasAuthority aidasAuthority = aidasAuthorityRepository.getById(6l);
-                    userAttrsVals.add(aidasAuthority.getName());
+                    Authority authority = authorityRepository.getById(6l);
+                    userAttrsVals.add(authority.getName());
                 }
                 List<String> userAttrVals1 = new ArrayList<>();
-                userAttrVals1.add(String.valueOf(aidasUser.getId()));
+                userAttrVals1.add(String.valueOf(user.getId()));
                 if (user.getAttributes() != null) {
                     user.getAttributes().put("current_role", userAttrsVals);
-                    user.getAttributes().put("aidas_id", userAttrVals1);
+                    user.getAttributes().put("id", userAttrVals1);
                 } else {
                     Map<String, List<String>> userAttrs = new HashMap<>();
                     userAttrs.put("current_role",userAttrsVals);
-                    userAttrs.put("aidas_id",userAttrVals1);
+                    userAttrs.put("id",userAttrVals1);
                     user.setAttributes(userAttrs);
                 }
-                UserResource userResource = usersRessource.get(aidasUser.getKeycloakId());
+                UserResource userResource = usersRessource.get(myUser.getKeycloakId());
                 userResource.update(user);
             }
         }

@@ -1,7 +1,7 @@
 package com.ainnotate.aidas.repository.search;
 
-import com.ainnotate.aidas.domain.AidasAuthority;
-import com.ainnotate.aidas.domain.AidasUploadRejectReason;
+import com.ainnotate.aidas.domain.Authority;
+import com.ainnotate.aidas.domain.UploadRejectReason;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -16,13 +16,13 @@ import java.util.stream.Collectors;
 import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 
 /**
- * Spring Data Elasticsearch repository for the {@link AidasAuthority} entity.
+ * Spring Data Elasticsearch repository for the {@link Authority} entity.
  */
 public interface AidasUploadRejectReasonSearchRepository
-    extends ElasticsearchRepository<AidasUploadRejectReason, Long>, AidasUploadRejectReasonSearchRepositoryInternal {}
+    extends ElasticsearchRepository<UploadRejectReason, Long>, AidasUploadRejectReasonSearchRepositoryInternal {}
 
 interface AidasUploadRejectReasonSearchRepositoryInternal {
-    Page<AidasUploadRejectReason> search(String query, Pageable pageable);
+    Page<UploadRejectReason> search(String query, Pageable pageable);
 }
 
 class AidasUploadRejectReasonSearchRepositoryInternalImpl implements AidasUploadRejectReasonSearchRepositoryInternal {
@@ -34,11 +34,11 @@ class AidasUploadRejectReasonSearchRepositoryInternalImpl implements AidasUpload
     }
 
     @Override
-    public Page<AidasUploadRejectReason> search(String query, Pageable pageable) {
+    public Page<UploadRejectReason> search(String query, Pageable pageable) {
         NativeSearchQuery nativeSearchQuery = new NativeSearchQuery(queryStringQuery(query));
         nativeSearchQuery.setPageable(pageable);
-        List<AidasUploadRejectReason> hits = elasticsearchTemplate
-            .search(nativeSearchQuery, AidasUploadRejectReason.class)
+        List<UploadRejectReason> hits = elasticsearchTemplate
+            .search(nativeSearchQuery, UploadRejectReason.class)
             .map(SearchHit::getContent)
             .stream()
             .collect(Collectors.toList());

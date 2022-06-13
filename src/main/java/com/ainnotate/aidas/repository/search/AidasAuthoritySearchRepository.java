@@ -1,6 +1,6 @@
 package com.ainnotate.aidas.repository.search;
 
-import com.ainnotate.aidas.domain.AidasAuthority;
+import com.ainnotate.aidas.domain.Authority;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -15,13 +15,13 @@ import java.util.stream.Collectors;
 import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 
 /**
- * Spring Data Elasticsearch repository for the {@link AidasAuthority} entity.
+ * Spring Data Elasticsearch repository for the {@link Authority} entity.
  */
 public interface AidasAuthoritySearchRepository
-    extends ElasticsearchRepository<AidasAuthority, Long>, AidasAuthoritySearchRepositoryInternal {}
+    extends ElasticsearchRepository<Authority, Long>, AidasAuthoritySearchRepositoryInternal {}
 
 interface AidasAuthoritySearchRepositoryInternal {
-    Page<AidasAuthority> search(String query, Pageable pageable);
+    Page<Authority> search(String query, Pageable pageable);
 }
 
 class AidasAuthoritySearchRepositoryInternalImpl implements AidasAuthoritySearchRepositoryInternal {
@@ -33,11 +33,11 @@ class AidasAuthoritySearchRepositoryInternalImpl implements AidasAuthoritySearch
     }
 
     @Override
-    public Page<AidasAuthority> search(String query, Pageable pageable) {
+    public Page<Authority> search(String query, Pageable pageable) {
         NativeSearchQuery nativeSearchQuery = new NativeSearchQuery(queryStringQuery(query));
         nativeSearchQuery.setPageable(pageable);
-        List<AidasAuthority> hits = elasticsearchTemplate
-            .search(nativeSearchQuery, AidasAuthority.class)
+        List<Authority> hits = elasticsearchTemplate
+            .search(nativeSearchQuery, Authority.class)
             .map(SearchHit::getContent)
             .stream()
             .collect(Collectors.toList());

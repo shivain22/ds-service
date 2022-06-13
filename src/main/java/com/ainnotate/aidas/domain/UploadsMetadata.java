@@ -6,33 +6,33 @@ import java.util.List;
 
 public class UploadsMetadata {
 
-    AidasUpload aidasUploads;
-    @JsonIgnoreProperties(value = {"aidasProject"})
-    List<AidasProjectProperty> aidasProjectProperties;
-    @JsonIgnoreProperties(value = {"aidasObject"})
-    List<AidasObjectProperty> aidasObjectProperties;
+    Upload uploads;
+    @JsonIgnoreProperties(value = {"project"})
+    List<ProjectProperty> projectProperties;
+    @JsonIgnoreProperties(value = {"object"})
+    List<ObjectProperty> aidasObjectProperties;
 
-    public AidasUpload getAidasUploads() {
-        return aidasUploads;
+    public Upload getAidasUploads() {
+        return uploads;
     }
 
-    public void setAidasUploads(AidasUpload aidasUploads) {
-        this.aidasUploads = aidasUploads;
+    public void setAidasUploads(Upload uploads) {
+        this.uploads = uploads;
     }
 
-    public List<AidasProjectProperty> getAidasProjectProperties() {
-        return aidasProjectProperties;
+    public List<ProjectProperty> getProjectProperties() {
+        return projectProperties;
     }
 
-    public void setAidasProjectProperties(List<AidasProjectProperty> aidasProjectProperties) {
-        this.aidasProjectProperties = aidasProjectProperties;
+    public void setProjectProperties(List<ProjectProperty> projectProperties) {
+        this.projectProperties = projectProperties;
     }
 
-    public List<AidasObjectProperty> getAidasObjectProperties() {
+    public List<ObjectProperty> getObjectProperties() {
         return aidasObjectProperties;
     }
 
-    public void setAidasObjectProperties(List<AidasObjectProperty> aidasObjectProperties) {
+    public void setAidasObjectProperties(List<ObjectProperty> aidasObjectProperties) {
         this.aidasObjectProperties = aidasObjectProperties;
     }
 }

@@ -1,2 +1,0 @@
-id;first_name;last_name;email;locked;password;login;image_url;activated;lang_key;created_by;last_modified_by;aidas_organisation_id;aidas_customer_id;aidas_vendor_id;current_aidas_authority_id;keycloak_id;deleted
--1;Super;Admin;admin@ainnotate.com;false;12345678;admin;;true;en;-1;-1;;;;1;test;0

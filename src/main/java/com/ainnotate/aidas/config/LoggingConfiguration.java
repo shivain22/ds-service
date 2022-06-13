@@ -16,7 +16,7 @@ import org.springframework.context.annotation.Configuration;
 import tech.jhipster.config.JHipsterProperties;
 
 /*
- * Configures the console and Logstash log appenders from the app properties
+ * Configures the console and Logstash log appenders from the app property
  */
 @Configuration
 @RefreshScope

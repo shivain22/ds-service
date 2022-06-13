@@ -47,6 +47,32 @@ public final class AidasConstants {
 
     public static final Integer STATUS_DISABLED=1;
 
+    public static final String DEFAULT_STORAGE_KEY_NAME="defaultStorage";
+
+    public static final String DOWNLOAD_BUCKETNAME_KEY_NAME="downloadBucketName";
+
+    public static final String DOWNLOAD_REGION_KEY_NAME="downloadRegion";
+
+    public static final String DOWNLOAD_ACCESS_KEY_KEY_NAME="downloadAccessKey";
+
+    public static final String DOWNLOAD_ACCESS_SECRET_KEY_NAME="downloadAccessSecret";
+
+    public static final String DOWNLOAD_PREFIX_KEY_NAME="downloadPrefix";
+
+    public static final String UPLOAD_BUCKETNAME_KEY_NAME="uploadBucketName";
+
+    public static final String UPLOAD_REGION_KEY_NAME="uploadRegion";
+
+    public static final String UPLOAD_ACCESS_KEY_KEY_NAME="uploadAccessKey";
+
+    public static final String UPLOAD_ACCESS_SECRET_KEY_NAME="uploadAccessSecret";
+
+    public static final String UPLOAD_PREFIX_KEY_NAME="uploadPrefix";
+
+    public static final String S3="s3";
+
+    public static final Integer AUTO_CREATE_OBJECTS=1;
+
 
 
     private AidasConstants() {}

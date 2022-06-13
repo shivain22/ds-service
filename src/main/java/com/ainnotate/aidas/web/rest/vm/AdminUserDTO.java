@@ -3,8 +3,8 @@ package com.ainnotate.aidas.web.rest.vm;
 
 
 import com.ainnotate.aidas.config.Constants;
-import com.ainnotate.aidas.domain.AidasAuthority;
-import com.ainnotate.aidas.domain.AidasUser;
+import com.ainnotate.aidas.domain.Authority;
+import com.ainnotate.aidas.domain.User;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
@@ -58,7 +58,7 @@ public class AdminUserDTO {
         // Empty constructor needed for Jackson.
     }
 
-    public AdminUserDTO(AidasUser user) {
+    public AdminUserDTO(User user) {
         this.id = user.getId();
         this.login = user.getLogin();
         this.firstName = user.getFirstName();
@@ -71,7 +71,7 @@ public class AdminUserDTO {
         this.createdDate = user.getCreatedDate();
         this.lastModifiedBy = user.getLastModifiedBy();
         this.lastModifiedDate = user.getLastModifiedDate();
-        this.authorities = user.getAidasAuthorities().stream().map(AidasAuthority::getName).collect(Collectors.toSet());
+        this.authorities = user.getAidasAuthorities().stream().map(Authority::getName).collect(Collectors.toSet());
     }
 
     public Long getId() {

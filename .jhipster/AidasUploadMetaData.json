@@ -14,8 +14,8 @@
   ],
   "relationships": [
     {
-      "relationshipName": "aidasUpload",
-      "otherEntityName": "aidasUpload",
+      "relationshipName": "upload",
+      "otherEntityName": "upload",
       "relationshipType": "many-to-one",
       "otherEntityField": "name"
     }

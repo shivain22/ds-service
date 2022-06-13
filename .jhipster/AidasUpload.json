@@ -29,22 +29,22 @@
   ],
   "relationships": [
     {
-      "relationshipName": "aidasUser",
-      "otherEntityName": "aidasUser",
+      "relationshipName": "user",
+      "otherEntityName": "user",
       "relationshipType": "many-to-one",
       "relationshipValidateRules": ["required"],
       "otherEntityField": "firstName"
     },
     {
-      "relationshipName": "aidasObject",
-      "otherEntityName": "aidasObject",
+      "relationshipName": "object",
+      "otherEntityName": "object",
       "relationshipType": "many-to-one",
       "relationshipValidateRules": ["required"],
       "otherEntityField": "name"
     },
     {
       "relationshipName": "statusModifiedBy",
-      "otherEntityName": "aidasUser",
+      "otherEntityName": "user",
       "relationshipType": "many-to-one",
       "otherEntityField": "firstName"
     }

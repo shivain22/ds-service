@@ -2,10 +2,10 @@ package com.ainnotate.aidas.repository.search;
 
 import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 
-import com.ainnotate.aidas.domain.AidasProperties;
+import com.ainnotate.aidas.domain.Property;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -15,13 +15,13 @@ import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 
 /**
- * Spring Data Elasticsearch repository for the {@link AidasProperties} entity.
+ * Spring Data Elasticsearch repository for the {@link Property} entity.
  */
 public interface AidasPropertiesSearchRepository
-    extends ElasticsearchRepository<AidasProperties, Long>, AidasPropertiesSearchRepositoryInternal {}
+    extends ElasticsearchRepository<Property, Long>, AidasPropertiesSearchRepositoryInternal {}
 
 interface AidasPropertiesSearchRepositoryInternal {
-    Page<AidasProperties> search(String query, Pageable pageable);
+    Page<Property> search(String query, Pageable pageable);
 }
 
 class AidasPropertiesSearchRepositoryInternalImpl implements AidasPropertiesSearchRepositoryInternal {
@@ -33,11 +33,11 @@ class AidasPropertiesSearchRepositoryInternalImpl implements AidasPropertiesSear
     }
 
     @Override
-    public Page<AidasProperties> search(String query, Pageable pageable) {
+    public Page<Property> search(String query, Pageable pageable) {
         NativeSearchQuery nativeSearchQuery = new NativeSearchQuery(queryStringQuery(query));
         nativeSearchQuery.setPageable(pageable);
-        List<AidasProperties> hits = elasticsearchTemplate
-            .search(nativeSearchQuery, AidasProperties.class)
+        List<Property> hits = elasticsearchTemplate
+            .search(nativeSearchQuery, Property.class)
             .map(SearchHit::getContent)
             .stream()
             .collect(Collectors.toList());

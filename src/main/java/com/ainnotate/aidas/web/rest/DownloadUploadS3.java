@@ -2,27 +2,19 @@ package com.ainnotate.aidas.web.rest;
 
 import com.ainnotate.aidas.constants.AidasConstants;
 import com.ainnotate.aidas.domain.*;
-import com.ainnotate.aidas.repository.AidasDownloadRepository;
-import com.ainnotate.aidas.repository.AidasObjectRepository;
-import com.ainnotate.aidas.repository.AidasProjectRepository;
-import com.ainnotate.aidas.repository.AidasUploadRepository;
-import net.lingala.zip4j.ZipFile;
-import net.lingala.zip4j.exception.ZipException;
+import com.ainnotate.aidas.domain.Object;
+import com.ainnotate.aidas.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
@@ -52,19 +44,19 @@ public class DownloadUploadS3  implements  Runnable{
     private String resource;
     private String status;
     private List<Long> uploadedFileIds;
-    private AidasProject aidasProject;
-    private AidasObject aidasObject;
+    private Project project;
+    private Object object;
     private String tempFolder;
     private String zipFile;
     private String zipFileKey;
-    private AidasUser aidasUser;
+    private User user;
 
-    public AidasUser getAidasUser() {
-        return aidasUser;
+    public User getUser() {
+        return user;
     }
 
-    public void setAidasUser(AidasUser aidasUser) {
-        this.aidasUser = aidasUser;
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public String getZipFileKey() {
@@ -99,20 +91,20 @@ public class DownloadUploadS3  implements  Runnable{
         this.uploadedFileIds = uploadedFileIds;
     }
 
-    public AidasProject getAidasProject() {
-        return aidasProject;
+    public Project getProject() {
+        return project;
     }
 
-    public void setAidasProject(AidasProject aidasProject) {
-        this.aidasProject = aidasProject;
+    public void setProject(Project project) {
+        this.project = project;
     }
 
-    public AidasObject getAidasObject() {
-        return aidasObject;
+    public Object getObject() {
+        return object;
     }
 
-    public void setAidasObject(AidasObject aidasObject) {
-        this.aidasObject = aidasObject;
+    public void setObject(Object object) {
+        this.object = object;
     }
 
     public String getTempFolder() {
@@ -132,58 +124,149 @@ public class DownloadUploadS3  implements  Runnable{
     }
 
     @Autowired
-    private AidasProjectRepository aidasProjectRepository;
+    private ProjectRepository projectRepository;
     @Autowired
-    private AidasObjectRepository aidasObjectRepository;
+    private ObjectRepository objectRepository;
     @Autowired
-    private AidasUploadRepository aidasUploadRepository;
+    private UploadRepository uploadRepository;
     @Autowired
-    private AidasDownloadRepository aidasDownloadRepository;
+    private DownloadRepository downloadRepository;
     @Autowired
     private JavaMailSender javaMailSender;
 
+    @Autowired
+    private AppPropertyRepository appPropertyRepository;
 
 
+    private String globalDownloadAccessKey ="";
+    private String globalDownloadAccessSecret ="";
+    private String globalDownloadRegion = "";
+    private String globalDownloadBucketName = "";
+    private String globalDownloadPrefix;
+
+    private String globalUploadAccessKey ="";
+    private String globalUploadAccessSecret ="";
+    private String globalUploadRegion = "";
+    private String globalUploadBucketName = "";
+    private String globalUploadPrefix;
 
     public DownloadUploadS3(){
 
     }
 
-    public void setUp(AidasProject aidasProject,String status){
+    private void setGlobalDefaultValues(){
+        if(user.getCurrentAidasAuthority().getId().equals(AidasConstants.ADMIN)){
+            Set<AppProperty> aidasAppProperties = user.getAppProperty();
+            for(AppProperty appProperty1 :aidasAppProperties){
+                if(appProperty1.getName().equals(AidasConstants.DEFAULT_STORAGE_KEY_NAME) && appProperty1.getName().equals(AidasConstants.S3)){
+                    AppProperty aap = appPropertyRepository.getAidasAppProperty(user.getId(),AidasConstants.DOWNLOAD_ACCESS_KEY_KEY_NAME);
+                    if(aap!=null)
+                        globalDownloadAccessKey = aap.getValue();
+                    aap = appPropertyRepository.getAidasAppProperty(user.getId(),AidasConstants.DOWNLOAD_ACCESS_SECRET_KEY_NAME);
+                    if(aap!=null)
+                        globalDownloadAccessSecret = aap.getValue();
+                    aap = appPropertyRepository.getAidasAppProperty(user.getId(),AidasConstants.DOWNLOAD_REGION_KEY_NAME);
+                    if(aap!=null)
+                        globalDownloadRegion = aap.getValue();
+                    aap = appPropertyRepository.getAidasAppProperty(user.getId(),AidasConstants.DOWNLOAD_BUCKETNAME_KEY_NAME);
+                    if(aap!=null)
+                        globalDownloadBucketName = aap.getValue();
+                    aap = appPropertyRepository.getAidasAppProperty(user.getId(),AidasConstants.DOWNLOAD_PREFIX_KEY_NAME);
+                    if(aap!=null)
+                        globalDownloadPrefix = aap.getValue();
+                    aap = appPropertyRepository.getAidasAppProperty(user.getId(),AidasConstants.UPLOAD_PREFIX_KEY_NAME);
+                    if(aap!=null)
+                        globalUploadPrefix = aap.getValue();
+                }
+            }
+        }
+        if(user.getCurrentAidasAuthority().getId().equals(AidasConstants.ORG_ADMIN)){
+            Set<AppProperty> aidasAppProperties = user.getOrganisation().getAppProperty();
+            for(AppProperty appProperty1 :aidasAppProperties){
+                if(appProperty1.getName().equals(AidasConstants.DEFAULT_STORAGE_KEY_NAME) && appProperty1.getName().equals(AidasConstants.S3)){
+                    AppProperty aap = appPropertyRepository.getAidasAppProperty(user.getId(),AidasConstants.DOWNLOAD_ACCESS_KEY_KEY_NAME);
+                    if(aap!=null)
+                        globalDownloadAccessKey = aap.getValue();
+                    aap = appPropertyRepository.getAidasAppProperty(user.getId(),AidasConstants.DOWNLOAD_ACCESS_SECRET_KEY_NAME);
+                    if(aap!=null)
+                        globalDownloadAccessSecret = aap.getValue();
+                    aap = appPropertyRepository.getAidasAppProperty(user.getId(),AidasConstants.DOWNLOAD_REGION_KEY_NAME);
+                    if(aap!=null)
+                        globalDownloadRegion = aap.getValue();
+                    aap = appPropertyRepository.getAidasAppProperty(user.getId(),AidasConstants.DOWNLOAD_BUCKETNAME_KEY_NAME);
+                    if(aap!=null)
+                        globalDownloadBucketName = aap.getValue();
+                    aap = appPropertyRepository.getAidasAppProperty(user.getId(),AidasConstants.DOWNLOAD_PREFIX_KEY_NAME);
+                    if(aap!=null)
+                        globalDownloadPrefix = aap.getValue();
+                    aap = appPropertyRepository.getAidasAppProperty(user.getId(),AidasConstants.UPLOAD_PREFIX_KEY_NAME);
+                    if(aap!=null)
+                        globalUploadPrefix = aap.getValue();
+                }
+            }
+        }
+        if(user.getCurrentAidasAuthority().getId().equals(AidasConstants.CUSTOMER_ADMIN)){
+            Set<AppProperty> aidasAppProperties = user.getCustomer().getAppProperty();
+            for(AppProperty appProperty1 :aidasAppProperties){
+                if(appProperty1.getName().equals(AidasConstants.DEFAULT_STORAGE_KEY_NAME) && appProperty1.getName().equals(AidasConstants.S3)){
+                    AppProperty aap = appPropertyRepository.getAidasAppProperty(user.getId(),AidasConstants.DOWNLOAD_ACCESS_KEY_KEY_NAME);
+                    if(aap!=null)
+                        globalDownloadAccessKey = aap.getValue();
+                    aap = appPropertyRepository.getAidasAppProperty(user.getId(),AidasConstants.DOWNLOAD_ACCESS_SECRET_KEY_NAME);
+                    if(aap!=null)
+                        globalDownloadAccessSecret = aap.getValue();
+                    aap = appPropertyRepository.getAidasAppProperty(user.getId(),AidasConstants.DOWNLOAD_REGION_KEY_NAME);
+                    if(aap!=null)
+                        globalDownloadRegion = aap.getValue();
+                    aap = appPropertyRepository.getAidasAppProperty(user.getId(),AidasConstants.DOWNLOAD_BUCKETNAME_KEY_NAME);
+                    if(aap!=null)
+                        globalDownloadBucketName = aap.getValue();
+                    aap = appPropertyRepository.getAidasAppProperty(user.getId(),AidasConstants.DOWNLOAD_PREFIX_KEY_NAME);
+                    if(aap!=null)
+                        globalDownloadPrefix = aap.getValue();
+                    aap = appPropertyRepository.getAidasAppProperty(user.getId(),AidasConstants.UPLOAD_PREFIX_KEY_NAME);
+                    if(aap!=null)
+                        globalUploadPrefix = aap.getValue();
+                }
+            }
+        }
+    }
+    public void setUp(Project project, String status){
         this.resource = "project";
         this.status = status;
-        this.aidasProject= aidasProject;
+        this.project = project;
         String format = "yyyy_MM_dd_HH_mm";
         DateFormat dateFormatter = new SimpleDateFormat(format);
         String createDate = dateFormatter.format(new Date());
         String separator = FileSystems.getDefault().getSeparator();
         String tmpdir = System.getProperty("java.io.tmpdir");
-        this.tempFolder =  tmpdir+separator+"tmp_"+aidasUser.getId()+"_"+aidasProject.getId()+"_"+aidasProject.getName()+"_"+createDate+"_"+this.status;
-        this.zipFile= tmpdir+separator+"tmp_"+aidasUser.getId()+"_"+aidasProject.getId()+"_"+aidasProject.getName()+"_"+createDate+"_"+this.status+".zip";
-        this.zipFileKey = "tmp_"+aidasUser.getId()+"_"+aidasProject.getId()+"_"+aidasProject.getName()+"_"+createDate+"_"+this.status+".zip";
+        this.tempFolder =  tmpdir+separator+"tmp_"+ user.getId()+"_"+ project.getId()+"_"+ project.getName()+"_"+createDate+"_"+this.status;
+        this.zipFile= tmpdir+separator+"tmp_"+ user.getId()+"_"+ project.getId()+"_"+ project.getName()+"_"+createDate+"_"+this.status+".zip";
+        this.zipFileKey = "tmp_"+ user.getId()+"_"+ project.getId()+"_"+ project.getName()+"_"+createDate+"_"+this.status+".zip";
         File f = new File(this.tempFolder);
         if(!f.exists()){
             f.mkdir();
         }
-
+        setGlobalDefaultValues();
     }
 
-    public void setUp(AidasObject aidasObject,String status){
+    public void setUp(Object object, String status){
         this.resource = "object";
         this.status = status;
-        this.aidasObject= aidasObject;
+        this.object = object;
         String format = "yyyy_MM_dd_HH_mm";
         DateFormat dateFormatter = new SimpleDateFormat(format);
         String createDate = dateFormatter.format(new Date());
         String separator = FileSystems.getDefault().getSeparator();
         String tmpdir = System.getProperty("java.io.tmpdir");
-        this.tempFolder =  tmpdir+separator+"tmp_"+aidasUser.getId()+"_"+aidasObject.getId()+"_"+aidasObject.getName()+"_"+createDate+"_"+this.status;
-        this.zipFile= tmpdir+separator+"tmp_"+aidasUser.getId()+"_"+aidasObject.getId()+"_"+aidasObject.getName()+"_"+createDate+"_"+this.status+".zip";
-        this.zipFileKey = "tmp_"+aidasUser.getId()+"_"+aidasObject.getId()+"_"+aidasObject.getName()+"_"+createDate+"_"+this.status+".zip";
+        this.tempFolder =  tmpdir+separator+"tmp_"+ user.getId()+"_"+ object.getId()+"_"+ object.getName()+"_"+createDate+"_"+this.status;
+        this.zipFile= tmpdir+separator+"tmp_"+ user.getId()+"_"+ object.getId()+"_"+ object.getName()+"_"+createDate+"_"+this.status+".zip";
+        this.zipFileKey = "tmp_"+ user.getId()+"_"+ object.getId()+"_"+ object.getName()+"_"+createDate+"_"+this.status+".zip";
         File f = new File(this.tempFolder);
         if(!f.exists()){
             f.mkdir();
         }
+        setGlobalDefaultValues();
     }
 
     public void setUp(List<Long> uploadedFileIds){
@@ -194,90 +277,77 @@ public class DownloadUploadS3  implements  Runnable{
         String createDate = dateFormatter.format(new Date());
         String separator = FileSystems.getDefault().getSeparator();
         String tmpdir = System.getProperty("java.io.tmpdir");
-        this.tempFolder =  tmpdir+separator+"tmp_"+aidasUser.getId()+"_"+createDate+"_"+this.status;
-        this.zipFile= tmpdir+separator+"tmp_"+aidasUser.getId()+"_"+createDate+"_"+this.status+".zip";
-        this.zipFileKey = "tmp_"+aidasUser.getId()+"_"+createDate+"_"+this.status+".zip";
+        this.tempFolder =  tmpdir+separator+"tmp_"+ user.getId()+"_"+createDate+"_"+this.status;
+        this.zipFile= tmpdir+separator+"tmp_"+ user.getId()+"_"+createDate+"_"+this.status+".zip";
+        this.zipFileKey = "tmp_"+ user.getId()+"_"+createDate+"_"+this.status+".zip";
         File f = new File(this.tempFolder);
         if(!f.exists()){
             f.mkdir();
         }
+        setGlobalDefaultValues();
     }
 
     @Override
     public void run() {
-        List<AidasUpload> uploads=null;
-        String accessKey ="";
-        String accessSecret ="";
-        String region = "";
-        String bucketName = "";
+        List<Upload> uploads=null;
+
         try {
             if (this.resource.equals("project")) {
                 if (this.status.equals("approved")) {
-                    uploads = this.aidasUploadRepository.getAidasUploadsByProject(this.aidasProject.getId(), AidasConstants.AIDAS_UPLOAD_APPROVED);
+                    uploads = this.uploadRepository.getAidasUploadsByProject(this.project.getId(), AidasConstants.AIDAS_UPLOAD_APPROVED);
                 } else if (this.status.equals("rejected")) {
-                    uploads = this.aidasUploadRepository.getAidasUploadsByProject(this.aidasProject.getId(),AidasConstants.AIDAS_UPLOAD_REJECTED);
-                } else {
-                    uploads = this.aidasUploadRepository.getAidasUploadsByProject(this.aidasProject.getId(),AidasConstants.AIDAS_UPLOAD_PENDING);
+                    uploads = this.uploadRepository.getAidasUploadsByProject(this.project.getId(),AidasConstants.AIDAS_UPLOAD_REJECTED);
+                }else if (this.status.equals("pending")) {
+                    uploads = this.uploadRepository.getAidasUploadsByProject(this.project.getId());
+                }else if (this.status.equals("all")) {
+                    uploads = this.uploadRepository.getAidasUploadsByProject(this.project.getId());
                 }
             } else if (this.resource.equals("object")) {
                 if (this.status.equals("approved")) {
-                    uploads = this.aidasUploadRepository.getAidasUploadsByObject(this.aidasObject.getId(),AidasConstants.AIDAS_UPLOAD_APPROVED);
+                    uploads = this.uploadRepository.getAidasUploadsByObject(this.object.getId(),AidasConstants.AIDAS_UPLOAD_APPROVED);
                 } else if (this.status.equals("rejected")) {
-                    uploads = this.aidasUploadRepository.getAidasUploadsByObject(this.aidasObject.getId(),AidasConstants.AIDAS_UPLOAD_REJECTED);
-                } else {
-                    uploads = this.aidasUploadRepository.getAidasUploadsByObject(this.aidasObject.getId(),AidasConstants.AIDAS_UPLOAD_PENDING);
+                    uploads = this.uploadRepository.getAidasUploadsByObject(this.object.getId(),AidasConstants.AIDAS_UPLOAD_REJECTED);
+                } else if(this.status.equals("pending")) {
+                    uploads = this.uploadRepository.getAidasUploadsByObject(this.object.getId(),AidasConstants.AIDAS_UPLOAD_PENDING);
+                } else if(this.status.equals("all")) {
+                    uploads = this.uploadRepository.getAidasUploadsByObject(this.object.getId());
                 }
             } else if (this.resource.equals("uploads")) {
-                uploads = this.aidasUploadRepository.findAllById(uploadedFileIds);
+                uploads = this.uploadRepository.findAllById(uploadedFileIds);
             }
             if (uploads != null) {
-                for (AidasUpload au : uploads) {
-                    for (AidasObjectProperty aop : au.getAidasUserAidasObjectMapping().getAidasObject().getAidasObjectProperties()) {
-                        if (aop.getAidasProperties().getName().equals("accessKey")) {
-                            accessKey = aop.getValue();
-                        }
-                        if (aop.getAidasProperties().getName().equals("accessSecret")) {
-                            accessSecret = aop.getValue();
-                        }
-                        if (aop.getAidasProperties().getName().equals("region")) {
-                            region = aop.getValue();
-                        }
-                        if (aop.getAidasProperties().getName().equals("bucketName")) {
-                            bucketName = aop.getValue();
-                        }
-                    }
-                    System.out.println("About to get file "+au.getObjectKey()+" from s3");
-                    download(accessKey, accessSecret, bucketName, region, au.getObjectKey());
-                   }
-                    zip();
-                   URL url =  upload(accessKey, accessSecret, bucketName, region);
-
-                AidasDownload aidasDownload = new AidasDownload();
-                aidasDownload.setName(this.zipFile);
-                aidasDownload.setAwsKey(accessKey);
-                aidasDownload.setUploadUrl(url.toString());
-                aidasDownload.setAwsSecret(accessSecret);
-                aidasDownload.setBucketName(bucketName);
-                aidasDownload.setRegion(region);
-                aidasDownload.setObjectKey(this.zipFile);
-                aidasDownload.setDateUploaded(Instant.now());
-                if (aidasObject != null) {
-                    aidasDownload.setAidasObject(aidasObject);
+                for (Upload au : uploads) {
+                    Map<String,String> uploadLocProps = getObjectProperties(au);
+                    download(uploadLocProps.get("accessKey"), uploadLocProps.get("accessSecret"), uploadLocProps.get("bucketName"), uploadLocProps.get("region"), au.getObjectKey());
                 }
-                if (aidasProject != null) {
-                    aidasDownload.setAidasProject(aidasProject);
+                zip();
+                URL url =  upload(globalDownloadAccessKey, globalDownloadAccessSecret, globalDownloadBucketName, globalDownloadRegion);
+                Download download = new Download();
+                download.setName(this.zipFile);
+                download.setAwsKey(globalDownloadAccessKey);
+                download.setUploadUrl(url.toString());
+                download.setAwsSecret(globalDownloadAccessSecret);
+                download.setBucketName(globalDownloadBucketName);
+                download.setRegion(globalDownloadRegion);
+                download.setObjectKey(this.zipFile);
+                download.setDateUploaded(Instant.now());
+                if (object != null) {
+                    download.setObject(object);
+                }
+                if (project != null) {
+                    download.setProject(project);
                 }
                 if (uploadedFileIds != null) {
-                    aidasDownload.setUploadedObjectIds(uploadedFileIds.toString());
+                    download.setUploadedObjectIds(uploadedFileIds.toString());
                 }
-                aidasDownloadRepository.save(aidasDownload);
+                downloadRepository.save(download);
             }
         }catch(Exception e){
             MimeMessage msg = javaMailSender.createMimeMessage();
             MimeMessageHelper helper = null;
             try {
                 helper = new MimeMessageHelper(msg, true);
-                helper.setTo(aidasUser.getEmail());
+                helper.setTo(user.getEmail());
                 helper.setSubject("Unable to create downloadable objects"+this.zipFileKey);
                 helper.setText("<h1>Unable to create downloadable zip.  Please try again</h1>"+e.getMessage(), true);
                 javaMailSender.send(msg);
@@ -289,6 +359,24 @@ public class DownloadUploadS3  implements  Runnable{
     }
 
 
+    private Map<String,String> getObjectProperties(Upload au){
+        Map<String,String> uploadLocProps = new HashMap<>();
+        for (ObjectProperty aop : au.getAidasUserAidasObjectMapping().getObject().getObjectProperties()) {
+            if (aop.getProperty().getName().equals("accessKey")) {
+                uploadLocProps.put("accessKey",aop.getValue());
+            }
+            if (aop.getProperty().getName().equals("accessSecret")) {
+                uploadLocProps.put("accessSecret",aop.getValue());
+            }
+            if (aop.getProperty().getName().equals("region")) {
+                uploadLocProps.put("region",aop.getValue());
+            }
+            if (aop.getProperty().getName().equals("bucketName")) {
+                uploadLocProps.put("bucketName",aop.getValue());
+            }
+        }
+        return uploadLocProps;
+    }
 
     private void download(String accessKey, String accessSecret, String bucketName, String region, String key) throws IOException {
         Path dest = Paths.get(this.tempFolder+"/"+key);
@@ -296,14 +384,7 @@ public class DownloadUploadS3  implements  Runnable{
         PipedInputStream is = new PipedInputStream(os);
         AwsBasicCredentials awsCreds = AwsBasicCredentials.create(accessKey, accessSecret);
         S3Client s3client = S3Client.builder().credentialsProvider(StaticCredentialsProvider.create(awsCreds)).region(Region.of(region)).build();
-        GetObjectRequest getObjectRequest = GetObjectRequest.builder().bucket(bucketName).key("uploads/"+key).build();
-        File f = new File(this.tempFolder+"/"+key);
-        System.out.println("About to get file from s3. File "+key+" status: "+f.exists() );
-        if(f.exists()){
-            System.out.println("File exists");
-            f.delete();
-        }
-
+        GetObjectRequest getObjectRequest = GetObjectRequest.builder().bucket(bucketName).key(globalUploadPrefix+"/"+key).build();
         s3client.getObject(getObjectRequest, ResponseTransformer.toFile(dest));
     }
 
@@ -353,11 +434,12 @@ public class DownloadUploadS3  implements  Runnable{
 
         MimeMessage msg = javaMailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(msg, true);
-        helper.setTo(aidasUser.getEmail());
+        helper.setTo(user.getEmail());
         helper.setSubject("Download objects"+this.zipFileKey);
         helper.setText("<h1>Check attachment for zipfiles!</h1>"+presignedGetObjectRequest.url(), true);
         FileSystemResource res = new FileSystemResource(new File(this.zipFile));
         helper.addAttachment(this.zipFileKey, res);
+        javaMailSender.send(msg);
         File f = new File(this.tempFolder);
         if(f.exists()){
             if(f.isDirectory()){
@@ -367,7 +449,6 @@ public class DownloadUploadS3  implements  Runnable{
             }
             f.delete();
         }
-        javaMailSender.send(msg);
         return presignedGetObjectRequest.url();
     }
 

@@ -96,7 +96,7 @@ class AidasObjectPropertyGatlingTest extends Simulation {
             .headers(headers_http_authenticated)
             .check(status.is(200)))
             .pause(10 seconds, 20 seconds)
-            .exec(http("Create new aidasObjectProperty")
+            .exec(http("Create new objectProperty")
             .post("/services/ainnotateservice/api/aidas-object-properties")
             .headers(headers_http_authenticated)
             .body(StringBody("""{
@@ -108,12 +108,12 @@ class AidasObjectPropertyGatlingTest extends Simulation {
             .check(headerRegex("Location", "(.*)").saveAs("new_aidasObjectProperty_url"))).exitHereIfFailed
             .pause(10)
             .repeat(5) {
-                exec(http("Get created aidasObjectProperty")
+                exec(http("Get created objectProperty")
                 .get("/services/ainnotateservice${new_aidasObjectProperty_url}")
                 .headers(headers_http_authenticated))
                 .pause(10)
             }
-            .exec(http("Delete created aidasObjectProperty")
+            .exec(http("Delete created objectProperty")
             .delete("/services/ainnotateservice${new_aidasObjectProperty_url}")
             .headers(headers_http_authenticated))
             .pause(10)

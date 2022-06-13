@@ -4,6 +4,7 @@ public class UserObjectMappingDto {
 
     Long aidasUserId;
     Long aidasObjectId;
+    Long aidasVendorId;
 
     public Long getAidasUserId() {
         return aidasUserId;
@@ -15,6 +16,14 @@ public class UserObjectMappingDto {
 
     public Long getAidasObjectId() {
         return aidasObjectId;
+    }
+
+    public Long getAidasVendorId() {
+        return aidasVendorId;
+    }
+
+    public void setAidasVendorId(Long aidasVendorId) {
+        this.aidasVendorId = aidasVendorId;
     }
 
     public void setAidasObjectId(Long aidasObjectId) {

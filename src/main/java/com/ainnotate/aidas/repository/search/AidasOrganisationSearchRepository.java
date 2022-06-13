@@ -2,10 +2,10 @@ package com.ainnotate.aidas.repository.search;
 
 import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 
-import com.ainnotate.aidas.domain.AidasOrganisation;
+import com.ainnotate.aidas.domain.Organisation;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -15,13 +15,13 @@ import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 
 /**
- * Spring Data Elasticsearch repository for the {@link AidasOrganisation} entity.
+ * Spring Data Elasticsearch repository for the {@link Organisation} entity.
  */
 public interface AidasOrganisationSearchRepository
-    extends ElasticsearchRepository<AidasOrganisation, Long>, AidasOrganisationSearchRepositoryInternal {}
+    extends ElasticsearchRepository<Organisation, Long>, AidasOrganisationSearchRepositoryInternal {}
 
 interface AidasOrganisationSearchRepositoryInternal {
-    Page<AidasOrganisation> search(String query, Pageable pageable);
+    Page<Organisation> search(String query, Pageable pageable);
 }
 
 class AidasOrganisationSearchRepositoryInternalImpl implements AidasOrganisationSearchRepositoryInternal {
@@ -33,11 +33,11 @@ class AidasOrganisationSearchRepositoryInternalImpl implements AidasOrganisation
     }
 
     @Override
-    public Page<AidasOrganisation> search(String query, Pageable pageable) {
+    public Page<Organisation> search(String query, Pageable pageable) {
         NativeSearchQuery nativeSearchQuery = new NativeSearchQuery(queryStringQuery(query));
         nativeSearchQuery.setPageable(pageable);
-        List<AidasOrganisation> hits = elasticsearchTemplate
-            .search(nativeSearchQuery, AidasOrganisation.class)
+        List<Organisation> hits = elasticsearchTemplate
+            .search(nativeSearchQuery, Organisation.class)
             .map(SearchHit::getContent)
             .stream()
             .collect(Collectors.toList());

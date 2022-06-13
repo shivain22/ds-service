@@ -15,10 +15,10 @@
 
 logging:
   level:
-    ROOT: DEBUG
-    tech.jhipster: DEBUG
-    org.hibernate.SQL: DEBUG
-    com.ainnotate.aidas: DEBUG
+    ROOT: INFO
+    tech.jhipster: INFO
+    org.hibernate.SQL: INFO
+    com.ainnotate.aidas: INFO
 
 eureka:
   instance:
@@ -98,10 +98,12 @@ spring:
     password: xigwcqsnfffuafxa           #Replace this field with your Gmail password/App password.
     protocol: smtp
     tls: true
+    debug: false
     properties.mail.smtp:
       auth: true
       starttls.enable: true
       ssl.trust: smtp.gmail.com
+      debug: false
 server:
   port: 8081
 

@@ -2,10 +2,10 @@ package com.ainnotate.aidas.repository.search;
 
 import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 
-import com.ainnotate.aidas.domain.AidasUploadMetaData;
+import com.ainnotate.aidas.domain.UploadMetaData;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -15,13 +15,13 @@ import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 
 /**
- * Spring Data Elasticsearch repository for the {@link AidasUploadMetaData} entity.
+ * Spring Data Elasticsearch repository for the {@link UploadMetaData} entity.
  */
 public interface AidasUploadMetaDataSearchRepository
-    extends ElasticsearchRepository<AidasUploadMetaData, Long>, AidasUploadMetaDataSearchRepositoryInternal {}
+    extends ElasticsearchRepository<UploadMetaData, Long>, AidasUploadMetaDataSearchRepositoryInternal {}
 
 interface AidasUploadMetaDataSearchRepositoryInternal {
-    Page<AidasUploadMetaData> search(String query, Pageable pageable);
+    Page<UploadMetaData> search(String query, Pageable pageable);
 }
 
 class AidasUploadMetaDataSearchRepositoryInternalImpl implements AidasUploadMetaDataSearchRepositoryInternal {
@@ -33,11 +33,11 @@ class AidasUploadMetaDataSearchRepositoryInternalImpl implements AidasUploadMeta
     }
 
     @Override
-    public Page<AidasUploadMetaData> search(String query, Pageable pageable) {
+    public Page<UploadMetaData> search(String query, Pageable pageable) {
         NativeSearchQuery nativeSearchQuery = new NativeSearchQuery(queryStringQuery(query));
         nativeSearchQuery.setPageable(pageable);
-        List<AidasUploadMetaData> hits = elasticsearchTemplate
-            .search(nativeSearchQuery, AidasUploadMetaData.class)
+        List<UploadMetaData> hits = elasticsearchTemplate
+            .search(nativeSearchQuery, UploadMetaData.class)
             .map(SearchHit::getContent)
             .stream()
             .collect(Collectors.toList());

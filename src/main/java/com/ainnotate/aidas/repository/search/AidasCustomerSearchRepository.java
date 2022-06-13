@@ -2,10 +2,10 @@ package com.ainnotate.aidas.repository.search;
 
 import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 
-import com.ainnotate.aidas.domain.AidasCustomer;
+import com.ainnotate.aidas.domain.Customer;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -15,14 +15,14 @@ import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 
 /**
- * Spring Data Elasticsearch repository for the {@link AidasCustomer} entity.
+ * Spring Data Elasticsearch repository for the {@link Customer} entity.
  */
 public interface AidasCustomerSearchRepository
-    extends ElasticsearchRepository<AidasCustomer, Long>, AidasCustomerSearchRepositoryInternal {
+    extends ElasticsearchRepository<Customer, Long>, AidasCustomerSearchRepositoryInternal {
 }
 
 interface AidasCustomerSearchRepositoryInternal {
-    Page<AidasCustomer> search(String query, Pageable pageable);
+    Page<Customer> search(String query, Pageable pageable);
 }
 
 class AidasCustomerSearchRepositoryInternalImpl implements AidasCustomerSearchRepositoryInternal {
@@ -34,11 +34,11 @@ class AidasCustomerSearchRepositoryInternalImpl implements AidasCustomerSearchRe
     }
 
     @Override
-    public Page<AidasCustomer> search(String query, Pageable pageable) {
+    public Page<Customer> search(String query, Pageable pageable) {
         NativeSearchQuery nativeSearchQuery = new NativeSearchQuery(queryStringQuery(query));
         nativeSearchQuery.setPageable(pageable);
-        List<AidasCustomer> hits = elasticsearchTemplate
-            .search(nativeSearchQuery, AidasCustomer.class)
+        List<Customer> hits = elasticsearchTemplate
+            .search(nativeSearchQuery, Customer.class)
             .map(SearchHit::getContent)
             .stream()
             .collect(Collectors.toList());

@@ -11,7 +11,7 @@ public class Test {
             "jdbc:mysql://localhost:3308/ainnotateservice", "root", "")) {
 
             if (conn != null) {
-                String query ="select id,id,-1,value from aidas_properties order by id";
+                String query ="select id,id,-1,value from property order by id";
                 PreparedStatement ps = conn.prepareStatement(query);
                 ResultSet rs = ps.executeQuery();
                 while(rs.next()) {

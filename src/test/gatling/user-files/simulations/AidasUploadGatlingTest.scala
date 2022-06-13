@@ -91,12 +91,12 @@ class AidasUploadGatlingTest extends Simulation {
         .check(status.is(200)))
         .pause(10)
         .repeat(2) {
-            exec(http("Get all aidasUploads")
+            exec(http("Get all uploads")
             .get("/services/ainnotateservice/api/aidas-uploads")
             .headers(headers_http_authenticated)
             .check(status.is(200)))
             .pause(10 seconds, 20 seconds)
-            .exec(http("Create new aidasUpload")
+            .exec(http("Create new upload")
             .post("/services/ainnotateservice/api/aidas-uploads")
             .headers(headers_http_authenticated)
             .body(StringBody("""{
@@ -110,12 +110,12 @@ class AidasUploadGatlingTest extends Simulation {
             .check(headerRegex("Location", "(.*)").saveAs("new_aidasUpload_url"))).exitHereIfFailed
             .pause(10)
             .repeat(5) {
-                exec(http("Get created aidasUpload")
+                exec(http("Get created upload")
                 .get("/services/ainnotateservice${new_aidasUpload_url}")
                 .headers(headers_http_authenticated))
                 .pause(10)
             }
-            .exec(http("Delete created aidasUpload")
+            .exec(http("Delete created upload")
             .delete("/services/ainnotateservice${new_aidasUpload_url}")
             .headers(headers_http_authenticated))
             .pause(10)

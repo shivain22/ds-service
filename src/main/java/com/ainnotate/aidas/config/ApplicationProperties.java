@@ -1,5 +1,6 @@
 package com.ainnotate.aidas.config;
 
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**

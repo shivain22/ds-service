@@ -17,8 +17,8 @@
   ],
   "relationships": [
     {
-      "relationshipName": "aidasOrganisation",
-      "otherEntityName": "aidasOrganisation",
+      "relationshipName": "organisation",
+      "otherEntityName": "organisation",
       "relationshipType": "many-to-one",
       "relationshipValidateRules": ["required"],
       "otherEntityField": "name"

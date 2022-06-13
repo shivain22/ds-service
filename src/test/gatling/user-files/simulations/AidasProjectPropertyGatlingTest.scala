@@ -91,12 +91,12 @@ class AidasProjectPropertyGatlingTest extends Simulation {
         .check(status.is(200)))
         .pause(10)
         .repeat(2) {
-            exec(http("Get all aidasProjectProperties")
+            exec(http("Get all projectProperties")
             .get("/services/ainnotateservice/api/aidas-project-properties")
             .headers(headers_http_authenticated)
             .check(status.is(200)))
             .pause(10 seconds, 20 seconds)
-            .exec(http("Create new aidasProjectProperty")
+            .exec(http("Create new projectProperty")
             .post("/services/ainnotateservice/api/aidas-project-properties")
             .headers(headers_http_authenticated)
             .body(StringBody("""{
@@ -108,12 +108,12 @@ class AidasProjectPropertyGatlingTest extends Simulation {
             .check(headerRegex("Location", "(.*)").saveAs("new_aidasProjectProperty_url"))).exitHereIfFailed
             .pause(10)
             .repeat(5) {
-                exec(http("Get created aidasProjectProperty")
+                exec(http("Get created projectProperty")
                 .get("/services/ainnotateservice${new_aidasProjectProperty_url}")
                 .headers(headers_http_authenticated))
                 .pause(10)
             }
-            .exec(http("Delete created aidasProjectProperty")
+            .exec(http("Delete created projectProperty")
             .delete("/services/ainnotateservice${new_aidasProjectProperty_url}")
             .headers(headers_http_authenticated))
             .pause(10)

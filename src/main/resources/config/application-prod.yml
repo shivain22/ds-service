@@ -96,10 +96,12 @@ spring:
     password: xigwcqsnfffuafxa           #Replace this field with your Gmail password/App password.
     protocol: smtp
     tls: true
+    debug: false
     properties.mail.smtp:
       auth: true
       starttls.enable: true
       ssl.trust: smtp.gmail.com
+      debug: false
 # ===================================================================
 # To enable TLS in production, generate a certificate using:
 # keytool -genkey -alias ainnotateservice -storetype PKCS12 -keyalg RSA -keysize 2048 -keystore keystore.p12 -validity 3650

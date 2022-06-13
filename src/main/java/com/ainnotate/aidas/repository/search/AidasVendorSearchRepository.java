@@ -2,10 +2,10 @@ package com.ainnotate.aidas.repository.search;
 
 import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 
-import com.ainnotate.aidas.domain.AidasVendor;
+import com.ainnotate.aidas.domain.Vendor;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -15,12 +15,12 @@ import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 
 /**
- * Spring Data Elasticsearch repository for the {@link AidasVendor} entity.
+ * Spring Data Elasticsearch repository for the {@link Vendor} entity.
  */
-public interface AidasVendorSearchRepository extends ElasticsearchRepository<AidasVendor, Long>, AidasVendorSearchRepositoryInternal {}
+public interface AidasVendorSearchRepository extends ElasticsearchRepository<Vendor, Long>, AidasVendorSearchRepositoryInternal {}
 
 interface AidasVendorSearchRepositoryInternal {
-    Page<AidasVendor> search(String query, Pageable pageable);
+    Page<Vendor> search(String query, Pageable pageable);
 }
 
 class AidasVendorSearchRepositoryInternalImpl implements AidasVendorSearchRepositoryInternal {
@@ -32,11 +32,11 @@ class AidasVendorSearchRepositoryInternalImpl implements AidasVendorSearchReposi
     }
 
     @Override
-    public Page<AidasVendor> search(String query, Pageable pageable) {
+    public Page<Vendor> search(String query, Pageable pageable) {
         NativeSearchQuery nativeSearchQuery = new NativeSearchQuery(queryStringQuery(query));
         nativeSearchQuery.setPageable(pageable);
-        List<AidasVendor> hits = elasticsearchTemplate
-            .search(nativeSearchQuery, AidasVendor.class)
+        List<Vendor> hits = elasticsearchTemplate
+            .search(nativeSearchQuery, Vendor.class)
             .map(SearchHit::getContent)
             .stream()
             .collect(Collectors.toList());

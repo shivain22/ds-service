@@ -19,8 +19,8 @@
   ],
   "relationships": [
     {
-      "relationshipName": "aidasProject",
-      "otherEntityName": "aidasProject",
+      "relationshipName": "project",
+      "otherEntityName": "project",
       "relationshipType": "many-to-one",
       "relationshipValidateRules": ["required"],
       "otherEntityField": "name"

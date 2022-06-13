@@ -21,8 +21,8 @@
   ],
   "relationships": [
     {
-      "relationshipName": "aidasCustomer",
-      "otherEntityName": "aidasCustomer",
+      "relationshipName": "customer",
+      "otherEntityName": "customer",
       "relationshipType": "many-to-one",
       "relationshipValidateRules": ["required"],
       "otherEntityField": "name"

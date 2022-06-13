@@ -2,10 +2,10 @@ package com.ainnotate.aidas.repository.search;
 
 import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 
-import com.ainnotate.aidas.domain.AidasUser;
+import com.ainnotate.aidas.domain.User;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -15,12 +15,12 @@ import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 
 /**
- * Spring Data Elasticsearch repository for the {@link AidasUser} entity.
+ * Spring Data Elasticsearch repository for the {@link User} entity.
  */
-public interface AidasUserSearchRepository extends ElasticsearchRepository<AidasUser, Long>, AidasUserSearchRepositoryInternal {}
+public interface AidasUserSearchRepository extends ElasticsearchRepository<User, Long>, AidasUserSearchRepositoryInternal {}
 
 interface AidasUserSearchRepositoryInternal {
-    Page<AidasUser> search(String query, Pageable pageable);
+    Page<User> search(String query, Pageable pageable);
 }
 
 class AidasUserSearchRepositoryInternalImpl implements AidasUserSearchRepositoryInternal {
@@ -32,11 +32,11 @@ class AidasUserSearchRepositoryInternalImpl implements AidasUserSearchRepository
     }
 
     @Override
-    public Page<AidasUser> search(String query, Pageable pageable) {
+    public Page<User> search(String query, Pageable pageable) {
         NativeSearchQuery nativeSearchQuery = new NativeSearchQuery(queryStringQuery(query));
         nativeSearchQuery.setPageable(pageable);
-        List<AidasUser> hits = elasticsearchTemplate
-            .search(nativeSearchQuery, AidasUser.class)
+        List<User> hits = elasticsearchTemplate
+            .search(nativeSearchQuery, User.class)
             .map(SearchHit::getContent)
             .stream()
             .collect(Collectors.toList());
