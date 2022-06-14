@@ -64,7 +64,15 @@ public class AdminUserDTO {
         this.firstName = user.getFirstName();
         this.lastName = user.getLastName();
         this.email = user.getEmail();
-        this.activated = user.isActivated();
+        if(user.getActivated()!=null){
+            if(user.getActivated().equals(0)){
+                this.activated = false;
+            }else if(user.getActivated().equals(1)){
+                this.activated=true;
+            }
+        }else{
+            this.activated=false;
+        }
         this.imageUrl = user.getImageUrl();
         this.langKey = user.getLangKey();
         this.createdBy = user.getCreatedBy();

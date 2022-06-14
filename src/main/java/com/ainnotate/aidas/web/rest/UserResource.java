@@ -206,7 +206,7 @@ public class UserResource {
             }
         }
         addUserToKeyCloak(user);
-        user.setDeleted(false);
+        user.setDeleted(0);
         if(user.getOrganisation()!=null){
             UserOrganisationMapping uom = new UserOrganisationMapping();
             uom.setUser(user);
@@ -277,14 +277,14 @@ public class UserResource {
         user.setEmail(newUser.getEmail());
         user.setFirstName(newUser.getFirstName());
         user.setLastName(newUser.getLastName());
-        user.setLocked(false);
+        user.setLocked(0);
         user.setPassword(newUser.getPassword());
         if (user.getId() != null) {
             throw new BadRequestAlertException("A new user cannot already have an ID", ENTITY_NAME, "idexists");
         }
 
         registerNewUser(user);
-        user.setDeleted(false);
+        user.setDeleted(0);
         User result = userRepository.save(user);
 
         Object defaultObject = objectRepository.getById(-1l);
@@ -593,7 +593,7 @@ public class UserResource {
         //deleteUserFromKeyCloak(user);
 
         if(user !=null){
-            user.setDeleted(true);
+            user.setDeleted(1);
             user.setStatus(0);
             userRepository.save(user);
         }

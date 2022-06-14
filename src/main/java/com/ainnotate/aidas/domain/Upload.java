@@ -111,6 +111,49 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
     @Column(name="qc_end_date", nullable=true)
     private Instant qcEndDate;
 
+    @Transient
+    private Integer reworkCount;
+
+    public Upload getReworkUpload() {
+        return reworkUpload;
+    }
+
+    public void setReworkUpload(Upload reworkUpload) {
+        this.reworkUpload = reworkUpload;
+    }
+
+    public Set<UploadRejectMapping> getUploadRejectMappings() {
+        return uploadRejectMappings;
+    }
+
+    public void setUploadRejectMappings(Set<UploadRejectMapping> uploadRejectMappings) {
+        this.uploadRejectMappings = uploadRejectMappings;
+    }
+
+    public Set<UploadMetaData> getUploadMetaDataSet() {
+        return uploadMetaDataSet;
+    }
+
+    public void setUploadMetaDataSet(Set<UploadMetaData> uploadMetaDataSet) {
+        this.uploadMetaDataSet = uploadMetaDataSet;
+    }
+
+    public Integer getReworkCount() {
+        return reworkCount;
+    }
+
+    public void setReworkCount(Integer reworkCount) {
+        this.reworkCount = reworkCount;
+    }
+
+    public UserVendorMappingObjectMapping getUserVendorMappingObjectMapping() {
+        return userVendorMappingObjectMapping;
+    }
+
+    public void setUserVendorMappingObjectMapping(UserVendorMappingObjectMapping userVendorMappingObjectMapping) {
+        this.userVendorMappingObjectMapping = userVendorMappingObjectMapping;
+    }
+
     public Set<UploadMetaData> getAidasUploadMetaDataSet() {
         return uploadMetaDataSet;
     }

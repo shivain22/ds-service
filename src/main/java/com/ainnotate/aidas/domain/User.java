@@ -32,24 +32,24 @@ public class User extends AbstractAuditingEntity implements Serializable {
     private Long id;
     @NotNull
     @Size(min = 3, max = 100)
-    @Column(name = "first_name", length = 100, nullable = false)
+    @Column(name = "first_name", length = 100, nullable = true)
     private String firstName;
     @Size(min = 3, max = 100)
     @Column(name = "last_name", length = 100)
     private String lastName;
     @NotNull
     @Size(min = 5, max = 100)
-    @Column(name = "email", length = 200, nullable = false, unique = true)
+    @Column(name = "email", length = 200, nullable = true, unique = true)
     private String email;
     @Size(min = 5, max = 100)
-    @Column(name = "keycloak_id", length = 200, nullable = false, unique = true)
+    @Column(name = "keycloak_id", length = 200, nullable = true, unique = true)
     private String keycloakId;
     @NotNull
-    @Column(name = "locked", nullable = false)
-    private Boolean locked;
-    @Column(name = "deleted", nullable = false)
-    private Boolean deleted;
-    @Column(name = "password", length = 20, nullable = false)
+    @Column(name = "locked", nullable = true,columnDefinition ="integer default 0" )
+    private Integer locked;
+    @Column(name = "deleted", nullable = true, columnDefinition ="integer default 0")
+    private Integer deleted;
+    @Column(name = "password", length = 20, nullable = true)
     private String password;
     @ManyToOne
     private Organisation organisation;
@@ -59,8 +59,8 @@ public class User extends AbstractAuditingEntity implements Serializable {
     @ManyToOne
     private Vendor vendor;
     @NotNull
-    @Column(nullable = false)
-    private boolean activated = false;
+    @Column(nullable = true,columnDefinition = "integer default 1")
+    private Integer activated = 1;
     @Size(min = 2, max = 10)
     @Column(name = "lang_key", length = 10)
     private String langKey;
@@ -91,14 +91,14 @@ public class User extends AbstractAuditingEntity implements Serializable {
     private transient Set<Customer> customers = new HashSet<>();
     private transient Set<Vendor> vendors = new HashSet<>();
     @Size(min = 1, max = 50)
-    @Column(length = 50, unique = true, nullable = false)
+    @Column(length = 50, unique = true, nullable = true)
     private String login;
 
-    public Boolean getDeleted() {
+    public Integer getDeleted() {
         return deleted;
     }
 
-    public void setDeleted(Boolean deleted) {
+    public void setDeleted(Integer deleted) {
         this.deleted = deleted;
     }
 
@@ -256,18 +256,7 @@ public class User extends AbstractAuditingEntity implements Serializable {
         return this;
     }
 
-    public Boolean getLocked() {
-        return this.locked;
-    }
 
-    public void setLocked(Boolean locked) {
-        this.locked = locked;
-    }
-
-    public User locked(Boolean locked) {
-        this.setLocked(locked);
-        return this;
-    }
 
     public String getPassword() {
         return this.password;
@@ -337,13 +326,7 @@ public class User extends AbstractAuditingEntity implements Serializable {
         this.imageUrl = imageUrl;
     }
 
-    public boolean isActivated() {
-        return activated;
-    }
 
-    public void setActivated(boolean activated) {
-        this.activated = activated;
-    }
 
     public String getLangKey() {
         return langKey;
@@ -383,6 +366,23 @@ public class User extends AbstractAuditingEntity implements Serializable {
     public int hashCode() {
         // see https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
         return getClass().hashCode();
+    }
+
+
+    public Integer getLocked() {
+        return locked;
+    }
+
+    public void setLocked(Integer locked) {
+        this.locked = locked;
+    }
+
+    public Integer getActivated() {
+        return activated;
+    }
+
+    public void setActivated(Integer activated) {
+        this.activated = activated;
     }
 
     // prettier-ignore

@@ -95,12 +95,12 @@ public class IdpUserService {
             user.getAuthorities().add(authority);
             currentAuthority = authority;
         }
-        user.setLocked(false);
+        user.setLocked(0);
         user.setCreatedDate(Instant.now());
         user.setLastModifiedDate(Instant.now());
         user.setAuthority(currentAuthority);
         user.setPassword(" ");
-        user.setDeleted(false);
+        user.setDeleted(0);
         User result = userRepository.save(user);
         if(userRep.getAttributes()!=null) {
             List<String> userAttrsVals = new ArrayList<>();
@@ -126,7 +126,7 @@ public class IdpUserService {
 
     private static User getUser(Map<String, Object> details) {
         User user = new User();
-        Boolean activated = Boolean.TRUE;
+        Integer activated = 1;
         if (details.get("uid") != null) {
             user.setKeycloakId((String) details.get("uid"));
             user.setLogin((String) details.get("sub"));
@@ -148,7 +148,12 @@ public class IdpUserService {
             user.setLastName((String) details.get("family_name"));
         }
         if (details.get("email_verified") != null) {
-            activated = (Boolean) details.get("email_verified");
+            Boolean test = (Boolean) details.get("email_verified");
+            if(test){
+                activated=1;
+            }else{
+                activated=0;
+            }
         }
         if (details.get("email") != null) {
             user.setEmail(((String) details.get("email")).toLowerCase());
