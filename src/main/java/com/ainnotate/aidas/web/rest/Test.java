@@ -83,15 +83,13 @@ public class Test {
         for(Map.Entry<String,String> entry: uniqueNames.entrySet()){
             String[] names = entry.getValue().split(" ");
             if(i<=20) {
-                System.out.println(l + ";" + names[0] + ";" + names[1] + ";"+names[0].toLowerCase()+orgMap.get(i)+";12345678;"+names[0].toLowerCase()+";"+i+";;;2");
+                //System.out.println(l + ";" + names[0] + ";" + names[1] + ";"+names[0].toLowerCase()+orgMap.get(i)+";12345678;"+names[0].toLowerCase()+";"+i+";;;2");
                 i++;
             }
             if (i == 21 && j <= 200 && l>20) {
-                //System.out.println(l + ";" + names[0] + ";" + names[1] + ";" + names[0].toLowerCase() + custMap.get(j)+";0;12345678;"+names[0].toLowerCase()+";;1;en;admin;;;;"+j+";;2;;0");
+                System.out.println(l + ";" + names[0] + ";" + names[1] + ";" + names[0].toLowerCase() + custMap.get(j)+";12345678;"+names[0].toLowerCase()+";;"+j+";;3");
                    j++;
             }
-
-            l++;
             if (i == 21 && j == 201 && l>220){
                 if(k%16==0){
                     m++;
@@ -99,6 +97,7 @@ public class Test {
                 //System.out.println(l + ";" + names[0] + ";" + names[1] + ";"+names[0].toLowerCase()+vendorMap.get(m)+";0;12345678;"+names[0].toLowerCase()+";;1;en;admin;;;;"+m+";2;;0");
                 k++;
             }
+            l++;
         }
     }
 }
