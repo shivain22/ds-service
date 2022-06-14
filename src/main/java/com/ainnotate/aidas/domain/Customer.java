@@ -48,16 +48,17 @@ public class Customer extends AbstractAuditingEntity  implements Serializable {
         this.setId(id);
         return this;
     }
-    @OneToMany
-    Set<AppProperty> aidasAppProperties=new HashSet<>();
+    @OneToMany(fetch = FetchType.EAGER)
+    Set<AppProperty> appProperties=new HashSet<>();
 
-    public Set<AppProperty> getAppProperty() {
-        return aidasAppProperties;
+    public Set<AppProperty> getAppProperties() {
+        return appProperties;
     }
 
-    public void setAppProperty(Set<AppProperty> aidasAppProperties) {
-        this.aidasAppProperties = aidasAppProperties;
+    public void setAppProperties(Set<AppProperty> appProperties) {
+        this.appProperties = appProperties;
     }
+
     public void setId(Long id) {
         this.id = id;
     }

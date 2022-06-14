@@ -20,8 +20,8 @@ import org.hibernate.envers.Audited;
 public class Organisation extends AbstractAuditingEntity  implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    @OneToMany
-    Set<AppProperty> aidasAppProperties=new HashSet<>();
+    @OneToMany(fetch = FetchType.EAGER)
+    Set<AppProperty> appProperties=new HashSet<>();
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -33,14 +33,15 @@ public class Organisation extends AbstractAuditingEntity  implements Serializabl
     @Column(name = "description")
     private String description;
 
-    public Set<AppProperty> getAppProperty() {
-        return aidasAppProperties;
+    public Set<AppProperty> getAppProperties() {
+        return appProperties;
     }
 
-    public void setAppProperty(Set<AppProperty> aidasAppProperties) {
-        this.aidasAppProperties = aidasAppProperties;
+    public void setAppProperties(Set<AppProperty> appProperties) {
+        this.appProperties = appProperties;
     }
-// jhipster-needle-entity-add-field - JHipster will add fields here
+
+    // jhipster-needle-entity-add-field - JHipster will add fields here
 
     public Long getId() {
         return this.id;
