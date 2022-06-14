@@ -224,7 +224,7 @@ public class ProjectResource {
             throw new BadRequestAlertException("A new project cannot already have an ID", ENTITY_NAME, "idexists");
         }
         Project project = projectRepository.getById(projectVendorMappingDTO.getProjectId());
-        List<Object> objects = objectRepository.findAllObjectsOfProject(project.getId());
+        List<Object> objects = objectRepository.findAllObjectsOfProjectInlcudingDummy(project.getId());
         if(objects.size()==0){
             Object object = new Object();
             object.setProject(project);
@@ -246,9 +246,13 @@ public class ProjectResource {
                         uvmom.setStatus(userDTO.getStatus());
                     }else{
                         uvmom = new UserVendorMappingObjectMapping();
-                        UserVendorMapping uvm = new UserVendorMapping();
-                        uvm.setVendor(v);
+                        UserVendorMapping uvm = userVendorMappingRepository.findByUserAndVendor(userDTO.getUserId(),v.getId());
+                        if(uvm!=null) {
+                            uvm.setStatus(userDTO.getStatus());
+                        }
+                        uvm = new UserVendorMapping();
                         uvm.setUser(u);
+                        uvm.setVendor(v);
                         uvm.setStatus(1);
                         uvm = userVendorMappingRepository.save(uvm);
                         uvmom.setUserVendorMapping(uvm);
@@ -417,6 +421,9 @@ public class ProjectResource {
         existingProject.setProjectType(project.getProjectType());
         existingProject.setDescription(project.getDescription());
         existingProject.setCustomer(project.getCustomer());
+        existingProject.setAutoCreateObjects(project.getAutoCreateObjects());
+        existingProject.setReworkStatus(project.getReworkStatus());
+        existingProject.setQcLevels(project.getQcLevels());
         Project result = projectRepository.save(existingProject);
         Project projectForSearch = new Project();
         projectForSearch.setId(result.getId());

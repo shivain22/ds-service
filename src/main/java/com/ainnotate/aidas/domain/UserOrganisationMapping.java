@@ -12,7 +12,7 @@ import java.util.Objects;
  * An authority (a security role) used by Spring Security.
  */
 @Entity
-@Table(name = "user_org_mapping")
+@Table(name = "user_organisation_mapping")
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @Audited
 public class UserOrganisationMapping extends AbstractAuditingEntity implements Serializable {

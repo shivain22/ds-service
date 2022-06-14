@@ -28,23 +28,23 @@ public class Property extends AbstractAuditingEntity  implements Serializable {
     private Long id;
 
     @NotNull
-    @Column(name = "name", length = 100, nullable = false, unique = true)
+    @Column(name = "name", length = 100, nullable = true, unique = false)
     private String name;
 
     @NotNull
-    @Column(name = "value", length = 100, nullable = false)
+    @Column(name = "value", length = 100, nullable = true)
     private String value;
 
     @NotNull
-    @Column(name = "system_property", nullable = false)
+    @Column(name = "system_property", nullable = true)
     private Integer systemProperty;
 
     @NotNull
-    @Column(name="property_type", nullable = false)
+    @Column(name="property_type", nullable = true)
     private Integer propertyType;
 
     @NotNull
-    @Column(name = "optional", nullable = false)
+    @Column(name = "optional", nullable = true)
     private Integer optional;
 
     @Column(name = "description")

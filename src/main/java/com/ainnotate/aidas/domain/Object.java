@@ -32,7 +32,7 @@ public class Object extends AbstractAuditingEntity  implements Serializable {
 
     @NotNull
     @Size(min = 3, max = 500)
-    @Column(name = "name", length = 500, nullable = false)
+    @Column(name = "name", length = 500, nullable = true)
     private String name;
 
     @Column(name="buffer_percent")
@@ -42,7 +42,7 @@ public class Object extends AbstractAuditingEntity  implements Serializable {
     private String description;
 
     @NotNull
-    @Column(name = "number_of_upload_reqd", nullable = false)
+    @Column(name = "number_of_upload_reqd", nullable = true)
     private Integer numberOfUploadReqd;
 
     @ManyToOne(optional = false)

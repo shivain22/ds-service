@@ -25,34 +25,34 @@ public class Download extends AbstractAuditingEntity  implements Serializable {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "name", length = 100, nullable = false)
+    @Column(name = "name", length = 100, nullable = true)
     private String name;
 
-    @Column(name = "upload_url",  nullable = false)
+    @Column(name = "upload_url",  nullable = true)
     private String uploadUrl;
 
-    @Column(name = "upload_etag",  nullable = false)
+    @Column(name = "upload_etag",  nullable = true)
     private String uploadEtag;
 
     @Column(name = "date_uploaded")
     private Instant dateUploaded;
 
-    @Column(name = "bucket_name", length = 150, nullable = false)
+    @Column(name = "bucket_name", length = 150, nullable = true)
     private String bucketName;
 
-    @Column(name = "aws_key", length = 150, nullable = false)
+    @Column(name = "aws_key", length = 150, nullable = true)
     private String awsKey;
 
-    @Column(name = "aws_secret", length = 150, nullable = false)
+    @Column(name = "aws_secret", length = 150, nullable = true)
     private String awsSecret;
 
-    @Column(name = "region", length = 150, nullable = false)
+    @Column(name = "region", length = 150, nullable = true)
     private String region;
 
-    @Column(name = "object_key", length = 150, nullable = false)
+    @Column(name = "object_key", length = 150, nullable = true)
     private String objectKey;
 
-    @Column(name = "upload_object_ids", length = 3500, nullable = false)
+    @Column(name = "upload_object_ids", length = 3500, nullable = true)
     private String uploadedObjectIds;
 
     public String getUploadedObjectIds() {

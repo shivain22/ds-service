@@ -28,7 +28,7 @@ public class Vendor extends AbstractAuditingEntity  implements Serializable {
 
     @NotNull
     @Size(min = 3, max = 500)
-    @Column(name = "name", length = 500, nullable = false, unique = true)
+    @Column(name = "name", length = 500, nullable = true, unique = false)
     private String name;
 
     @Column(name = "description")

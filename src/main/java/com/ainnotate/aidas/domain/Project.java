@@ -33,7 +33,7 @@ public class Project extends AbstractAuditingEntity  implements Serializable {
 
     @NotNull
     @Size(min = 3, max = 500)
-    @Column(name = "name", length = 500, nullable = false)
+    @Column(name = "name", length = 500, nullable = true)
     private String name;
 
     @Column(name = "description")
@@ -43,7 +43,7 @@ public class Project extends AbstractAuditingEntity  implements Serializable {
     private String projectType;
 
     @Column(name = "rework_status")
-    private Integer reworkStatus;
+    private Integer reworkStatus=0;
 
     @Column(name = "qc_levels")
     private Integer qcLevels;
@@ -71,7 +71,7 @@ public class Project extends AbstractAuditingEntity  implements Serializable {
 
     @Column(name="auto_create_objects")
     @JsonProperty
-    private Integer autoCreateObjects;
+    private Integer autoCreateObjects=0;
 
     @Column(name="num_of_objects")
     @JsonProperty
@@ -84,6 +84,18 @@ public class Project extends AbstractAuditingEntity  implements Serializable {
     @Column(name="object_suffix")
     @JsonProperty
     private String objectSuffix;
+
+    @Column(name="external_dataset_status")
+    @JsonProperty
+    private Integer externalDatasetStatus;
+
+    public Integer getExternalDatasetStatus() {
+        return externalDatasetStatus;
+    }
+
+    public void setExternalDatasetStatus(Integer externalDatasetStatus) {
+        this.externalDatasetStatus = externalDatasetStatus;
+    }
 
     @ManyToOne(optional = false)
     @NotNull

@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Set;
 import javax.persistence.*;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Fetch;
@@ -32,13 +33,13 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
     private Long id;
 
 
-    @Column(name = "name", length = 500, nullable = false)
+    @Column(name = "name", length = 500, nullable = true)
     private String name;
 
-    @Column(name = "upload_url",  nullable = false)
+    @Column(name = "upload_url",  nullable = true)
     private String uploadUrl;
 
-    @Column(name = "upload_etag",  nullable = false)
+    @Column(name = "upload_etag",  nullable = true)
     private String uploadEtag;
 
     @Column(name = "date_uploaded")
@@ -73,7 +74,7 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
         this.uploadRejectMappings = uploadRejectMappings;
     }
 
-    @Column(name = "object_key",  nullable = false)
+    @Column(name = "object_key",  nullable = true)
     private String objectKey;
 
     @OneToMany(mappedBy = "upload",fetch = FetchType.EAGER)
@@ -85,7 +86,7 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
     @Column(name="status", nullable=false)
     private Integer status;
 
-    @Column(name="approval_status",nullable = false)
+    @Column(name="approval_status",nullable = true)
     private Integer approvalStatus;
 
     public Integer getApprovalStatus() {
@@ -110,7 +111,17 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
 
     @Column(name="qc_end_date", nullable=true)
     private Instant qcEndDate;
+    @Column(name="external_dataset_status")
+    @JsonProperty
+    private Integer externalDatasetStatus;
 
+    public Integer getExternalDatasetStatus() {
+        return externalDatasetStatus;
+    }
+
+    public void setExternalDatasetStatus(Integer externalDatasetStatus) {
+        this.externalDatasetStatus = externalDatasetStatus;
+    }
     @Transient
     private Integer reworkCount;
 

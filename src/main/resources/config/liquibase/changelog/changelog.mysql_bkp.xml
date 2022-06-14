@@ -924,7 +924,7 @@
         </createTable>
     </changeSet>
     <changeSet author="shiva (generated)" id="1655115199423-46">
-        <createTable tableName="user_org_mapping">
+        <createTable tableName="user_organisation_mapping">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
             </column>
@@ -938,7 +938,7 @@
         </createTable>
     </changeSet>
     <changeSet author="shiva (generated)" id="1655115199423-47">
-        <createTable tableName="user_org_mapping_aud">
+        <createTable tableName="user_organisation_mapping_aud">
             <column name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
             </column>

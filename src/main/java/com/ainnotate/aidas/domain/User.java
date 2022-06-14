@@ -39,10 +39,10 @@ public class User extends AbstractAuditingEntity implements Serializable {
     private String lastName;
     @NotNull
     @Size(min = 5, max = 100)
-    @Column(name = "email", length = 200, nullable = true, unique = true)
+    @Column(name = "email", length = 200, nullable = true, unique = false)
     private String email;
     @Size(min = 5, max = 100)
-    @Column(name = "keycloak_id", length = 200, nullable = true, unique = true)
+    @Column(name = "keycloak_id", length = 200, nullable = true, unique = false)
     private String keycloakId;
     @NotNull
     @Column(name = "locked", nullable = true,columnDefinition ="integer default 0" )
@@ -91,7 +91,7 @@ public class User extends AbstractAuditingEntity implements Serializable {
     private transient Set<Customer> customers = new HashSet<>();
     private transient Set<Vendor> vendors = new HashSet<>();
     @Size(min = 1, max = 50)
-    @Column(length = 50, unique = true, nullable = true)
+    @Column(length = 50, unique = false, nullable = true)
     private String login;
 
     public Integer getDeleted() {
