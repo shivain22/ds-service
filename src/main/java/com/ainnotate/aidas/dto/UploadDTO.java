@@ -1,6 +1,6 @@
 package com.ainnotate.aidas.dto;
 
-public class UploadDto {
+public class UploadDTO {
 
     private Long userId;
     private Long objectId;

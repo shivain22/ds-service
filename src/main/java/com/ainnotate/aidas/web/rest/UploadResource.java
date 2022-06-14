@@ -3,7 +3,7 @@ package com.ainnotate.aidas.web.rest;
 import com.ainnotate.aidas.domain.*;
 import com.ainnotate.aidas.domain.Object;
 import com.ainnotate.aidas.dto.UploadByUserObjectMappingDto;
-import com.ainnotate.aidas.dto.UploadDto;
+import com.ainnotate.aidas.dto.UploadDTO;
 import com.ainnotate.aidas.dto.UploadMetadataDTO;
 import com.ainnotate.aidas.repository.*;
 import com.ainnotate.aidas.repository.search.AidasUploadSearchRepository;
@@ -253,7 +253,7 @@ public class UploadResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/aidas-uploads/dto")
-    public ResponseEntity<Upload> createAidasUploadFromDto(@Valid @RequestBody UploadDto uploadDto) throws URISyntaxException {
+    public ResponseEntity<Upload> createAidasUploadFromDto(@Valid @RequestBody UploadDTO uploadDto) throws URISyntaxException {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to save AidasUpload : {}", uploadDto);
         Authority authority = user.getAuthority();

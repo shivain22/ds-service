@@ -1,6 +1,6 @@
 package com.ainnotate.aidas.dto;
 
-public class ProjectQcDto {
+public class ProjectQcDTO {
 
     private Long projectId;
     private Long userId;
