@@ -19,7 +19,7 @@ public interface VendorRepository extends JpaRepository<Vendor, Long> {
     Page<Vendor> findAllByIdGreaterThan(Long id, Pageable page);
 
     @Query(value = "select * from vendor v where v.status=1 and id>0",nativeQuery = true)
-    List<Vendor> getAllVendorsWithUsers();
+    List<Vendor> getAllVendors();
 
     @Query(value = "select count(*) from vendor where id>0 and status=1", nativeQuery = true)
     Long countAllVendorsForSuperAdmin();

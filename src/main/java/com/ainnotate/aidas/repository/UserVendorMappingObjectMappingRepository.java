@@ -15,13 +15,13 @@ import java.util.List;
 @Repository
 public interface UserVendorMappingObjectMappingRepository extends JpaRepository<UserVendorMappingObjectMapping, Long> {
 
-    @Query(value = "select * from user_vendor_mapping_object_mapping auavaom where auavaom.user_vendor_mapping_id=?1 and object_id=?2", nativeQuery = true)
-    UserVendorMappingObjectMapping findByAidasUser_IdAndAidasObject_Id(Long aidasUserId, Long object);
+    @Query(value = "select * from user_vendor_mapping_object_mapping uvmom,user_vendor_mapping uvm where uvmom.user_vendor_mapping_id=uvm.id and uvm.user_id=?1 and object_id=?2", nativeQuery = true)
+    UserVendorMappingObjectMapping findByUserObject(Long userId, Long objectId);
 
-    @Query(value= "select count(*) from (select * from user_obj_map where user_id in (select id from user where vendor_id=?1) and object_id=?2) a",nativeQuery = true)
+    @Query(value= "select count(*) from (select * from user_vendor_mapping_object_mapping uvmom, user_vendor_mapping uvm where uvmom.user_vendor_mapping_id=uvm.id and uvm.user_id  in (select id from user where vendor_id=?1) and object_id=?2) a",nativeQuery = true)
     Integer getCountOfAidasObjectMappingForVendorAdmin(Long vendorId,Long object);
 
-    @Query(value="select * from user_obj_map where object_id>-1", nativeQuery = true)
+    @Query(value="select * from user_vendor_mapping_object_mapping uvmom where uvmom.object_id>-1", nativeQuery = true)
     Page<UserVendorMappingObjectMapping> findAllMappings(Pageable pageable);
 
     @Query(value = "select auavm.* " +

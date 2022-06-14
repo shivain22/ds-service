@@ -4,22 +4,23 @@ import java.util.List;
 
 public class ProjectVendorMappingDTO {
 
-    private Long aidasProjectId;
-    private List<Long> aidasVendorIds;
+    private Long projectId;
 
-    public Long getAidasProjectId() {
-        return aidasProjectId;
+    private List<VendorUserDTO> vendors;
+
+    public Long getProjectId() {
+        return projectId;
     }
 
-    public void setAidasProjectId(Long aidasProjectId) {
-        this.aidasProjectId = aidasProjectId;
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
     }
 
-    public List<Long> getAidasVendorIds() {
-        return aidasVendorIds;
+    public List<VendorUserDTO> getVendors() {
+        return vendors;
     }
 
-    public void setAidasVendorIds(List<Long> aidasVendorIds) {
-        this.aidasVendorIds = aidasVendorIds;
+    public void setVendors(List<VendorUserDTO> vendors) {
+        this.vendors = vendors;
     }
 }

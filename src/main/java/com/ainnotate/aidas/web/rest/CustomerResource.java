@@ -81,8 +81,8 @@ public class CustomerResource {
         if (customer.getId() != null) {
             throw new BadRequestAlertException("A new customer cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        if( user.getCurrentAidasAuthority().getName().equals(AidasConstants.ADMIN) ||
-            (user.getCurrentAidasAuthority().getName().equals(AidasConstants.ORG_ADMIN) && user.getOrganisation()!=null && user.getOrganisation().equals(customer.getOrganisation()))){
+        if( user.getAuthority().getName().equals(AidasConstants.ADMIN) ||
+            (user.getAuthority().getName().equals(AidasConstants.ORG_ADMIN) && user.getOrganisation()!=null && user.getOrganisation().equals(customer.getOrganisation()))){
             Customer result = customerRepository.save(customer);
             aidasCustomerSearchRepository.save(result);
             return ResponseEntity
@@ -122,9 +122,9 @@ public class CustomerResource {
         if (!customerRepository.existsById(id)) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
-        if( user.getCurrentAidasAuthority().getName().equals(AidasConstants.ADMIN) ||
-            !(user.getCurrentAidasAuthority().getName().equals(AidasConstants.ORG_ADMIN) && user.getOrganisation()!=null && user.getOrganisation().equals(customer.getOrganisation()))||
-            !(user.getCurrentAidasAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN) && user.getCustomer().equals(customer))
+        if( user.getAuthority().getName().equals(AidasConstants.ADMIN) ||
+            !(user.getAuthority().getName().equals(AidasConstants.ORG_ADMIN) && user.getOrganisation()!=null && user.getOrganisation().equals(customer.getOrganisation()))||
+            !(user.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN) && user.getCustomer().equals(customer))
         ){
             Customer result = customerRepository.save(customer);
             aidasCustomerSearchRepository.save(result);
@@ -150,11 +150,11 @@ public class CustomerResource {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to get a page of AidasCustomers");
         Page<Customer> page =null;
-        if( user.getCurrentAidasAuthority().getName().equals(AidasConstants.ADMIN)){
+        if( user.getAuthority().getName().equals(AidasConstants.ADMIN)){
             page = customerRepository.findAllByIdGreaterThan(pageable,-1l);
-        }else if(user.getCurrentAidasAuthority().getName().equals(AidasConstants.ORG_ADMIN) && user.getOrganisation()!=null) {
+        }else if(user.getAuthority().getName().equals(AidasConstants.ORG_ADMIN) && user.getOrganisation()!=null) {
             page = customerRepository.findAllByAidasOrganisation(pageable, user.getOrganisation());
-        }else if(user.getCurrentAidasAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN) && user.getCustomer()!=null) {
+        }else if(user.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN) && user.getCustomer()!=null) {
             page = customerRepository.findAllByIdEquals(pageable, user.getCustomer().getId());
         }
         if(page!=null ){
@@ -177,7 +177,7 @@ public class CustomerResource {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         Optional<Customer> customer = customerRepository.findById(id);;
         log.debug("REST request to get AidasCustomer : {}", id);
-        if(user.getCurrentAidasAuthority().getName().equals(AidasConstants.ORG_ADMIN) ){
+        if(user.getAuthority().getName().equals(AidasConstants.ORG_ADMIN) ){
             customer = customerRepository.findById(id);
             if(customer.isPresent()){
                 if(!customer.get().getOrganisation().equals(user.getOrganisation())){
@@ -200,9 +200,9 @@ public class CustomerResource {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to delete AidasCustomer : {}", id);
         Customer customer = customerRepository.getById(id);
-        if( user.getCurrentAidasAuthority().getName().equals(AidasConstants.ADMIN) ||
-            !(user.getCurrentAidasAuthority().getName().equals(AidasConstants.ORG_ADMIN) && user.getOrganisation()!=null && user.getOrganisation().equals(customer.getOrganisation()))||
-            !(user.getCurrentAidasAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN) && user.getCustomer().equals(customer))
+        if( user.getAuthority().getName().equals(AidasConstants.ADMIN) ||
+            !(user.getAuthority().getName().equals(AidasConstants.ORG_ADMIN) && user.getOrganisation()!=null && user.getOrganisation().equals(customer.getOrganisation()))||
+            !(user.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN) && user.getCustomer().equals(customer))
         ) {
             //aidasCustomerRepository.deleteById(id);
             //aidasCustomerSearchRepository.deleteById(id);
@@ -234,7 +234,7 @@ public class CustomerResource {
         log.debug("REST request to search for a page of AidasCustomers for query {}", query);
         Page<Customer> page = aidasCustomerSearchRepository.search(query, pageable);
         Iterator<Customer> it = page.getContent().iterator();
-        if(user.getCurrentAidasAuthority().getName().equals(AidasConstants.ORG_ADMIN) && user.getOrganisation()!=null) {
+        if(user.getAuthority().getName().equals(AidasConstants.ORG_ADMIN) && user.getOrganisation()!=null) {
             while(it.hasNext()){
                 Customer ac = it.next();
                 if(ac.getOrganisation()!=null && !ac.getOrganisation().equals(user.getOrganisation())){
@@ -242,7 +242,7 @@ public class CustomerResource {
                 }
             }
         }
-        if(user.getCurrentAidasAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN) && user.getCustomer()!=null) {
+        if(user.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN) && user.getCustomer()!=null) {
             while(it.hasNext()){
                 Customer ac = it.next();
                 if(!ac.equals(user.getCustomer())){

@@ -1,5 +1,6 @@
 package com.ainnotate.aidas.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.envers.Audited;
@@ -29,6 +30,7 @@ public class UserVendorMapping extends AbstractAuditingEntity implements Seriali
     private Vendor vendor;
 
     @ManyToOne
+    @JsonIgnoreProperties(value = {"vendor","customer","organisation","userAuthorityMappings","userVendorMappings","userCustomerMappings","userOrganisationMappings"})
     private User user;
 
 

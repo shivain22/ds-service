@@ -1,6 +1,8 @@
 package com.ainnotate.aidas.repository;
 
 import com.ainnotate.aidas.domain.*;
+import com.ainnotate.aidas.dto.IUserDTO;
+import com.ainnotate.aidas.dto.UserDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
@@ -20,8 +22,43 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     User getAidasUserByLogin(String login);
 
-    @Query(value="select * from user u, user_authority_mapping uam, user_vendor_mapping uvm where uam.user_id=u.id and uvm.user_id=u.id and uvm.vendor_id=?1 and uam.authority_id=5",nativeQuery = true)
-    List<User> findAllUsersOfVendor(Long vendorId);
+    @Query(value="select u.id as userId, u.first_name as firstName, u.last_name as lastName, uvm.id as userVendorMappingId, u.login as login from user u, user_authority_mapping uam, user_vendor_mapping uvm where uam.user_id=u.id and uvm.user_id=u.id and uvm.vendor_id=?1 and uam.authority_id=5",nativeQuery = true)
+    List<IUserDTO> findAllUsersOfVendor(Long vendorId);
+
+    @Query(value="select a.userId as userId,a.firstName as firstName,a.lastName as lastName,a.userVendorMappingId as userVendorMappingId,a.login as login,count(a.status) as status from (\n" +
+        "select \n" +
+        "u.id as userId, \n" +
+        "u.first_name as firstName, \n" +
+        "u.last_name as lastName, \n" +
+        "uvm.id as userVendorMappingId, \n" +
+        "u.login as login,\n" +
+        "1 as status \n" +
+        "from \n" +
+        "user u, \n" +
+        "user_vendor_mapping_object_mapping uvmom,\n" +
+        "user_vendor_mapping uvm ,\n" +
+        "object o\n" +
+        "where \n" +
+        "uvmom.user_vendor_mapping_id=uvm.id and\n" +
+        "uvm.user_id=u.id \n" +
+        "and uvm.vendor_id=?1\n" +
+        "and o.project_id=?2\n" +
+        "union\n" +
+        "\n" +
+        "select \n" +
+        "u.id as userId, \n" +
+        "u.first_name as firstName, \n" +
+        "u.last_name as lastName, \n" +
+        "uvm.id as userVendorMappingId, \n" +
+        "u.login as login ,\n" +
+        "0 as status\n" +
+        "from \n" +
+        "user u, \n" +
+        "user_vendor_mapping uvm \n" +
+        "where \n" +
+        "uvm.user_id=u.id \n" +
+        "and uvm.vendor_id=?1) a group by a.userId,a.firstName,a.lastName,a.userVendorMappingId,a.login",nativeQuery = true)
+    List<IUserDTO> findAllUsersOfVendorWithProject(Long vendorId, Long projectId);
 
     Optional<User> findOneByLogin(String login);
 
@@ -43,7 +80,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
         ,countQuery = "select count(*) from user u where  u.status=1 and deleted=0",nativeQuery = true)
     Page<User> findAllByIdGreaterThanAndDeletedIsFalse(Long id, Pageable page);
 
-    @Query(value = "select au.* from authority au, user_authority_mapping auaa where auaa.user_id=au.id and auaa.authority_id=?1", nativeQuery = true)
+    @Query(value = "select u.* from user u, user_authority_mapping uaa where uaa.user_id=u.id  and uaa.authority_id=?1", nativeQuery = true)
     List<User>findAllByAidasAuthoritiesEquals(Long aidasAuthorityId);
 
 

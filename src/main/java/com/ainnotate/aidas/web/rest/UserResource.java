@@ -125,7 +125,7 @@ public class UserResource {
         if (user.getId() != null) {
             throw new BadRequestAlertException("A new user cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        if(loggedInUser.getCurrentAidasAuthority().getName().equals(AidasConstants.ORG_ADMIN) && loggedInUser.getOrganisation()!=null ){
+        if(loggedInUser.getAuthority().getName().equals(AidasConstants.ORG_ADMIN) && loggedInUser.getOrganisation()!=null ){
             if(user.getOrganisation()!=null){
                 Organisation organisation = organisationRepository.getById(user.getOrganisation().getId());
                 if(!loggedInUser.getOrganisation().equals(organisation)){
@@ -139,29 +139,43 @@ public class UserResource {
                 }
             }
         }
-        if( loggedInUser.getCurrentAidasAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN)){
+        if( loggedInUser.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN)){
             if(user.getCustomer()!=null){
                 if(!loggedInUser.getCustomer().equals(user.getOrganisation())){
                     throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
                 }
             }
         }
-        if( loggedInUser.getCurrentAidasAuthority().getName().equals(AidasConstants.VENDOR_ADMIN)){
+        if( loggedInUser.getAuthority().getName().equals(AidasConstants.VENDOR_ADMIN)){
             if(user.getVendor()!=null){
                 if(!loggedInUser.getVendor().equals(user.getVendor())){
                     throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
                 }
             }
         }
+        if( loggedInUser.getAuthority().getName().equals(AidasConstants.VENDOR_USER)){
+            if(user.getVendor()!=null){
+                if(!loggedInUser.getVendor().equals(user.getVendor())){
+                    throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
+                }
+            }
+        }
+        if( loggedInUser.getAuthority().getName().equals(AidasConstants.QC_USER)){
+            if(user.getCustomer()!=null){
+                if(!loggedInUser.getCustomer().equals(user.getCustomer())){
+                    throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
+                }
+            }
+        }
 
 
-        for(Authority aa: user.getAidasAuthorities()){
+        for(Authority aa: user.getAuthorities()){
             if(aa!=null && aa.getId()!=null){
                 UserAuthorityMapping auaam = new UserAuthorityMapping();
                 auaam.setUser(user);
-                auaam.setAidasAuthority(aa);
-                user.getAidasUserAidasAuthorityMappings().add(auaam);
-                user.setCurrentAidasAuthority(aa);
+                auaam.getAuthority(aa);
+                user.getUserAuthorityMappings().add(auaam);
+                user.setAuthority(aa);
             }
         }
         for(Organisation ao: user.getOrganisations()){
@@ -169,7 +183,7 @@ public class UserResource {
                 UserOrganisationMapping auaom = new UserOrganisationMapping();
                 auaom.setUser(user);
                 auaom.setOrganisation(ao);
-                user.getAidasUserAidasOrganisationMappings().add(auaom);
+                user.getUserOrganisationMappings().add(auaom);
                 user.setOrganisation(ao);
             }
         }
@@ -178,7 +192,7 @@ public class UserResource {
                 UserCustomerMapping auacm = new UserCustomerMapping();
                 auacm.setUser(user);
                 auacm.setCustomer(ac);
-                user.getAidasUserAidasCustomerMappings().add(auacm);
+                user.getUserCustomerMappings().add(auacm);
                 user.setCustomer(ac);
             }
         }
@@ -187,23 +201,37 @@ public class UserResource {
                 UserVendorMapping auavm = new UserVendorMapping();
                 auavm.setUser(user);
                 auavm.setVendor(av);
-                user.getAidasUserAidasVendorMappings().add(auavm);
+                user.getUserVendorMappings().add(auavm);
                 user.setVendor(av);
             }
         }
         addUserToKeyCloak(user);
         user.setDeleted(false);
+        if(user.getOrganisation()!=null){
+            UserOrganisationMapping uom = new UserOrganisationMapping();
+            uom.setUser(user);
+            uom.setOrganisation(user.getOrganisation());
+            user.getUserOrganisationMappings().add(uom);
+        }
+        if(user.getCustomer()!=null){
+            UserCustomerMapping ucm = new UserCustomerMapping();
+            ucm.setUser(user);
+            ucm.setCustomer(user.getCustomer());
+            user.getUserCustomerMappings().add(ucm);
+        }
+        if(user.getVendor()!=null){
+            UserVendorMapping uvm = new UserVendorMapping();
+            uvm.setUser(user);
+            uvm.setVendor(user.getVendor());
+            user.getUserVendorMappings().add(uvm);
+        }
         User result = userRepository.save(user);
-        UserVendorMappingObjectMapping auao = new UserVendorMappingObjectMapping();
-        Vendor defaultVendor = vendorRepository.getById(-1l);
-        UserVendorMapping auavm = new UserVendorMapping();
-        auavm.setUser(result);
-        auavm.setVendor(defaultVendor);
-        auavm = userVendorMappingRepository.save(auavm);
-        Object defaultObject = objectRepository.getById(-1l);
-        auao.setAidasUserAidasVendorMapping(auavm);
-        auao.setObject(defaultObject);
         //aidasUserSearchRepository.save(result);
+        if(result.getAuthorities()!=null && result.getAuthorities().size()>0){
+            for(Authority a:result.getAuthorities()){
+                result.getAuthority(a);
+            }
+        }
         updateUserToKeyCloak(result);
 
         /*String bucketName = "objects-upload";
@@ -268,7 +296,7 @@ public class UserResource {
         auavm.setVendor(defaultVendor);
         auavm = userVendorMappingRepository.save(auavm);
 
-        auao.setAidasUserAidasVendorMapping(auavm);
+        auao.setUserVendorMapping(auavm);
         auao.setObject(defaultObject);
         userVendorMappingObjectMappingRepository.save(auao);
         aidasUserSearchRepository.save(result);
@@ -293,7 +321,7 @@ public class UserResource {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         updateCurrentRole(user,role);
         Authority currentAuthority =  authorityRepository.findByName(role.trim());
-        user.setCurrentAidasAuthority(currentAuthority);
+        user.setAuthority(currentAuthority);
         userRepository.save(user);
         return ResponseEntity
             .created(new URI("/api/aidas-users/" + user.getId()))
@@ -330,7 +358,7 @@ public class UserResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        if(loggedInUser.getCurrentAidasAuthority().getName().equals(AidasConstants.ORG_ADMIN) && loggedInUser.getOrganisation()!=null ){
+        if(loggedInUser.getAuthority().getName().equals(AidasConstants.ORG_ADMIN) && loggedInUser.getOrganisation()!=null ){
             if(user.getOrganisation()!=null){
                 Organisation organisation = organisationRepository.getById(user.getOrganisation().getId());
                 if(!loggedInUser.getOrganisation().equals(organisation)){
@@ -344,14 +372,14 @@ public class UserResource {
                 }
             }
         }
-        if( loggedInUser.getCurrentAidasAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN)){
+        if( loggedInUser.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN)){
             if(user.getCustomer()!=null){
                 if(!loggedInUser.getCustomer().equals(user.getOrganisation())){
                     throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
                 }
             }
         }
-        if( loggedInUser.getCurrentAidasAuthority().getName().equals(AidasConstants.VENDOR_ADMIN)){
+        if( loggedInUser.getAuthority().getName().equals(AidasConstants.VENDOR_ADMIN)){
             if(user.getVendor()!=null){
                 if(!loggedInUser.getVendor().equals(user.getVendor())){
                     throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
@@ -395,7 +423,7 @@ public class UserResource {
         if (!userRepository.existsById(id)) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
-        if(loggedInUser.getCurrentAidasAuthority().getName().equals(AidasConstants.ORG_ADMIN) && loggedInUser.getOrganisation()!=null ){
+        if(loggedInUser.getAuthority().getName().equals(AidasConstants.ORG_ADMIN) && loggedInUser.getOrganisation()!=null ){
             if(user.getOrganisation()!=null){
                 Organisation organisation = organisationRepository.getById(user.getOrganisation().getId());
                 if(!loggedInUser.getOrganisation().equals(organisation)){
@@ -409,14 +437,14 @@ public class UserResource {
                 }
             }
         }
-        if( user.getCurrentAidasAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN)){
+        if( user.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN)){
             if(user.getCustomer()!=null){
                 if(!loggedInUser.getCustomer().equals(user.getOrganisation())){
                     throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
                 }
             }
         }
-        if( user.getCurrentAidasAuthority().getName().equals(AidasConstants.VENDOR_ADMIN)){
+        if( user.getAuthority().getName().equals(AidasConstants.VENDOR_ADMIN)){
             if(user.getVendor()!=null){
                 if(!loggedInUser.getVendor().equals(user.getVendor())){
                     throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
@@ -469,19 +497,19 @@ public class UserResource {
         log.debug("REST request to get a page of AidasUsers");
         User loggedInUser = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         Page<User> page = null;//aidasUserRepository.findAll(pageable);
-        if(loggedInUser.getCurrentAidasAuthority().getName().equals(AidasConstants.ADMIN)){
+        if(loggedInUser.getAuthority().getName().equals(AidasConstants.ADMIN)){
             page = userRepository.findAllByIdGreaterThanAndDeletedIsFalse(0l,pageable);
         }
-        if(loggedInUser.getCurrentAidasAuthority().getName().equals(AidasConstants.ORG_ADMIN) && loggedInUser.getOrganisation()!=null ){
+        if(loggedInUser.getAuthority().getName().equals(AidasConstants.ORG_ADMIN) && loggedInUser.getOrganisation()!=null ){
             page = userRepository.findAllByDeletedIsFalseAndAidasOrganisation_OrAidasCustomer_AidasOrganisation(pageable,loggedInUser.getOrganisation(),loggedInUser.getOrganisation());
         }
-        if( loggedInUser.getCurrentAidasAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN) && loggedInUser.getCustomer()!=null ){
+        if( loggedInUser.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN) && loggedInUser.getCustomer()!=null ){
             page = userRepository.findAllByDeletedIsFalseAndAidasCustomer(pageable,loggedInUser.getCustomer().getId());
         }
-        if(loggedInUser.getCurrentAidasAuthority().getName().equals(AidasConstants.VENDOR_ADMIN) || loggedInUser.getCurrentAidasAuthority().getName().equals(AidasConstants.VENDOR_USER)){
+        if(loggedInUser.getAuthority().getName().equals(AidasConstants.VENDOR_ADMIN) || loggedInUser.getAuthority().getName().equals(AidasConstants.VENDOR_USER)){
             page = userRepository.findAllByDeletedIsFalseAndAidasVendor(pageable,loggedInUser.getVendor());
         }
-        if(loggedInUser.getCurrentAidasAuthority().getName().equals(AidasConstants.VENDOR_USER)){
+        if(loggedInUser.getAuthority().getName().equals(AidasConstants.VENDOR_USER)){
 
         }
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
@@ -493,11 +521,11 @@ public class UserResource {
      *
      *  @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of aidasUsers in body.
      */
-    @GetMapping("/aidas-vendor-users")
-    public ResponseEntity<List<User>> getAllAidasVendorUsers() {
-        log.debug("REST request to get a page of AidasUsers");
+    @GetMapping("/aidas-qc-users")
+    public ResponseEntity<List<User>> getAllAidasQcUsers() {
+        log.debug("REST request to get a page of AidasQCUsers");
         User loggedInUser = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-        Authority authority = authorityRepository.findByName(AidasConstants.VENDOR_USER);
+        Authority authority = authorityRepository.findByName(AidasConstants.QC_USER);
         List<User> users = userRepository.findAllByAidasAuthoritiesEquals(authority.getId());
         return ResponseEntity.ok().body(users);
     }
@@ -526,28 +554,7 @@ public class UserResource {
         log.debug("REST request to get AidasUser : {}", id);
         User loggedInUser = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         User user = userRepository.getById(id);
-        Optional<User> aidasUser1 = userRepository.findById(id);
-        if(loggedInUser.getCurrentAidasAuthority().getName().equals(AidasConstants.ORG_ADMIN) && user.getOrganisation()!=null ){
-            if(!loggedInUser.getOrganisation().equals(user.getOrganisation())){
-                throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
-            }
-        }
-        if( loggedInUser.getCurrentAidasAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN) && user.getCustomer()!=null ){
-            if(!loggedInUser.getCustomer().equals(user.getCustomer())){
-                throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
-            }
-        }
-        if(loggedInUser.getCurrentAidasAuthority().getName().equals(AidasConstants.VENDOR_ADMIN)){
-            if(!loggedInUser.getVendor().equals(user.getVendor())){
-                throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
-            }
-        }
-        if(loggedInUser.getCurrentAidasAuthority().getName().equals(AidasConstants.VENDOR_USER)){
-            if(!loggedInUser.getVendor().equals(user.getVendor())){
-                throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
-            }
-        }
-         return ResponseUtil.wrapOrNotFound(aidasUser1);
+         return ResponseEntity.ok().body(user);
     }
 
 
@@ -563,22 +570,22 @@ public class UserResource {
         log.debug("REST request to delete AidasUser : {}", id);
         User loggedInUser = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         User user = userRepository.getById(id);
-        if(loggedInUser.getCurrentAidasAuthority().getName().equals(AidasConstants.ORG_ADMIN) && user.getOrganisation()!=null ){
+        if(loggedInUser.getAuthority().getName().equals(AidasConstants.ORG_ADMIN) && user.getOrganisation()!=null ){
             if(!loggedInUser.getOrganisation().equals(user.getOrganisation())){
                 throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
             }
         }
-        if( loggedInUser.getCurrentAidasAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN) && user.getCustomer()!=null ){
+        if( loggedInUser.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN) && user.getCustomer()!=null ){
             if(!loggedInUser.getCustomer().equals(user.getCustomer())){
                 throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
             }
         }
-        if(loggedInUser.getCurrentAidasAuthority().getName().equals(AidasConstants.VENDOR_ADMIN) ){
+        if(loggedInUser.getAuthority().getName().equals(AidasConstants.VENDOR_ADMIN) ){
             if(!loggedInUser.getVendor().equals(user.getVendor())){
                 throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
             }
         }
-        if(loggedInUser.getCurrentAidasAuthority().getName().equals(AidasConstants.VENDOR_USER) ){
+        if(loggedInUser.getAuthority().getName().equals(AidasConstants.VENDOR_USER) ){
             if(!loggedInUser.getVendor().equals(user.getVendor())){
                 throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
             }
@@ -612,7 +619,7 @@ public class UserResource {
         log.debug("REST request to search for a page of AidasUsers for query {}", query);
         User loggedInUser = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         Page<User> page = aidasUserSearchRepository.search(query, pageable);
-        if(loggedInUser.getCurrentAidasAuthority().getName().equals(AidasConstants.ORG_ADMIN) && loggedInUser.getOrganisation()!=null) {
+        if(loggedInUser.getAuthority().getName().equals(AidasConstants.ORG_ADMIN) && loggedInUser.getOrganisation()!=null) {
             Iterator<User> it = page.getContent().iterator();
             while(it.hasNext()){
                 User user = it.next();
@@ -621,7 +628,7 @@ public class UserResource {
                 }
             }
         }
-        if(loggedInUser.getCurrentAidasAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN) && loggedInUser.getCustomer()!=null) {
+        if(loggedInUser.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN) && loggedInUser.getCustomer()!=null) {
             Iterator<User> it = page.getContent().iterator();
             while(it.hasNext()){
                 User user = it.next();
@@ -630,7 +637,7 @@ public class UserResource {
                 }
             }
         }
-        if(loggedInUser.getCurrentAidasAuthority().getName().equals(AidasConstants.ORG_ADMIN) && loggedInUser.getCustomer()!=null) {
+        if(loggedInUser.getAuthority().getName().equals(AidasConstants.ORG_ADMIN) && loggedInUser.getCustomer()!=null) {
             Iterator<User> it = page.getContent().iterator();
             while(it.hasNext()){
                 User user = it.next();
@@ -649,11 +656,10 @@ public class UserResource {
 
         UserRepresentation user = new UserRepresentation();
         user.setEnabled(true);
-        user.setUsername(user.getEmail());
-        user.setFirstName(user.getFirstName());
-        user.setLastName(user.getLastName());
-        user.setEmail(user.getEmail());
-        myUser.setLogin(user.getEmail());
+        user.setUsername(myUser.getLogin());
+        user.setFirstName(myUser.getFirstName());
+        user.setLastName(myUser.getLastName());
+        user.setEmail(myUser.getEmail());
         myUser.setCreatedBy(SecurityUtils.getCurrentUserLogin().get());
         myUser.setCreatedDate(Instant.now());
         myUser.setLastModifiedBy(SecurityUtils.getCurrentUserLogin().get());
@@ -678,14 +684,12 @@ public class UserResource {
         List<RoleRepresentation> roleRepresentationList = realmResource.roles().list();
         for (RoleRepresentation roleRepresentation : roleRepresentationList)
         {
-            System.out.println(roleRepresentation.getName());
-            System.out.println(myUser.getAidasAuthorities().size());
-            for(Authority aa:myUser.getAidasAuthorities()){
+            for(Authority aa:myUser.getAuthorities()){
                 System.out.println(aa.getName()+""+roleRepresentation.getName());
                 if (roleRepresentation.getName().equals(aa.getName()))
                 {
                     userResource.roles().realmLevel().add(Arrays.asList(roleRepresentation));
-                    myUser.setCurrentAidasAuthority(aa);
+                    myUser.setAuthority(aa);
                 }
             }
         }
@@ -727,7 +731,7 @@ public class UserResource {
         RoleRepresentation userRealmRole = realmResource.roles().get(AidasConstants.VENDOR_USER).toRepresentation();
         userResource.roles().realmLevel().add(Arrays.asList(userRealmRole));
         Authority currentAuthority = authorityRepository.findByName("ROLE_VENDOR_USER");
-        myUser.setCurrentAidasAuthority(currentAuthority);
+        myUser.setAuthority(currentAuthority);
     }
 
     public void updateUserToKeyCloak(User myUser) {
@@ -737,10 +741,10 @@ public class UserResource {
         UserRepresentation user = userResource.toRepresentation();
         Map<String,List<String>> userAttrs = new HashMap<>();
         List<String> userAttrsVals = new ArrayList<>();
-        userAttrsVals.add(String.valueOf(user.getId()));
-        userAttrs.put("id",userAttrsVals);
+        userAttrsVals.add(String.valueOf(myUser.getId()));
+        userAttrs.put("aidas_id",userAttrsVals);
         userAttrsVals = new ArrayList<>();
-        userAttrsVals.add(String.valueOf(myUser.getCurrentAidasAuthority().getName()));
+        userAttrsVals.add(String.valueOf(myUser.getAuthority().getName()));
         userAttrs.put("current_role",userAttrsVals);
         user.setAttributes(userAttrs);
         user.setEnabled(true);
@@ -754,7 +758,7 @@ public class UserResource {
         passwordCred.setType(CredentialRepresentation.PASSWORD);
         passwordCred.setValue(myUser.getPassword());
         userResource.resetPassword(passwordCred);
-        userResource.roles().realmLevel().add(myUser.getAidasAuthorities().stream().map(authority -> {return realmResource.roles().get(authority.getName()).toRepresentation();}).collect(Collectors.toList()));
+        userResource.roles().realmLevel().add(myUser.getAuthorities().stream().map(authority -> {return realmResource.roles().get(authority.getName()).toRepresentation();}).collect(Collectors.toList()));
     }
 
     private void deleteUserFromKeyCloak(User user){

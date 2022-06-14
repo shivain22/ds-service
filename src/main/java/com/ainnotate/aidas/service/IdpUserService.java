@@ -92,13 +92,13 @@ public class IdpUserService {
                 authority.setName(ga.getAuthority());
                 authorityRepository.save(authority);
             }
-            user.getAidasAuthorities().add(authority);
+            user.getAuthorities().add(authority);
             currentAuthority = authority;
         }
         user.setLocked(false);
         user.setCreatedDate(Instant.now());
         user.setLastModifiedDate(Instant.now());
-        user.setCurrentAidasAuthority(currentAuthority);
+        user.setAuthority(currentAuthority);
         user.setPassword(" ");
         user.setDeleted(false);
         User result = userRepository.save(user);

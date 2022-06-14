@@ -96,7 +96,7 @@ class UserVendorMappingObjectMappingResourceIT {
         } else {
             user = TestUtil.findAll(em, User.class).get(0);
         }
-        //aidasUserAidasVendorMappingAidasObjectMapping.setAidasUserAidasVendorMapping(user);
+        //aidasUserAidasVendorMappingAidasObjectMapping.setUserVendorMapping(user);
         // Add required entity
         Object object;
         if (TestUtil.findAll(em, Object.class).isEmpty()) {

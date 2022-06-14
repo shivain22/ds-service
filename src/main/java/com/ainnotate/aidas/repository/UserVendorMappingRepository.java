@@ -14,15 +14,15 @@ import java.util.List;
 @Repository
 public interface UserVendorMappingRepository extends JpaRepository<UserVendorMapping, Long> {
 
-    @Query(value = "select auavm.* " +
+    @Query(value = "select uvm.* " +
         "from " +
         "user au , " +
-        "user_vendor_mapping auavm ," +
-        "user_authority_mapping auaam " +
+        "user_vendor_mapping uvm ," +
+        "user_authority_mapping uam " +
         "where " +
-        "auavm.user_id=au.id and auavm.vendor_id=?1 " +
-        "and auaam.user_id=au.id and auaam.authority_id=5",nativeQuery = true)
-    List<UserVendorMapping> findAllByAidasVendor_Id(Long aidasVendorId);
+        "uvm.user_id=au.id and uvm.vendor_id=?1 " +
+        "and uam.user_id=au.id and uam.authority_id=5",nativeQuery = true)
+    List<UserVendorMapping> findAllVendorUserMappings(Long aidasVendorId);
 
     @Query(value = "select auavm.* " +
         "from " +

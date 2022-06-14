@@ -1,2 +1,2 @@
-id;first_name;last_name;email;locked;password;login;image_url;activated;lang_key;created_by;last_modified_by;organisation_id;customer_id;vendor_id;current_authority_id;keycloak_id;deleted
--1;Super;Admin;admin@ainnotate.com;false;12345678;admin;;true;en;-1;-1;;;;1;test;0
+id;first_name;last_name;email;password;login;organisation_id;customer_id;vendor_id;authority_id
+-1;Super;Admin;admin@ainnotate.com;admin;admin;;;;1

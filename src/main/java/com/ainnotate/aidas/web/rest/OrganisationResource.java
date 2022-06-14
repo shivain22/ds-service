@@ -137,7 +137,7 @@ public class OrganisationResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        if( (user.getCurrentAidasAuthority().getName().equals(AidasConstants.ORG_ADMIN) && user.getOrganisation()!=null && !user.getOrganisation().equals(organisation) )){
+        if( (user.getAuthority().getName().equals(AidasConstants.ORG_ADMIN) && user.getOrganisation()!=null && !user.getOrganisation().equals(organisation) )){
             throw new BadRequestAlertException("Not Authorised", ENTITY_NAME, "idinvalid");
         }
         try {
@@ -181,7 +181,7 @@ public class OrganisationResource {
         if (!organisationRepository.existsById(id)) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
-        if( user.getCurrentAidasAuthority().getName().equals(AidasConstants.ORG_ADMIN) && user.getOrganisation()!=null && user.getOrganisation().getId()!= organisation.getId() ){
+        if( user.getAuthority().getName().equals(AidasConstants.ORG_ADMIN) && user.getOrganisation()!=null && user.getOrganisation().getId()!= organisation.getId() ){
             throw new BadRequestAlertException("Not Authorised", ENTITY_NAME, "idinvalid");
         }
         Optional<Organisation> result = organisationRepository
@@ -219,16 +219,16 @@ public class OrganisationResource {
         log.debug("REST request to get a page of AidasOrganisations");
         Page<Organisation> page=null;
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-        if(user.getCurrentAidasAuthority().getName().equals(AidasConstants.ADMIN)) {
+        if(user.getAuthority().getName().equals(AidasConstants.ADMIN)) {
             page = organisationRepository.findAllByIdGreaterThan(-1l,pageable);
         }
         else{
-            if(user.getCurrentAidasAuthority().getName().equals(AidasConstants.ORG_ADMIN)){
+            if(user.getAuthority().getName().equals(AidasConstants.ORG_ADMIN)){
                 if(user.getOrganisation()!=null){
                     page = organisationRepository.findAllById(user.getOrganisation().getId(),pageable);
                 }
             }
-            if(user.getCurrentAidasAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN)){
+            if(user.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN)){
                 if(user.getCustomer()!=null){
                     page = organisationRepository.findAllByCustomer(user.getCustomer().getOrganisation().getId(),pageable);
                 }
@@ -250,11 +250,11 @@ public class OrganisationResource {
         log.debug("REST request to get AidasOrganisation : {}", id);
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         Optional<Organisation> organisation =null;
-        if(user.getCurrentAidasAuthority().getName().equals(AidasConstants.ORG_ADMIN)) {
+        if(user.getAuthority().getName().equals(AidasConstants.ORG_ADMIN)) {
             if (user.getOrganisation() != null && user.getOrganisation().getId() == id) {
                 organisation = organisationRepository.findById(id);
             }
-        }else if(user.getCurrentAidasAuthority().getName().equals(AidasConstants.ADMIN)){
+        }else if(user.getAuthority().getName().equals(AidasConstants.ADMIN)){
             organisation = organisationRepository.findById(id);
         }
         return ResponseUtil.wrapOrNotFound(organisation);

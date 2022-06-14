@@ -82,7 +82,7 @@ public class AuthorityResource {
     public ResponseEntity<List<Authority>> getMyAidasAuthorityies() {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to get a list of AidasAuthorities of logged in user"+ user.getId());
-        List<Authority> myAuthorities   = user.getAidasAuthorities().stream().collect(Collectors.toList());
+        List<Authority> myAuthorities   = user.getAuthorities().stream().collect(Collectors.toList());
         return ResponseEntity.ok().body(myAuthorities);
     }
 
@@ -92,12 +92,12 @@ public class AuthorityResource {
      * @param id the id of the authority to retrieve.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the authority, or with status {@code 404 (Not Found)}.
      */
-    @Operation(summary = "Retrieve all AidasAuthorities (getAidasAuthority())")
+    @Operation(summary = "Retrieve all AidasAuthorities (getAuthority())")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Retrieved details of AidasAuthority",content = { @Content(mediaType = "application/json",schema = @Schema(implementation = Authority.class)) }),
         @ApiResponse(responseCode = "500", description = "Unable to details of AidasAuthority.  Contact the administrator",content = @Content) })
     @GetMapping("/aidas-authorities/{id}")
-    public ResponseEntity<Authority> getAidasAuthority(@PathVariable Long id) {
+    public ResponseEntity<Authority> getAuthority(@PathVariable Long id) {
         log.debug("REST request to get AidasAuthority : {}", id);
         Optional<Authority> authority = authorityRepository.findById(id);
         return ResponseUtil.wrapOrNotFound(authority);

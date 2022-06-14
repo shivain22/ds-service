@@ -61,7 +61,7 @@ public class DashboardResource {
         log.debug("REST request to get a page of AidasDownloads");
         Dashboard ad = new Dashboard();
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-        Authority authority = user.getCurrentAidasAuthority();
+        Authority authority = user.getAuthority();
         if(authority.getName().equals(AidasConstants.ADMIN)){
             ad.setOrganisationCount(organisationRepository.countAllOrgsForSuperAdmin());
             ad.setCustomerCount(customerRepository.countAidasCustomersForSuperAdmin());

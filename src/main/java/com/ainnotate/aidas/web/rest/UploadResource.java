@@ -91,7 +91,7 @@ public class UploadResource {
     public ResponseEntity<Upload> createAidasUpload(@Valid @RequestBody Upload upload) throws URISyntaxException {
         log.debug("REST request to save AidasUpload : {}", upload);
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-        Authority authority = user.getCurrentAidasAuthority();
+        Authority authority = user.getAuthority();
         if(authority.getName().equals(AidasConstants.ADMIN)){
 
         }
@@ -147,7 +147,7 @@ public class UploadResource {
     public ResponseEntity<List<UploadMetaData>> submitMetadata(@Valid @RequestBody List<UploadMetadataDTO> uploadMetadataDTOS) throws URISyntaxException {
         log.debug("REST request to save AidasUpload : {}", uploadMetadataDTOS);
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-        Authority authority = user.getCurrentAidasAuthority();
+        Authority authority = user.getAuthority();
         if(authority.getName().equals(AidasConstants.VENDOR_USER)){
             List<UploadMetaData> success = new ArrayList<>();
             List<UploadMetaData> failed = new ArrayList<>();
@@ -231,7 +231,7 @@ public class UploadResource {
     public ResponseEntity<String> submitForQc(@Valid @RequestBody List<Long> uploadIds) throws URISyntaxException {
         log.debug("REST request to save AidasUpload : {}", uploadIds);
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-        Authority authority = user.getCurrentAidasAuthority();
+        Authority authority = user.getAuthority();
         if(authority.getName().equals(AidasConstants.VENDOR_USER)){
             for(Long upId:uploadIds){
                 Upload upload = uploadRepository.getById(upId);
@@ -256,7 +256,7 @@ public class UploadResource {
     public ResponseEntity<Upload> createAidasUploadFromDto(@Valid @RequestBody UploadDto uploadDto) throws URISyntaxException {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to save AidasUpload : {}", uploadDto);
-        Authority authority = user.getCurrentAidasAuthority();
+        Authority authority = user.getAuthority();
         if(authority.getName().equals(AidasConstants.ADMIN)){
 
         }
@@ -284,10 +284,10 @@ public class UploadResource {
             }
 
             Upload upload = new Upload();
-            UserVendorMappingObjectMapping auaom = userVendorMappingObjectMappingRepository.findByAidasUser_IdAndAidasObject_Id(uploadDto.getUserId(),uploadDto.getObjectId());
+            UserVendorMappingObjectMapping auaom = userVendorMappingObjectMappingRepository.findByUserObject(uploadDto.getUserId(),uploadDto.getObjectId());
             upload.setAidasUserAidasObjectMapping(auaom);
             upload.setDateUploaded(Instant.now());
-            upload.setName(uploadDto.getUploadUrl());
+            upload.setName(uploadDto.getObjectKey());
             upload.setUploadUrl(uploadDto.getUploadUrl());
             upload.setUploadEtag(uploadDto.getEtag());
             upload.setObjectKey(uploadDto.getObjectKey());
@@ -331,7 +331,7 @@ public class UploadResource {
     public ResponseEntity<Upload> createAidasUploadFromUseObjectMappingDto(@Valid @RequestBody UploadByUserObjectMappingDto uploadByUserObjectMappingDto) throws URISyntaxException {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to save AidasUpload : {}", uploadByUserObjectMappingDto);
-        Authority authority = user.getCurrentAidasAuthority();
+        Authority authority = user.getAuthority();
         if(authority.getName().equals(AidasConstants.ADMIN)){
 
         }
@@ -405,7 +405,7 @@ public class UploadResource {
     ) throws URISyntaxException {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to update AidasUpload : {}, {}", id, upload);
-        Authority authority = user.getCurrentAidasAuthority();
+        Authority authority = user.getAuthority();
         if(authority.getName().equals(AidasConstants.ADMIN)){
 
         }
@@ -455,7 +455,7 @@ public class UploadResource {
     ) throws URISyntaxException {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to approve AidasUpload : {}, {}", id);
-        Authority authority = user.getCurrentAidasAuthority();
+        Authority authority = user.getAuthority();
         if(authority.getName().equals(AidasConstants.ADMIN)){
 
         }
@@ -504,7 +504,7 @@ public class UploadResource {
     ) throws URISyntaxException {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to reject AidasUpload : {}, {}", id);
-        Authority authority = user.getCurrentAidasAuthority();
+        Authority authority = user.getAuthority();
         if(authority.getName().equals(AidasConstants.ADMIN)){
 
         }
@@ -569,7 +569,7 @@ public class UploadResource {
     ) throws URISyntaxException {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to partial update AidasUpload partially : {}, {}", id, upload);
-        Authority authority = user.getCurrentAidasAuthority();
+        Authority authority = user.getAuthority();
         if(authority.getName().equals(AidasConstants.ADMIN)){
 
         }
@@ -639,7 +639,7 @@ public class UploadResource {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to get a page of AidasUploads");
         Page<Upload> page = uploadRepository.findAll(pageable);
-        Authority authority = user.getCurrentAidasAuthority();
+        Authority authority = user.getAuthority();
         if(authority.getName().equals(AidasConstants.ADMIN)){
             page = uploadRepository.findAll(pageable);
         }
@@ -671,7 +671,7 @@ public class UploadResource {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to get a page of AidasUploads");
         Page<Upload> page = uploadRepository.findAll(pageable);
-        Authority authority = user.getCurrentAidasAuthority();
+        Authority authority = user.getAuthority();
         if(authority.getName().equals(AidasConstants.ADMIN)){
             page = uploadRepository.findAll(pageable);
         }
@@ -742,7 +742,7 @@ public class UploadResource {
     @GetMapping("/aidas-uploads/metadata/{projectId}")
     public ResponseEntity<List<UploadsMetadata>> getAllAidasUploadsForMetadata(@PathVariable Long projectId) {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-        Authority authority = user.getCurrentAidasAuthority();
+        Authority authority = user.getAuthority();
         Project project = projectRepository.getById(projectId);
         List<UploadsMetadata>uploadsMetadataList = new ArrayList<>();
         if(authority.getName().equals(AidasConstants.VENDOR_USER)){
@@ -772,7 +772,7 @@ public class UploadResource {
     public ResponseEntity<Upload> getUpload(@PathVariable Long id) {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to get AidasUpload : {}", id);
-        Authority authority = user.getCurrentAidasAuthority();
+        Authority authority = user.getAuthority();
         if(authority.getName().equals(AidasConstants.ADMIN)){
 
         }
@@ -800,7 +800,7 @@ public class UploadResource {
     public ResponseEntity<Upload> getNextAidasUpload() {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to get next AidasUpload : {}");
-        Authority authority = user.getCurrentAidasAuthority();
+        Authority authority = user.getAuthority();
         if(authority.getName().equals(AidasConstants.ADMIN)){
 
         }
@@ -842,7 +842,7 @@ public class UploadResource {
     public ResponseEntity<Void> deleteAidasUpload(@PathVariable Long id) {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to delete AidasUpload : {}", id);
-        Authority authority = user.getCurrentAidasAuthority();
+        Authority authority = user.getAuthority();
         if(authority.getName().equals(AidasConstants.ADMIN)){
 
         }
@@ -883,7 +883,7 @@ public class UploadResource {
     public ResponseEntity<List<Upload>> searchAidasUploads(@RequestParam String query, Pageable pageable) {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to search for a page of AidasUploads for query {}", query);
-        Authority authority = user.getCurrentAidasAuthority();
+        Authority authority = user.getAuthority();
         if(authority.getName().equals(AidasConstants.ADMIN)){
 
         }

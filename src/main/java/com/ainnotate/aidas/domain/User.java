@@ -25,7 +25,7 @@ public class User extends AbstractAuditingEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @OneToMany
-    Set<AppProperty> aidasAppProperties=new HashSet<>();
+    Set<AppProperty> appProperties=new HashSet<>();
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -68,7 +68,12 @@ public class User extends AbstractAuditingEntity implements Serializable {
     @Column(name = "image_url", length = 256)
     private String imageUrl;
     @ManyToOne
-    private Authority currentAuthority;
+    private Authority authority;
+
+    public void setAuthorities(Set<Authority> authorities) {
+        this.authorities = authorities;
+    }
+
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
     @JsonIgnoreProperties(value = { "user" }, allowSetters = true)
     private Set<UserAuthorityMapping> userAuthorityMappings = new HashSet<>();
@@ -81,7 +86,7 @@ public class User extends AbstractAuditingEntity implements Serializable {
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
     @JsonIgnoreProperties(value = { "user" }, allowSetters = true)
     private Set<UserVendorMapping> userVendorMappings = new HashSet<>();
-    private transient Set<Authority> aidasAuthorities = new HashSet<>();
+    private transient Set<Authority> authorities = new HashSet<>();
     private transient Set<Organisation> organisations = new HashSet<>();
     private transient Set<Customer> customers = new HashSet<>();
     private transient Set<Vendor> vendors = new HashSet<>();
@@ -97,52 +102,56 @@ public class User extends AbstractAuditingEntity implements Serializable {
         this.deleted = deleted;
     }
 
-    public Set<AppProperty> getAppProperty() {
-        return aidasAppProperties;
+    public Set<AppProperty> getAppProperties() {
+        return appProperties;
     }
 
-    public void setAppProperty(Set<AppProperty> aidasAppProperties) {
-        this.aidasAppProperties = aidasAppProperties;
+    public void setAppProperties(Set<AppProperty> appProperties) {
+        this.appProperties = appProperties;
     }
 
-    public Authority getCurrentAidasAuthority() {
-        return currentAuthority;
+    public Authority getAuthority() {
+        return authority;
     }
 
-    public void setCurrentAidasAuthority(Authority currentAuthority) {
-        this.currentAuthority = currentAuthority;
+    public void getAuthority(Authority authority) {
+        this.authority = authority;
     }
 
-    public Set<UserAuthorityMapping> getAidasUserAidasAuthorityMappings() {
+    public Set<UserAuthorityMapping> getUserAuthorityMappings() {
         return userAuthorityMappings;
     }
 
-    public void setAidasUserAidasAuthorityMappings(Set<UserAuthorityMapping> userAuthorityMappings) {
+    public void setUserAuthorityMappings(Set<UserAuthorityMapping> userAuthorityMappings) {
         this.userAuthorityMappings = userAuthorityMappings;
     }
 
-    public Set<UserOrganisationMapping> getAidasUserAidasOrganisationMappings() {
+    public Set<UserOrganisationMapping> getUserOrganisationMappings() {
         return userOrganisationMappings;
     }
 
-    public void setAidasUserAidasOrganisationMappings(Set<UserOrganisationMapping> userOrganisationMappings) {
+    public void setUserOrganisationMappings(Set<UserOrganisationMapping> userOrganisationMappings) {
         this.userOrganisationMappings = userOrganisationMappings;
     }
 
-    public Set<UserCustomerMapping> getAidasUserAidasCustomerMappings() {
+    public Set<UserCustomerMapping> getUserCustomerMappings() {
         return userCustomerMappings;
     }
 
-    public void setAidasUserAidasCustomerMappings(Set<UserCustomerMapping> userCustomerMappings) {
+    public void setUserCustomerMappings(Set<UserCustomerMapping> userCustomerMappings) {
         this.userCustomerMappings = userCustomerMappings;
     }
 
-    public Set<UserVendorMapping> getAidasUserAidasVendorMappings() {
+    public Set<UserVendorMapping> getUserVendorMappings() {
         return userVendorMappings;
     }
 
-    public void setAidasUserAidasVendorMappings(Set<UserVendorMapping> userVendorMappings) {
+    public void setUserVendorMappings(Set<UserVendorMapping> userVendorMappings) {
         this.userVendorMappings = userVendorMappings;
+    }
+
+    public Set<Vendor> getVendors() {
+        return vendors;
     }
 
     public Set<Organisation> getOrganisations() {
@@ -344,17 +353,17 @@ public class User extends AbstractAuditingEntity implements Serializable {
         this.langKey = langKey;
     }
 
-    public Set<Authority> getAidasAuthorities() {
+    public Set<Authority> getAuthorities() {
         if(userAuthorityMappings !=null && userAuthorityMappings.size()>0){
             for(UserAuthorityMapping auaam: userAuthorityMappings){
-                aidasAuthorities.add(auaam.getAidasAuthority());
+                authorities.add(auaam.getAuthority());
             }
         }
-        return aidasAuthorities;
+        return authorities;
     }
 
-    public void setAidasAuthorities(Set<Authority> aidasAuthorities) {
-        this.aidasAuthorities = aidasAuthorities;
+    public void setAuthority(Authority authority) {
+        this.authority = authority;
     }
 
 

@@ -155,8 +155,8 @@ public class DownloadUploadS3  implements  Runnable{
     }
 
     private void setGlobalDefaultValues(){
-        if(user.getCurrentAidasAuthority().getId().equals(AidasConstants.ADMIN)){
-            Set<AppProperty> aidasAppProperties = user.getAppProperty();
+        if(user.getAuthority().getId().equals(AidasConstants.ADMIN)){
+            Set<AppProperty> aidasAppProperties = user.getAppProperties();
             for(AppProperty appProperty1 :aidasAppProperties){
                 if(appProperty1.getName().equals(AidasConstants.DEFAULT_STORAGE_KEY_NAME) && appProperty1.getName().equals(AidasConstants.S3)){
                     AppProperty aap = appPropertyRepository.getAidasAppProperty(user.getId(),AidasConstants.DOWNLOAD_ACCESS_KEY_KEY_NAME);
@@ -180,7 +180,7 @@ public class DownloadUploadS3  implements  Runnable{
                 }
             }
         }
-        if(user.getCurrentAidasAuthority().getId().equals(AidasConstants.ORG_ADMIN)){
+        if(user.getAuthority().getId().equals(AidasConstants.ORG_ADMIN)){
             Set<AppProperty> aidasAppProperties = user.getOrganisation().getAppProperty();
             for(AppProperty appProperty1 :aidasAppProperties){
                 if(appProperty1.getName().equals(AidasConstants.DEFAULT_STORAGE_KEY_NAME) && appProperty1.getName().equals(AidasConstants.S3)){
@@ -205,7 +205,7 @@ public class DownloadUploadS3  implements  Runnable{
                 }
             }
         }
-        if(user.getCurrentAidasAuthority().getId().equals(AidasConstants.CUSTOMER_ADMIN)){
+        if(user.getAuthority().getId().equals(AidasConstants.CUSTOMER_ADMIN)){
             Set<AppProperty> aidasAppProperties = user.getCustomer().getAppProperty();
             for(AppProperty appProperty1 :aidasAppProperties){
                 if(appProperty1.getName().equals(AidasConstants.DEFAULT_STORAGE_KEY_NAME) && appProperty1.getName().equals(AidasConstants.S3)){

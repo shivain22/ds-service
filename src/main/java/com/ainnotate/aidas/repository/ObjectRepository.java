@@ -2,6 +2,7 @@ package com.ainnotate.aidas.repository;
 
 import com.ainnotate.aidas.domain.*;
 import com.ainnotate.aidas.domain.Object;
+import com.ainnotate.aidas.dto.IUserDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
@@ -58,7 +59,7 @@ public interface ObjectRepository extends JpaRepository<Object, Long> {
     @Query(value="select ao.* from project ap, object ao,  user_vendor_mapping_object_mapping auavmaom,user au,user_vendor_mapping auavm  where  auavmaom.object_id=ao.id and ao.project_id=ap.id and auavmaom.user_vendor_mapping_id=auavm.id and auavm.user_id=au.id and auavm.vendor_id= ?1 and ap.id=?2 and ao.id>-1",nativeQuery = true)
     Page<Object> findAllObjectsByVendorAdminProject(Pageable pageable, Vendor vendor, Long aidasProjectId);
 
-    @Query(value="select ao.* from project ap, object ao,  user_vendor_mapping_object_mapping auavmaom,user_vendor_mapping auavm ,user au where  auavmaom.object_id=ao.id and ao.project_id=ap.id and auavmaom.user_vendor_mapping_id=auavm.id and auavm.user_id=au.id and auavm.vendor_id= ?1 and ap.id=?2 and ao.id>-1 and status=1 and is_dummy=0 group by ao.id",nativeQuery = true)
+    @Query(value="select ao.* from project ap, object ao,  user_vendor_mapping_object_mapping auavmaom,user_vendor_mapping auavm ,user au where  auavmaom.object_id=ao.id and ao.project_id=ap.id and auavmaom.user_vendor_mapping_id=auavm.id and auavm.user_id=au.id and auavm.vendor_id= ?1 and ap.id=?2 and ao.id>-1 and ao.status=1 and ao.is_dummy=0 group by ao.id",nativeQuery = true)
     List<Object> getAllObjectsByVendorAdminProject(Vendor vendor, Long aidasProjectId);
 
     @Query(value="select ao.* from project ap, object ao,  user_vendor_mapping_object_mapping auavmaom,user_vendor_mapping auavm ,user au where  auavmaom.object_id=ao.id and ao.project_id=ap.id and auavmaom.user_vendor_mapping_id=auavm.id and auavm.user_id=au.id and au.id= ?1 and ap.id=?2 and ao.status=1 and ao.is_dummy=0",nativeQuery = true)

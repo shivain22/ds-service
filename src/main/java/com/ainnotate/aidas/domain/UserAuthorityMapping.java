@@ -36,11 +36,11 @@ public class UserAuthorityMapping extends AbstractAuditingEntity implements Seri
 
 
 
-    public Authority getAidasAuthority() {
+    public Authority getAuthority() {
         return authority;
     }
 
-    public void setAidasAuthority(Authority authority) {
+    public void getAuthority(Authority authority) {
         this.authority = authority;
     }
 

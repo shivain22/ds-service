@@ -120,7 +120,7 @@ public class UserVendorMappingObjectMappingResource {
         Object object = objectRepository.getById(userAidasObjectMappingDto.getAidasObjectId());
         UserVendorMapping auavm = userVendorMappingRepository.findByUserAndVendor(userAidasObjectMappingDto.getAidasVendorId(),userAidasObjectMappingDto.getAidasUserId());
         UserVendorMappingObjectMapping userVendorMappingObjectMapping = new UserVendorMappingObjectMapping();
-        userVendorMappingObjectMapping.setAidasUserAidasVendorMapping(auavm);
+        userVendorMappingObjectMapping.setUserVendorMapping(auavm);
         userVendorMappingObjectMapping.setObject(object);
         userVendorMappingObjectMapping.setDateAssigned(ZonedDateTime.now());
         UserVendorMappingObjectMapping result = userVendorMappingObjectMappingRepository.save(userVendorMappingObjectMapping);
@@ -151,7 +151,7 @@ public class UserVendorMappingObjectMappingResource {
             Object object = objectRepository.getById(userAidasObjectMappingDto.getAidasObjectId());
             UserVendorMapping auavm = userVendorMappingRepository.findByUserAndVendor(userAidasObjectMappingDto.getAidasVendorId(),userAidasObjectMappingDto.getAidasUserId());
             UserVendorMappingObjectMapping userVendorMappingObjectMapping = new UserVendorMappingObjectMapping();
-            userVendorMappingObjectMapping.setAidasUserAidasVendorMapping(auavm);
+            userVendorMappingObjectMapping.setUserVendorMapping(auavm);
             userVendorMappingObjectMapping.setObject(object);
             userVendorMappingObjectMapping.setDateAssigned(ZonedDateTime.now());
             UserVendorMappingObjectMapping result = userVendorMappingObjectMappingRepository.save(userVendorMappingObjectMapping);

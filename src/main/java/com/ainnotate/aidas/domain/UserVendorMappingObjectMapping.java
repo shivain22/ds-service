@@ -81,16 +81,16 @@ public class UserVendorMappingObjectMapping extends AbstractAuditingEntity  impl
     }
 
 
-    public UserVendorMapping getAidasUserAidasVendorMapping() {
+    public UserVendorMapping getUserVendorMapping() {
         return userVendorMapping;
     }
 
-    public void setAidasUserAidasVendorMapping(UserVendorMapping userVendorMapping) {
+    public void setUserVendorMapping(UserVendorMapping userVendorMapping) {
         this.userVendorMapping = userVendorMapping;
     }
 
     public UserVendorMappingObjectMapping user(UserVendorMapping userVendorMapping) {
-        this.setAidasUserAidasVendorMapping(userVendorMapping);
+        this.setUserVendorMapping(userVendorMapping);
         return this;
     }
 

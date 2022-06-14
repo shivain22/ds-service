@@ -15,6 +15,8 @@ public final class AidasConstants {
 
     public static final String VENDOR_USER = "ROLE_VENDOR_USER";
 
+    public static final String QC_USER = "ROLE_QC_USER";
+
     public static final String ANONYMOUS = "ROLE_ANONYMOUS";
 
     public static final Integer AIDAS_UPLOAD_REJECTED=0;

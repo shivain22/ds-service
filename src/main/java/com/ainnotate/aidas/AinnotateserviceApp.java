@@ -78,8 +78,8 @@ public class AinnotateserviceApp {
                     userRepository.save(myUser);
                 }
                 List<String> userAttrsVals = new ArrayList<>();
-                if(myUser.getCurrentAidasAuthority()!=null && myUser.getCurrentAidasAuthority().getName()!=null) {
-                    userAttrsVals.add(myUser.getCurrentAidasAuthority().getName());
+                if(myUser.getAuthority()!=null && myUser.getAuthority().getName()!=null) {
+                    userAttrsVals.add(myUser.getAuthority().getName());
                 }
                 else {
                     Authority authority = authorityRepository.getById(6l);

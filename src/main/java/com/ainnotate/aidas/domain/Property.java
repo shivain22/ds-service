@@ -32,7 +32,7 @@ public class Property extends AbstractAuditingEntity  implements Serializable {
     private String name;
 
     @NotNull
-    @Column(name = "value", length = 100, nullable = false, unique = true)
+    @Column(name = "value", length = 100, nullable = false)
     private String value;
 
     @NotNull

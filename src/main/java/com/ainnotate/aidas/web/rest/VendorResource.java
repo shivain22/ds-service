@@ -1,17 +1,16 @@
 package com.ainnotate.aidas.web.rest;
 
-import com.ainnotate.aidas.domain.User;
 import com.ainnotate.aidas.domain.Vendor;
+import com.ainnotate.aidas.dto.IUserDTO;
+import com.ainnotate.aidas.dto.UserDTO;
+import com.ainnotate.aidas.dto.VendorUserDTO;
 import com.ainnotate.aidas.repository.UserRepository;
 import com.ainnotate.aidas.repository.VendorRepository;
 import com.ainnotate.aidas.repository.search.AidasVendorSearchRepository;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import org.slf4j.Logger;
@@ -168,6 +167,71 @@ public class VendorResource {
     /**
      * {@code GET  /aidas-vendors} : get all the aidasVendors.
      *
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of aidasVendors in body.
+     */
+    @GetMapping("/aidas-vendors/vendors-with-users")
+    public ResponseEntity<List<VendorUserDTO>> getAllVendorsWithUsers() {
+        log.debug("REST request to get a page of AidasVendors");
+        List<VendorUserDTO> vendorUserDtos = new ArrayList<>();
+        List<Vendor> vendors = vendorRepository.getAllVendors();
+        for(Vendor v:vendors){
+            VendorUserDTO vendorUserDto = new VendorUserDTO();
+            vendorUserDto.setVendorId(v.getId());
+            vendorUserDto.setName(v.getName());
+
+            List<IUserDTO> vendorUsers = userRepository.findAllUsersOfVendor(v.getId());
+            for(IUserDTO iu:vendorUsers){
+                UserDTO u = new UserDTO();
+                u.setLastName(iu.getLastName());
+                u.setFirstName(iu.getFirstName());
+                u.setUserVendorMappingId(iu.getUserVendorMappingId());
+                u.setUserId(iu.getUserId());
+                //to be modified later for getting the actual state of the user against any object
+                u.setStatus(0);
+                vendorUserDto.getUserDTOs().add(u);
+            }
+            vendorUserDtos.add(vendorUserDto);
+        }
+        return ResponseEntity.ok().body(vendorUserDtos);
+    }
+
+    /**
+     * {@code GET  /aidas-vendors} : get all the aidasVendors.
+     *
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of aidasVendors in body.
+     */
+    @GetMapping("/aidas-vendors/vendors-with-users/{projectId}")
+    public ResponseEntity<List<VendorUserDTO>> getAllVendorsWithUsers(@PathVariable(value = "projectId", required = false) final Long projectId) {
+        log.debug("REST request to get a page of AidasVendors");
+        List<VendorUserDTO> vendorUserDtos = new ArrayList<>();
+        List<Vendor> vendors = vendorRepository.getAllVendors();
+        for(Vendor v:vendors){
+            VendorUserDTO vendorUserDto = new VendorUserDTO();
+            vendorUserDto.setVendorId(v.getId());
+            vendorUserDto.setName(v.getName());
+
+            List<IUserDTO> vendorUsers = userRepository.findAllUsersOfVendorWithProject(v.getId(),projectId);
+            for(IUserDTO iu:vendorUsers){
+                UserDTO u = new UserDTO();
+                u.setLastName(iu.getLastName());
+                u.setFirstName(iu.getFirstName());
+                u.setUserVendorMappingId(iu.getUserVendorMappingId());
+                u.setUserId(iu.getUserId());
+                if(iu.getStatus().equals(2)){
+                    u.setStatus(1);
+                }else if(iu.getStatus().equals(1)){
+                    u.setStatus(0);
+                }
+                vendorUserDto.getUserDTOs().add(u);
+            }
+            vendorUserDtos.add(vendorUserDto);
+        }
+        return ResponseEntity.ok().body(vendorUserDtos);
+    }
+
+    /**
+     * {@code GET  /aidas-vendors} : get all the aidasVendors.
+     *
      * @param pageable the pagination information.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of aidasVendors in body.
      */
@@ -177,26 +241,6 @@ public class VendorResource {
         Page<Vendor> page = vendorRepository.findAllByIdGreaterThan(0l,pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
-    }
-
-
-    /**
-     * {@code GET  /aidas-vendors} : get all the aidasVendors.
-     *
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of aidasVendors in body.
-     */
-    @GetMapping("/aidas-vendors/vendors-with-users")
-    public ResponseEntity<List<Vendor>> getAllVendorsWithUsers() {
-        log.debug("REST request to get a page of AidasVendors");
-        List<Vendor> vendors = vendorRepository.getAllVendorsWithUsers();
-        for(Vendor v:vendors){
-            List<User> vendorUsers = userRepository.findAllUsersOfVendor(v.getId());
-            v.setUsers(new HashSet<>());
-            for(User u:vendorUsers){
-                v.getUsers().add(u);
-            }
-        }
-        return ResponseEntity.ok().body(vendors);
     }
 
     /**
