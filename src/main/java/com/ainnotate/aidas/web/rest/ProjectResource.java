@@ -242,23 +242,22 @@ public class ProjectResource {
                 User u = userRepository.getById(userDTO.getUserId());
                 for(Object ao: objects){
                     UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserObject(userDTO.getUserId(),ao.getId());
-                    if(uvmom!=null){
-                        uvmom.setStatus(userDTO.getStatus());
-                    }else{
+                    if(uvmom==null){
                         uvmom = new UserVendorMappingObjectMapping();
-                        UserVendorMapping uvm = userVendorMappingRepository.findByUserAndVendor(userDTO.getUserId(),v.getId());
+                        UserVendorMapping uvm = userVendorMappingRepository.getById(userDTO.getUserVendorMappingId());//userVendorMappingRepository.findByUserAndVendor(userDTO.getUserId(),v.getId());
                         if(uvm!=null) {
                             uvm.setStatus(userDTO.getStatus());
+                        }else {
+                            uvm = new UserVendorMapping();
+                            uvm.setUser(u);
+                            uvm.setVendor(v);
+                            uvm.setStatus(1);
+                            uvm = userVendorMappingRepository.save(uvm);
                         }
-                        uvm = new UserVendorMapping();
-                        uvm.setUser(u);
-                        uvm.setVendor(v);
-                        uvm.setStatus(1);
-                        uvm = userVendorMappingRepository.save(uvm);
                         uvmom.setUserVendorMapping(uvm);
                         uvmom.setObject(ao);
-                        uvmom.setStatus(userDTO.getStatus());
                     }
+                    uvmom.setStatus(userDTO.getStatus());
                     userVendorMappingObjectMappingRepository.save(uvmom);
                 }
             }

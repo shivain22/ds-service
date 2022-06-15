@@ -77,7 +77,7 @@ public interface ObjectRepository extends JpaRepository<Object, Long> {
     @Query(value = "select ao.* from object ao where ao.project_id=?1 and ao.status=1 and ao.is_dummy=0",nativeQuery = true)
     List<Object> findAllObjectsOfProject(Long aidasProjectId);
 
-    @Query(value = "select ao.* from object ao where ao.project_id=?1 and ao.status=1",nativeQuery = true)
+    @Query(value = "select ao.* from object ao where ao.project_id=?1 ",nativeQuery = true)
     List<Object> findAllObjectsOfProjectInlcudingDummy(Long aidasProjectId);
 
     @Query(value="select count(*) from (select ao.id,count(*) from user_vendor_mapping_object_mapping  auavmaom, user_vendor_mapping auavm, user au, object ao where auavmaom.object_id=ao.id and auavmaom.user_vendor_mapping_id=auavm.id and auavm.user_id=au.id and au.vendor_id=?1 and ao.status=1 and ao.is_dummy=0 group by ao.id )a",nativeQuery = true)
