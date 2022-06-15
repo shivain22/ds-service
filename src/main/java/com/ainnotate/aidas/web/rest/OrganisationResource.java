@@ -297,14 +297,6 @@ public class OrganisationResource {
         log.debug("REST request to search for a page of AidasOrganisations for query {}", query);
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         Page<Organisation> page = aidasOrganisationSearchRepository.search(query, pageable);
-        Predicate<Organisation> isNotDefault = organisation -> !organisation.getId().equals(-1l);
-        Iterator<Organisation> it = page.getContent().iterator();
-        while(it.hasNext()){
-            Organisation ao = it.next();
-            if(ao.getId().equals(-1l)){
-                it.remove();
-            }
-        }
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }

@@ -233,23 +233,6 @@ public class CustomerResource {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to search for a page of AidasCustomers for query {}", query);
         Page<Customer> page = aidasCustomerSearchRepository.search(query, pageable);
-        Iterator<Customer> it = page.getContent().iterator();
-        if(user.getAuthority().getName().equals(AidasConstants.ORG_ADMIN) && user.getOrganisation()!=null) {
-            while(it.hasNext()){
-                Customer ac = it.next();
-                if(ac.getOrganisation()!=null && !ac.getOrganisation().equals(user.getOrganisation())){
-                    it.remove();
-                }
-            }
-        }
-        if(user.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN) && user.getCustomer()!=null) {
-            while(it.hasNext()){
-                Customer ac = it.next();
-                if(!ac.equals(user.getCustomer())){
-                    it.remove();
-                }
-            }
-        }
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
