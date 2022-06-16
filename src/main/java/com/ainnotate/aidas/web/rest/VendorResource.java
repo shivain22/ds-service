@@ -209,7 +209,6 @@ public class VendorResource {
             VendorUserDTO vendorUserDto = new VendorUserDTO();
             vendorUserDto.setVendorId(v.getId());
             vendorUserDto.setName(v.getName());
-
             List<IUserDTO> vendorUsers = userRepository.findAllUsersOfVendorWithProject(v.getId(),projectId);
             for(IUserDTO iu:vendorUsers){
                 UserDTO u = new UserDTO();
@@ -218,11 +217,6 @@ public class VendorResource {
                 u.setUserVendorMappingId(iu.getUserVendorMappingId());
                 u.setUserId(iu.getUserId());
                 u.setStatus(iu.getStatus());
-                //if(iu.getStatus().equals(2)){
-                    //u.setStatus(1);
-               // }else if(iu.getStatus().equals(1)){
-                    //u.setStatus(0);
-                //}
                 vendorUserDto.getUserDTOs().add(u);
             }
             vendorUserDtos.add(vendorUserDto);

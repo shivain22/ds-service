@@ -232,7 +232,6 @@ public class UserResource {
         }
         addUserToKeyCloak(user);
         user.setDeleted(0);
-
         User result = userRepository.save(user);
         updateUserToKeyCloak(result);
         return ResponseEntity
@@ -632,6 +631,11 @@ public class UserResource {
                 }
             }
         }
+        User existingUser= userRepository.getById(id);
+
+        existingUser.setFirstName(user.getFirstName());
+        existingUser.setLastName(user.getLastName());
+
         if(user.getOrganisationIds()!=null && user.getOrganisationIds().size()>0){
             Organisation o =null;
             for(UserOrganisationMappingDTO oid: user.getOrganisationIds()){
@@ -642,10 +646,10 @@ public class UserResource {
                     uom.setOrganisation(o);
                     uom.setUser(user);
                     uom.setStatus(oid.getStatus());
-                    user.getUserOrganisationMappings().add(uom);
+                    existingUser.getUserOrganisationMappings().add(uom);
                 }else{
                     UserOrganisationMapping finalUom = uom;
-                    user.getUserOrganisationMappings().stream().filter(item->item.equals(finalUom)).findFirst().get().setStatus(oid.getStatus());
+                    existingUser.getUserOrganisationMappings().stream().filter(item->item.equals(finalUom)).findFirst().get().setStatus(oid.getStatus());
                 }
             }
         }
@@ -658,10 +662,10 @@ public class UserResource {
                     c = customerRepository.getById(cid.getCustomerId());
                     ucm.setCustomer(c);
                     ucm.setUser(user);
-                    user.getUserCustomerMappings().add(ucm);
+                    existingUser.getUserCustomerMappings().add(ucm);
                 }else{
                     UserCustomerMapping finalUcm = ucm;
-                    user.getUserCustomerMappings().stream().filter(item->item.equals(finalUcm)).findFirst().get().setStatus(cid.getStatus());
+                    existingUser.getUserCustomerMappings().stream().filter(item->item.equals(finalUcm)).findFirst().get().setStatus(cid.getStatus());
                 }
             }
         }
@@ -674,10 +678,10 @@ public class UserResource {
                     v = vendorRepository.getById(vid.getVendorId());
                     uvm.setVendor(v);
                     uvm.setUser(user);
-                    user.getUserVendorMappings().add(uvm);
+                    existingUser.getUserVendorMappings().add(uvm);
                 }else{
                     UserVendorMapping finalUvm = uvm;
-                    user.getUserVendorMappings().stream().filter(item->item.equals(finalUvm)).findFirst().get().setStatus(vid.getStatus());
+                    existingUser.getUserVendorMappings().stream().filter(item->item.equals(finalUvm)).findFirst().get().setStatus(vid.getStatus());
                 }
             }
         }
@@ -690,13 +694,14 @@ public class UserResource {
                     a = authorityRepository.getById(aid.getAuthorityId());
                     uam.setAuthority(a);
                     uam.setUser(user);
-                    user.getUserAuthorityMappings().add(uam);
+                    existingUser.getUserAuthorityMappings().add(uam);
                 }else{
                     UserAuthorityMapping finalUam = uam;
-                    user.getUserAuthorityMappings().stream().filter(item->item.equals(finalUam)).findFirst().get().setStatus(aid.getStatus());
+                    existingUser.getUserAuthorityMappings().stream().filter(item->item.equals(finalUam)).findFirst().get().setStatus(aid.getStatus());
                 }
             }
         }
+
         User result = userRepository.save(user);
         aidasUserSearchRepository.save(result);
         updateUserToKeyCloak(result);

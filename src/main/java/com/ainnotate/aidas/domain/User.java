@@ -38,17 +38,23 @@ public class User extends AbstractAuditingEntity implements Serializable {
     private Long id;
     @NotNull
     @Size(min = 3, max = 100)
-    @Column(name = "first_name", length = 100, nullable = true)
+    @Column(name = "first_name",  nullable = true)
     private String firstName;
-    @Size(min = 3, max = 100)
-    @Column(name = "last_name", length = 100)
+    @Column(name = "last_name" )
     private String lastName;
     @NotNull
-    @Size(min = 5, max = 100)
-    @Column(name = "email", length = 200, nullable = true, unique = false)
+    @Column(name = "email",  nullable = true, unique = false)
     private String email;
-    @Size(min = 5, max = 100)
-    @Column(name = "keycloak_id", length = 200, nullable = true, unique = false)
+
+
+    @Column(name = "alt_email",  nullable = true, unique = false)
+    private String altEmail;
+
+
+    @Column(name = "cc_email",  nullable = true, unique = false)
+    private String ccEmails;
+
+    @Column(name = "keycloak_id", nullable = true, unique = false)
     private String keycloakId;
     @NotNull
     @Column(name = "locked", nullable = true,columnDefinition ="integer default 0" )
@@ -67,10 +73,10 @@ public class User extends AbstractAuditingEntity implements Serializable {
     @NotNull
     @Column(nullable = true,columnDefinition = "integer default 1")
     private Integer activated = 1;
-    @Size(min = 2, max = 10)
+
     @Column(name = "lang_key", length = 10)
     private String langKey;
-    @Size(max = 256)
+
     @Column(name = "image_url", length = 256)
     private String imageUrl;
     @ManyToOne
@@ -121,6 +127,22 @@ public class User extends AbstractAuditingEntity implements Serializable {
 
     public List<UserOrganisationMappingDTO> getOrganisationIds() {
         return organisationIds;
+    }
+
+    public String getAltEmail() {
+        return altEmail;
+    }
+
+    public void setAltEmail(String altEmail) {
+        this.altEmail = altEmail;
+    }
+
+    public String getCcEmails() {
+        return ccEmails;
+    }
+
+    public void setCcEmails(String ccEmails) {
+        this.ccEmails = ccEmails;
     }
 
     public void setOrganisationIds(List<UserOrganisationMappingDTO> organisationIds) {

@@ -112,7 +112,7 @@ public class ObjectResource {
                 throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
             }
         }
-        object.setDummy(false);
+        object.setDummy(0);
         object.setStatus(1);
         if(object.getObjectProperties()!=null){
             Property ap=null;

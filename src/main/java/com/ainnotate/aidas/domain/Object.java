@@ -51,17 +51,23 @@ public class Object extends AbstractAuditingEntity  implements Serializable {
     private Project project;
 
     @Column(name="is_dummy")
-    private Boolean dummy;
+    private Integer dummy;
 
-    public Boolean getDummy() {
+    public Integer getDummy() {
         return dummy;
     }
 
-    public Boolean isDummy() {
-        return dummy;
+
+
+    public Object getParentObject() {
+        return parentObject;
     }
 
-    public void setDummy(Boolean dummy) {
+    public void setParentObject(Object parentObject) {
+        this.parentObject = parentObject;
+    }
+
+    public void setDummy(Integer dummy) {
         this.dummy = dummy;
     }
 

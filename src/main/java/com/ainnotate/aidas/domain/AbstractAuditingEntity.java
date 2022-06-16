@@ -47,6 +47,28 @@ public abstract class AbstractAuditingEntity implements Serializable {
     @JsonIgnore
     private Instant lastModifiedDate = Instant.now();
 
+    @Column(name="is_sample_data")
+    private Integer sampleData;
+
+    @Column(name="rating")
+    private Integer rating;
+
+    public Integer getSampleData() {
+        return sampleData;
+    }
+
+    public void setSampleData(Integer sampleData) {
+        this.sampleData = sampleData;
+    }
+
+    public Integer getRating() {
+        return rating;
+    }
+
+    public void setRating(Integer rating) {
+        this.rating = rating;
+    }
+
     @Column(name = "status", columnDefinition = "bigint default 1")
     private Integer status=1;
 

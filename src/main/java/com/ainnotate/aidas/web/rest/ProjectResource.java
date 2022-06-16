@@ -144,12 +144,20 @@ public class ProjectResource {
         if(result.getAutoCreateObjects()!=null && result.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)){
             for(int i=0;i<result.getNumOfObjects();i++){
                 Object obj = new Object();
-                obj.setName(result.getObjectPrefix()+""+i+""+result.getObjectSuffix());
+                String objName ="";
+                if(result.getObjectPrefix()!=null){
+                    objName=result.getObjectPrefix();
+                }
+                objName+=String.valueOf(i);
+                if(result.getObjectSuffix()!=null){
+                    objName=result.getObjectSuffix();
+                }
+                obj.setName(result.getObjectPrefix()+"_"+i+"_"+result.getObjectSuffix());
                 obj.setNumberOfUploadReqd(result.getNumOfUploadsReqd());
                 obj.setDescription(result.getObjectPrefix()+"_"+i+"_"+result.getObjectSuffix());
                 obj.setProject(result);
                 obj.setBufferPercent(result.getBufferPercent());
-                obj.setDummy(false);
+                obj.setDummy(0);
                 objectRepository.save(obj);
             }
         }
@@ -232,7 +240,7 @@ public class ProjectResource {
             object.setDescription("Dummy object for project, do not delete");
             object.setNumberOfUploadReqd(0);
             object.setName("DummyFor"+ project.getName());
-            object.setDummy(true);
+            object.setDummy(1);
             object = objectRepository.save(object);
             objects.add(object);
         }
@@ -545,7 +553,9 @@ public class ProjectResource {
                 ap.setTotalPending(pu.getTotalPending());
             }
         }
-
+        if(user.getAuthority().getName().equals(AidasConstants.QC_USER)){
+            page = projectRepository.findAllByIdGreaterThan(0l,pageable);
+        }
         if(page!=null) {
             HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
             return ResponseEntity.ok().headers(headers).body(page.getContent());
