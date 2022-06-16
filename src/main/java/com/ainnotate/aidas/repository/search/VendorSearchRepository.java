@@ -1,5 +1,6 @@
 package com.ainnotate.aidas.repository.search;
 
+import static org.elasticsearch.index.query.QueryBuilders.prefixQuery;
 import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 
 import com.ainnotate.aidas.domain.Vendor;
@@ -33,7 +34,7 @@ class VendorSearchRepositoryInternalImpl implements VendorSearchRepositoryIntern
 
     @Override
     public Page<Vendor> search(String query, Pageable pageable) {
-        NativeSearchQuery nativeSearchQuery = new NativeSearchQuery(queryStringQuery(query));
+        NativeSearchQuery nativeSearchQuery = new NativeSearchQuery(prefixQuery("name",query));
         nativeSearchQuery.setPageable(pageable);
         List<Vendor> hits = elasticsearchTemplate
             .search(nativeSearchQuery, Vendor.class)

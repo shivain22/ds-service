@@ -12,6 +12,7 @@ import org.springframework.data.elasticsearch.repository.ElasticsearchRepository
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.elasticsearch.index.query.QueryBuilders.prefixQuery;
 import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 
 /**
@@ -34,7 +35,7 @@ class AuthoritySearchRepositoryInternalImpl implements AuthoritySearchRepository
 
     @Override
     public Page<Authority> search(String query, Pageable pageable) {
-        NativeSearchQuery nativeSearchQuery = new NativeSearchQuery(queryStringQuery(query));
+        NativeSearchQuery nativeSearchQuery = new NativeSearchQuery(prefixQuery("name",query));
         nativeSearchQuery.setPageable(pageable);
         List<Authority> hits = elasticsearchTemplate
             .search(nativeSearchQuery, Authority.class)

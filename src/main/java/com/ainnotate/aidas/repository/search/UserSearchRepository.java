@@ -1,5 +1,6 @@
 package com.ainnotate.aidas.repository.search;
 
+import static org.elasticsearch.index.query.QueryBuilders.prefixQuery;
 import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 
 import com.ainnotate.aidas.domain.User;
@@ -33,7 +34,7 @@ class UserSearchRepositoryInternalImpl implements UserSearchRepositoryInternal {
 
     @Override
     public Page<User> search(String query, Pageable pageable) {
-        NativeSearchQuery nativeSearchQuery = new NativeSearchQuery(queryStringQuery(query));
+        NativeSearchQuery nativeSearchQuery = new NativeSearchQuery(prefixQuery("email",query));
         nativeSearchQuery.setPageable(pageable);
         List<User> hits = elasticsearchTemplate
             .search(nativeSearchQuery, User.class)

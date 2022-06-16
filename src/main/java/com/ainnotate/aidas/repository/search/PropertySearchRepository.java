@@ -1,5 +1,6 @@
 package com.ainnotate.aidas.repository.search;
 
+import static org.elasticsearch.index.query.QueryBuilders.prefixQuery;
 import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 
 import com.ainnotate.aidas.domain.Property;
@@ -34,7 +35,7 @@ class PropertySearchRepositoryInternalImpl implements PropertySearchRepositoryIn
 
     @Override
     public Page<Property> search(String query, Pageable pageable) {
-        NativeSearchQuery nativeSearchQuery = new NativeSearchQuery(queryStringQuery(query));
+        NativeSearchQuery nativeSearchQuery = new NativeSearchQuery(prefixQuery("name",query));
         nativeSearchQuery.setPageable(pageable);
         List<Property> hits = elasticsearchTemplate
             .search(nativeSearchQuery, Property.class)

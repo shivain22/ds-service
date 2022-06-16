@@ -1,6 +1,8 @@
 package com.ainnotate.aidas.web.rest;
 
+import com.ainnotate.aidas.domain.AppProperty;
 import com.ainnotate.aidas.domain.Property;
+import com.ainnotate.aidas.repository.AppPropertyRepository;
 import com.ainnotate.aidas.repository.PropertyRepository;
 import com.ainnotate.aidas.repository.search.PropertySearchRepository;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
@@ -13,6 +15,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -42,6 +45,8 @@ public class PropertyResource {
 
     private final PropertyRepository propertyRepository;
 
+    @Autowired
+    private AppPropertyRepository appPropertyRepository;
     private final PropertySearchRepository aidasPropertiesSearchRepository;
 
     public PropertyResource(
@@ -178,7 +183,7 @@ public class PropertyResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of aidasProperties in body.
      */
     @GetMapping("/aidas-property")
-    public ResponseEntity<List<Property>> getAllAidasProperties(Pageable pageable) {
+    public ResponseEntity<List<Property>> getAllProperties(Pageable pageable) {
         log.debug("REST request to get a page of AidasProperties");
         Page<Property> page = propertyRepository.findAll(pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
@@ -191,7 +196,7 @@ public class PropertyResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of aidasProperties in body.
      */
     @GetMapping("/aidas-property/all")
-    public ResponseEntity<List<Property>> getAllAidasProperties() {
+    public ResponseEntity<List<Property>> getAllProperties() {
         log.debug("REST request to get a page of AidasProperties");
         List<Property> aidasProperties = propertyRepository.findAll();
         return ResponseEntity.ok().body(aidasProperties);
@@ -205,12 +210,25 @@ public class PropertyResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of aidasProperties in body.
      */
     @GetMapping("/aidas-property/type/{propertyType}")
-    public ResponseEntity<List<Property>> getAllAidasPropertiesByType(Pageable pageable, @PathVariable(value = "propertyType", required = false) final Long propertyType) {
+    public ResponseEntity<List<Property>> getAllPropertiesByType(Pageable pageable, @PathVariable(value = "propertyType", required = false) final Long propertyType) {
         log.debug("REST request to get a page of AidasProperties");
 
         Page<Property> page = propertyRepository.findAllByPropertyTypeEquals(pageable,propertyType);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    /**
+     * {@code GET  /aidas-app-property/option/{projectType}} : get all the options for given project option (image, view, both).
+     *
+     * @param projectType projectType for which opttions required
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of aidasProperties in body.
+     */
+    @GetMapping("/aidas-app-property/option/{option}")
+    public ResponseEntity<List<AppProperty>> getProjectTypeOptions(@PathVariable(value = "projectType", required = false) final String projectType) {
+        log.debug("REST request to get a page of AidasAppProperties");
+        List<AppProperty> appProperties = appPropertyRepository.getAppPropertyLike(-1l,projectType);
+        return ResponseEntity.ok().body(appProperties);
     }
 
     /**
@@ -220,7 +238,7 @@ public class PropertyResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the aidasProperties, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/aidas-property/{id}")
-    public ResponseEntity<Property> getAidasProperties(@PathVariable Long id) {
+    public ResponseEntity<Property> getProperties(@PathVariable Long id) {
         log.debug("REST request to get AidasProperties : {}", id);
         Optional<Property> aidasProperties = propertyRepository.findById(id);
         return ResponseUtil.wrapOrNotFound(aidasProperties);
@@ -233,7 +251,7 @@ public class PropertyResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/aidas-property/{id}")
-    public ResponseEntity<Void> deleteAidasProperties(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteProperties(@PathVariable Long id) {
         log.debug("REST request to delete AidasProperties : {}", id);
         //aidasPropertiesRepository.deleteById(id);
         //aidasPropertiesSearchRepository.deleteById(id);
@@ -257,7 +275,7 @@ public class PropertyResource {
      * @return the result of the search.
      */
     @GetMapping("/_search/aidas-property")
-    public ResponseEntity<List<Property>> searchAidasProperties(@RequestParam String query, Pageable pageable) {
+    public ResponseEntity<List<Property>> searchProperties(@RequestParam String query, Pageable pageable) {
         log.debug("REST request to search for a page of AidasProperties for query {}", query);
         Page<Property> page = aidasPropertiesSearchRepository.search(query, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);

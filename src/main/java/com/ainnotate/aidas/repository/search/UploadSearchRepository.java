@@ -1,5 +1,6 @@
 package com.ainnotate.aidas.repository.search;
 
+import static org.elasticsearch.index.query.QueryBuilders.prefixQuery;
 import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 
 import com.ainnotate.aidas.domain.Upload;
@@ -33,7 +34,7 @@ class UploadSearchRepositoryInternalImpl implements UploadSearchRepositoryIntern
 
     @Override
     public Page<Upload> search(String query, Pageable pageable) {
-        NativeSearchQuery nativeSearchQuery = new NativeSearchQuery(queryStringQuery(query));
+        NativeSearchQuery nativeSearchQuery = new NativeSearchQuery(prefixQuery("name",query));
         nativeSearchQuery.setPageable(pageable);
         List<Upload> hits = elasticsearchTemplate
             .search(nativeSearchQuery, Upload.class)

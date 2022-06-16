@@ -6,11 +6,8 @@ import com.ainnotate.aidas.domain.Customer;
 import com.ainnotate.aidas.domain.Organisation;
 import com.ainnotate.aidas.domain.TaskDefinition;
 import com.ainnotate.aidas.domain.Upload;
-import com.ainnotate.aidas.repository.CustomerRepository;
-import com.ainnotate.aidas.repository.OrganisationRepository;
-import com.ainnotate.aidas.repository.UploadRepository;
-import com.ainnotate.aidas.repository.search.CustomerSearchRepository;
-import com.ainnotate.aidas.repository.search.OrganisationSearchRepository;
+import com.ainnotate.aidas.repository.*;
+import com.ainnotate.aidas.repository.search.*;
 import com.ainnotate.aidas.web.rest.UserResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,19 +33,41 @@ public class ESReIndexBean implements Runnable {
     @Autowired
     private CustomerRepository customerRepository;
 
+    @Autowired
+    private ProjectSearchRepository projectSearchRepository;
+    @Autowired
+    private ProjectRepository projectRepository;
+
+    @Autowired
+    private ObjectSearchRepository objectSearchRepository;
+    @Autowired
+    private ObjectRepository objectRepository;
+
+    @Autowired
+    private VendorRepository vendorRepository;
+    @Autowired
+    private VendorSearchRepository vendorSearchRepository;
+
+    @Autowired
+    private UserSearchRepository userSearchRepository;
+    @Autowired
+    private UserRepository userRepository;
+
+
+
     @Override
     public void run() {
         System.out.println("Running action: " + taskDefinition.getActionType());
         log.debug("Synchonizing organisations with es repo");
-        List<Organisation> organisations = organisationRepository.findAll();
-        for(Organisation organisation:organisations){
-            organisationSearchRepository.save(organisation);
-        }
+        organisationSearchRepository.saveAll(organisationRepository.findAll());
         log.debug("Synchonizing customers with es repo");
-        List<Customer> customers = customerRepository.findAll();
-        for(Customer customer:customers){
-            customerSearchRepository.save(customer);
-        }
+        customerSearchRepository.saveAll(customerRepository.findAll());
+        log.debug("Synchonizing vendors with es repo");
+        vendorSearchRepository.saveAll(vendorRepository.findAll());
+        log.debug("Synchonizing projects with es repo");
+        projectSearchRepository.saveAll(projectRepository.findAll());
+        log.debug("Synchonizing objects with es repo");
+        objectSearchRepository.saveAll(objectRepository.findAll());
         System.out.println("With Data: " + taskDefinition.getData());
     }
 
