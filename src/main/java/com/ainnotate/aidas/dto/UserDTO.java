@@ -7,6 +7,7 @@ public class UserDTO implements  IUserDTO {
     private String lastName;
     private String login;
     private Long userVendorMappingId;
+    private Long userCustomerMappingId;
     private Integer status=0;
 
     public Integer getStatus() {
@@ -55,5 +56,13 @@ public class UserDTO implements  IUserDTO {
 
     public void setLogin(String login) {
         this.login = login;
+    }
+
+    public Long getUserCustomerMappingId() {
+        return userCustomerMappingId;
+    }
+
+    public void setUserCustomerMappingId(Long userCustomerMappingId) {
+        this.userCustomerMappingId = userCustomerMappingId;
     }
 }

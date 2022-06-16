@@ -159,22 +159,22 @@ public class DownloadUploadS3  implements  Runnable{
             Set<AppProperty> aidasAppProperties = user.getAppProperties();
             for(AppProperty appProperty1 :aidasAppProperties){
                 if(appProperty1.getName().equals(AidasConstants.DEFAULT_STORAGE_KEY_NAME) && appProperty1.getName().equals(AidasConstants.S3)){
-                    AppProperty aap = appPropertyRepository.getAidasAppProperty(user.getId(),AidasConstants.DOWNLOAD_ACCESS_KEY_KEY_NAME);
+                    AppProperty aap = appPropertyRepository.getAppProperty(user.getId(),AidasConstants.DOWNLOAD_ACCESS_KEY_KEY_NAME);
                     if(aap!=null)
                         globalDownloadAccessKey = aap.getValue();
-                    aap = appPropertyRepository.getAidasAppProperty(user.getId(),AidasConstants.DOWNLOAD_ACCESS_SECRET_KEY_NAME);
+                    aap = appPropertyRepository.getAppProperty(user.getId(),AidasConstants.DOWNLOAD_ACCESS_SECRET_KEY_NAME);
                     if(aap!=null)
                         globalDownloadAccessSecret = aap.getValue();
-                    aap = appPropertyRepository.getAidasAppProperty(user.getId(),AidasConstants.DOWNLOAD_REGION_KEY_NAME);
+                    aap = appPropertyRepository.getAppProperty(user.getId(),AidasConstants.DOWNLOAD_REGION_KEY_NAME);
                     if(aap!=null)
                         globalDownloadRegion = aap.getValue();
-                    aap = appPropertyRepository.getAidasAppProperty(user.getId(),AidasConstants.DOWNLOAD_BUCKETNAME_KEY_NAME);
+                    aap = appPropertyRepository.getAppProperty(user.getId(),AidasConstants.DOWNLOAD_BUCKETNAME_KEY_NAME);
                     if(aap!=null)
                         globalDownloadBucketName = aap.getValue();
-                    aap = appPropertyRepository.getAidasAppProperty(user.getId(),AidasConstants.DOWNLOAD_PREFIX_KEY_NAME);
+                    aap = appPropertyRepository.getAppProperty(user.getId(),AidasConstants.DOWNLOAD_PREFIX_KEY_NAME);
                     if(aap!=null)
                         globalDownloadPrefix = aap.getValue();
-                    aap = appPropertyRepository.getAidasAppProperty(user.getId(),AidasConstants.UPLOAD_PREFIX_KEY_NAME);
+                    aap = appPropertyRepository.getAppProperty(user.getId(),AidasConstants.UPLOAD_PREFIX_KEY_NAME);
                     if(aap!=null)
                         globalUploadPrefix = aap.getValue();
                 }
@@ -184,22 +184,22 @@ public class DownloadUploadS3  implements  Runnable{
             Set<AppProperty> aidasAppProperties = user.getOrganisation().getAppProperties();
             for(AppProperty appProperty1 :aidasAppProperties){
                 if(appProperty1.getName().equals(AidasConstants.DEFAULT_STORAGE_KEY_NAME) && appProperty1.getName().equals(AidasConstants.S3)){
-                    AppProperty aap = appPropertyRepository.getAidasAppProperty(user.getId(),AidasConstants.DOWNLOAD_ACCESS_KEY_KEY_NAME);
+                    AppProperty aap = appPropertyRepository.getAppProperty(user.getId(),AidasConstants.DOWNLOAD_ACCESS_KEY_KEY_NAME);
                     if(aap!=null)
                         globalDownloadAccessKey = aap.getValue();
-                    aap = appPropertyRepository.getAidasAppProperty(user.getId(),AidasConstants.DOWNLOAD_ACCESS_SECRET_KEY_NAME);
+                    aap = appPropertyRepository.getAppProperty(user.getId(),AidasConstants.DOWNLOAD_ACCESS_SECRET_KEY_NAME);
                     if(aap!=null)
                         globalDownloadAccessSecret = aap.getValue();
-                    aap = appPropertyRepository.getAidasAppProperty(user.getId(),AidasConstants.DOWNLOAD_REGION_KEY_NAME);
+                    aap = appPropertyRepository.getAppProperty(user.getId(),AidasConstants.DOWNLOAD_REGION_KEY_NAME);
                     if(aap!=null)
                         globalDownloadRegion = aap.getValue();
-                    aap = appPropertyRepository.getAidasAppProperty(user.getId(),AidasConstants.DOWNLOAD_BUCKETNAME_KEY_NAME);
+                    aap = appPropertyRepository.getAppProperty(user.getId(),AidasConstants.DOWNLOAD_BUCKETNAME_KEY_NAME);
                     if(aap!=null)
                         globalDownloadBucketName = aap.getValue();
-                    aap = appPropertyRepository.getAidasAppProperty(user.getId(),AidasConstants.DOWNLOAD_PREFIX_KEY_NAME);
+                    aap = appPropertyRepository.getAppProperty(user.getId(),AidasConstants.DOWNLOAD_PREFIX_KEY_NAME);
                     if(aap!=null)
                         globalDownloadPrefix = aap.getValue();
-                    aap = appPropertyRepository.getAidasAppProperty(user.getId(),AidasConstants.UPLOAD_PREFIX_KEY_NAME);
+                    aap = appPropertyRepository.getAppProperty(user.getId(),AidasConstants.UPLOAD_PREFIX_KEY_NAME);
                     if(aap!=null)
                         globalUploadPrefix = aap.getValue();
                 }
@@ -209,22 +209,22 @@ public class DownloadUploadS3  implements  Runnable{
             Set<AppProperty> aidasAppProperties = user.getCustomer().getAppProperties();
             for(AppProperty appProperty1 :aidasAppProperties){
                 if(appProperty1.getName().equals(AidasConstants.DEFAULT_STORAGE_KEY_NAME) && appProperty1.getName().equals(AidasConstants.S3)){
-                    AppProperty aap = appPropertyRepository.getAidasAppProperty(user.getId(),AidasConstants.DOWNLOAD_ACCESS_KEY_KEY_NAME);
+                    AppProperty aap = appPropertyRepository.getAppProperty(user.getId(),AidasConstants.DOWNLOAD_ACCESS_KEY_KEY_NAME);
                     if(aap!=null)
                         globalDownloadAccessKey = aap.getValue();
-                    aap = appPropertyRepository.getAidasAppProperty(user.getId(),AidasConstants.DOWNLOAD_ACCESS_SECRET_KEY_NAME);
+                    aap = appPropertyRepository.getAppProperty(user.getId(),AidasConstants.DOWNLOAD_ACCESS_SECRET_KEY_NAME);
                     if(aap!=null)
                         globalDownloadAccessSecret = aap.getValue();
-                    aap = appPropertyRepository.getAidasAppProperty(user.getId(),AidasConstants.DOWNLOAD_REGION_KEY_NAME);
+                    aap = appPropertyRepository.getAppProperty(user.getId(),AidasConstants.DOWNLOAD_REGION_KEY_NAME);
                     if(aap!=null)
                         globalDownloadRegion = aap.getValue();
-                    aap = appPropertyRepository.getAidasAppProperty(user.getId(),AidasConstants.DOWNLOAD_BUCKETNAME_KEY_NAME);
+                    aap = appPropertyRepository.getAppProperty(user.getId(),AidasConstants.DOWNLOAD_BUCKETNAME_KEY_NAME);
                     if(aap!=null)
                         globalDownloadBucketName = aap.getValue();
-                    aap = appPropertyRepository.getAidasAppProperty(user.getId(),AidasConstants.DOWNLOAD_PREFIX_KEY_NAME);
+                    aap = appPropertyRepository.getAppProperty(user.getId(),AidasConstants.DOWNLOAD_PREFIX_KEY_NAME);
                     if(aap!=null)
                         globalDownloadPrefix = aap.getValue();
-                    aap = appPropertyRepository.getAidasAppProperty(user.getId(),AidasConstants.UPLOAD_PREFIX_KEY_NAME);
+                    aap = appPropertyRepository.getAppProperty(user.getId(),AidasConstants.UPLOAD_PREFIX_KEY_NAME);
                     if(aap!=null)
                         globalUploadPrefix = aap.getValue();
                 }

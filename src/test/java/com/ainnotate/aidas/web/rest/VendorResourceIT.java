@@ -10,7 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.ainnotate.aidas.IntegrationTest;
 import com.ainnotate.aidas.domain.Vendor;
 import com.ainnotate.aidas.repository.VendorRepository;
-import com.ainnotate.aidas.repository.search.AidasVendorSearchRepository;
+import com.ainnotate.aidas.repository.search.VendorSearchRepository;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -57,10 +57,10 @@ class VendorResourceIT {
     /**
      * This repository is mocked in the com.ainnotate.aidas.repository.search test package.
      *
-     * @see com.ainnotate.aidas.repository.search.AidasVendorSearchRepositoryMockConfiguration
+     * @see com.ainnotate.aidas.repository.search.VendorSearchRepositoryMockConfiguration
      */
     @Autowired
-    private AidasVendorSearchRepository mockAidasVendorSearchRepository;
+    private VendorSearchRepository mockVendorSearchRepository;
 
     @Autowired
     private EntityManager em;
@@ -119,7 +119,7 @@ class VendorResourceIT {
         assertThat(testVendor.getDescription()).isEqualTo(DEFAULT_DESCRIPTION);
 
         // Validate the AidasVendor in Elasticsearch
-        verify(mockAidasVendorSearchRepository, times(1)).save(testVendor);
+        verify(mockVendorSearchRepository, times(1)).save(testVendor);
     }
 
     @Test
@@ -145,7 +145,7 @@ class VendorResourceIT {
         assertThat(vendorList).hasSize(databaseSizeBeforeCreate);
 
         // Validate the AidasVendor in Elasticsearch
-        verify(mockAidasVendorSearchRepository, times(0)).save(vendor);
+        verify(mockVendorSearchRepository, times(0)).save(vendor);
     }
 
     @Test
@@ -240,7 +240,7 @@ class VendorResourceIT {
         assertThat(testVendor.getDescription()).isEqualTo(UPDATED_DESCRIPTION);
 
         // Validate the AidasVendor in Elasticsearch
-        verify(mockAidasVendorSearchRepository).save(testVendor);
+        verify(mockVendorSearchRepository).save(testVendor);
     }
 
     @Test
@@ -264,7 +264,7 @@ class VendorResourceIT {
         assertThat(vendorList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasVendor in Elasticsearch
-        verify(mockAidasVendorSearchRepository, times(0)).save(vendor);
+        verify(mockVendorSearchRepository, times(0)).save(vendor);
     }
 
     @Test
@@ -288,7 +288,7 @@ class VendorResourceIT {
         assertThat(vendorList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasVendor in Elasticsearch
-        verify(mockAidasVendorSearchRepository, times(0)).save(vendor);
+        verify(mockVendorSearchRepository, times(0)).save(vendor);
     }
 
     @Test
@@ -312,7 +312,7 @@ class VendorResourceIT {
         assertThat(vendorList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasVendor in Elasticsearch
-        verify(mockAidasVendorSearchRepository, times(0)).save(vendor);
+        verify(mockVendorSearchRepository, times(0)).save(vendor);
     }
 
     @Test
@@ -398,7 +398,7 @@ class VendorResourceIT {
         assertThat(vendorList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasVendor in Elasticsearch
-        verify(mockAidasVendorSearchRepository, times(0)).save(vendor);
+        verify(mockVendorSearchRepository, times(0)).save(vendor);
     }
 
     @Test
@@ -422,7 +422,7 @@ class VendorResourceIT {
         assertThat(vendorList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasVendor in Elasticsearch
-        verify(mockAidasVendorSearchRepository, times(0)).save(vendor);
+        verify(mockVendorSearchRepository, times(0)).save(vendor);
     }
 
     @Test
@@ -446,7 +446,7 @@ class VendorResourceIT {
         assertThat(vendorList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasVendor in Elasticsearch
-        verify(mockAidasVendorSearchRepository, times(0)).save(vendor);
+        verify(mockVendorSearchRepository, times(0)).save(vendor);
     }
 
     @Test
@@ -467,7 +467,7 @@ class VendorResourceIT {
         assertThat(vendorList).hasSize(databaseSizeBeforeDelete - 1);
 
         // Validate the AidasVendor in Elasticsearch
-        verify(mockAidasVendorSearchRepository, times(1)).deleteById(vendor.getId());
+        verify(mockVendorSearchRepository, times(1)).deleteById(vendor.getId());
     }
 
     @Test
@@ -476,7 +476,7 @@ class VendorResourceIT {
         // Configure the mock search repository
         // Initialize the database
         vendorRepository.saveAndFlush(vendor);
-        when(mockAidasVendorSearchRepository.search("id:" + vendor.getId(), PageRequest.of(0, 20)))
+        when(mockVendorSearchRepository.search("id:" + vendor.getId(), PageRequest.of(0, 20)))
             .thenReturn(new PageImpl<>(Collections.singletonList(vendor), PageRequest.of(0, 1), 1));
 
         // Search the vendor

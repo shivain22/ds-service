@@ -6,7 +6,7 @@ import com.ainnotate.aidas.dto.ObjectVendorMappingDTO;
 import com.ainnotate.aidas.dto.UserDTO;
 import com.ainnotate.aidas.dto.VendorUserDTO;
 import com.ainnotate.aidas.repository.*;
-import com.ainnotate.aidas.repository.search.AidasObjectSearchRepository;
+import com.ainnotate.aidas.repository.search.ObjectSearchRepository;
 import com.ainnotate.aidas.constants.AidasConstants;
 import com.ainnotate.aidas.security.SecurityUtils;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
@@ -57,7 +57,7 @@ public class ObjectResource {
     @Autowired
     private UploadRepository uploadRepository;
 
-    private final AidasObjectSearchRepository aidasObjectSearchRepository;
+    private final ObjectSearchRepository aidasObjectSearchRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -77,7 +77,7 @@ public class ObjectResource {
     @Autowired
     private UserVendorMappingRepository userVendorMappingRepository;
 
-    public ObjectResource(ObjectRepository objectRepository, AidasObjectSearchRepository aidasObjectSearchRepository) {
+    public ObjectResource(ObjectRepository objectRepository, ObjectSearchRepository aidasObjectSearchRepository) {
         this.objectRepository = objectRepository;
         this.aidasObjectSearchRepository = aidasObjectSearchRepository;
     }
@@ -342,10 +342,14 @@ public class ObjectResource {
 
         Object existingObject = objectRepository.getById(object.getId());
         existingObject.setName(object.getName());
+        existingObject.setObjectProperties(object.getObjectProperties());
         existingObject.setDescription(object.getDescription());
         existingObject.setProject(object.getProject());
         existingObject.setBufferPercent(object.getBufferPercent());
         existingObject.setNumberOfUploadReqd(object.getNumberOfUploadReqd());
+        existingObject.setAudioType(object.getAudioType());
+        existingObject.setVideoType(object.getVideoType());
+        existingObject.setImageType(object.getImageType());
         Object result = objectRepository.save(existingObject);
         aidasObjectSearchRepository.save(result);
         return ResponseEntity

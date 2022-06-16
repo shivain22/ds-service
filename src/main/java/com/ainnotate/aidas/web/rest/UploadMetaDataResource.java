@@ -2,7 +2,7 @@ package com.ainnotate.aidas.web.rest;
 
 import com.ainnotate.aidas.domain.UploadMetaData;
 import com.ainnotate.aidas.repository.UploadMetaDataRepository;
-import com.ainnotate.aidas.repository.search.AidasUploadMetaDataSearchRepository;
+import com.ainnotate.aidas.repository.search.UploadMetaDataSearchRepository;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -41,11 +41,11 @@ public class UploadMetaDataResource {
 
     private final UploadMetaDataRepository uploadMetaDataRepository;
 
-    private final AidasUploadMetaDataSearchRepository aidasUploadMetaDataSearchRepository;
+    private final UploadMetaDataSearchRepository aidasUploadMetaDataSearchRepository;
 
     public UploadMetaDataResource(
         UploadMetaDataRepository uploadMetaDataRepository,
-        AidasUploadMetaDataSearchRepository aidasUploadMetaDataSearchRepository
+        UploadMetaDataSearchRepository aidasUploadMetaDataSearchRepository
     ) {
         this.uploadMetaDataRepository = uploadMetaDataRepository;
         this.aidasUploadMetaDataSearchRepository = aidasUploadMetaDataSearchRepository;

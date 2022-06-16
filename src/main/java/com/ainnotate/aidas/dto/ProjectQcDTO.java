@@ -1,41 +1,35 @@
 package com.ainnotate.aidas.dto;
 
+import java.util.List;
+
 public class ProjectQcDTO {
 
-    private Long projectId;
-    private Long userId;
-    private Long qcLevel;
-    private Long qcMappingId;
+    private Long customerId;
+    private String name;
 
-    public Long getQcMappingId() {
-        return qcMappingId;
+    public String getName() {
+        return name;
     }
 
-    public void setQcMappingId(Long qcMappingId) {
-        this.qcMappingId = qcMappingId;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public Long getProjectId() {
-        return projectId;
+    private List<UserDTO> qcUsers;
+
+    public Long getCustomerId() {
+        return customerId;
     }
 
-    public void setProjectId(Long projectId) {
-        this.projectId = projectId;
+    public void setCustomerId(Long customerId) {
+        this.customerId = customerId;
     }
 
-    public Long getUserId() {
-        return userId;
+    public List<UserDTO> getQcUsers() {
+        return qcUsers;
     }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
-
-    public Long getQcLevel() {
-        return qcLevel;
-    }
-
-    public void setQcLevel(Long qcLevel) {
-        this.qcLevel = qcLevel;
+    public void setQcUsers(List<UserDTO> qcUsers) {
+        this.qcUsers = qcUsers;
     }
 }

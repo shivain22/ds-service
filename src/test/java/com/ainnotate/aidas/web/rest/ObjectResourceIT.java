@@ -11,7 +11,7 @@ import com.ainnotate.aidas.IntegrationTest;
 import com.ainnotate.aidas.domain.Object;
 import com.ainnotate.aidas.domain.Project;
 import com.ainnotate.aidas.repository.ObjectRepository;
-import com.ainnotate.aidas.repository.search.AidasObjectSearchRepository;
+import com.ainnotate.aidas.repository.search.ObjectSearchRepository;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -61,10 +61,10 @@ class ObjectResourceIT {
     /**
      * This repository is mocked in the com.ainnotate.aidas.repository.search test package.
      *
-     * @see com.ainnotate.aidas.repository.search.AidasObjectSearchRepositoryMockConfiguration
+     * @see com.ainnotate.aidas.repository.search.ObjectSearchRepositoryMockConfiguration
      */
     @Autowired
-    private AidasObjectSearchRepository mockAidasObjectSearchRepository;
+    private ObjectSearchRepository mockObjectSearchRepository;
 
     @Autowired
     private EntityManager em;
@@ -150,7 +150,7 @@ class ObjectResourceIT {
         assertThat(testObject.getNumberOfUploadReqd()).isEqualTo(DEFAULT_NUMBER_OF_UPLOAD_REQD);
 
         // Validate the AidasObject in Elasticsearch
-        verify(mockAidasObjectSearchRepository, times(1)).save(testObject);
+        verify(mockObjectSearchRepository, times(1)).save(testObject);
     }
 
     @Test
@@ -176,7 +176,7 @@ class ObjectResourceIT {
         assertThat(objectList).hasSize(databaseSizeBeforeCreate);
 
         // Validate the AidasObject in Elasticsearch
-        verify(mockAidasObjectSearchRepository, times(0)).save(object);
+        verify(mockObjectSearchRepository, times(0)).save(object);
     }
 
     @Test
@@ -296,7 +296,7 @@ class ObjectResourceIT {
         assertThat(testObject.getNumberOfUploadReqd()).isEqualTo(UPDATED_NUMBER_OF_UPLOAD_REQD);
 
         // Validate the AidasObject in Elasticsearch
-        verify(mockAidasObjectSearchRepository).save(testObject);
+        verify(mockObjectSearchRepository).save(testObject);
     }
 
     @Test
@@ -320,7 +320,7 @@ class ObjectResourceIT {
         assertThat(objectList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasObject in Elasticsearch
-        verify(mockAidasObjectSearchRepository, times(0)).save(object);
+        verify(mockObjectSearchRepository, times(0)).save(object);
     }
 
     @Test
@@ -344,7 +344,7 @@ class ObjectResourceIT {
         assertThat(objectList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasObject in Elasticsearch
-        verify(mockAidasObjectSearchRepository, times(0)).save(object);
+        verify(mockObjectSearchRepository, times(0)).save(object);
     }
 
     @Test
@@ -368,7 +368,7 @@ class ObjectResourceIT {
         assertThat(objectList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasObject in Elasticsearch
-        verify(mockAidasObjectSearchRepository, times(0)).save(object);
+        verify(mockObjectSearchRepository, times(0)).save(object);
     }
 
     @Test
@@ -456,7 +456,7 @@ class ObjectResourceIT {
         assertThat(objectList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasObject in Elasticsearch
-        verify(mockAidasObjectSearchRepository, times(0)).save(object);
+        verify(mockObjectSearchRepository, times(0)).save(object);
     }
 
     @Test
@@ -480,7 +480,7 @@ class ObjectResourceIT {
         assertThat(objectList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasObject in Elasticsearch
-        verify(mockAidasObjectSearchRepository, times(0)).save(object);
+        verify(mockObjectSearchRepository, times(0)).save(object);
     }
 
     @Test
@@ -504,7 +504,7 @@ class ObjectResourceIT {
         assertThat(objectList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasObject in Elasticsearch
-        verify(mockAidasObjectSearchRepository, times(0)).save(object);
+        verify(mockObjectSearchRepository, times(0)).save(object);
     }
 
     @Test
@@ -525,7 +525,7 @@ class ObjectResourceIT {
         assertThat(objectList).hasSize(databaseSizeBeforeDelete - 1);
 
         // Validate the AidasObject in Elasticsearch
-        verify(mockAidasObjectSearchRepository, times(1)).deleteById(object.getId());
+        verify(mockObjectSearchRepository, times(1)).deleteById(object.getId());
     }
 
     @Test
@@ -534,7 +534,7 @@ class ObjectResourceIT {
         // Configure the mock search repository
         // Initialize the database
         objectRepository.saveAndFlush(object);
-        when(mockAidasObjectSearchRepository.search("id:" + object.getId(), PageRequest.of(0, 20)))
+        when(mockObjectSearchRepository.search("id:" + object.getId(), PageRequest.of(0, 20)))
             .thenReturn(new PageImpl<>(Collections.singletonList(object), PageRequest.of(0, 1), 1));
 
         // Search the object

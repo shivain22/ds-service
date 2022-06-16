@@ -2,7 +2,7 @@ package com.ainnotate.aidas.web.rest;
 
 import com.ainnotate.aidas.domain.UserJsonStorage;
 import com.ainnotate.aidas.repository.UserJsonStorageRepository;
-import com.ainnotate.aidas.repository.search.AidasUserJsonStorageSearchRepository;
+import com.ainnotate.aidas.repository.search.UserJsonStorageSearchRepository;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -41,11 +41,11 @@ public class UserJsonStorageResource {
 
     private final UserJsonStorageRepository userJsonStorageRepository;
 
-    private final AidasUserJsonStorageSearchRepository aidasUserJsonStorageSearchRepository;
+    private final UserJsonStorageSearchRepository aidasUserJsonStorageSearchRepository;
 
     public UserJsonStorageResource(
         UserJsonStorageRepository userJsonStorageRepository,
-        AidasUserJsonStorageSearchRepository aidasUserJsonStorageSearchRepository
+        UserJsonStorageSearchRepository aidasUserJsonStorageSearchRepository
     ) {
         this.userJsonStorageRepository = userJsonStorageRepository;
         this.aidasUserJsonStorageSearchRepository = aidasUserJsonStorageSearchRepository;

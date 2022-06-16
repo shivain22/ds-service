@@ -7,7 +7,7 @@ import com.ainnotate.aidas.dto.ProjectVendorMappingDTO;
 import com.ainnotate.aidas.dto.UserDTO;
 import com.ainnotate.aidas.dto.VendorUserDTO;
 import com.ainnotate.aidas.repository.*;
-import com.ainnotate.aidas.repository.search.AidasProjectSearchRepository;
+import com.ainnotate.aidas.repository.search.ProjectSearchRepository;
 import com.ainnotate.aidas.constants.AidasConstants;
 import com.ainnotate.aidas.security.SecurityUtils;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
@@ -55,7 +55,7 @@ public class ProjectResource {
     @Autowired
     private QcProjectMappingRepository qcProjectMappingRepository;
 
-    private final AidasProjectSearchRepository aidasProjectSearchRepository;
+    private final ProjectSearchRepository aidasProjectSearchRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -81,7 +81,7 @@ public class ProjectResource {
     @Autowired
     private UploadRepository uploadRepository;
 
-    public ProjectResource(ProjectRepository projectRepository, AidasProjectSearchRepository aidasProjectSearchRepository) {
+    public ProjectResource(ProjectRepository projectRepository, ProjectSearchRepository aidasProjectSearchRepository) {
         this.projectRepository = projectRepository;
         this.aidasProjectSearchRepository = aidasProjectSearchRepository;
     }
@@ -167,7 +167,7 @@ public class ProjectResource {
      * @param projectQcDTOS the project to create.
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new project, or with status {@code 400 (Bad Request)} if the project has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
+     *//*
     @Secured({AidasConstants.ADMIN, AidasConstants.ORG_ADMIN, AidasConstants.CUSTOMER_ADMIN})
     @PostMapping("/aidas-projects/qc/add")
     public ResponseEntity<String> addQcToProject(@Valid @RequestBody List<ProjectQcDTO> projectQcDTOS) throws URISyntaxException {
@@ -186,13 +186,13 @@ public class ProjectResource {
         return ResponseEntity.ok().body("Successfully added project qc level");
     }
 
-    /**
+    *//**
      * {@code POST  /aidas-projects/qc/remove} : Add QC to project.
      *
      * @param projectQcDTOS the project to create.
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new project, or with status {@code 400 (Bad Request)} if the project has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
+     *//*
     @Secured({AidasConstants.ADMIN, AidasConstants.ORG_ADMIN, AidasConstants.CUSTOMER_ADMIN})
     @PostMapping("/aidas-projects/qc/remove")
     public ResponseEntity<String> removeQcFromProject(@Valid @RequestBody List<ProjectQcDTO> projectQcDTOS) throws URISyntaxException {
@@ -205,7 +205,7 @@ public class ProjectResource {
         }
         return ResponseEntity.ok().body("Successfully removed project qc level");
     }
-
+*/
 
 
     /**
@@ -423,6 +423,11 @@ public class ProjectResource {
         existingProject.setAutoCreateObjects(project.getAutoCreateObjects());
         existingProject.setReworkStatus(project.getReworkStatus());
         existingProject.setQcLevels(project.getQcLevels());
+        existingProject.setExternalDatasetStatus(project.getExternalDatasetStatus());
+        existingProject.setAudioType(project.getAudioType());
+        existingProject.setVideoType(project.getVideoType());
+        existingProject.setImageType(project.getImageType());
+        existingProject.setProjectProperties(project.getProjectProperties());
         Project result = projectRepository.save(existingProject);
         Project projectForSearch = new Project();
         projectForSearch.setId(result.getId());

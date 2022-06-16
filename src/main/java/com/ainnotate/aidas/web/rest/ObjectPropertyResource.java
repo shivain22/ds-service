@@ -7,7 +7,7 @@ import com.ainnotate.aidas.repository.ObjectPropertyRepository;
 import com.ainnotate.aidas.repository.ObjectRepository;
 import com.ainnotate.aidas.repository.PropertyRepository;
 import com.ainnotate.aidas.repository.UserRepository;
-import com.ainnotate.aidas.repository.search.AidasObjectPropertySearchRepository;
+import com.ainnotate.aidas.repository.search.ObjectPropertySearchRepository;
 import com.ainnotate.aidas.security.SecurityUtils;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
@@ -58,11 +58,11 @@ public class ObjectPropertyResource {
     @Autowired
     private UserRepository userRepository;
 
-    private final AidasObjectPropertySearchRepository aidasObjectPropertySearchRepository;
+    private final ObjectPropertySearchRepository aidasObjectPropertySearchRepository;
 
     public ObjectPropertyResource(
         ObjectPropertyRepository objectPropertyRepository,
-        AidasObjectPropertySearchRepository aidasObjectPropertySearchRepository
+        ObjectPropertySearchRepository aidasObjectPropertySearchRepository
     ) {
         this.objectPropertyRepository = objectPropertyRepository;
         this.aidasObjectPropertySearchRepository = aidasObjectPropertySearchRepository;

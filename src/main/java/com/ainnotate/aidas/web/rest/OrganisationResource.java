@@ -4,7 +4,7 @@ import com.ainnotate.aidas.domain.Organisation;
 import com.ainnotate.aidas.domain.User;
 import com.ainnotate.aidas.repository.OrganisationRepository;
 import com.ainnotate.aidas.repository.UserRepository;
-import com.ainnotate.aidas.repository.search.AidasOrganisationSearchRepository;
+import com.ainnotate.aidas.repository.search.OrganisationSearchRepository;
 import com.ainnotate.aidas.constants.AidasConstants;
 import com.ainnotate.aidas.security.SecurityUtils;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
@@ -58,14 +58,14 @@ public class OrganisationResource {
 
 
 
-    private final AidasOrganisationSearchRepository aidasOrganisationSearchRepository;
+    private final OrganisationSearchRepository aidasOrganisationSearchRepository;
 
     @Autowired
     private UserRepository userRepository;
 
     public OrganisationResource(
         OrganisationRepository organisationRepository,
-        AidasOrganisationSearchRepository aidasOrganisationSearchRepository
+        OrganisationSearchRepository aidasOrganisationSearchRepository
     ) {
         this.organisationRepository = organisationRepository;
         this.aidasOrganisationSearchRepository = aidasOrganisationSearchRepository;

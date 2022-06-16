@@ -1,13 +1,19 @@
 package com.ainnotate.aidas.domain;
 
+import com.ainnotate.aidas.dto.UserAuthorityMappingDTO;
+import com.ainnotate.aidas.dto.UserCustomerMappingDTO;
+import com.ainnotate.aidas.dto.UserOrganisationMappingDTO;
+import com.ainnotate.aidas.dto.UserVendorMappingDTO;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import javax.persistence.*;
 import javax.validation.constraints.*;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -77,15 +83,19 @@ public class User extends AbstractAuditingEntity implements Serializable {
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
     @JsonIgnoreProperties(value = { "user" }, allowSetters = true)
     private Set<UserAuthorityMapping> userAuthorityMappings = new HashSet<>();
+
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
     @JsonIgnoreProperties(value = { "user" }, allowSetters = true)
     private Set<UserOrganisationMapping> userOrganisationMappings = new HashSet<>();
+
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
     @JsonIgnoreProperties(value = { "user" }, allowSetters = true)
     private Set<UserCustomerMapping> userCustomerMappings = new HashSet<>();
+
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
     @JsonIgnoreProperties(value = { "user" }, allowSetters = true)
     private Set<UserVendorMapping> userVendorMappings = new HashSet<>();
+
     private transient Set<Authority> authorities = new HashSet<>();
     private transient Set<Organisation> organisations = new HashSet<>();
     private transient Set<Customer> customers = new HashSet<>();
@@ -93,6 +103,53 @@ public class User extends AbstractAuditingEntity implements Serializable {
     @Size(min = 1, max = 50)
     @Column(length = 50, unique = false, nullable = true)
     private String login;
+
+    @Transient
+    @JsonProperty
+    private transient List<UserOrganisationMappingDTO> organisationIds;
+
+    @Transient
+    @JsonProperty
+    private transient List<UserCustomerMappingDTO> customerIds;
+    @Transient
+    @JsonProperty
+    private transient List<UserVendorMappingDTO> vendorIds;
+
+    @Transient
+    @JsonProperty
+    private transient List<UserAuthorityMappingDTO> authorityIds;
+
+    public List<UserOrganisationMappingDTO> getOrganisationIds() {
+        return organisationIds;
+    }
+
+    public void setOrganisationIds(List<UserOrganisationMappingDTO> organisationIds) {
+        this.organisationIds = organisationIds;
+    }
+
+    public List<UserCustomerMappingDTO> getCustomerIds() {
+        return customerIds;
+    }
+
+    public void setCustomerIds(List<UserCustomerMappingDTO> customerIds) {
+        this.customerIds = customerIds;
+    }
+
+    public List<UserVendorMappingDTO> getVendorIds() {
+        return vendorIds;
+    }
+
+    public void setVendorIds(List<UserVendorMappingDTO> vendorIds) {
+        this.vendorIds = vendorIds;
+    }
+
+    public List<UserAuthorityMappingDTO> getAuthorityIds() {
+        return authorityIds;
+    }
+
+    public void setAuthorityIds(List<UserAuthorityMappingDTO> authorityIds) {
+        this.authorityIds = authorityIds;
+    }
 
     public Integer getDeleted() {
         return deleted;
@@ -157,7 +214,8 @@ public class User extends AbstractAuditingEntity implements Serializable {
     public Set<Organisation> getOrganisations() {
         if(userOrganisationMappings !=null && userOrganisationMappings.size()>0){
             for(UserOrganisationMapping auaom: userOrganisationMappings){
-                organisations.add(auaom.getOrganisation());
+                if(auaom.getStatus().equals(1))
+                    organisations.add(auaom.getOrganisation());
             }
         }
         return organisations;
@@ -170,7 +228,8 @@ public class User extends AbstractAuditingEntity implements Serializable {
     public Set<Customer> getCustomers() {
         if(userCustomerMappings !=null && userCustomerMappings.size()>0){
             for(UserCustomerMapping auacm: userCustomerMappings){
-                customers.add(auacm.getCustomer());
+                if(auacm.getStatus().equals(1))
+                    customers.add(auacm.getCustomer());
             }
         }
         return customers;
@@ -183,7 +242,8 @@ public class User extends AbstractAuditingEntity implements Serializable {
     public Set<Vendor> getVednors() {
         if(userVendorMappings !=null && userVendorMappings.size()>0){
             for(UserVendorMapping auavm: userVendorMappings){
-                vendors.add(auavm.getVendor());
+                if(auavm.getStatus().equals(1))
+                    vendors.add(auavm.getVendor());
             }
         }
         return vendors;
@@ -339,7 +399,8 @@ public class User extends AbstractAuditingEntity implements Serializable {
     public Set<Authority> getAuthorities() {
         if(userAuthorityMappings !=null && userAuthorityMappings.size()>0){
             for(UserAuthorityMapping auaam: userAuthorityMappings){
-                authorities.add(auaam.getAuthority());
+                if(auaam.getStatus().equals(1))
+                    authorities.add(auaam.getAuthority());
             }
         }
         return authorities;

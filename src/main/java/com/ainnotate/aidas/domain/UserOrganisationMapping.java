@@ -49,17 +49,6 @@ public class UserOrganisationMapping extends AbstractAuditingEntity implements S
         this.user = user;
     }
 
-    @Override
-    public boolean equals(java.lang.Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof UserOrganisationMapping)) {
-            return false;
-        }
-        return Objects.equals(id, ((UserOrganisationMapping) o).id);
-    }
-
     public Long getId() {
         return id;
     }
@@ -69,8 +58,16 @@ public class UserOrganisationMapping extends AbstractAuditingEntity implements S
     }
 
     @Override
+    public boolean equals(java.lang.Object o) {
+        if (this == o) return true;
+        if (!(o instanceof UserOrganisationMapping)) return false;
+        UserOrganisationMapping that = (UserOrganisationMapping) o;
+        return Objects.equals(getId(), that.getId()) && Objects.equals(getOrganisation(), that.getOrganisation()) && Objects.equals(getUser(), that.getUser());
+    }
+
+    @Override
     public int hashCode() {
-        return Objects.hashCode(id);
+        return Objects.hash(getId(), getOrganisation(), getUser());
     }
 
     // prettier-ignore

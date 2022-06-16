@@ -4,7 +4,7 @@ import com.ainnotate.aidas.domain.Authority;
 import com.ainnotate.aidas.domain.User;
 import com.ainnotate.aidas.repository.AuthorityRepository;
 import com.ainnotate.aidas.repository.UserRepository;
-import com.ainnotate.aidas.repository.search.AidasAuthoritySearchRepository;
+import com.ainnotate.aidas.repository.search.AuthoritySearchRepository;
 import com.ainnotate.aidas.security.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -49,11 +49,11 @@ public class AuthorityResource {
 
     private final AuthorityRepository authorityRepository;
 
-    private final AidasAuthoritySearchRepository aidasAuthoritySearchRepository;
+    private final AuthoritySearchRepository aidasAuthoritySearchRepository;
 
     public AuthorityResource(
         AuthorityRepository authorityRepository,
-        AidasAuthoritySearchRepository aidasAuthoritySearchRepository
+        AuthoritySearchRepository aidasAuthoritySearchRepository
     ) {
         this.authorityRepository = authorityRepository;
         this.aidasAuthoritySearchRepository = aidasAuthoritySearchRepository;

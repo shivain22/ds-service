@@ -4,7 +4,7 @@ import com.ainnotate.aidas.domain.Customer;
 import com.ainnotate.aidas.domain.User;
 import com.ainnotate.aidas.repository.CustomerRepository;
 import com.ainnotate.aidas.repository.UserRepository;
-import com.ainnotate.aidas.repository.search.AidasCustomerSearchRepository;
+import com.ainnotate.aidas.repository.search.CustomerSearchRepository;
 import com.ainnotate.aidas.constants.AidasConstants;
 import com.ainnotate.aidas.security.SecurityUtils;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
@@ -52,14 +52,14 @@ public class CustomerResource {
 
     private final CustomerRepository customerRepository;
 
-    private final AidasCustomerSearchRepository aidasCustomerSearchRepository;
+    private final CustomerSearchRepository aidasCustomerSearchRepository;
 
     @Autowired
     private UserRepository userRepository;
 
     public CustomerResource(
         CustomerRepository customerRepository,
-        AidasCustomerSearchRepository aidasCustomerSearchRepository
+        CustomerSearchRepository aidasCustomerSearchRepository
     ) {
         this.customerRepository = customerRepository;
         this.aidasCustomerSearchRepository = aidasCustomerSearchRepository;

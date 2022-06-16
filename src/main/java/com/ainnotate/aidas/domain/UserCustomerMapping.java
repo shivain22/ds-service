@@ -19,6 +19,18 @@ public class UserCustomerMapping extends AbstractAuditingEntity implements Seria
 
     private static final long serialVersionUID = 1L;
 
+    @Override
+    public boolean equals(java.lang.Object o) {
+        if (this == o) return true;
+        if (!(o instanceof UserCustomerMapping)) return false;
+        UserCustomerMapping that = (UserCustomerMapping) o;
+        return Objects.equals(getId(), that.getId()) && Objects.equals(getCustomer(), that.getCustomer()) && Objects.equals(getUser(), that.getUser());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId(), getCustomer(), getUser());
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -49,28 +61,12 @@ public class UserCustomerMapping extends AbstractAuditingEntity implements Seria
         this.user = user;
     }
 
-    @Override
-    public boolean equals(java.lang.Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof UserCustomerMapping)) {
-            return false;
-        }
-        return Objects.equals(id, ((UserCustomerMapping) o).id);
-    }
-
     public Long getId() {
         return id;
     }
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(id);
     }
 
     // prettier-ignore

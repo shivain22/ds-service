@@ -13,7 +13,7 @@ import com.ainnotate.aidas.domain.Object;
 import com.ainnotate.aidas.domain.User;
 import com.ainnotate.aidas.domain.UserVendorMappingObjectMapping;
 import com.ainnotate.aidas.repository.UserVendorMappingObjectMappingRepository;
-import com.ainnotate.aidas.repository.search.AidasUserAidasObjectMappingSearchRepository;
+import com.ainnotate.aidas.repository.search.UserObjectMappingSearchRepository;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.persistence.EntityManager;
+
+import com.ainnotate.aidas.repository.search.UserObjectMappingSearchRepositoryMockConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -64,10 +66,10 @@ class UserVendorMappingObjectMappingResourceIT {
     /**
      * This repository is mocked in the com.ainnotate.aidas.repository.search test package.
      *
-     * @see com.ainnotate.aidas.repository.search.AidasUserAidasObjectMappingSearchRepositoryMockConfiguration
+     * @see UserObjectMappingSearchRepositoryMockConfiguration
      */
     @Autowired
-    private AidasUserAidasObjectMappingSearchRepository mockAidasUserAidasObjectMappingSearchRepository;
+    private UserObjectMappingSearchRepository mockUserObjectMappingSearchRepository;
 
     @Autowired
     private EntityManager em;
@@ -172,7 +174,7 @@ class UserVendorMappingObjectMappingResourceIT {
         assertThat(testUserVendorMappingObjectMapping.getStatus()).isEqualTo(DEFAULT_STATUS);
 
         // Validate the AidasUserAidasObjectMapping in Elasticsearch
-        verify(mockAidasUserAidasObjectMappingSearchRepository, times(1)).save(testUserVendorMappingObjectMapping);
+        verify(mockUserObjectMappingSearchRepository, times(1)).save(testUserVendorMappingObjectMapping);
     }
 
     @Test
@@ -198,7 +200,7 @@ class UserVendorMappingObjectMappingResourceIT {
         assertThat(userVendorMappingObjectMappingList).hasSize(databaseSizeBeforeCreate);
 
         // Validate the AidasUserAidasObjectMapping in Elasticsearch
-        verify(mockAidasUserAidasObjectMappingSearchRepository, times(0)).save(userVendorMappingObjectMapping);
+        verify(mockUserObjectMappingSearchRepository, times(0)).save(userVendorMappingObjectMapping);
     }
 
     @Test
@@ -275,7 +277,7 @@ class UserVendorMappingObjectMappingResourceIT {
         assertThat(testUserVendorMappingObjectMapping.getStatus()).isEqualTo(UPDATED_STATUS);
 
         // Validate the AidasUserAidasObjectMapping in Elasticsearch
-        verify(mockAidasUserAidasObjectMappingSearchRepository).save(testUserVendorMappingObjectMapping);
+        verify(mockUserObjectMappingSearchRepository).save(testUserVendorMappingObjectMapping);
     }
 
     @Test
@@ -299,7 +301,7 @@ class UserVendorMappingObjectMappingResourceIT {
         assertThat(userVendorMappingObjectMappingList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasUserAidasObjectMapping in Elasticsearch
-        verify(mockAidasUserAidasObjectMappingSearchRepository, times(0)).save(userVendorMappingObjectMapping);
+        verify(mockUserObjectMappingSearchRepository, times(0)).save(userVendorMappingObjectMapping);
     }
 
     @Test
@@ -323,7 +325,7 @@ class UserVendorMappingObjectMappingResourceIT {
         assertThat(userVendorMappingObjectMappingList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasUserAidasObjectMapping in Elasticsearch
-        verify(mockAidasUserAidasObjectMappingSearchRepository, times(0)).save(userVendorMappingObjectMapping);
+        verify(mockUserObjectMappingSearchRepository, times(0)).save(userVendorMappingObjectMapping);
     }
 
     @Test
@@ -347,7 +349,7 @@ class UserVendorMappingObjectMappingResourceIT {
         assertThat(userVendorMappingObjectMappingList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasUserAidasObjectMapping in Elasticsearch
-        verify(mockAidasUserAidasObjectMappingSearchRepository, times(0)).save(userVendorMappingObjectMapping);
+        verify(mockUserObjectMappingSearchRepository, times(0)).save(userVendorMappingObjectMapping);
     }
 
     @Test
@@ -437,7 +439,7 @@ class UserVendorMappingObjectMappingResourceIT {
         assertThat(userVendorMappingObjectMappingList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasUserAidasObjectMapping in Elasticsearch
-        verify(mockAidasUserAidasObjectMappingSearchRepository, times(0)).save(userVendorMappingObjectMapping);
+        verify(mockUserObjectMappingSearchRepository, times(0)).save(userVendorMappingObjectMapping);
     }
 
     @Test
@@ -461,7 +463,7 @@ class UserVendorMappingObjectMappingResourceIT {
         assertThat(userVendorMappingObjectMappingList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasUserAidasObjectMapping in Elasticsearch
-        verify(mockAidasUserAidasObjectMappingSearchRepository, times(0)).save(userVendorMappingObjectMapping);
+        verify(mockUserObjectMappingSearchRepository, times(0)).save(userVendorMappingObjectMapping);
     }
 
     @Test
@@ -485,7 +487,7 @@ class UserVendorMappingObjectMappingResourceIT {
         assertThat(userVendorMappingObjectMappingList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasUserAidasObjectMapping in Elasticsearch
-        verify(mockAidasUserAidasObjectMappingSearchRepository, times(0)).save(userVendorMappingObjectMapping);
+        verify(mockUserObjectMappingSearchRepository, times(0)).save(userVendorMappingObjectMapping);
     }
 
     @Test
@@ -506,7 +508,7 @@ class UserVendorMappingObjectMappingResourceIT {
         assertThat(userVendorMappingObjectMappingList).hasSize(databaseSizeBeforeDelete - 1);
 
         // Validate the AidasUserAidasObjectMapping in Elasticsearch
-        verify(mockAidasUserAidasObjectMappingSearchRepository, times(1)).deleteById(userVendorMappingObjectMapping.getId());
+        verify(mockUserObjectMappingSearchRepository, times(1)).deleteById(userVendorMappingObjectMapping.getId());
     }
 
     @Test
@@ -515,7 +517,7 @@ class UserVendorMappingObjectMappingResourceIT {
         // Configure the mock search repository
         // Initialize the database
         userVendorMappingObjectMappingRepository.saveAndFlush(userVendorMappingObjectMapping);
-        when(mockAidasUserAidasObjectMappingSearchRepository.search("id:" + userVendorMappingObjectMapping.getId(), PageRequest.of(0, 20)))
+        when(mockUserObjectMappingSearchRepository.search("id:" + userVendorMappingObjectMapping.getId(), PageRequest.of(0, 20)))
             .thenReturn(new PageImpl<>(Collections.singletonList(userVendorMappingObjectMapping), PageRequest.of(0, 1), 1));
 
         // Search the aidasUserAidasObjectMapping

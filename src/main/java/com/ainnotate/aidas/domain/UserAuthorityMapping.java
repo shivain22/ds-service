@@ -21,6 +21,18 @@ public class UserAuthorityMapping extends AbstractAuditingEntity implements Seri
 
     private static final long serialVersionUID = 1L;
 
+    @Override
+    public boolean equals(java.lang.Object o) {
+        if (this == o) return true;
+        if (!(o instanceof UserAuthorityMapping)) return false;
+        UserAuthorityMapping that = (UserAuthorityMapping) o;
+        return Objects.equals(getId(), that.getId()) && Objects.equals(getAuthority(), that.getAuthority()) && Objects.equals(getUser(), that.getUser());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId(), getAuthority(), getUser());
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,7 +46,9 @@ public class UserAuthorityMapping extends AbstractAuditingEntity implements Seri
     @JsonIgnore
     private User user;
 
-
+    public void setAuthority(Authority authority) {
+        this.authority = authority;
+    }
 
     public Authority getAuthority() {
         return authority;
@@ -52,28 +66,12 @@ public class UserAuthorityMapping extends AbstractAuditingEntity implements Seri
         this.user = user;
     }
 
-    @Override
-    public boolean equals(java.lang.Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof UserAuthorityMapping)) {
-            return false;
-        }
-        return Objects.equals(id, ((UserAuthorityMapping) o).id);
-    }
-
     public Long getId() {
         return id;
     }
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(id);
     }
 
     // prettier-ignore

@@ -12,7 +12,7 @@ import com.ainnotate.aidas.IntegrationTest;
 import com.ainnotate.aidas.domain.Upload;
 import com.ainnotate.aidas.domain.UserVendorMappingObjectMapping;
 import com.ainnotate.aidas.repository.UploadRepository;
-import com.ainnotate.aidas.repository.search.AidasUploadSearchRepository;
+import com.ainnotate.aidas.repository.search.UploadSearchRepository;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.persistence.EntityManager;
+
+import com.ainnotate.aidas.repository.search.UploadSearchRepositoryMockConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -72,10 +74,10 @@ class UploadResourceIT {
     /**
      * This repository is mocked in the com.ainnotate.aidas.repository.search test package.
      *
-     * @see com.ainnotate.aidas.repository.search.AidasUploadSearchRepositoryMockConfiguration
+     * @see UploadSearchRepositoryMockConfiguration
      */
     @Autowired
-    private AidasUploadSearchRepository mockAidasUploadSearchRepository;
+    private UploadSearchRepository mockUploadSearchRepository;
 
     @Autowired
     private EntityManager em;
@@ -167,7 +169,7 @@ class UploadResourceIT {
 
 
         // Validate the AidasUpload in Elasticsearch
-        verify(mockAidasUploadSearchRepository, times(1)).save(testUpload);
+        verify(mockUploadSearchRepository, times(1)).save(testUpload);
     }
 
     @Test
@@ -193,7 +195,7 @@ class UploadResourceIT {
         assertThat(uploadList).hasSize(databaseSizeBeforeCreate);
 
         // Validate the AidasUpload in Elasticsearch
-        verify(mockAidasUploadSearchRepository, times(0)).save(upload);
+        verify(mockUploadSearchRepository, times(0)).save(upload);
     }
 
     @Test
@@ -301,7 +303,7 @@ class UploadResourceIT {
         assertThat(testUpload.getStatusModifiedDate()).isEqualTo(UPDATED_STATUS_MODIFIED_DATE);
 
         // Validate the AidasUpload in Elasticsearch
-        verify(mockAidasUploadSearchRepository).save(testUpload);
+        verify(mockUploadSearchRepository).save(testUpload);
     }
 
     @Test
@@ -325,7 +327,7 @@ class UploadResourceIT {
         assertThat(uploadList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasUpload in Elasticsearch
-        verify(mockAidasUploadSearchRepository, times(0)).save(upload);
+        verify(mockUploadSearchRepository, times(0)).save(upload);
     }
 
     @Test
@@ -349,7 +351,7 @@ class UploadResourceIT {
         assertThat(uploadList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasUpload in Elasticsearch
-        verify(mockAidasUploadSearchRepository, times(0)).save(upload);
+        verify(mockUploadSearchRepository, times(0)).save(upload);
     }
 
     @Test
@@ -373,7 +375,7 @@ class UploadResourceIT {
         assertThat(uploadList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasUpload in Elasticsearch
-        verify(mockAidasUploadSearchRepository, times(0)).save(upload);
+        verify(mockUploadSearchRepository, times(0)).save(upload);
     }
 
     @Test
@@ -473,7 +475,7 @@ class UploadResourceIT {
         assertThat(uploadList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasUpload in Elasticsearch
-        verify(mockAidasUploadSearchRepository, times(0)).save(upload);
+        verify(mockUploadSearchRepository, times(0)).save(upload);
     }
 
     @Test
@@ -497,7 +499,7 @@ class UploadResourceIT {
         assertThat(uploadList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasUpload in Elasticsearch
-        verify(mockAidasUploadSearchRepository, times(0)).save(upload);
+        verify(mockUploadSearchRepository, times(0)).save(upload);
     }
 
     @Test
@@ -521,7 +523,7 @@ class UploadResourceIT {
         assertThat(uploadList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasUpload in Elasticsearch
-        verify(mockAidasUploadSearchRepository, times(0)).save(upload);
+        verify(mockUploadSearchRepository, times(0)).save(upload);
     }
 
     @Test
@@ -542,7 +544,7 @@ class UploadResourceIT {
         assertThat(uploadList).hasSize(databaseSizeBeforeDelete - 1);
 
         // Validate the AidasUpload in Elasticsearch
-        verify(mockAidasUploadSearchRepository, times(1)).deleteById(upload.getId());
+        verify(mockUploadSearchRepository, times(1)).deleteById(upload.getId());
     }
 
     @Test
@@ -551,7 +553,7 @@ class UploadResourceIT {
         // Configure the mock search repository
         // Initialize the database
         uploadRepository.saveAndFlush(upload);
-        when(mockAidasUploadSearchRepository.search("id:" + upload.getId(), PageRequest.of(0, 20)))
+        when(mockUploadSearchRepository.search("id:" + upload.getId(), PageRequest.of(0, 20)))
             .thenReturn(new PageImpl<>(Collections.singletonList(upload), PageRequest.of(0, 1), 1));
 
         // Search the upload

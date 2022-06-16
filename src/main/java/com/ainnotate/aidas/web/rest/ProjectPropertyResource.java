@@ -6,7 +6,7 @@ import com.ainnotate.aidas.dto.ProperyProjectPropertyDTO;
 import com.ainnotate.aidas.repository.ProjectPropertyRepository;
 import com.ainnotate.aidas.repository.ProjectRepository;
 import com.ainnotate.aidas.repository.PropertyRepository;
-import com.ainnotate.aidas.repository.search.AidasProjectPropertySearchRepository;
+import com.ainnotate.aidas.repository.search.ProjectPropertySearchRepository;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -53,11 +53,11 @@ public class ProjectPropertyResource {
 
     @Autowired
     private PropertyRepository propertyRepository;
-    private final AidasProjectPropertySearchRepository aidasProjectPropertySearchRepository;
+    private final ProjectPropertySearchRepository aidasProjectPropertySearchRepository;
 
     public ProjectPropertyResource(
         ProjectPropertyRepository projectPropertyRepository,
-        AidasProjectPropertySearchRepository aidasProjectPropertySearchRepository
+        ProjectPropertySearchRepository aidasProjectPropertySearchRepository
     ) {
         this.projectPropertyRepository = projectPropertyRepository;
         this.aidasProjectPropertySearchRepository = aidasProjectPropertySearchRepository;

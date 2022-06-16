@@ -3,7 +3,7 @@ package com.ainnotate.aidas.web.rest;
 import com.ainnotate.aidas.domain.UploadRejectReason;
 import com.ainnotate.aidas.repository.UploadRejectReasonRepository;
 import com.ainnotate.aidas.repository.UserRepository;
-import com.ainnotate.aidas.repository.search.AidasUploadRejectReasonSearchRepository;
+import com.ainnotate.aidas.repository.search.UploadRejectReasonSearchRepository;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,11 +51,11 @@ public class UploadRejectReasonResource {
 
     private final UploadRejectReasonRepository uploadRejectReasonRepository;
 
-    private final AidasUploadRejectReasonSearchRepository aidasUploadRejectReasonSearchRepository;
+    private final UploadRejectReasonSearchRepository aidasUploadRejectReasonSearchRepository;
 
     public UploadRejectReasonResource(
         UploadRejectReasonRepository uploadRejectReasonRepository,
-        AidasUploadRejectReasonSearchRepository aidasUploadRejectReasonSearchRepository
+        UploadRejectReasonSearchRepository aidasUploadRejectReasonSearchRepository
     ) {
         this.uploadRejectReasonRepository = uploadRejectReasonRepository;
         this.aidasUploadRejectReasonSearchRepository = aidasUploadRejectReasonSearchRepository;

@@ -20,6 +20,18 @@ public class UserVendorMapping extends AbstractAuditingEntity implements Seriali
 
     private static final long serialVersionUID = 1L;
 
+    @Override
+    public boolean equals(java.lang.Object o) {
+        if (this == o) return true;
+        if (!(o instanceof UserVendorMapping)) return false;
+        UserVendorMapping that = (UserVendorMapping) o;
+        return Objects.equals(getId(), that.getId()) && Objects.equals(getVendor(), that.getVendor()) && Objects.equals(getUser(), that.getUser());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId(), getVendor(), getUser());
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -51,28 +63,12 @@ public class UserVendorMapping extends AbstractAuditingEntity implements Seriali
         this.user = user;
     }
 
-    @Override
-    public boolean equals(java.lang.Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof UserVendorMapping)) {
-            return false;
-        }
-        return Objects.equals(id, ((UserVendorMapping) o).id);
-    }
-
     public Long getId() {
         return id;
     }
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(id);
     }
 
     // prettier-ignore

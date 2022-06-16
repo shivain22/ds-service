@@ -11,7 +11,7 @@ import com.ainnotate.aidas.IntegrationTest;
 import com.ainnotate.aidas.domain.Customer;
 import com.ainnotate.aidas.domain.Organisation;
 import com.ainnotate.aidas.repository.CustomerRepository;
-import com.ainnotate.aidas.repository.search.AidasCustomerSearchRepository;
+import com.ainnotate.aidas.repository.search.CustomerSearchRepository;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -58,10 +58,10 @@ class CustomerResourceIT {
     /**
      * This repository is mocked in the com.ainnotate.aidas.repository.search test package.
      *
-     * @see com.ainnotate.aidas.repository.search.AidasCustomerSearchRepositoryMockConfiguration
+     * @see com.ainnotate.aidas.repository.search.CustomerSearchRepositoryMockConfiguration
      */
     @Autowired
-    private AidasCustomerSearchRepository mockAidasCustomerSearchRepository;
+    private CustomerSearchRepository mockCustomerSearchRepository;
 
     @Autowired
     private EntityManager em;
@@ -140,7 +140,7 @@ class CustomerResourceIT {
         assertThat(testCustomer.getDescription()).isEqualTo(DEFAULT_DESCRIPTION);
 
         // Validate the AidasCustomer in Elasticsearch
-        verify(mockAidasCustomerSearchRepository, times(1)).save(testCustomer);
+        verify(mockCustomerSearchRepository, times(1)).save(testCustomer);
     }
 
     @Test
@@ -166,7 +166,7 @@ class CustomerResourceIT {
         assertThat(customerList).hasSize(databaseSizeBeforeCreate);
 
         // Validate the AidasCustomer in Elasticsearch
-        verify(mockAidasCustomerSearchRepository, times(0)).save(customer);
+        verify(mockCustomerSearchRepository, times(0)).save(customer);
     }
 
     @Test
@@ -261,7 +261,7 @@ class CustomerResourceIT {
         assertThat(testCustomer.getDescription()).isEqualTo(UPDATED_DESCRIPTION);
 
         // Validate the AidasCustomer in Elasticsearch
-        verify(mockAidasCustomerSearchRepository).save(testCustomer);
+        verify(mockCustomerSearchRepository).save(testCustomer);
     }
 
     @Test
@@ -285,7 +285,7 @@ class CustomerResourceIT {
         assertThat(customerList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasCustomer in Elasticsearch
-        verify(mockAidasCustomerSearchRepository, times(0)).save(customer);
+        verify(mockCustomerSearchRepository, times(0)).save(customer);
     }
 
     @Test
@@ -309,7 +309,7 @@ class CustomerResourceIT {
         assertThat(customerList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasCustomer in Elasticsearch
-        verify(mockAidasCustomerSearchRepository, times(0)).save(customer);
+        verify(mockCustomerSearchRepository, times(0)).save(customer);
     }
 
     @Test
@@ -333,7 +333,7 @@ class CustomerResourceIT {
         assertThat(customerList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasCustomer in Elasticsearch
-        verify(mockAidasCustomerSearchRepository, times(0)).save(customer);
+        verify(mockCustomerSearchRepository, times(0)).save(customer);
     }
 
     @Test
@@ -419,7 +419,7 @@ class CustomerResourceIT {
         assertThat(customerList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasCustomer in Elasticsearch
-        verify(mockAidasCustomerSearchRepository, times(0)).save(customer);
+        verify(mockCustomerSearchRepository, times(0)).save(customer);
     }
 
     @Test
@@ -443,7 +443,7 @@ class CustomerResourceIT {
         assertThat(customerList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasCustomer in Elasticsearch
-        verify(mockAidasCustomerSearchRepository, times(0)).save(customer);
+        verify(mockCustomerSearchRepository, times(0)).save(customer);
     }
 
     @Test
@@ -467,7 +467,7 @@ class CustomerResourceIT {
         assertThat(customerList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasCustomer in Elasticsearch
-        verify(mockAidasCustomerSearchRepository, times(0)).save(customer);
+        verify(mockCustomerSearchRepository, times(0)).save(customer);
     }
 
     @Test
@@ -488,7 +488,7 @@ class CustomerResourceIT {
         assertThat(customerList).hasSize(databaseSizeBeforeDelete - 1);
 
         // Validate the AidasCustomer in Elasticsearch
-        verify(mockAidasCustomerSearchRepository, times(1)).deleteById(customer.getId());
+        verify(mockCustomerSearchRepository, times(1)).deleteById(customer.getId());
     }
 
     @Test
@@ -497,7 +497,7 @@ class CustomerResourceIT {
         // Configure the mock search repository
         // Initialize the database
         customerRepository.saveAndFlush(customer);
-        when(mockAidasCustomerSearchRepository.search("id:" + customer.getId(), PageRequest.of(0, 20)))
+        when(mockCustomerSearchRepository.search("id:" + customer.getId(), PageRequest.of(0, 20)))
             .thenReturn(new PageImpl<>(Collections.singletonList(customer), PageRequest.of(0, 1), 1));
 
         // Search the customer

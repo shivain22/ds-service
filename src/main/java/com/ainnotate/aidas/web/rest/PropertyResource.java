@@ -2,7 +2,7 @@ package com.ainnotate.aidas.web.rest;
 
 import com.ainnotate.aidas.domain.Property;
 import com.ainnotate.aidas.repository.PropertyRepository;
-import com.ainnotate.aidas.repository.search.AidasPropertiesSearchRepository;
+import com.ainnotate.aidas.repository.search.PropertySearchRepository;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -42,11 +42,11 @@ public class PropertyResource {
 
     private final PropertyRepository propertyRepository;
 
-    private final AidasPropertiesSearchRepository aidasPropertiesSearchRepository;
+    private final PropertySearchRepository aidasPropertiesSearchRepository;
 
     public PropertyResource(
         PropertyRepository propertyRepository,
-        AidasPropertiesSearchRepository aidasPropertiesSearchRepository
+        PropertySearchRepository aidasPropertiesSearchRepository
     ) {
         this.propertyRepository = propertyRepository;
         this.aidasPropertiesSearchRepository = aidasPropertiesSearchRepository;

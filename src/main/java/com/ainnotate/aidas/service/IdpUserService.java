@@ -6,7 +6,7 @@ import com.ainnotate.aidas.domain.Authority;
 import com.ainnotate.aidas.domain.User;
 import com.ainnotate.aidas.repository.AuthorityRepository;
 import com.ainnotate.aidas.repository.UserRepository;
-import com.ainnotate.aidas.repository.search.AidasUserSearchRepository;
+import com.ainnotate.aidas.repository.search.UserSearchRepository;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.admin.client.resource.UserResource;
@@ -34,7 +34,7 @@ public class IdpUserService {
 
     private final UserRepository userRepository;
 
-    private final AidasUserSearchRepository aidasUserSearchRepository;
+    private final UserSearchRepository aidasUserSearchRepository;
 
     private final AuthorityRepository authorityRepository;
 
@@ -43,7 +43,7 @@ public class IdpUserService {
     @Autowired
     private KeycloakConfig keycloakConfig;
 
-    public IdpUserService(Keycloak keycloak, UserRepository userRepository, AidasUserSearchRepository aidasUserSearchRepository, AuthorityRepository authorityRepository) {
+    public IdpUserService(Keycloak keycloak, UserRepository userRepository, UserSearchRepository aidasUserSearchRepository, AuthorityRepository authorityRepository) {
         this.userRepository = userRepository;
         this.aidasUserSearchRepository = aidasUserSearchRepository;
         this.authorityRepository = authorityRepository;

@@ -6,7 +6,7 @@ import com.ainnotate.aidas.dto.UserDTO;
 import com.ainnotate.aidas.dto.VendorUserDTO;
 import com.ainnotate.aidas.repository.UserRepository;
 import com.ainnotate.aidas.repository.VendorRepository;
-import com.ainnotate.aidas.repository.search.AidasVendorSearchRepository;
+import com.ainnotate.aidas.repository.search.VendorSearchRepository;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -48,9 +48,9 @@ public class VendorResource {
     @Autowired
     private UserRepository userRepository;
 
-    private final AidasVendorSearchRepository aidasVendorSearchRepository;
+    private final VendorSearchRepository aidasVendorSearchRepository;
 
-    public VendorResource(VendorRepository vendorRepository, AidasVendorSearchRepository aidasVendorSearchRepository) {
+    public VendorResource(VendorRepository vendorRepository, VendorSearchRepository aidasVendorSearchRepository) {
         this.vendorRepository = vendorRepository;
         this.aidasVendorSearchRepository = aidasVendorSearchRepository;
     }
@@ -217,11 +217,12 @@ public class VendorResource {
                 u.setFirstName(iu.getFirstName());
                 u.setUserVendorMappingId(iu.getUserVendorMappingId());
                 u.setUserId(iu.getUserId());
-                if(iu.getStatus().equals(2)){
-                    u.setStatus(1);
-                }else if(iu.getStatus().equals(1)){
-                    u.setStatus(0);
-                }
+                u.setStatus(iu.getStatus());
+                //if(iu.getStatus().equals(2)){
+                    //u.setStatus(1);
+               // }else if(iu.getStatus().equals(1)){
+                    //u.setStatus(0);
+                //}
                 vendorUserDto.getUserDTOs().add(u);
             }
             vendorUserDtos.add(vendorUserDto);

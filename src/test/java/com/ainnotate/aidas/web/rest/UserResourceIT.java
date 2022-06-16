@@ -10,7 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.ainnotate.aidas.IntegrationTest;
 import com.ainnotate.aidas.domain.User;
 import com.ainnotate.aidas.repository.UserRepository;
-import com.ainnotate.aidas.repository.search.AidasUserSearchRepository;
+import com.ainnotate.aidas.repository.search.UserSearchRepository;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -68,10 +68,10 @@ class UserResourceIT {
     /**
      * This repository is mocked in the com.ainnotate.aidas.repository.search test package.
      *
-     * @see com.ainnotate.aidas.repository.search.AidasUserSearchRepositoryMockConfiguration
+     * @see com.ainnotate.aidas.repository.search.UserSearchRepositoryMockConfiguration
      */
     @Autowired
-    private AidasUserSearchRepository mockAidasUserSearchRepository;
+    private UserSearchRepository mockUserSearchRepository;
 
     @Autowired
     private EntityManager em;
@@ -143,7 +143,7 @@ class UserResourceIT {
         assertThat(testUser.getPassword()).isEqualTo(DEFAULT_PASSWORD);
 
         // Validate the AidasUser in Elasticsearch
-        verify(mockAidasUserSearchRepository, times(1)).save(testUser);
+        verify(mockUserSearchRepository, times(1)).save(testUser);
     }
 
     @Test
@@ -169,7 +169,7 @@ class UserResourceIT {
         assertThat(userList).hasSize(databaseSizeBeforeCreate);
 
         // Validate the AidasUser in Elasticsearch
-        verify(mockAidasUserSearchRepository, times(0)).save(user);
+        verify(mockUserSearchRepository, times(0)).save(user);
     }
 
     @Test
@@ -344,7 +344,7 @@ class UserResourceIT {
         assertThat(testUser.getPassword()).isEqualTo(UPDATED_PASSWORD);
 
         // Validate the AidasUser in Elasticsearch
-        verify(mockAidasUserSearchRepository).save(testUser);
+        verify(mockUserSearchRepository).save(testUser);
     }
 
     @Test
@@ -368,7 +368,7 @@ class UserResourceIT {
         assertThat(userList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasUser in Elasticsearch
-        verify(mockAidasUserSearchRepository, times(0)).save(user);
+        verify(mockUserSearchRepository, times(0)).save(user);
     }
 
     @Test
@@ -392,7 +392,7 @@ class UserResourceIT {
         assertThat(userList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasUser in Elasticsearch
-        verify(mockAidasUserSearchRepository, times(0)).save(user);
+        verify(mockUserSearchRepository, times(0)).save(user);
     }
 
     @Test
@@ -416,7 +416,7 @@ class UserResourceIT {
         assertThat(userList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasUser in Elasticsearch
-        verify(mockAidasUserSearchRepository, times(0)).save(user);
+        verify(mockUserSearchRepository, times(0)).save(user);
     }
 
     @Test
@@ -513,7 +513,7 @@ class UserResourceIT {
         assertThat(userList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasUser in Elasticsearch
-        verify(mockAidasUserSearchRepository, times(0)).save(user);
+        verify(mockUserSearchRepository, times(0)).save(user);
     }
 
     @Test
@@ -537,7 +537,7 @@ class UserResourceIT {
         assertThat(userList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasUser in Elasticsearch
-        verify(mockAidasUserSearchRepository, times(0)).save(user);
+        verify(mockUserSearchRepository, times(0)).save(user);
     }
 
     @Test
@@ -561,7 +561,7 @@ class UserResourceIT {
         assertThat(userList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasUser in Elasticsearch
-        verify(mockAidasUserSearchRepository, times(0)).save(user);
+        verify(mockUserSearchRepository, times(0)).save(user);
     }
 
     @Test
@@ -582,7 +582,7 @@ class UserResourceIT {
         assertThat(userList).hasSize(databaseSizeBeforeDelete - 1);
 
         // Validate the AidasUser in Elasticsearch
-        verify(mockAidasUserSearchRepository, times(1)).deleteById(user.getId());
+        verify(mockUserSearchRepository, times(1)).deleteById(user.getId());
     }
 
     @Test
@@ -591,7 +591,7 @@ class UserResourceIT {
         // Configure the mock search repository
         // Initialize the database
         userRepository.saveAndFlush(user);
-        when(mockAidasUserSearchRepository.search("id:" + user.getId(), PageRequest.of(0, 20)))
+        when(mockUserSearchRepository.search("id:" + user.getId(), PageRequest.of(0, 20)))
             .thenReturn(new PageImpl<>(Collections.singletonList(user), PageRequest.of(0, 1), 1));
 
         // Search the user

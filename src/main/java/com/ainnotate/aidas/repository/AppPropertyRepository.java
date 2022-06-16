@@ -12,14 +12,26 @@ import org.springframework.stereotype.Repository;
 public interface AppPropertyRepository extends JpaRepository<AppProperty, Long> {
 
     @Query(value = "select * from app_property app where app.user_id=?1 and app.name=?2",nativeQuery = true)
-    AppProperty getAidasAppProperty(Long aidasUserId, String key );
+    AppProperty getAppProperty(Long aidasUserId, String key );
+
+    @Query(value = "select * from app_property app where app.user_id=?1 and app.name=?2",nativeQuery = true)
+    AppProperty getAppPropertyLike(Long aidasUserId, String key );
 
     @Query(value = "select * from app_property app where app.organisation_id=?1 and app.name=?2",nativeQuery = true)
-    AppProperty getAidasAppPropertyOrg(Long aidasOrganisationId, String key );
+    AppProperty getAppPropertyOrg(Long aidasOrganisationId, String key );
+
+    @Query(value = "select * from app_property app where app.organisation_id=?1 and app.name=?2",nativeQuery = true)
+    AppProperty getAppPropertyOrgLike(Long aidasOrganisationId, String key );
 
     @Query(value = "select * from app_property app where app.customer_id=?1 and app.name=?2",nativeQuery = true)
-    AppProperty getAidasAppPropertyCustomer(Long aidasCustomerId, String key );
+    AppProperty getAppPropertyCustomer(Long aidasCustomerId, String key );
+
+    @Query(value = "select * from app_property app where app.customer_id=?1 and app.name like ?2",nativeQuery = true)
+    AppProperty getAppPropertyCustomerLike(Long aidasCustomerId, String key );
 
     @Query(value = "select * from app_property app where app.vendor_id=?1 and app.name=?2",nativeQuery = true)
-    AppProperty getAidasAppPropertyVendor(Long aidasVendorId, String key );
+    AppProperty getAppPropertyVendor(Long aidasVendorId, String key );
+
+    @Query(value = "select * from app_property app where app.vendor_id=?1 and app.name like concat('%',?2) ",nativeQuery = true)
+    AppProperty getAppPropertyVendorLike(Long aidasVendorId, String key );
 }

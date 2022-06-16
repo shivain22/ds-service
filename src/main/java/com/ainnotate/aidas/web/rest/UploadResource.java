@@ -6,7 +6,7 @@ import com.ainnotate.aidas.dto.UploadByUserObjectMappingDto;
 import com.ainnotate.aidas.dto.UploadDTO;
 import com.ainnotate.aidas.dto.UploadMetadataDTO;
 import com.ainnotate.aidas.repository.*;
-import com.ainnotate.aidas.repository.search.AidasUploadSearchRepository;
+import com.ainnotate.aidas.repository.search.UploadSearchRepository;
 import com.ainnotate.aidas.constants.AidasConstants;
 import com.ainnotate.aidas.security.SecurityUtils;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
@@ -64,7 +64,7 @@ public class UploadResource {
 
     private final UploadRepository uploadRepository;
 
-    private final AidasUploadSearchRepository aidasUploadSearchRepository;
+    private final UploadSearchRepository aidasUploadSearchRepository;
 
     @Autowired
     private UploadMetaDataRepository uploadMetaDataRepository;
@@ -75,7 +75,7 @@ public class UploadResource {
     @Autowired
     private ProjectRepository projectRepository;
 
-    public UploadResource(UploadRepository uploadRepository, AidasUploadSearchRepository aidasUploadSearchRepository) {
+    public UploadResource(UploadRepository uploadRepository, UploadSearchRepository aidasUploadSearchRepository) {
         this.uploadRepository = uploadRepository;
         this.aidasUploadSearchRepository = aidasUploadSearchRepository;
     }

@@ -10,7 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.ainnotate.aidas.IntegrationTest;
 import com.ainnotate.aidas.domain.UploadMetaData;
 import com.ainnotate.aidas.repository.UploadMetaDataRepository;
-import com.ainnotate.aidas.repository.search.AidasUploadMetaDataSearchRepository;
+import com.ainnotate.aidas.repository.search.UploadMetaDataSearchRepository;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -57,10 +57,10 @@ class UploadMetaDataResourceIT {
     /**
      * This repository is mocked in the com.ainnotate.aidas.repository.search test package.
      *
-     * @see com.ainnotate.aidas.repository.search.AidasUploadMetaDataSearchRepositoryMockConfiguration
+     * @see com.ainnotate.aidas.repository.search.UploadMetaDataSearchRepositoryMockConfiguration
      */
     @Autowired
-    private AidasUploadMetaDataSearchRepository mockAidasUploadMetaDataSearchRepository;
+    private UploadMetaDataSearchRepository mockUploadMetaDataSearchRepository;
 
     @Autowired
     private EntityManager em;
@@ -119,7 +119,7 @@ class UploadMetaDataResourceIT {
         assertThat(testUploadMetaData.getValue()).isEqualTo(DEFAULT_VALUE);
 
         // Validate the AidasUploadMetaData in Elasticsearch
-        verify(mockAidasUploadMetaDataSearchRepository, times(1)).save(testUploadMetaData);
+        verify(mockUploadMetaDataSearchRepository, times(1)).save(testUploadMetaData);
     }
 
     @Test
@@ -145,7 +145,7 @@ class UploadMetaDataResourceIT {
         assertThat(uploadMetaDataList).hasSize(databaseSizeBeforeCreate);
 
         // Validate the AidasUploadMetaData in Elasticsearch
-        verify(mockAidasUploadMetaDataSearchRepository, times(0)).save(uploadMetaData);
+        verify(mockUploadMetaDataSearchRepository, times(0)).save(uploadMetaData);
     }
 
     @Test
@@ -218,7 +218,7 @@ class UploadMetaDataResourceIT {
         assertThat(testUploadMetaData.getValue()).isEqualTo(UPDATED_VALUE);
 
         // Validate the AidasUploadMetaData in Elasticsearch
-        verify(mockAidasUploadMetaDataSearchRepository).save(testUploadMetaData);
+        verify(mockUploadMetaDataSearchRepository).save(testUploadMetaData);
     }
 
     @Test
@@ -242,7 +242,7 @@ class UploadMetaDataResourceIT {
         assertThat(uploadMetaDataList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasUploadMetaData in Elasticsearch
-        verify(mockAidasUploadMetaDataSearchRepository, times(0)).save(uploadMetaData);
+        verify(mockUploadMetaDataSearchRepository, times(0)).save(uploadMetaData);
     }
 
     @Test
@@ -266,7 +266,7 @@ class UploadMetaDataResourceIT {
         assertThat(uploadMetaDataList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasUploadMetaData in Elasticsearch
-        verify(mockAidasUploadMetaDataSearchRepository, times(0)).save(uploadMetaData);
+        verify(mockUploadMetaDataSearchRepository, times(0)).save(uploadMetaData);
     }
 
     @Test
@@ -290,7 +290,7 @@ class UploadMetaDataResourceIT {
         assertThat(uploadMetaDataList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasUploadMetaData in Elasticsearch
-        verify(mockAidasUploadMetaDataSearchRepository, times(0)).save(uploadMetaData);
+        verify(mockUploadMetaDataSearchRepository, times(0)).save(uploadMetaData);
     }
 
     @Test
@@ -376,7 +376,7 @@ class UploadMetaDataResourceIT {
         assertThat(uploadMetaDataList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasUploadMetaData in Elasticsearch
-        verify(mockAidasUploadMetaDataSearchRepository, times(0)).save(uploadMetaData);
+        verify(mockUploadMetaDataSearchRepository, times(0)).save(uploadMetaData);
     }
 
     @Test
@@ -400,7 +400,7 @@ class UploadMetaDataResourceIT {
         assertThat(uploadMetaDataList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasUploadMetaData in Elasticsearch
-        verify(mockAidasUploadMetaDataSearchRepository, times(0)).save(uploadMetaData);
+        verify(mockUploadMetaDataSearchRepository, times(0)).save(uploadMetaData);
     }
 
     @Test
@@ -424,7 +424,7 @@ class UploadMetaDataResourceIT {
         assertThat(uploadMetaDataList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasUploadMetaData in Elasticsearch
-        verify(mockAidasUploadMetaDataSearchRepository, times(0)).save(uploadMetaData);
+        verify(mockUploadMetaDataSearchRepository, times(0)).save(uploadMetaData);
     }
 
     @Test
@@ -445,7 +445,7 @@ class UploadMetaDataResourceIT {
         assertThat(uploadMetaDataList).hasSize(databaseSizeBeforeDelete - 1);
 
         // Validate the AidasUploadMetaData in Elasticsearch
-        verify(mockAidasUploadMetaDataSearchRepository, times(1)).deleteById(uploadMetaData.getId());
+        verify(mockUploadMetaDataSearchRepository, times(1)).deleteById(uploadMetaData.getId());
     }
 
     @Test
@@ -454,7 +454,7 @@ class UploadMetaDataResourceIT {
         // Configure the mock search repository
         // Initialize the database
         uploadMetaDataRepository.saveAndFlush(uploadMetaData);
-        when(mockAidasUploadMetaDataSearchRepository.search("id:" + uploadMetaData.getId(), PageRequest.of(0, 20)))
+        when(mockUploadMetaDataSearchRepository.search("id:" + uploadMetaData.getId(), PageRequest.of(0, 20)))
             .thenReturn(new PageImpl<>(Collections.singletonList(uploadMetaData), PageRequest.of(0, 1), 1));
 
         // Search the aidasUploadMetaData

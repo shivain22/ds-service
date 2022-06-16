@@ -3,8 +3,9 @@ package com.ainnotate.aidas.web.rest;
 import com.ainnotate.aidas.config.KeycloakConfig;
 import com.ainnotate.aidas.domain.*;
 import com.ainnotate.aidas.domain.Object;
+import com.ainnotate.aidas.dto.*;
 import com.ainnotate.aidas.repository.*;
-import com.ainnotate.aidas.repository.search.AidasUserSearchRepository;
+import com.ainnotate.aidas.repository.search.UserSearchRepository;
 import com.ainnotate.aidas.constants.AidasConstants;
 import com.ainnotate.aidas.security.SecurityUtils;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
@@ -90,6 +91,15 @@ public class UserResource {
     private UserVendorMappingRepository userVendorMappingRepository;
 
     @Autowired
+    private UserCustomerMappingRepository userCustomerMappingRepository;
+
+    @Autowired
+    private UserOrganisationMappingRepository userOrganisationMappingRepository;
+
+    @Autowired
+    private UserAuthorityMappingRepository userAuthorityMappingRepository;
+
+    @Autowired
     private UserVendorMappingObjectMappingRepository userVendorMappingObjectMappingRepository;
 
     @Autowired
@@ -98,9 +108,9 @@ public class UserResource {
     @Autowired
     private OrganisationRepository organisationRepository;
 
-    private final AidasUserSearchRepository aidasUserSearchRepository;
+    private final UserSearchRepository aidasUserSearchRepository;
 
-    public UserResource(UserRepository userRepository, AidasUserSearchRepository aidasUserSearchRepository, Keycloak keycloak) {
+    public UserResource(UserRepository userRepository, UserSearchRepository aidasUserSearchRepository, Keycloak keycloak) {
         this.userRepository = userRepository;
         this.aidasUserSearchRepository = aidasUserSearchRepository;
         this.keycloak =  keycloak;
@@ -168,90 +178,63 @@ public class UserResource {
             }
         }
 
-
-        for(Authority aa: user.getAuthorities()){
-            if(aa!=null && aa.getId()!=null){
-                UserAuthorityMapping auaam = new UserAuthorityMapping();
-                auaam.setUser(user);
-                auaam.getAuthority(aa);
-                user.getUserAuthorityMappings().add(auaam);
-                user.setAuthority(aa);
+        if(user.getOrganisationIds()!=null && user.getOrganisationIds().size()>0){
+            Organisation o =null;
+            for(UserOrganisationMappingDTO oid: user.getOrganisationIds()){
+                o = organisationRepository.getById(oid.getOrganisationId());
+                UserOrganisationMapping uom = new UserOrganisationMapping();
+                uom.setOrganisation(o);
+                uom.setUser(user);
+                user.getUserOrganisationMappings().add(uom);
+            }
+            if(o!=null){
+                user.setOrganisation(o);
             }
         }
-        for(Organisation ao: user.getOrganisations()){
-            if(ao!=null && ao.getId()!=null){
-                UserOrganisationMapping auaom = new UserOrganisationMapping();
-                auaom.setUser(user);
-                auaom.setOrganisation(ao);
-                user.getUserOrganisationMappings().add(auaom);
-                user.setOrganisation(ao);
+        if(user.getCustomerIds()!=null && user.getCustomerIds().size()>0){
+            Customer c =null;
+            for(UserCustomerMappingDTO cid: user.getCustomerIds()){
+                c = customerRepository.getById(cid.getCustomerId());
+                UserCustomerMapping ucm = new UserCustomerMapping();
+                ucm.setCustomer(c);
+                ucm.setUser(user);
+                user.getUserCustomerMappings().add(ucm);
+            }
+            if(c!=null){
+                user.setCustomer(c);
             }
         }
-        for(Customer ac: user.getCustomers()){
-            if(ac!=null && ac.getId()!=null){
-                UserCustomerMapping auacm = new UserCustomerMapping();
-                auacm.setUser(user);
-                auacm.setCustomer(ac);
-                user.getUserCustomerMappings().add(auacm);
-                user.setCustomer(ac);
+        if(user.getVendorIds()!=null && user.getVendorIds().size()>0){
+            Vendor v = null;
+            for(UserVendorMappingDTO vid: user.getVendorIds()){
+                v = vendorRepository.getById(vid.getVendorId());
+                UserVendorMapping uvm = new UserVendorMapping();
+                uvm.setVendor(v);
+                uvm.setUser(user);
+                user.getUserVendorMappings().add(uvm);
+            }
+            if(v!=null){
+                user.getVendors().add(v);
             }
         }
-        for(Vendor av: user.getVednors()){
-            if(av!=null && av.getId()!=null){
-                UserVendorMapping auavm = new UserVendorMapping();
-                auavm.setUser(user);
-                auavm.setVendor(av);
-                user.getUserVendorMappings().add(auavm);
-                user.setVendor(av);
+        if(user.getAuthorityIds()!=null && user.getAuthorityIds().size()>0){
+            Authority a =null;
+            for(UserAuthorityMappingDTO aid: user.getAuthorityIds()){
+                a = authorityRepository.getById(aid.getAuthorityId());
+                UserAuthorityMapping uam = new UserAuthorityMapping();
+                uam.setAuthority(a);
+                uam.setUser(user);
+                user.getUserAuthorityMappings().add(uam);
+            }
+            if(a!=null){
+                user.setAuthority(a);
             }
         }
         addUserToKeyCloak(user);
         user.setDeleted(0);
-        if(user.getOrganisation()!=null){
-            UserOrganisationMapping uom = new UserOrganisationMapping();
-            uom.setUser(user);
-            uom.setOrganisation(user.getOrganisation());
-            user.getUserOrganisationMappings().add(uom);
-        }
-        if(user.getCustomer()!=null){
-            UserCustomerMapping ucm = new UserCustomerMapping();
-            ucm.setUser(user);
-            ucm.setCustomer(user.getCustomer());
-            user.getUserCustomerMappings().add(ucm);
-        }
-        if(user.getVendor()!=null){
-            UserVendorMapping uvm = new UserVendorMapping();
-            uvm.setUser(user);
-            uvm.setVendor(user.getVendor());
-            user.getUserVendorMappings().add(uvm);
-        }
+
         User result = userRepository.save(user);
-        //aidasUserSearchRepository.save(result);
-        if(result.getAuthorities()!=null && result.getAuthorities().size()>0){
-            for(Authority a:result.getAuthorities()){
-                result.getAuthority(a);
-            }
-        }
         updateUserToKeyCloak(result);
-
-        /*String bucketName = "objects-upload";
-        AWSCredentials credentials = new BasicAWSCredentials(
-            "AKIART6S2XPD6CH4Y23I\n",
-            "PjnrxkZXV1HX4wL+ycOJrnUE7LlBQwKsuRdc3OC4\n"
-        );
-        AmazonS3 s3client = AmazonS3ClientBuilder
-            .standard()
-            .withCredentials(new AWSStaticCredentialsProvider(credentials))
-            .withRegion(Regions.AP_SOUTH_1)
-            .build();
-
-        s3client.putObject(
-            bucketName,
-            "reqs.txt",
-            new File("C:\\Users\\shiva\\Downloads\\reqs.txt")
-        );*/
-
-
         return ResponseEntity
             .created(new URI("/api/aidas-users/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
@@ -329,6 +312,269 @@ public class UserResource {
             .body(user);
     }
 
+    /**
+     * {@code POST  /aidas-users/organisation/:organisationId} : Update/change current role of the user.
+     *
+     * @param organisationId the role to switch.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new user, or with status {@code 400 (Bad Request)} if the user has already an ID.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @PostMapping("/aidas-users/organisation/{organisationId}")
+    @Secured({AidasConstants.ADMIN, AidasConstants.ORG_ADMIN})
+    public ResponseEntity<User> updateCurrentOrganisation(@Valid @PathVariable Long organisationId) throws URISyntaxException {
+        log.debug("REST request to update current role of AidasUser : {}", SecurityUtils.getCurrentUserLogin().get());
+        User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        Organisation currentOrganisation = organisationRepository.getById(organisationId);
+        user.setOrganisation(currentOrganisation);
+        userRepository.save(user);
+        return ResponseEntity
+            .created(new URI("/api/aidas-users/" + user.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, user.getId().toString()))
+            .body(user);
+    }
+
+    /**
+     * {@code POST  /aidas-users/customer/:customerId} : Update/change current role of the user.
+     *
+     * @param customerId the role to switch.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new user, or with status {@code 400 (Bad Request)} if the user has already an ID.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @Secured({AidasConstants.ADMIN, AidasConstants.ORG_ADMIN,AidasConstants.CUSTOMER_ADMIN,AidasConstants.QC_USER})
+    @PostMapping("/aidas-users/customer/{customerId}")
+    public ResponseEntity<User> updateCurrentCustomer(@Valid @PathVariable Long customerId) throws URISyntaxException {
+        log.debug("REST request to update current role of AidasUser : {}", SecurityUtils.getCurrentUserLogin().get());
+        User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        Customer currentCustomer = customerRepository.getById(customerId);
+        user.setCustomer(currentCustomer);
+        userRepository.save(user);
+        return ResponseEntity
+            .created(new URI("/api/aidas-users/" + user.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, user.getId().toString()))
+            .body(user);
+    }
+
+    /**
+     * {@code POST  /aidas-users/vendor/:vendorId} : Update/change current role of the user.
+     *
+     * @param vendorId the role to switch.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new user, or with status {@code 400 (Bad Request)} if the user has already an ID.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @Secured({AidasConstants.ADMIN, AidasConstants.ORG_ADMIN,AidasConstants.CUSTOMER_ADMIN,AidasConstants.VENDOR_ADMIN,AidasConstants.VENDOR_USER,AidasConstants.QC_USER})
+    @PostMapping("/aidas-users/vendor/{vendorId}")
+    public ResponseEntity<User> updateCurrentVendor(@Valid @PathVariable Long vendorId) throws URISyntaxException {
+        log.debug("REST request to update current role of AidasUser : {}", SecurityUtils.getCurrentUserLogin().get());
+        User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        Vendor currentVendor = vendorRepository.getById(vendorId);
+        user.setVendor(currentVendor);
+        userRepository.save(user);
+        return ResponseEntity
+            .created(new URI("/api/aidas-users/" + user.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, user.getId().toString()))
+            .body(user);
+    }
+
+
+    /**
+     * {@code POST  /aidas-users/add/organisation/:organisationId/:userId} : Update/change current role of the user.
+     *
+     * @param organisationId the role to switch.
+     * @param userId the role to switch.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new user, or with status {@code 400 (Bad Request)} if the user has already an ID.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @PostMapping("/aidas-users/add/organisation/{organisationId}/{userId}")
+    public ResponseEntity<User> addOrganisation( @Valid @PathVariable Long organisationId,@Valid @PathVariable Long userId) throws URISyntaxException {
+        log.debug("REST request to update current role of AidasUser : {}", SecurityUtils.getCurrentUserLogin().get());
+        User user = userRepository.getById(userId);
+        Organisation organisation = organisationRepository.getById(organisationId);
+        UserOrganisationMapping userOrganisationMapping = new UserOrganisationMapping();
+        userOrganisationMapping.setOrganisation(organisation);
+        userOrganisationMapping.setUser(user);
+        user.getUserOrganisationMappings().add(userOrganisationMapping);
+        userRepository.save(user);
+        return ResponseEntity
+            .created(new URI("/api/aidas-users/" + user.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, user.getId().toString()))
+            .body(user);
+    }
+
+    /**
+     * {@code POST  /aidas-users/add/customer/:customerId/:userId} : Update/change current role of the user.
+     *
+     * @param customerId the role to switch.
+     * @param userId the role to switch.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new user, or with status {@code 400 (Bad Request)} if the user has already an ID.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @PostMapping("/aidas-users/add/customer/{customerId}/{userId}")
+    public ResponseEntity<User> addCustomer( @Valid @PathVariable Long customerId,@Valid @PathVariable Long userId) throws URISyntaxException {
+        log.debug("REST request to update current role of AidasUser : {}", SecurityUtils.getCurrentUserLogin().get());
+        User user = userRepository.getById(userId);
+        Customer customer = customerRepository.getById(customerId);
+        UserCustomerMapping userCustomerMapping = new UserCustomerMapping();
+        userCustomerMapping.setCustomer(customer);
+        userCustomerMapping.setUser(user);
+        user.getUserCustomerMappings().add(userCustomerMapping);
+        userRepository.save(user);
+        return ResponseEntity
+            .created(new URI("/api/aidas-users/" + user.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, user.getId().toString()))
+            .body(user);
+    }
+
+    /**
+     * {@code POST  /aidas-users/add/vendor/:userVendorMappingId} : Update/change current role of the user.
+     *
+     * @param vendorId the role to switch.
+     * @param userId the role to switch.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new user, or with status {@code 400 (Bad Request)} if the user has already an ID.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @PostMapping("/aidas-users/add/vendor/{vendorId}/{userId}")
+    public ResponseEntity<User> addVendor(@Valid @PathVariable Long vendorId,@Valid @PathVariable Long userId) throws URISyntaxException {
+        log.debug("REST request to update current role of AidasUser : {}", SecurityUtils.getCurrentUserLogin().get());
+        User user = userRepository.getById(userId);
+        Vendor vendor = vendorRepository.getById(vendorId);
+        UserVendorMapping userVendorMapping = new UserVendorMapping();
+        userVendorMapping.setVendor(vendor);
+        userVendorMapping.setUser(user);
+        user.getUserVendorMappings().add(userVendorMapping);
+        userRepository.save(user);
+        return ResponseEntity
+            .created(new URI("/api/aidas-users/" + user.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, user.getId().toString()))
+            .body(user);
+    }
+
+    /**
+     * {@code POST  /aidas-users/add/authority/:userVendorMappingId} : Update/change current role of the user.
+     *
+     * @param authorityId the role to switch.
+     * @param userId the role to switch.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new user, or with status {@code 400 (Bad Request)} if the user has already an ID.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @PostMapping("/aidas-users/add/authority/{authorityId}/{userId}")
+    public ResponseEntity<User> addAuthority(@Valid @PathVariable Long authorityId,@Valid @PathVariable Long userId) throws URISyntaxException {
+        log.debug("REST request to update current role of AidasUser : {}", SecurityUtils.getCurrentUserLogin().get());
+        User user = userRepository.getById(userId);
+        Authority authority = authorityRepository.getById(authorityId);
+        UserAuthorityMapping userAuthorityMapping = new UserAuthorityMapping();
+        userAuthorityMapping.setAuthority(authority);
+        userAuthorityMapping.setUser(user);
+        user.getUserAuthorityMappings().add(userAuthorityMapping);
+        userRepository.save(user);
+        return ResponseEntity
+            .created(new URI("/api/aidas-users/" + user.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, user.getId().toString()))
+            .body(user);
+    }
+
+
+    /**
+     * {@code POST  /aidas-users/remove/organisation/:userOrganisationMappingId} : Update/change current role of the user.
+     *
+     * @param userOrganisationMappingId the role to switch.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new user, or with status {@code 400 (Bad Request)} if the user has already an ID.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @PostMapping("/aidas-users/remove/organisation/{userOrganisationMappingId}")
+    public ResponseEntity<User> removeOrganisation(@Valid @PathVariable Long userOrganisationMappingId) throws URISyntaxException {
+        log.debug("REST request to update current role of AidasUser : {}", SecurityUtils.getCurrentUserLogin().get());
+        UserOrganisationMapping userOrganisationMapping = userOrganisationMappingRepository.getById(userOrganisationMappingId);
+        User user = userOrganisationMapping.getUser();
+        if(userOrganisationMapping!=null) {
+            if (!user.getOrganisation().getId().equals(userOrganisationMapping.getOrganisation().getId())) {
+                if (user.getUserOrganisationMappings().contains(userOrganisationMapping)) {
+                    user.getUserOrganisationMappings().remove(userOrganisationMapping);
+                }
+            }
+        }
+        return ResponseEntity
+            .created(new URI("/api/aidas-users/" + user.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, user.getId().toString()))
+            .body(user);
+    }
+
+    /**
+     * {@code POST  /aidas-users/remove/customer/:userCustomerMappingId} : Update/change current role of the user.
+     *
+     * @param userCustomerMappingId the role to switch.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new user, or with status {@code 400 (Bad Request)} if the user has already an ID.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @PostMapping("/aidas-users/remove/customer/{userCustomerMappingId}")
+    public ResponseEntity<User> removeCustomer(@Valid @PathVariable Long userCustomerMappingId) throws URISyntaxException {
+        log.debug("REST request to update current role of AidasUser : {}", SecurityUtils.getCurrentUserLogin().get());
+        UserCustomerMapping userCustomerMapping = userCustomerMappingRepository.getById(userCustomerMappingId);
+        User user = userCustomerMapping.getUser();
+        if(userCustomerMapping!=null) {
+            if (!user.getCustomer().getId().equals(userCustomerMapping.getCustomer().getId())) {
+                if (user.getUserCustomerMappings().contains(userCustomerMapping)) {
+                    user.getUserCustomerMappings().remove(userCustomerMapping);
+                }
+            }
+        }
+        userRepository.save(user);
+        return ResponseEntity
+            .created(new URI("/api/aidas-users/" + user.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, user.getId().toString()))
+            .body(user);
+    }
+
+    /**
+     * {@code POST  /aidas-users/remove/vendor/:userVendorMappingId} : Update/change current role of the user.
+     *
+     * @param userVendorMappingId the role to switch.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new user, or with status {@code 400 (Bad Request)} if the user has already an ID.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @PostMapping("/aidas-users/remove/vendor/{userVendorMappingId}")
+    public ResponseEntity<User> removeVendor(@Valid @PathVariable Long userVendorMappingId) throws URISyntaxException {
+        log.debug("REST request to update current role of AidasUser : {}", SecurityUtils.getCurrentUserLogin().get());
+        UserVendorMapping userVendorMapping= userVendorMappingRepository.getById(userVendorMappingId);
+        User user = userVendorMapping.getUser();
+        if(userVendorMapping!=null) {
+            if (!user.getVendor().getId().equals(userVendorMapping.getVendor().getId())) {
+                if (user.getUserVendorMappings().contains(userVendorMapping)) {
+                    user.getUserVendorMappings().remove(userVendorMapping);
+                }
+            }
+        }
+        userRepository.save(user);
+        return ResponseEntity
+            .created(new URI("/api/aidas-users/" + user.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, user.getId().toString()))
+            .body(user);
+    }
+
+    /**
+     * {@code POST  /aidas-users/remove/authority/:userAuthorityMappingId} : Update/change current role of the user.
+     *
+     * @param userAuthorityMappingId the role to switch.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new user, or with status {@code 400 (Bad Request)} if the user has already an ID.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @PostMapping("/aidas-users/remove/authority/{userAuthorityMappingId}")
+    public ResponseEntity<User> removeAuthority(@Valid @PathVariable Long userAuthorityMappingId) throws URISyntaxException {
+        log.debug("REST request to update current role of AidasUser : {}", SecurityUtils.getCurrentUserLogin().get());
+        UserAuthorityMapping userAuthorityMapping= userAuthorityMappingRepository.getById(userAuthorityMappingId);
+        User user = userAuthorityMapping.getUser();
+        if(userAuthorityMapping!=null) {
+            if (!user.getVendor().getId().equals(userAuthorityMapping.getAuthority().getId())) {
+                if (user.getUserAuthorityMappings().contains(userAuthorityMapping)) {
+                    user.getUserAuthorityMappings().remove(userAuthorityMapping);
+                }
+            }
+        }
+        userRepository.save(user);
+        return ResponseEntity
+            .created(new URI("/api/aidas-users/" + user.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, user.getId().toString()))
+            .body(user);
+    }
 
     /**
      * {@code PUT  /aidas-users/:id} : Updates an existing user.
@@ -383,6 +629,71 @@ public class UserResource {
             if(user.getVendor()!=null){
                 if(!loggedInUser.getVendor().equals(user.getVendor())){
                     throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
+                }
+            }
+        }
+        if(user.getOrganisationIds()!=null && user.getOrganisationIds().size()>0){
+            Organisation o =null;
+            for(UserOrganisationMappingDTO oid: user.getOrganisationIds()){
+                UserOrganisationMapping uom = userOrganisationMappingRepository.findByOrganisationIdAndUserId(oid.getOrganisationId(),user.getId());
+                if(uom==null) {
+                    uom=new UserOrganisationMapping();
+                    o = organisationRepository.getById(oid.getOrganisationId());
+                    uom.setOrganisation(o);
+                    uom.setUser(user);
+                    uom.setStatus(oid.getStatus());
+                    user.getUserOrganisationMappings().add(uom);
+                }else{
+                    UserOrganisationMapping finalUom = uom;
+                    user.getUserOrganisationMappings().stream().filter(item->item.equals(finalUom)).findFirst().get().setStatus(oid.getStatus());
+                }
+            }
+        }
+        if(user.getCustomerIds()!=null && user.getCustomerIds().size()>0){
+            Customer c =null;
+            for(UserCustomerMappingDTO cid: user.getCustomerIds()){
+                UserCustomerMapping ucm = userCustomerMappingRepository.findByCustomerIdAndUserId(cid.getCustomerId(),user.getId());
+                if(ucm==null) {
+                    ucm = new UserCustomerMapping();
+                    c = customerRepository.getById(cid.getCustomerId());
+                    ucm.setCustomer(c);
+                    ucm.setUser(user);
+                    user.getUserCustomerMappings().add(ucm);
+                }else{
+                    UserCustomerMapping finalUcm = ucm;
+                    user.getUserCustomerMappings().stream().filter(item->item.equals(finalUcm)).findFirst().get().setStatus(cid.getStatus());
+                }
+            }
+        }
+        if(user.getVendorIds()!=null && user.getVendorIds().size()>0){
+            Vendor v = null;
+            for(UserVendorMappingDTO vid: user.getVendorIds()){
+                UserVendorMapping uvm = userVendorMappingRepository.findByVendorIdAndUserId(vid.getVendorId(),user.getId());
+                if(uvm==null) {
+                    uvm = new UserVendorMapping();
+                    v = vendorRepository.getById(vid.getVendorId());
+                    uvm.setVendor(v);
+                    uvm.setUser(user);
+                    user.getUserVendorMappings().add(uvm);
+                }else{
+                    UserVendorMapping finalUvm = uvm;
+                    user.getUserVendorMappings().stream().filter(item->item.equals(finalUvm)).findFirst().get().setStatus(vid.getStatus());
+                }
+            }
+        }
+        if(user.getAuthorityIds()!=null && user.getAuthorityIds().size()>0){
+            Authority a =null;
+            for(UserAuthorityMappingDTO aid: user.getAuthorityIds()){
+                UserAuthorityMapping uam = userAuthorityMappingRepository.findByAuthorityIdAndUserId(aid.getAuthorityId(),user.getId());
+                if(uam==null) {
+                    uam = new UserAuthorityMapping();
+                    a = authorityRepository.getById(aid.getAuthorityId());
+                    uam.setAuthority(a);
+                    uam.setUser(user);
+                    user.getUserAuthorityMappings().add(uam);
+                }else{
+                    UserAuthorityMapping finalUam = uam;
+                    user.getUserAuthorityMappings().stream().filter(item->item.equals(finalUam)).findFirst().get().setStatus(aid.getStatus());
                 }
             }
         }
@@ -521,13 +832,37 @@ public class UserResource {
      *
      *  @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of aidasUsers in body.
      */
-    @GetMapping("/aidas-qc-users")
-    public ResponseEntity<List<User>> getAllAidasQcUsers() {
+    @GetMapping("/aidas-qc-users/{projectId}")
+    public ResponseEntity<ProjectQcDTO> getAllAidasQcUsers(@PathVariable(value = "projectId", required = false) final Long projectId) {
         log.debug("REST request to get a page of AidasQCUsers");
         User loggedInUser = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         Authority authority = authorityRepository.findByName(AidasConstants.QC_USER);
-        List<User> users = userRepository.findAllByAidasAuthoritiesEquals(authority.getId());
-        return ResponseEntity.ok().body(users);
+        ProjectQcDTO projectQcDTO = new ProjectQcDTO();
+        if(loggedInUser.getAuthority().getName().equals(AidasConstants.ADMIN)){
+            List<Customer> customers = customerRepository.findAllCustomer();
+            for(Customer c:customers){
+                projectQcDTO.setCustomerId(c.getId());
+                projectQcDTO.setName(c.getName());
+                List<UserDTO> userDTOs = userRepository.findAllByQcUsersByCustomerAndProject(c.getId(),projectId);
+                projectQcDTO.setQcUsers(userDTOs);
+            }
+        }
+        if(loggedInUser.getAuthority().getName().equals(AidasConstants.ORG_ADMIN)){
+            List<Customer> customers = customerRepository.findAllCustomer(loggedInUser.getOrganisation().getId());
+            for(Customer c:customers){
+                projectQcDTO.setCustomerId(c.getId());
+                projectQcDTO.setName(c.getName());
+                List<UserDTO> userDTOs = userRepository.findAllByQcUsersByCustomerAndProject(c.getId(),projectId);
+                projectQcDTO.setQcUsers(userDTOs);
+            }
+        }
+        if(loggedInUser.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN)){
+            projectQcDTO.setCustomerId(loggedInUser.getCustomer().getId());
+            projectQcDTO.setName(loggedInUser.getCustomer().getName());
+            List<UserDTO> userDTOs = userRepository.findAllByQcUsersByCustomerAndProject(loggedInUser.getCustomer().getId(),projectId);
+            projectQcDTO.setQcUsers(userDTOs);
+        }
+        return ResponseEntity.ok().body(projectQcDTO);
     }
 
     /**

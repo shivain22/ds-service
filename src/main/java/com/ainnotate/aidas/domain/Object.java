@@ -102,6 +102,42 @@ public class Object extends AbstractAuditingEntity  implements Serializable {
     @JsonProperty
     private Integer totalPending;
 
+    @Column(name="image_type")
+    @JsonProperty
+    private String imageType;
+
+    @Column(name="video_type")
+    @JsonProperty
+    private String videoType;
+
+    @Column(name="audio_type")
+    @JsonProperty
+    private String audioType;
+
+    public String getImageType() {
+        return imageType;
+    }
+
+    public void setImageType(String imageType) {
+        this.imageType = imageType;
+    }
+
+    public String getVideoType() {
+        return videoType;
+    }
+
+    public void setVideoType(String videoType) {
+        this.videoType = videoType;
+    }
+
+    public String getAudioType() {
+        return audioType;
+    }
+
+    public void setAudioType(String audioType) {
+        this.audioType = audioType;
+    }
+
     public Integer getTotalUploaded() {
         return totalUploaded;
     }

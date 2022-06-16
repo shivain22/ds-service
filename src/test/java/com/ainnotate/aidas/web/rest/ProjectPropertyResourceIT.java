@@ -11,7 +11,7 @@ import com.ainnotate.aidas.IntegrationTest;
 import com.ainnotate.aidas.domain.Project;
 import com.ainnotate.aidas.domain.ProjectProperty;
 import com.ainnotate.aidas.repository.ProjectPropertyRepository;
-import com.ainnotate.aidas.repository.search.AidasProjectPropertySearchRepository;
+import com.ainnotate.aidas.repository.search.ProjectPropertySearchRepository;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -61,10 +61,10 @@ class ProjectPropertyResourceIT {
     /**
      * This repository is mocked in the com.ainnotate.aidas.repository.search test package.
      *
-     * @see com.ainnotate.aidas.repository.search.AidasProjectPropertySearchRepositoryMockConfiguration
+     * @see com.ainnotate.aidas.repository.search.ProjectPropertySearchRepositoryMockConfiguration
      */
     @Autowired
-    private AidasProjectPropertySearchRepository mockAidasProjectPropertySearchRepository;
+    private ProjectPropertySearchRepository mockProjectPropertySearchRepository;
 
     @Autowired
     private EntityManager em;
@@ -144,7 +144,7 @@ class ProjectPropertyResourceIT {
         assertThat(testProjectProperty.getValue()).isEqualTo(DEFAULT_VALUE);
 
         // Validate the AidasProjectProperty in Elasticsearch
-        verify(mockAidasProjectPropertySearchRepository, times(1)).save(testProjectProperty);
+        verify(mockProjectPropertySearchRepository, times(1)).save(testProjectProperty);
     }
 
     @Test
@@ -170,7 +170,7 @@ class ProjectPropertyResourceIT {
         assertThat(projectPropertyList).hasSize(databaseSizeBeforeCreate);
 
         // Validate the AidasProjectProperty in Elasticsearch
-        verify(mockAidasProjectPropertySearchRepository, times(0)).save(projectProperty);
+        verify(mockProjectPropertySearchRepository, times(0)).save(projectProperty);
     }
 
     @Test
@@ -245,7 +245,7 @@ class ProjectPropertyResourceIT {
         assertThat(testProjectProperty.getValue()).isEqualTo(UPDATED_VALUE);
 
         // Validate the AidasProjectProperty in Elasticsearch
-        verify(mockAidasProjectPropertySearchRepository).save(testProjectProperty);
+        verify(mockProjectPropertySearchRepository).save(testProjectProperty);
     }
 
     @Test
@@ -269,7 +269,7 @@ class ProjectPropertyResourceIT {
         assertThat(projectPropertyList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasProjectProperty in Elasticsearch
-        verify(mockAidasProjectPropertySearchRepository, times(0)).save(projectProperty);
+        verify(mockProjectPropertySearchRepository, times(0)).save(projectProperty);
     }
 
     @Test
@@ -293,7 +293,7 @@ class ProjectPropertyResourceIT {
         assertThat(projectPropertyList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasProjectProperty in Elasticsearch
-        verify(mockAidasProjectPropertySearchRepository, times(0)).save(projectProperty);
+        verify(mockProjectPropertySearchRepository, times(0)).save(projectProperty);
     }
 
     @Test
@@ -317,7 +317,7 @@ class ProjectPropertyResourceIT {
         assertThat(projectPropertyList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasProjectProperty in Elasticsearch
-        verify(mockAidasProjectPropertySearchRepository, times(0)).save(projectProperty);
+        verify(mockProjectPropertySearchRepository, times(0)).save(projectProperty);
     }
 
     @Test
@@ -403,7 +403,7 @@ class ProjectPropertyResourceIT {
         assertThat(projectPropertyList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasProjectProperty in Elasticsearch
-        verify(mockAidasProjectPropertySearchRepository, times(0)).save(projectProperty);
+        verify(mockProjectPropertySearchRepository, times(0)).save(projectProperty);
     }
 
     @Test
@@ -427,7 +427,7 @@ class ProjectPropertyResourceIT {
         assertThat(projectPropertyList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasProjectProperty in Elasticsearch
-        verify(mockAidasProjectPropertySearchRepository, times(0)).save(projectProperty);
+        verify(mockProjectPropertySearchRepository, times(0)).save(projectProperty);
     }
 
     @Test
@@ -451,7 +451,7 @@ class ProjectPropertyResourceIT {
         assertThat(projectPropertyList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasProjectProperty in Elasticsearch
-        verify(mockAidasProjectPropertySearchRepository, times(0)).save(projectProperty);
+        verify(mockProjectPropertySearchRepository, times(0)).save(projectProperty);
     }
 
     @Test
@@ -472,7 +472,7 @@ class ProjectPropertyResourceIT {
         assertThat(projectPropertyList).hasSize(databaseSizeBeforeDelete - 1);
 
         // Validate the AidasProjectProperty in Elasticsearch
-        verify(mockAidasProjectPropertySearchRepository, times(1)).deleteById(projectProperty.getId());
+        verify(mockProjectPropertySearchRepository, times(1)).deleteById(projectProperty.getId());
     }
 
     @Test
@@ -481,7 +481,7 @@ class ProjectPropertyResourceIT {
         // Configure the mock search repository
         // Initialize the database
         projectPropertyRepository.saveAndFlush(projectProperty);
-        when(mockAidasProjectPropertySearchRepository.search("id:" + projectProperty.getId(), PageRequest.of(0, 20)))
+        when(mockProjectPropertySearchRepository.search("id:" + projectProperty.getId(), PageRequest.of(0, 20)))
             .thenReturn(new PageImpl<>(Collections.singletonList(projectProperty), PageRequest.of(0, 1), 1));
 
         // Search the projectProperty

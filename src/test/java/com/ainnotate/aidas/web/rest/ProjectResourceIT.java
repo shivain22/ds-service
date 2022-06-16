@@ -11,7 +11,7 @@ import com.ainnotate.aidas.IntegrationTest;
 import com.ainnotate.aidas.domain.Customer;
 import com.ainnotate.aidas.domain.Project;
 import com.ainnotate.aidas.repository.ProjectRepository;
-import com.ainnotate.aidas.repository.search.AidasProjectSearchRepository;
+import com.ainnotate.aidas.repository.search.ProjectSearchRepository;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -61,10 +61,10 @@ class ProjectResourceIT {
     /**
      * This repository is mocked in the com.ainnotate.aidas.repository.search test package.
      *
-     * @see com.ainnotate.aidas.repository.search.AidasProjectSearchRepositoryMockConfiguration
+     * @see com.ainnotate.aidas.repository.search.ProjectSearchRepositoryMockConfiguration
      */
     @Autowired
-    private AidasProjectSearchRepository mockAidasProjectSearchRepository;
+    private ProjectSearchRepository mockProjectSearchRepository;
 
     @Autowired
     private EntityManager em;
@@ -150,7 +150,7 @@ class ProjectResourceIT {
         assertThat(testProject.getProjectType()).isEqualTo(DEFAULT_PROJECT_TYPE);
 
         // Validate the AidasProject in Elasticsearch
-        verify(mockAidasProjectSearchRepository, times(1)).save(testProject);
+        verify(mockProjectSearchRepository, times(1)).save(testProject);
     }
 
     @Test
@@ -176,7 +176,7 @@ class ProjectResourceIT {
         assertThat(projectList).hasSize(databaseSizeBeforeCreate);
 
         // Validate the AidasProject in Elasticsearch
-        verify(mockAidasProjectSearchRepository, times(0)).save(project);
+        verify(mockProjectSearchRepository, times(0)).save(project);
     }
 
     @Test
@@ -274,7 +274,7 @@ class ProjectResourceIT {
         assertThat(testProject.getProjectType()).isEqualTo(UPDATED_PROJECT_TYPE);
 
         // Validate the AidasProject in Elasticsearch
-        verify(mockAidasProjectSearchRepository).save(testProject);
+        verify(mockProjectSearchRepository).save(testProject);
     }
 
     @Test
@@ -298,7 +298,7 @@ class ProjectResourceIT {
         assertThat(projectList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasProject in Elasticsearch
-        verify(mockAidasProjectSearchRepository, times(0)).save(project);
+        verify(mockProjectSearchRepository, times(0)).save(project);
     }
 
     @Test
@@ -322,7 +322,7 @@ class ProjectResourceIT {
         assertThat(projectList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasProject in Elasticsearch
-        verify(mockAidasProjectSearchRepository, times(0)).save(project);
+        verify(mockProjectSearchRepository, times(0)).save(project);
     }
 
     @Test
@@ -346,7 +346,7 @@ class ProjectResourceIT {
         assertThat(projectList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasProject in Elasticsearch
-        verify(mockAidasProjectSearchRepository, times(0)).save(project);
+        verify(mockProjectSearchRepository, times(0)).save(project);
     }
 
     @Test
@@ -434,7 +434,7 @@ class ProjectResourceIT {
         assertThat(projectList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasProject in Elasticsearch
-        verify(mockAidasProjectSearchRepository, times(0)).save(project);
+        verify(mockProjectSearchRepository, times(0)).save(project);
     }
 
     @Test
@@ -458,7 +458,7 @@ class ProjectResourceIT {
         assertThat(projectList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasProject in Elasticsearch
-        verify(mockAidasProjectSearchRepository, times(0)).save(project);
+        verify(mockProjectSearchRepository, times(0)).save(project);
     }
 
     @Test
@@ -482,7 +482,7 @@ class ProjectResourceIT {
         assertThat(projectList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasProject in Elasticsearch
-        verify(mockAidasProjectSearchRepository, times(0)).save(project);
+        verify(mockProjectSearchRepository, times(0)).save(project);
     }
 
     @Test
@@ -503,7 +503,7 @@ class ProjectResourceIT {
         assertThat(projectList).hasSize(databaseSizeBeforeDelete - 1);
 
         // Validate the AidasProject in Elasticsearch
-        verify(mockAidasProjectSearchRepository, times(1)).deleteById(project.getId());
+        verify(mockProjectSearchRepository, times(1)).deleteById(project.getId());
     }
 
     @Test
@@ -512,7 +512,7 @@ class ProjectResourceIT {
         // Configure the mock search repository
         // Initialize the database
         projectRepository.saveAndFlush(project);
-        when(mockAidasProjectSearchRepository.search("id:" + project.getId(), PageRequest.of(0, 20)))
+        when(mockProjectSearchRepository.search("id:" + project.getId(), PageRequest.of(0, 20)))
             .thenReturn(new PageImpl<>(Collections.singletonList(project), PageRequest.of(0, 1), 1));
 
         // Search the project

@@ -1,7 +1,8 @@
 package com.ainnotate.aidas.web.rest;
 
 import com.ainnotate.aidas.domain.TaskDefinition;
-import com.ainnotate.aidas.service.TaskDefinitionBean;
+import com.ainnotate.aidas.service.ESReIndexBean;
+import com.ainnotate.aidas.service.QcCleanUpBean;
 import com.ainnotate.aidas.service.TaskSchedulingService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,13 +18,23 @@ public class JobSchedulingController {
     private TaskSchedulingService taskSchedulingService;
 
     @Autowired
-    private TaskDefinitionBean taskDefinitionBean;
+    private QcCleanUpBean qcCleanUpBean;
 
-    @PostMapping(path="/taskdef", consumes = "application/json", produces="application/json")
-    public void scheduleATask(@RequestBody TaskDefinition taskDefinition) {
-        taskDefinitionBean.setTaskDefinition(taskDefinition);
+    @Autowired
+    private ESReIndexBean esReIndexBean;
+
+    @PostMapping(path="/taskdef/qc-cleanup", consumes = "application/json", produces="application/json")
+    public void scheduleQcCleanUpTask(@RequestBody TaskDefinition taskDefinition) {
+        qcCleanUpBean.setTaskDefinition(taskDefinition);
         UUID randomUUID = UUID.randomUUID();
-        taskSchedulingService.scheduleATask(randomUUID.toString(), taskDefinitionBean, taskDefinition.getCronExpression());
+        taskSchedulingService.scheduleATask(randomUUID.toString(), qcCleanUpBean, taskDefinition.getCronExpression());
+    }
+
+    @PostMapping(path="/taskdef/es-reindex", consumes = "application/json", produces="application/json")
+    public void scheduleESReindexTask(@RequestBody TaskDefinition taskDefinition) {
+        esReIndexBean.setTaskDefinition(taskDefinition);
+        UUID randomUUID = UUID.randomUUID();
+        taskSchedulingService.scheduleATask(randomUUID.toString(), esReIndexBean, taskDefinition.getCronExpression());
     }
 
     @GetMapping(path="/remove/{jobid}")

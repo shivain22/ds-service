@@ -7,6 +7,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 /**
  * Spring Data SQL repository for the AidasCustomer entity.
  */
@@ -32,5 +34,13 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
     @Query(value="select count(*) from customer where id>0 and status=1", nativeQuery = true)
     Long countAidasCustomersForSuperAdmin();
+
+    @Query(value = "select * from customer where status=1",nativeQuery = true)
+    List<Customer> findAllCustomer();
+
+
+    @Query(value = "select * from customer where status=1 and organisation_id=?1",nativeQuery = true)
+    List<Customer> findAllCustomer(Long organisationId);
+
 
 }

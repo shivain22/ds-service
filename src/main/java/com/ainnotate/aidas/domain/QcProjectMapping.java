@@ -29,7 +29,7 @@ public class QcProjectMapping extends AbstractAuditingEntity implements Serializ
     private Project project;
 
     @ManyToOne
-    private User user;
+    private UserCustomerMapping userCustomerMapping;
 
     @Column(name="qc_level")
     private Long qcLevel;
@@ -50,12 +50,12 @@ public class QcProjectMapping extends AbstractAuditingEntity implements Serializ
         this.project = project;
     }
 
-    public User getUser() {
-        return user;
+    public UserCustomerMapping getUserCustomerMapping() {
+        return userCustomerMapping;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setUserCustomerMapping(UserCustomerMapping userCustomerMapping) {
+        this.userCustomerMapping = userCustomerMapping;
     }
 
     @Override

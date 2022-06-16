@@ -9,7 +9,7 @@ import com.ainnotate.aidas.repository.ObjectRepository;
 import com.ainnotate.aidas.repository.UserVendorMappingObjectMappingRepository;
 import com.ainnotate.aidas.repository.UserVendorMappingRepository;
 import com.ainnotate.aidas.repository.UserRepository;
-import com.ainnotate.aidas.repository.search.AidasUserAidasObjectMappingSearchRepository;
+import com.ainnotate.aidas.repository.search.UserObjectMappingSearchRepository;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -53,7 +53,7 @@ public class UserVendorMappingObjectMappingResource {
     @Autowired
     private UserVendorMappingObjectMappingRepository userVendorMappingObjectMappingRepository;
 
-    private final AidasUserAidasObjectMappingSearchRepository aidasUserAidasObjectMappingSearchRepository;
+    private final UserObjectMappingSearchRepository aidasUserAidasObjectMappingSearchRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -67,7 +67,7 @@ public class UserVendorMappingObjectMappingResource {
 
     public UserVendorMappingObjectMappingResource(
 
-        AidasUserAidasObjectMappingSearchRepository aidasUserAidasObjectMappingSearchRepository
+        UserObjectMappingSearchRepository aidasUserAidasObjectMappingSearchRepository
     ) {
 
         this.aidasUserAidasObjectMappingSearchRepository = aidasUserAidasObjectMappingSearchRepository;

@@ -10,7 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.ainnotate.aidas.IntegrationTest;
 import com.ainnotate.aidas.domain.Organisation;
 import com.ainnotate.aidas.repository.OrganisationRepository;
-import com.ainnotate.aidas.repository.search.AidasOrganisationSearchRepository;
+import com.ainnotate.aidas.repository.search.OrganisationSearchRepository;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -57,10 +57,10 @@ class OrganisationResourceIT {
     /**
      * This repository is mocked in the com.ainnotate.aidas.repository.search test package.
      *
-     * @see com.ainnotate.aidas.repository.search.AidasOrganisationSearchRepositoryMockConfiguration
+     * @see com.ainnotate.aidas.repository.search.OrganisationSearchRepositoryMockConfiguration
      */
     @Autowired
-    private AidasOrganisationSearchRepository mockAidasOrganisationSearchRepository;
+    private OrganisationSearchRepository mockOrganisationSearchRepository;
 
     @Autowired
     private EntityManager em;
@@ -119,7 +119,7 @@ class OrganisationResourceIT {
         assertThat(testOrganisation.getDescription()).isEqualTo(DEFAULT_DESCRIPTION);
 
         // Validate the AidasOrganisation in Elasticsearch
-        verify(mockAidasOrganisationSearchRepository, times(1)).save(testOrganisation);
+        verify(mockOrganisationSearchRepository, times(1)).save(testOrganisation);
     }
 
     @Test
@@ -145,7 +145,7 @@ class OrganisationResourceIT {
         assertThat(organisationList).hasSize(databaseSizeBeforeCreate);
 
         // Validate the AidasOrganisation in Elasticsearch
-        verify(mockAidasOrganisationSearchRepository, times(0)).save(organisation);
+        verify(mockOrganisationSearchRepository, times(0)).save(organisation);
     }
 
     @Test
@@ -240,7 +240,7 @@ class OrganisationResourceIT {
         assertThat(testOrganisation.getDescription()).isEqualTo(UPDATED_DESCRIPTION);
 
         // Validate the AidasOrganisation in Elasticsearch
-        verify(mockAidasOrganisationSearchRepository).save(testOrganisation);
+        verify(mockOrganisationSearchRepository).save(testOrganisation);
     }
 
     @Test
@@ -264,7 +264,7 @@ class OrganisationResourceIT {
         assertThat(organisationList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasOrganisation in Elasticsearch
-        verify(mockAidasOrganisationSearchRepository, times(0)).save(organisation);
+        verify(mockOrganisationSearchRepository, times(0)).save(organisation);
     }
 
     @Test
@@ -288,7 +288,7 @@ class OrganisationResourceIT {
         assertThat(organisationList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasOrganisation in Elasticsearch
-        verify(mockAidasOrganisationSearchRepository, times(0)).save(organisation);
+        verify(mockOrganisationSearchRepository, times(0)).save(organisation);
     }
 
     @Test
@@ -312,7 +312,7 @@ class OrganisationResourceIT {
         assertThat(organisationList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasOrganisation in Elasticsearch
-        verify(mockAidasOrganisationSearchRepository, times(0)).save(organisation);
+        verify(mockOrganisationSearchRepository, times(0)).save(organisation);
     }
 
     @Test
@@ -398,7 +398,7 @@ class OrganisationResourceIT {
         assertThat(organisationList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasOrganisation in Elasticsearch
-        verify(mockAidasOrganisationSearchRepository, times(0)).save(organisation);
+        verify(mockOrganisationSearchRepository, times(0)).save(organisation);
     }
 
     @Test
@@ -422,7 +422,7 @@ class OrganisationResourceIT {
         assertThat(organisationList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasOrganisation in Elasticsearch
-        verify(mockAidasOrganisationSearchRepository, times(0)).save(organisation);
+        verify(mockOrganisationSearchRepository, times(0)).save(organisation);
     }
 
     @Test
@@ -446,7 +446,7 @@ class OrganisationResourceIT {
         assertThat(organisationList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasOrganisation in Elasticsearch
-        verify(mockAidasOrganisationSearchRepository, times(0)).save(organisation);
+        verify(mockOrganisationSearchRepository, times(0)).save(organisation);
     }
 
     @Test
@@ -467,7 +467,7 @@ class OrganisationResourceIT {
         assertThat(organisationList).hasSize(databaseSizeBeforeDelete - 1);
 
         // Validate the AidasOrganisation in Elasticsearch
-        verify(mockAidasOrganisationSearchRepository, times(1)).deleteById(organisation.getId());
+        verify(mockOrganisationSearchRepository, times(1)).deleteById(organisation.getId());
     }
 
     @Test
@@ -476,7 +476,7 @@ class OrganisationResourceIT {
         // Configure the mock search repository
         // Initialize the database
         organisationRepository.saveAndFlush(organisation);
-        when(mockAidasOrganisationSearchRepository.search("id:" + organisation.getId(), PageRequest.of(0, 20)))
+        when(mockOrganisationSearchRepository.search("id:" + organisation.getId(), PageRequest.of(0, 20)))
             .thenReturn(new PageImpl<>(Collections.singletonList(organisation), PageRequest.of(0, 1), 1));
 
         // Search the organisation

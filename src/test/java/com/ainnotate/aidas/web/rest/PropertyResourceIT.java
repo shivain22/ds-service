@@ -10,7 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.ainnotate.aidas.IntegrationTest;
 import com.ainnotate.aidas.domain.Property;
 import com.ainnotate.aidas.repository.PropertyRepository;
-import com.ainnotate.aidas.repository.search.AidasPropertiesSearchRepository;
+import com.ainnotate.aidas.repository.search.PropertySearchRepository;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -66,10 +66,10 @@ class PropertyResourceIT {
     /**
      * This repository is mocked in the com.ainnotate.aidas.repository.search test package.
      *
-     * @see com.ainnotate.aidas.repository.search.AidasPropertiesSearchRepositoryMockConfiguration
+     * @see com.ainnotate.aidas.repository.search.PropertySearchRepositoryMockConfiguration
      */
     @Autowired
-    private AidasPropertiesSearchRepository mockAidasPropertiesSearchRepository;
+    private PropertySearchRepository mockPropertySearchRepository;
 
     @Autowired
     private EntityManager em;
@@ -141,7 +141,7 @@ class PropertyResourceIT {
         assertThat(testProperty.getDescription()).isEqualTo(DEFAULT_DESCRIPTION);
 
         // Validate the AidasProperties in Elasticsearch
-        verify(mockAidasPropertiesSearchRepository, times(1)).save(testProperty);
+        verify(mockPropertySearchRepository, times(1)).save(testProperty);
     }
 
     @Test
@@ -167,7 +167,7 @@ class PropertyResourceIT {
         assertThat(propertyList).hasSize(databaseSizeBeforeCreate);
 
         // Validate the AidasProperties in Elasticsearch
-        verify(mockAidasPropertiesSearchRepository, times(0)).save(property);
+        verify(mockPropertySearchRepository, times(0)).save(property);
     }
 
     @Test
@@ -342,7 +342,7 @@ class PropertyResourceIT {
         assertThat(testProperty.getDescription()).isEqualTo(UPDATED_DESCRIPTION);
 
         // Validate the AidasProperties in Elasticsearch
-        verify(mockAidasPropertiesSearchRepository).save(testProperty);
+        verify(mockPropertySearchRepository).save(testProperty);
     }
 
     @Test
@@ -366,7 +366,7 @@ class PropertyResourceIT {
         assertThat(propertyList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasProperties in Elasticsearch
-        verify(mockAidasPropertiesSearchRepository, times(0)).save(property);
+        verify(mockPropertySearchRepository, times(0)).save(property);
     }
 
     @Test
@@ -390,7 +390,7 @@ class PropertyResourceIT {
         assertThat(propertyList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasProperties in Elasticsearch
-        verify(mockAidasPropertiesSearchRepository, times(0)).save(property);
+        verify(mockPropertySearchRepository, times(0)).save(property);
     }
 
     @Test
@@ -414,7 +414,7 @@ class PropertyResourceIT {
         assertThat(propertyList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasProperties in Elasticsearch
-        verify(mockAidasPropertiesSearchRepository, times(0)).save(property);
+        verify(mockPropertySearchRepository, times(0)).save(property);
     }
 
     @Test
@@ -511,7 +511,7 @@ class PropertyResourceIT {
         assertThat(propertyList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasProperties in Elasticsearch
-        verify(mockAidasPropertiesSearchRepository, times(0)).save(property);
+        verify(mockPropertySearchRepository, times(0)).save(property);
     }
 
     @Test
@@ -535,7 +535,7 @@ class PropertyResourceIT {
         assertThat(propertyList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasProperties in Elasticsearch
-        verify(mockAidasPropertiesSearchRepository, times(0)).save(property);
+        verify(mockPropertySearchRepository, times(0)).save(property);
     }
 
     @Test
@@ -559,7 +559,7 @@ class PropertyResourceIT {
         assertThat(propertyList).hasSize(databaseSizeBeforeUpdate);
 
         // Validate the AidasProperties in Elasticsearch
-        verify(mockAidasPropertiesSearchRepository, times(0)).save(property);
+        verify(mockPropertySearchRepository, times(0)).save(property);
     }
 
     @Test
@@ -580,7 +580,7 @@ class PropertyResourceIT {
         assertThat(propertyList).hasSize(databaseSizeBeforeDelete - 1);
 
         // Validate the AidasProperties in Elasticsearch
-        verify(mockAidasPropertiesSearchRepository, times(1)).deleteById(property.getId());
+        verify(mockPropertySearchRepository, times(1)).deleteById(property.getId());
     }
 
     @Test
@@ -589,7 +589,7 @@ class PropertyResourceIT {
         // Configure the mock search repository
         // Initialize the database
         propertyRepository.saveAndFlush(property);
-        when(mockAidasPropertiesSearchRepository.search("id:" + property.getId(), PageRequest.of(0, 20)))
+        when(mockPropertySearchRepository.search("id:" + property.getId(), PageRequest.of(0, 20)))
             .thenReturn(new PageImpl<>(Collections.singletonList(property), PageRequest.of(0, 1), 1));
 
         // Search the aidasProperties
