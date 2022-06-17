@@ -56,6 +56,19 @@ public class Property extends AbstractAuditingEntity  implements Serializable {
     @ManyToOne
     private User user;
 
+    public Customer getCustomer() {
+        return customer;
+    }
+
+    public void setCustomer(Customer customer) {
+        this.customer = customer;
+    }
+
+    @ManyToOne
+    private Customer customer;
+
+
+
     @Column(name="add_to_metadata")
     private Integer addToMetadata;
 

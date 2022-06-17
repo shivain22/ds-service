@@ -1,4 +1,4 @@
-package com.ainnotate.aidas.web.rest;
+package com.ainnotate.aidas.service;
 
 import com.ainnotate.aidas.constants.AidasConstants;
 import com.ainnotate.aidas.domain.*;
@@ -361,7 +361,7 @@ public class DownloadUploadS3  implements  Runnable{
 
     private Map<String,String> getObjectProperties(Upload au){
         Map<String,String> uploadLocProps = new HashMap<>();
-        for (ObjectProperty aop : au.getAidasUserAidasObjectMapping().getObject().getObjectProperties()) {
+        for (ObjectProperty aop : au.getUserVendorMappingObjectMapping().getObject().getObjectProperties()) {
             if (aop.getProperty().getName().equals("accessKey")) {
                 uploadLocProps.put("accessKey",aop.getValue());
             }

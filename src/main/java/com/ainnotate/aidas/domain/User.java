@@ -79,7 +79,7 @@ public class User extends AbstractAuditingEntity implements Serializable {
 
     @Column(name = "image_url", length = 256)
     private String imageUrl;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     private Authority authority;
 
     public void setAuthorities(Set<Authority> authorities) {

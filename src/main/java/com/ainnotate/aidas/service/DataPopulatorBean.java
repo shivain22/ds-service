@@ -12,6 +12,7 @@ import org.aspectj.weaver.ast.Or;
 import org.keycloak.admin.client.CreatedResponseUtil;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.RealmResource;
+import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
@@ -20,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
 
@@ -70,6 +72,7 @@ public class DataPopulatorBean implements Runnable {
     @Autowired
     private AuthorityRepository authorityRepository;
 
+    @Autowired
     private Keycloak keycloak;
 
     @Autowired
@@ -106,189 +109,24 @@ public class DataPopulatorBean implements Runnable {
     @Override
     public void run() {
         System.out.println("Running action: " + taskDefinition.getActionType());
-        try {
-            File file = ResourceUtils.getFile("classpath:"+taskDefinition.getActionType()+".csv");
-            List<String[]> data = CSVHelper.getData(file);
-            if(taskDefinition.getActionType().equals("dummy-org")){
-                for(String[] d:data ){
-                    Organisation o = new Organisation();
-                    o.setId(Long.parseLong(d[0]));
-                    o.setName(d[1]);
-                    o.setDescription(d[2]);
-                    o.setStatus(1);
-                    o = organisationRepository.save(o);
-                    organisationSearchRepository.save(o);
+            String dataFileName = taskDefinition.getActionType();
+            log.debug("REST request to get AidasAuthority : {}", dataFileName);
+            if(dataFileName.equals("load-all")){
+                try {
+                    loadAllDummys();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (URISyntaxException e) {
+                    e.printStackTrace();
+                } catch (CsvException e) {
+                    e.printStackTrace();
                 }
-           }
-            if(taskDefinition.getActionType().equals("dummy-cust")){
-                for(String[] d:data ){
-                    Customer c = new Customer();
-                    c.setId(Long.parseLong(d[0]));
-                    c.setName(d[1]);
-                    c.setDescription(d[2]);
-                    c.setStatus(1);
-                    c.setOrganisation(organisationRepository.getById(Long.parseLong(d[3])));
-                    customerRepository.save(c);
-                }
+            }else if(dataFileName.equals("cleanup-keycloak")){
+                cleanUpKeyCloakAndDBUsers();
             }
-            if(taskDefinition.getActionType().equals("dummy-vendor")){
-                for(String[] d:data ){
-                    Vendor v = new Vendor();
-                    v.setId(Long.parseLong(d[0]));
-                    v.setName(d[1]);
-                    v.setDescription(d[2]);
-                    v.setStatus(1);
-                    vendorRepository.save(v);
-                }
+            if(dataFileName.equals("cleanup-keycloak-only")){
+                cleanUpKeycloakOnly();
             }
-            if(taskDefinition.getActionType().equals("dummy-user")){
-                for(String[] d:data ){
-                    User u = new User();
-                    u.setId(Long.parseLong(d[0]));
-                    u.setFirstName(d[1]);
-                    u.setLastName(d[2]);
-                    u.setEmail(d[3]);
-                    u.setPassword(d[4]);
-                    u.setLogin(d[5]);
-                    if(d[6]!=null && d[6].trim().length()>0)
-                        u.setOrganisation(organisationRepository.getById(Long.parseLong(d[6])));
-                    if(d[7]!=null && d[7].trim().length()>0)
-                        u.setCustomer(customerRepository.getById(Long.parseLong(d[7])));
-                    if(d[8]!=null && d[8].trim().length()>0)
-                        u.setVendor(vendorRepository.getById(Long.parseLong(d[8])));
-                    if(d[9]!=null && d[9].trim().length()>0)
-                        u.setAuthority(authorityRepository.getById(Long.parseLong(d[9])));
-                    addUserToKeyCloak(u);
-                    u.setDeleted(0);
-                    u.setStatus(1);
-                    u.setLocked(0);
-                    userRepository.save(u);
-                    updateUserToKeyCloak(u);
-
-                }
-            }
-            if(taskDefinition.getActionType().equals("dummy-uom")){
-                for(String[] d:data ){
-                    UserOrganisationMapping uom = new UserOrganisationMapping();
-                    uom.setId(Long.parseLong(d[0]));
-                    uom.setUser(userRepository.getById(Long.parseLong(d[1])));
-                    uom.setOrganisation(organisationRepository.getById(Long.parseLong(d[2])));
-                    uom.setStatus(1);
-                    userOrganisationMappingRepository.save(uom);
-                }
-            }
-            if(taskDefinition.getActionType().equals("dummy-ucm")){
-                for(String[] d:data ){
-                    UserCustomerMapping ucm = new UserCustomerMapping();
-                    ucm.setId(Long.parseLong(d[0]));
-                    ucm.setUser(userRepository.getById(Long.parseLong(d[1])));
-                    ucm.setCustomer(customerRepository.getById(Long.parseLong(d[2])));
-                    ucm.setStatus(1);
-                    userCustomerMappingRepository.save(ucm);
-                }
-            }
-            if(taskDefinition.getActionType().equals("dummy-uvm")){
-                for(String[] d:data ){
-                    UserVendorMapping uvm = new UserVendorMapping();
-                    uvm.setId(Long.parseLong(d[0]));
-                    uvm.setUser(userRepository.getById(Long.parseLong(d[1])));
-                    uvm.setVendor(vendorRepository.getById(Long.parseLong(d[2])));
-                    uvm.setStatus(1);
-                    userVendorMappingRepository.save(uvm);
-                }
-            }
-            if(taskDefinition.getActionType().equals("dummy-uam")){
-                for(String[] d:data ){
-                    UserAuthorityMapping uam = new UserAuthorityMapping();
-                    uam.setId(Long.parseLong(d[0]));
-                    uam.setUser(userRepository.getById(Long.parseLong(d[1])));
-                    uam.setAuthority(authorityRepository.getById(Long.parseLong(d[2])));
-                    uam.setStatus(1);
-                    userAuthorityMappingRepository.save(uam);
-                }
-            }
-            if(taskDefinition.getActionType().equals("dummy-project")){
-                for(String[] d:data ){
-                    Project  p = new Project();
-                    p.setId(Long.parseLong(d[0]));
-                    p.setName(d[1]);
-                    p.setDescription(d[2]);
-                    p.setStatus(1);
-                    p.setAutoCreateObjects(0);
-                    p.setBufferPercent(20);
-                    p.setExternalDatasetStatus(0);
-                    p.setNumOfObjects(0);
-                    p.setNumOfUploadsReqd(0);
-                    p.setObjectPrefix("");
-                    p.setObjectSuffix("");
-                    p.setProjectType("image");
-                    p.setQcLevels(1);
-                    p.setReworkStatus(1);
-                    p.setCustomer(customerRepository.getById(Long.parseLong(d[14])));
-                    List<Property> props = propertyRepository.findAllDefaultProps();
-                    props.forEach(item->{
-                        ProjectProperty pp = new ProjectProperty();
-                        pp.setProject(p);
-                        pp.setProperty(item);
-                        pp.setValue(item.getValue());
-                        pp.setStatus(1);
-                        p.getProjectProperties().add(pp);
-                    });
-                    projectRepository.save(p);
-                }
-            }
-            if(taskDefinition.getActionType().equals("dummy-object")){
-                for(String[] d:data ){
-                    Object o = new Object();
-                    o.setId(Long.parseLong(d[0]));
-                    o.setName(d[1]);
-                    o.setDescription(d[2]);
-                    o.setStatus(1);
-                    o.setBufferPercent(20);
-                    o.setDummy(0);
-                    o.setNumberOfUploadReqd(100);
-                    List<Property> props = propertyRepository.findAllDefaultProps();
-                    props.forEach(item->{
-                        ObjectProperty op = new ObjectProperty();
-                        op.setObject(o);
-                        op.setProperty(item);
-                        op.setValue(item.getValue());
-                        op.setStatus(1);
-                        o.getObjectProperties().add(op);
-                    });
-                    o.setProject(projectRepository.getById(Long.parseLong(d[7])));
-                }
-            }
-            if(taskDefinition.getActionType().equals("dummy-uvmom")){
-                for(String[] d:data ){
-                    UserVendorMappingObjectMapping uvmom = new UserVendorMappingObjectMapping();
-                    uvmom.setId(Long.parseLong(d[0]));
-                    uvmom.setUserVendorMapping(userVendorMappingRepository.getById(Long.parseLong(d[1])));
-                    uvmom.setObject(objectRepository.getById(Long.parseLong(d[2])));
-                    uvmom.setStatus(1);
-                    userVendorMappingObjectMappingRepository.save(uvmom);
-                }
-            }
-            if(taskDefinition.getActionType().equals("dummy-upload")){
-                for(String[] d:data ){
-                    Upload upload = new Upload();
-                    upload.setId(Long.parseLong(d[0]));
-                    upload.setName(d[1]);
-                    upload.setStatus(1);
-                    upload.setApprovalStatus(2);
-                    upload.setQcStatus(null);
-                    upload.setUserVendorMappingObjectMapping(userVendorMappingObjectMappingRepository.getById(Long.parseLong(d[2])));
-                    uploadRepository.save(upload);
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (CsvException e) {
-            e.printStackTrace();
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
-
     }
 
     public TaskDefinition getTaskDefinition() {
@@ -299,25 +137,280 @@ public class DataPopulatorBean implements Runnable {
         this.taskDefinition = taskDefinition;
     }
 
-    public void addUserToKeyCloak(User myUser) {
+    private void loadAllDummys() throws IOException, URISyntaxException, CsvException {
+        List<String> dummyOptions = new LinkedList<>();
+        dummyOptions.add("dummy-org");
+        dummyOptions.add("dummy-cust");
+        dummyOptions.add("dummy-vendor");
+        dummyOptions.add("dummy-user");
+        dummyOptions.add("dummy-uam");
+        dummyOptions.add("dummy-uom");
+        dummyOptions.add("dummy-ucm");
+        dummyOptions.add("dummy-uvm");
+        dummyOptions.add("dummy-projects");
+        dummyOptions.add("dummy-objects");
+        dummyOptions.add("dummy-uvmom");
+        dummyOptions.add("dummy-uploads");
+        dummyOptions.add("cleanup-keycloak");
+        dummyOptions.add("cleanup-keycloak-only");
+        for(String dataFileName:dummyOptions){
+            File file = ResourceUtils.getFile("classpath:"+dataFileName+".csv");
+            if(file.exists()) {
+                List<String[]> data = CSVHelper.getData(file);
+                if(dataFileName.equals("dummy-org")){
+                    addDummyOrganisations(data);
+                }
+                if(dataFileName.equals("dummy-cust")){
+                    addDummyCustomers(data);
+                }
+                if(dataFileName.equals("dummy-vendor")){
+                    addDummyVendors(data);
+                }
+                if(dataFileName.equals("dummy-user")){
+                    addDummyUsers(data);
+                }
+                if(dataFileName.equals("dummy-uom")){
+                    addDummyUserOrganisationMappings(data);
+                }
+                if(dataFileName.equals("dummy-ucm")){
+                    addDummyUserCustomerMappings(data);
+                }
+                if(dataFileName.equals("dummy-uvm")){
+                    addDummyUserVendorMappings(data);
+                }
+                if(dataFileName.equals("dummy-uam")){
+                    addDummyUserAuthorityMappings(data);
+                }
+                if(dataFileName.equals("dummy-project")){
+                    addDummyProjects(data);
+                }
+                if(dataFileName.equals("dummy-object")){
+                    addDummyObjects(data);
+                }
+                if(dataFileName.equals("dummy-uvmom")){
+                    addDummyUserVendorMappingObjectMappings(data);
+                }
+                if(dataFileName.equals("dummy-upload")){
+                    addDummyUploads(data);
+                }
+            }
+        }
 
+    }
+    public void addDummyOrganisations(List<String[]> data){
+        for(String[] d:data ){
+            Organisation o = new Organisation();
+            o.setId(Long.parseLong(d[0]));
+            o.setName(d[1]);
+            o.setDescription(d[2]);
+            o.setStatus(1);
+            o.setSampleData(1);
+            o = organisationRepository.save(o);
+            organisationSearchRepository.save(o);
+        }
+    }
+    private void addDummyCustomers(List<String[]>data){
+        for(String[] d:data ){
+            Customer c = new Customer();
+            c.setId(Long.parseLong(d[0]));
+            c.setName(d[1]);
+            c.setDescription(d[2]);
+            c.setStatus(1);
+            c.setSampleData(1);
+            c.setOrganisation(organisationRepository.getById(Long.parseLong(d[3])));
+            customerRepository.save(c);
+        }
+    }
+    private void addDummyVendors(List<String[]> data){
+        for(String[] d:data ){
+            Vendor v = new Vendor();
+            v.setId(Long.parseLong(d[0]));
+            v.setName(d[1]);
+            v.setDescription(d[2]);
+            v.setStatus(1);
+            v.setSampleData(1);
+            vendorRepository.save(v);
+        }
+    }
+    private void addDummyUsers(List<String[]> data){
+        for(String[] d:data ){
+            User u = new User();
+            u.setId(Long.parseLong(d[0]));
+            u.setFirstName(d[1]);
+            u.setLastName(d[2]);
+            u.setEmail(d[3]);
+            u.setPassword(d[4]);
+            u.setLogin(d[5]);
+            if(d[6]!=null && d[6].trim().length()>0)
+                u.setOrganisation(organisationRepository.getById(Long.parseLong(d[6])));
+            if(d[7]!=null && d[7].trim().length()>0)
+                u.setCustomer(customerRepository.getById(Long.parseLong(d[7])));
+            if(d[8]!=null && d[8].trim().length()>0)
+                u.setVendor(vendorRepository.getById(Long.parseLong(d[8])));
+            if(d[9]!=null && d[9].trim().length()>0)
+                u.setAuthority(authorityRepository.getById(Long.parseLong(d[9])));
+            u.setDeleted(0);
+            u.setStatus(1);
+            u.setLocked(0);
+            u.setSampleData(1);
+            u.setAltEmail("shivain22@gmail.com");
+            u.setCcEmails("admin@ainnotate.com");
+            addUserToKeyCloak(u);
+            u=userRepository.save(u);
+            updateUserToKeyCloak(u);
+        }
+    }
+    private void addDummyProjects(List<String[]> data){
+        for(String[] d:data ){
+            Project  p = new Project();
+            p.setId(Long.parseLong(d[0]));
+            p.setName(d[1]);
+            p.setDescription(d[2]);
+            p.setStatus(1);
+            p.setAutoCreateObjects(0);
+            p.setBufferPercent(20);
+            p.setExternalDatasetStatus(0);
+            p.setNumOfObjects(0);
+            p.setNumOfUploadsReqd(0);
+            p.setObjectPrefix("");
+            p.setObjectSuffix("");
+            p.setProjectType("image");
+            p.setQcLevels(1);
+            p.setReworkStatus(1);
+            p.setCustomer(customerRepository.getById(Long.parseLong(d[14])));
+            List<Property> props = propertyRepository.findAllDefaultProps();
+            props.forEach(item->{
+                ProjectProperty pp = new ProjectProperty();
+                pp.setProject(p);
+                pp.setProperty(item);
+                pp.setValue(item.getValue());
+                pp.setStatus(1);
+                p.getProjectProperties().add(pp);
+            });
+            p.setSampleData(1);
+            projectRepository.save(p);
+        }
+    }
+    private void addDummyObjects(List<String[]> data){
+        for(String[] d:data ){
+            com.ainnotate.aidas.domain.Object o = new Object();
+            System.out.println(d[0]);
+            o.setId(Long.parseLong(d[0]));
+            o.setName(d[1]);
+            o.setDescription(d[2]);
+            o.setStatus(1);
+            o.setBufferPercent(20);
+            o.setDummy(0);
+            o.setNumberOfUploadReqd(100);
+            List<Property> props = propertyRepository.findAllDefaultProps();
+            props.forEach(item->{
+                ObjectProperty op = new ObjectProperty();
+                op.setObject(o);
+                op.setProperty(item);
+                op.setValue(item.getValue());
+                op.setStatus(1);
+                o.getObjectProperties().add(op);
+            });
+            o.setSampleData(1);
+            o.setProject(projectRepository.getById(Long.parseLong(d[7])));
+            objectRepository.save(o);
+        }
+    }
+    private void addDummyUserAuthorityMappings(List<String[]> data){
+        for(String[] d:data ){
+            UserAuthorityMapping uam = new UserAuthorityMapping();
+            uam.setId(Long.parseLong(d[0]));
+            uam.setUser(userRepository.getById(Long.parseLong(d[1])));
+            uam.setAuthority(authorityRepository.getById(Long.parseLong(d[2])));
+            uam.setStatus(1);
+            uam.setSampleData(1);
+            userAuthorityMappingRepository.save(uam);
+        }
+    }
+    private void addDummyUserOrganisationMappings(List<String[]> data){
+        for(String[] d:data ){
+            UserOrganisationMapping uom = new UserOrganisationMapping();
+            uom.setId(Long.parseLong(d[0]));
+            uom.setUser(userRepository.getById(Long.parseLong(d[1])));
+            uom.setOrganisation(organisationRepository.getById(Long.parseLong(d[2])));
+            uom.setStatus(1);
+            uom.setSampleData(1);
+            userOrganisationMappingRepository.save(uom);
+        }
+    }
+    private void addDummyUserCustomerMappings(List<String[]> data){
+        for(String[] d:data ){
+            UserCustomerMapping ucm = new UserCustomerMapping();
+            ucm.setId(Long.parseLong(d[0]));
+            ucm.setUser(userRepository.getById(Long.parseLong(d[1])));
+            ucm.setCustomer(customerRepository.getById(Long.parseLong(d[2])));
+            ucm.setStatus(1);
+            ucm.setSampleData(1);
+            userCustomerMappingRepository.save(ucm);
+        }
+    }
+    private void addDummyUserVendorMappings(List<String[]> data){
+        for(String[] d:data ){
+            UserVendorMapping uvm = new UserVendorMapping();
+            uvm.setId(Long.parseLong(d[0]));
+            uvm.setUser(userRepository.getById(Long.parseLong(d[1])));
+            uvm.setVendor(vendorRepository.getById(Long.parseLong(d[2])));
+            uvm.setStatus(1);
+            uvm.setSampleData(1);
+            userVendorMappingRepository.save(uvm);
+        }
+    }
+    private void addDummyUserVendorMappingObjectMappings(List<String[]> data){
+        for(String[] d:data ){
+            UserVendorMappingObjectMapping uvmom = new UserVendorMappingObjectMapping();
+            uvmom.setId(Long.parseLong(d[0]));
+            uvmom.setUserVendorMapping(userVendorMappingRepository.getById(Long.parseLong(d[1])));
+            uvmom.setObject(objectRepository.getById(Long.parseLong(d[2])));
+            uvmom.setStatus(1);
+            uvmom.setSampleData(1);
+            userVendorMappingObjectMappingRepository.save(uvmom);
+        }
+    }
+    private void addDummyUploads(List<String[]> data){
+        for(String[] d:data ){
+            Upload upload = new Upload();
+            upload.setId(Long.parseLong(d[0]));
+            upload.setName(d[1]);
+            upload.setStatus(1);
+            upload.setApprovalStatus(2);
+            upload.setQcStatus(null);
+            upload.setUserVendorMappingObjectMapping(userVendorMappingObjectMappingRepository.getById(Long.parseLong(d[2])));
+            upload.setSampleData(1);
+            uploadRepository.save(upload);
+        }
+    }
+    private void cleanUpKeyCloakAndDBUsers(){
+        List<User> users = userRepository.findAll();
+        for(User u:users){
+            if(u.getKeycloakId()!=null){
+                if(u.getSampleData().equals(1)){
+                    deleteUserFromKeyCloak(u);
+                }
+            }
+        }
+    }
+    private void cleanUpDummyData(){
+
+    }
+    public void addUserToKeyCloak(User myUser) {
         UserRepresentation user = new UserRepresentation();
         user.setEnabled(true);
         user.setUsername(myUser.getLogin());
         user.setFirstName(myUser.getFirstName());
         user.setLastName(myUser.getLastName());
         user.setEmail(myUser.getEmail());
-        myUser.setCreatedBy(SecurityUtils.getCurrentUserLogin().get());
-        myUser.setCreatedDate(Instant.now());
-        myUser.setLastModifiedBy(SecurityUtils.getCurrentUserLogin().get());
-        myUser.setLastModifiedDate(Instant.now());
+        user.setEnabled(true);
+        user.setEmailVerified(true);
         List<String> groups = new ArrayList<>();
         groups.add("Users");
         user.setGroups(groups);
         RealmResource realmResource = keycloak.realm(keycloakConfig.getClientRealm());
         UsersResource usersRessource = realmResource.users();
-        user.setEnabled(true);
-        user.setEmailVerified(true);
         Response response = usersRessource.create(user);
         String userId = CreatedResponseUtil.getCreatedId(response);
         myUser.setKeycloakId(userId);
@@ -325,14 +418,12 @@ public class DataPopulatorBean implements Runnable {
         passwordCred.setTemporary(false);
         passwordCred.setType(CredentialRepresentation.PASSWORD);
         passwordCred.setValue(myUser.getPassword());
-        org.keycloak.admin.client.resource.UserResource userResource = usersRessource.get(userId);
+        UserResource userResource = usersRessource.get(userId);
         userResource.resetPassword(passwordCred);
-        //userResource.sendVerifyEmail();
         List<RoleRepresentation> roleRepresentationList = realmResource.roles().list();
         for (RoleRepresentation roleRepresentation : roleRepresentationList)
         {
             for(Authority aa:myUser.getAuthorities()){
-                System.out.println(aa.getName()+""+roleRepresentation.getName());
                 if (roleRepresentation.getName().equals(aa.getName()))
                 {
                     userResource.roles().realmLevel().add(Arrays.asList(roleRepresentation));
@@ -367,5 +458,27 @@ public class DataPopulatorBean implements Runnable {
         passwordCred.setValue(myUser.getPassword());
         userResource.resetPassword(passwordCred);
         userResource.roles().realmLevel().add(myUser.getAuthorities().stream().map(authority -> {return realmResource.roles().get(authority.getName()).toRepresentation();}).collect(Collectors.toList()));
+    }
+
+    private void deleteUserFromKeyCloak(User user){
+        RealmResource realmResource = keycloak.realm(keycloakConfig.getClientRealm());
+        UsersResource usersRessource = realmResource.users();
+        List<UserRepresentation> u = usersRessource.list();
+        System.out.println(u.size());
+        for(UserRepresentation ur:u){
+            ur.getId();
+        }
+        usersRessource.delete(user.getKeycloakId());
+    }
+
+    private void cleanUpKeycloakOnly(){
+        RealmResource realmResource = keycloak.realm(keycloakConfig.getClientRealm());
+        UsersResource usersRessource = realmResource.users();
+        List<UserRepresentation> u = usersRessource.list(0,3000);
+        for(UserRepresentation ur:u){
+            if(!ur.getEmail().equals("admin@ainnotate.com")){
+                usersRessource.delete(ur.getId());
+            }
+        }
     }
 }

@@ -1,2 +1,2 @@
-id;user_id;authority_id
--1;-1;1
+id;user_id;authority_id;status
+-1;-1;1;1

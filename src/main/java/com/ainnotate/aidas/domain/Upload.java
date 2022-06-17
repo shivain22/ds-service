@@ -103,8 +103,9 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
     @Column(name="metadata_status", nullable=true)
     private Integer metadataStatus;
 
-    @Column(name="qc_done_by", nullable=true)
-    private Long qcDoneBy;
+    @ManyToOne
+    @JsonIgnoreProperties(value={"user"})
+    private QcProjectMapping qcDoneBy;
 
     @Column(name="qc_start_date", nullable=true)
     private Instant qcStartDate;
@@ -114,6 +115,17 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
     @Column(name="external_dataset_status")
     @JsonProperty
     private Integer externalDatasetStatus;
+
+    @JsonProperty
+    private transient String uploadMetaData;
+
+    public String getUploadMetaData() {
+        return uploadMetaData;
+    }
+
+    public void setUploadMetaData(String uploadMetaData) {
+        this.uploadMetaData = uploadMetaData;
+    }
 
     public Integer getExternalDatasetStatus() {
         return externalDatasetStatus;
@@ -199,11 +211,11 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
         this.qcStatus = qcStatus;
     }
 
-    public Long getQcDoneBy() {
+    public QcProjectMapping getQcDoneBy() {
         return qcDoneBy;
     }
 
-    public void setQcDoneBy(Long qcDoneBy) {
+    public void setQcDoneBy(QcProjectMapping qcDoneBy) {
         this.qcDoneBy = qcDoneBy;
     }
 
@@ -311,12 +323,6 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
 
     public void setStatusModifiedDate(ZonedDateTime statusModifiedDate) {
         this.statusModifiedDate = statusModifiedDate;
-    }
-
-
-
-    public UserVendorMappingObjectMapping getAidasUserAidasObjectMapping() {
-        return this.userVendorMappingObjectMapping;
     }
 
     public void setAidasUserAidasObjectMapping(UserVendorMappingObjectMapping userVendorMappingObjectMapping) {

@@ -221,7 +221,7 @@ class UserVendorMappingObjectMappingResourceIT {
 
     @Test
     @Transactional
-    void getAidasUserAidasObjectMapping() throws Exception {
+    void getUserVendorMappingObjectMapping() throws Exception {
         // Initialize the database
         userVendorMappingObjectMappingRepository.saveAndFlush(userVendorMappingObjectMapping);
 

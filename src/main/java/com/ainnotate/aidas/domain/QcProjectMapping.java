@@ -1,5 +1,6 @@
 package com.ainnotate.aidas.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.envers.Audited;
@@ -26,9 +27,11 @@ public class QcProjectMapping extends AbstractAuditingEntity implements Serializ
     private Long id;
 
     @ManyToOne
+    @JsonIgnoreProperties(value = {"user","customer"})
     private Project project;
 
     @ManyToOne
+    @JsonIgnoreProperties(value = {"user","customer"})
     private UserCustomerMapping userCustomerMapping;
 
     @Column(name="qc_level")

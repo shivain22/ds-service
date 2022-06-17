@@ -1,2 +1,2 @@
-id;name;description;organisation_id
--1;Default Customer;Default Customer;-1
+id;name;description;organisation_id;status
+-1;Default Customer;Default Customer;-1;1

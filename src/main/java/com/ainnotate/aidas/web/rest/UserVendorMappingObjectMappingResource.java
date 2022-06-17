@@ -312,7 +312,7 @@ public class UserVendorMappingObjectMappingResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the aidasUserAidasObjectMapping, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/aidas-user-aidas-object-mappings/{id}")
-    public ResponseEntity<UserVendorMappingObjectMapping> getAidasUserAidasObjectMapping(@PathVariable Long id) {
+    public ResponseEntity<UserVendorMappingObjectMapping> getUserVendorMappingObjectMapping(@PathVariable Long id) {
         log.debug("REST request to get AidasUserAidasObjectMapping : {}", id);
         Optional<UserVendorMappingObjectMapping> aidasUserAidasObjectMapping = userVendorMappingObjectMappingRepository.findById(id);
         return ResponseUtil.wrapOrNotFound(aidasUserAidasObjectMapping);

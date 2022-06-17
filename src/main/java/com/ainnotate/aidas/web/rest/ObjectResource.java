@@ -9,6 +9,7 @@ import com.ainnotate.aidas.repository.*;
 import com.ainnotate.aidas.repository.search.ObjectSearchRepository;
 import com.ainnotate.aidas.constants.AidasConstants;
 import com.ainnotate.aidas.security.SecurityUtils;
+import com.ainnotate.aidas.service.DownloadUploadS3;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 
 import java.net.URI;

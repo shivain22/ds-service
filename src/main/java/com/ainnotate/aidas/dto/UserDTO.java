@@ -9,6 +9,15 @@ public class UserDTO implements  IUserDTO {
     private Long userVendorMappingId;
     private Long userCustomerMappingId;
     private Integer status=0;
+    private Long qcLevel;
+
+    public Long getQcLevel() {
+        return qcLevel;
+    }
+
+    public void setQcLevel(Long qcLevel) {
+        this.qcLevel = qcLevel;
+    }
 
     public Integer getStatus() {
         return status;
