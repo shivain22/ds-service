@@ -20,11 +20,20 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     @Query(value="select * from customer ac where ac.organisation_id=?1 and status=1",nativeQuery = true)
     Page<Customer> findAllByAidasOrganisation(Pageable page, Organisation organisation);
 
+    @Query(value="select * from customer ac where ac.organisation_id=?1 and status=1",nativeQuery = true)
+    List<Customer> findAllByAidasOrganisationForDropDown(Organisation organisation);
+
     @Query(value="select * from customer ac where id>?1 and status=1",nativeQuery = true)
     Page<Customer> findAllByIdGreaterThan(Pageable page, Long id);
 
+    @Query(value="select * from customer ac where id>?1 and status=1",nativeQuery = true)
+    List<Customer> findAllByIdGreaterThanForDropDown(Long id);
+
     @Query(value="select * from customer ac where ac.id=?1 and status=1",nativeQuery = true)
     Page<Customer> findAllByIdEquals(Pageable page, Long customerId);
+
+    @Query(value="select * from customer ac where ac.id=?1 and status=1",nativeQuery = true)
+    List<Customer> findAllByIdEqualsForDropDown(Long customerId);
 
     @Query(value="select count(*) from customer ac where ac.organisation_id=?1 and status=1",nativeQuery = true)
     Long countAidasCustomerByAidasOrganisation(Organisation organisation);

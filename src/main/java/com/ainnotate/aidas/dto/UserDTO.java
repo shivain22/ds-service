@@ -11,67 +11,83 @@ public class UserDTO implements  IUserDTO {
     private Integer status=0;
     private Long qcLevel;
 
-    public Long getQcLevel() {
-        return qcLevel;
-    }
-
-    public void setQcLevel(Long qcLevel) {
-        this.qcLevel = qcLevel;
-    }
-
-    public Integer getStatus() {
-        return status;
-    }
-
-    public void setStatus(Integer status) {
-        this.status = status;
-    }
-
-    public Long getUserVendorMappingId() {
-        return userVendorMappingId;
-    }
-
-    public void setUserVendorMappingId(Long userVendorMappingId) {
-        this.userVendorMappingId = userVendorMappingId;
-    }
-
+    @Override
     public Long getUserId() {
-        return userId;
+        return this.userId;
     }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
-
+    @Override
     public String getFirstName() {
-        return firstName;
+        return this.firstName;
     }
 
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
+    @Override
     public String getLastName() {
-        return lastName;
+        return this.lastName;
     }
 
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
+    @Override
     public String getLogin() {
-        return login;
+        return this.login;
     }
 
-    public void setLogin(String login) {
-        this.login = login;
+    @Override
+    public Long getUserVendorMappingId() {
+        return this.userVendorMappingId;
     }
 
+    @Override
     public Long getUserCustomerMappingId() {
-        return userCustomerMappingId;
+        return this.userCustomerMappingId;
     }
 
+    @Override
+    public Integer getStatus() {
+        return this.status;
+    }
+
+    @Override
+    public Long getQcLevel() {
+        return this.qcLevel;
+    }
+
+    @Override
+    public void setUserId(Long userId) {
+            this.userId=userId;
+    }
+
+    @Override
+    public void setFirstName(String firstName) {
+this.firstName = firstName;
+    }
+
+    @Override
+    public void setLastName(String lastName) {
+this.lastName= lastName;
+    }
+
+    @Override
+    public void setLogin(String login) {
+this.login = login;
+    }
+
+    @Override
+    public void setUserVendorMappingId(Long userVendorMappingId) {
+this.userVendorMappingId=userVendorMappingId;
+    }
+
+    @Override
     public void setUserCustomerMappingId(Long userCustomerMappingId) {
-        this.userCustomerMappingId = userCustomerMappingId;
+this.userCustomerMappingId = userCustomerMappingId;
+    }
+
+    @Override
+    public void setStatus(Integer status) {
+this.status=status;
+    }
+
+    @Override
+    public void setQcLevel(Long qcLevel) {
+this.qcLevel = qcLevel;
     }
 }

@@ -231,11 +231,23 @@ public class VendorResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of aidasVendors in body.
      */
     @GetMapping("/aidas-vendors")
-    public ResponseEntity<List<Vendor>> getAllAidasVendors(Pageable pageable) {
+    public ResponseEntity<List<Vendor>> getAllVendors(Pageable pageable) {
         log.debug("REST request to get a page of AidasVendors");
         Page<Vendor> page = vendorRepository.findAllByIdGreaterThan(0l,pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    /**
+     * {@code GET  /aidas-vendors} : get all the aidasVendors.
+     *
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of aidasVendors in body.
+     */
+    @GetMapping("/aidas-vendors/dropdown")
+    public ResponseEntity<List<Vendor>> getAllVendorsForDropDown() {
+        log.debug("REST request to get a page of AidasVendors");
+        List<Vendor> vendors = vendorRepository.findAllByIdGreaterThanForDropDown(0l);
+        return ResponseEntity.ok().body(vendors);
     }
 
     /**

@@ -6,6 +6,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 /**
  * Spring Data SQL repository for the AidasOrganisation entity.
  */
@@ -17,6 +19,9 @@ public interface OrganisationRepository extends JpaRepository<Organisation, Long
 
     @Query(value = "select * from organisation where id>?1 and status=1",countQuery = "select count(*) from organisation where id>?1 and status=1",nativeQuery = true)
     Page<Organisation> findAllByIdGreaterThan(Long id, Pageable page);
+
+    @Query(value = "select * from organisation where id>?1 and status=1",countQuery = "select count(*) from organisation where id>?1 and status=1",nativeQuery = true)
+    List<Organisation> findAllByIdGreaterThanForDropDown(Long id);
 
     @Query(value = "select * from organisation where id=?1 and status=1",nativeQuery = true)
     Page<Organisation> findAllByCustomer(Long id, Pageable page);

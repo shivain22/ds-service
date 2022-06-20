@@ -70,19 +70,39 @@ public interface UserRepository extends JpaRepository<User, Long> {
         ,countQuery = "select count(*) from user u, user_customer_mapping ucm where u.id=ucm.user_id and ucm.customer_id=?1 and u.status=1 and deleted=0",nativeQuery = true)
     Page<User> findAllByDeletedIsFalseAndAidasCustomer(Pageable pageable, Long customerId);
 
+    @Query(value = "select * from user u, user_customer_mapping ucm where u.id=ucm.user_id and ucm.customer_id=?1 and u.status=1 and deleted=0"
+        ,countQuery = "select count(*) from user u, user_customer_mapping ucm where u.id=ucm.user_id and ucm.customer_id=?1 and u.status=1 and deleted=0",nativeQuery = true)
+    List<User> findAllByDeletedIsFalseAndAidasCustomer(Long customerId);
+
     @Query(value = "select * from user u, user_customer_mapping ucm,customer c where u.id=ucm.user_id and ucm.customer_id=c.id and c.organisation_id=?1 and u.status=1 and deleted=0" +
         " union select * from user u, user_organisation_mapping uom where uom.user_id=u.id and uom.organisation_id=?1"
         ,countQuery = "select count(*) from (select * from user u, user_customer_mapping ucm,customer c where u.id=ucm.user_id and ucm.customer_id=c.id and c.organisation_id=?1 and u.status=1 and deleted=0" +
         " union select * from user u, user_organisation_mapping uom where uom.user_id=u.id and uom.organisation_id=?1 ) as orgusers",nativeQuery = true)
     Page<User> findAllByDeletedIsFalseAndAidasOrganisation_OrAidasCustomer_AidasOrganisation(Pageable pageable, Organisation organisation, Organisation aidasCustomerOrganisation);
 
+
+    @Query(value = "select * from user u, user_customer_mapping ucm,customer c where u.id=ucm.user_id and ucm.customer_id=c.id and c.organisation_id=?1 and u.status=1 and deleted=0" +
+        " union select * from user u, user_organisation_mapping uom where uom.user_id=u.id and uom.organisation_id=?1"
+        ,countQuery = "select count(*) from (select * from user u, user_customer_mapping ucm,customer c where u.id=ucm.user_id and ucm.customer_id=c.id and c.organisation_id=?1 and u.status=1 and deleted=0" +
+        " union select * from user u, user_organisation_mapping uom where uom.user_id=u.id and uom.organisation_id=?1 ) as orgusers",nativeQuery = true)
+    List<User> findAllByDeletedIsFalseAndAidasOrganisation_OrAidasCustomer_AidasOrganisation(Organisation organisation, Organisation aidasCustomerOrganisation);
+
+
     @Query(value = "select * from user u, user_vendor_mapping uvm where u.id=uvm.user_id and uvm.vendor_id=?1 and u.status=1 and deleted=0"
         ,countQuery = "select count(*) from user u, user_vendor_mapping uvm where u.id=uvm.user_id and uvm.vendor_id=?1 and u.status=1 and deleted=0",nativeQuery = true)
     Page<User> findAllByDeletedIsFalseAndAidasVendor(Pageable pageable, Vendor vendor);
 
+    @Query(value = "select * from user u, user_vendor_mapping uvm where u.id=uvm.user_id and uvm.vendor_id=?1 and u.status=1 and deleted=0"
+        ,countQuery = "select count(*) from user u, user_vendor_mapping uvm where u.id=uvm.user_id and uvm.vendor_id=?1 and u.status=1 and deleted=0",nativeQuery = true)
+    List<User> findAllByDeletedIsFalseAndAidasVendor( Vendor vendor);
+
     @Query(value = "select * from user u where  u.status=1 and deleted=0 order by u.id desc"
         ,countQuery = "select count(*) from user u where  u.status=1 and deleted=0",nativeQuery = true)
     Page<User> findAllByIdGreaterThanAndDeletedIsFalse(Long id, Pageable page);
+
+    @Query(value = "select * from user u where  u.status=1 and deleted=0 order by u.id desc"
+        ,countQuery = "select count(*) from user u where  u.status=1 and deleted=0",nativeQuery = true)
+    List<User> findAllByIdGreaterThanAndDeletedIsFalse(Long id);
 
     @Query(value = "select u.* from user u, user_authority_mapping uaa where uaa.user_id=u.id  and uaa.authority_id=?1 and order by u.id desc", nativeQuery = true)
     List<User>findAllByAidasAuthoritiesEquals(Long aidasAuthorityId);
@@ -96,7 +116,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
         "0 as userVendorMappingId,\n" +
         "ucm.id as userCustomerMappingId,\n" +
         "qpc.id as qcProjectMappingId, \n" +
-        "qpc.status as status   \n" +
+        "qpc.status as status,   \n" +
+        "qpc.qc_level as qcLevel "+
         "from \n" +
         "qc_project_mapping qpc, \n" +
         "user u,\n" +
@@ -107,29 +128,44 @@ public interface UserRepository extends JpaRepository<User, Long> {
         "qpc.user_customer_mapping_id=ucm.id\n" +
         "and ucm.customer_id=c.id\n" +
         "and qpc.project_id=?2\n" +
-        "and ucm.customer_id=?1\n" +
-        "\n" +
-        "union\n" +
-        "\n" +
-        "select \n" +
-        "u.id as userId, \n" +
-        "u.first_name as firstName, \n" +
-        "u.last_name lastName, \n" +
-        "0 as userVendorMappingId,\n" +
-        "ucm.id as userCustomerMappingId,\n" +
-        "0 as qcProjectMappingId, \n" +
-        "0 as status   \n" +
+        "and ucm.customer_id=?1\n order by qc_level asc" , nativeQuery = true)
+    List<IUserDTO>findAllByQcUsersByCustomerAndProject(Long customerId,Long projectId);
+
+    @Query(value = "select * from (select \n" +
+        "        u.id as userId, \n" +
+        "        u.first_name as firstName, \n" +
+        "        u.last_name lastName, \n" +
+        "        0 as userVendorMappingId,\n" +
+        "        ucm.id as userCustomerMappingId,\n" +
+        "        0 as qcProjectMappingId, \n" +
+        "        0 as status,   \n" +
+        "        0 as qcLevel \n" +
+        "        from \n" +
+        "        user u,\n" +
+        "        user_authority_mapping uam,\n" +
+        "        user_customer_mapping ucm,\n" +
+        "        customer c\n" +
+        "        where u.id=ucm.user_id and\n" +
+        "        ucm.customer_id=c.id \n" +
+        "        and uam.user_id=u.id \n" +
+        "        and uam.authority_id=6 and\n" +
+        "        c.id=?1)a where a.userId not in (" +
+        " select \n" +
+        "u.id as userId \n" +
         "from \n" +
+        "qc_project_mapping qpc, \n" +
         "user u,\n" +
-        "user_authority_mapping uam,\n" +
-        "user_customer_mapping ucm,\n" +
+        "user_customer_mapping ucm, \n" +
         "customer c\n" +
-        "where u.id=ucm.user_id and\n" +
-        "ucm.customer_id=c.id \n" +
-        "and uam.user_id=u.id \n" +
-        "and uam.authority_id=6 and\n" +
-        "c.id=?1", nativeQuery = true)
-    List<UserDTO>findAllByQcUsersByCustomerAndProject(Long customerId,Long projectId);
+        "where \n" +
+        "ucm.user_id=u.id and\n" +
+        "qpc.user_customer_mapping_id=ucm.id\n" +
+        "and ucm.customer_id=c.id\n" +
+        "and qpc.project_id=?2\n" +
+        "and ucm.customer_id=?1\n " +
+        "group by userId" +
+        ") order by qcLevel asc", nativeQuery = true)
+    List<IUserDTO>findAllByQcUsersByCustomerAndProject1(Long customerId,Long projectId);
 
 
 

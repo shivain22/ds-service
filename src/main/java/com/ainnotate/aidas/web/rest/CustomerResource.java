@@ -166,6 +166,31 @@ public class CustomerResource {
     }
 
     /**
+     * {@code GET  /aidas-customers/dropdown} : get all the aidasCustomers.
+     *
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of aidasCustomers in body.
+     */
+    @Secured({AidasConstants.ADMIN, AidasConstants.ORG_ADMIN, AidasConstants.CUSTOMER_ADMIN})
+    @GetMapping("/aidas-customers/dropdown")
+    public ResponseEntity<List<Customer>> getCustomersForDropDown() {
+        User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        log.debug("REST request to get a page of AidasCustomers");
+        List<Customer> customers =null;
+        if( user.getAuthority().getName().equals(AidasConstants.ADMIN)){
+            customers = customerRepository.findAllByIdGreaterThanForDropDown(-1l);
+        }else if(user.getAuthority().getName().equals(AidasConstants.ORG_ADMIN) && user.getOrganisation()!=null) {
+            customers = customerRepository.findAllByAidasOrganisationForDropDown(user.getOrganisation());
+        }else if(user.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN) && user.getCustomer()!=null) {
+            customers = customerRepository.findAllByIdEqualsForDropDown(user.getCustomer().getId());
+        }
+        if(customers!=null ){
+            return ResponseEntity.ok().body(customers);
+        }else{
+            throw new BadRequestAlertException("Not Authorised", ENTITY_NAME, "idinvalid");
+        }
+    }
+
+    /**
      * {@code GET  /aidas-customers/:id} : get the "id" customer.
      *
      * @param id the id of the customer to retrieve.

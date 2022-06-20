@@ -147,55 +147,66 @@ public class DataPopulatorBean implements Runnable {
         dummyOptions.add("dummy-uom");
         dummyOptions.add("dummy-ucm");
         dummyOptions.add("dummy-uvm");
-        dummyOptions.add("dummy-projects");
-        dummyOptions.add("dummy-objects");
+        dummyOptions.add("dummy-project");
+        dummyOptions.add("dummy-object");
         dummyOptions.add("dummy-uvmom");
-        dummyOptions.add("dummy-uploads");
-        dummyOptions.add("cleanup-keycloak");
-        dummyOptions.add("cleanup-keycloak-only");
+        dummyOptions.add("dummy-upload");
         for(String dataFileName:dummyOptions){
+            System.out.println("Starting to load dummy data");
             File file = ResourceUtils.getFile("classpath:"+dataFileName+".csv");
             if(file.exists()) {
                 List<String[]> data = CSVHelper.getData(file);
                 if(dataFileName.equals("dummy-org")){
                     addDummyOrganisations(data);
+                    System.out.println("org-done");
                 }
                 if(dataFileName.equals("dummy-cust")){
                     addDummyCustomers(data);
+                    System.out.println("cust done");
                 }
                 if(dataFileName.equals("dummy-vendor")){
                     addDummyVendors(data);
+                    System.out.println("vendor-done");
                 }
                 if(dataFileName.equals("dummy-user")){
                     addDummyUsers(data);
+                    System.out.println("user-done");
                 }
                 if(dataFileName.equals("dummy-uom")){
                     addDummyUserOrganisationMappings(data);
+                    System.out.println("uom-done");
                 }
                 if(dataFileName.equals("dummy-ucm")){
                     addDummyUserCustomerMappings(data);
+                    System.out.println("ucm-done");
                 }
                 if(dataFileName.equals("dummy-uvm")){
                     addDummyUserVendorMappings(data);
+                    System.out.println("uvm-done");
                 }
                 if(dataFileName.equals("dummy-uam")){
                     addDummyUserAuthorityMappings(data);
+                    System.out.println("uam-done");
                 }
                 if(dataFileName.equals("dummy-project")){
                     addDummyProjects(data);
+                    System.out.println("projects-done");
                 }
                 if(dataFileName.equals("dummy-object")){
                     addDummyObjects(data);
+                    System.out.println("objects-done");
                 }
                 if(dataFileName.equals("dummy-uvmom")){
                     addDummyUserVendorMappingObjectMappings(data);
+                    System.out.println("uvmom-done");
                 }
                 if(dataFileName.equals("dummy-upload")){
                     addDummyUploads(data);
+                    System.out.println("upload-done");
                 }
             }
+            System.out.println("Completed loading dummy data");
         }
-
     }
     public void addDummyOrganisations(List<String[]> data){
         for(String[] d:data ){
@@ -362,6 +373,21 @@ public class DataPopulatorBean implements Runnable {
     }
     private void addDummyUserVendorMappingObjectMappings(List<String[]> data){
         for(String[] d:data ){
+            List<Object> objects = objectRepository.findAll();
+            List<Vendor> vendors = vendorRepository.findAll();
+            for(Object o: objects){
+                for(Vendor vendor:vendors){
+                    List<UserVendorMapping> uvms = userVendorMappingRepository.findAllVendorUserMappings(vendor.getId());
+                    for(UserVendorMapping uvm:uvms){
+                        UserVendorMappingObjectMapping uvmom = new UserVendorMappingObjectMapping();
+                        uvmom.setUserVendorMapping(uvm);
+                        uvmom.setObject(o);
+                        uvmom.setStatus(1);
+                        uvmom.setSampleData(1);
+                        userVendorMappingObjectMappingRepository.save(uvmom);
+                    }
+                }
+            }
             UserVendorMappingObjectMapping uvmom = new UserVendorMappingObjectMapping();
             uvmom.setId(Long.parseLong(d[0]));
             uvmom.setUserVendorMapping(userVendorMappingRepository.getById(Long.parseLong(d[1])));

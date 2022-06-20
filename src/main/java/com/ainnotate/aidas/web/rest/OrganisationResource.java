@@ -239,6 +239,35 @@ public class OrganisationResource {
     }
 
     /**
+     * {@code GET  /aidas-organisations} : get all the aidasOrganisations.
+     *
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of aidasOrganisations in body.
+     */
+    @Secured({AidasConstants.ADMIN, AidasConstants.ORG_ADMIN, AidasConstants.CUSTOMER_ADMIN})
+    @GetMapping("/aidas-organisations/dropdown")
+    public ResponseEntity<List<Organisation>> getAllOrganisationsForDropDown() {
+        log.debug("REST request to get a page of AidasOrganisations");
+        List<Organisation> organisations=null;
+        User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        if(user.getAuthority().getName().equals(AidasConstants.ADMIN)) {
+            organisations = organisationRepository.findAllByIdGreaterThanForDropDown(-1l);
+        }
+        else{
+            /*if(user.getAuthority().getName().equals(AidasConstants.ORG_ADMIN)){
+                if(user.getOrganisation()!=null){
+                    organisations = organisationRepository.findAllById(user.getOrganisation().getId());
+                }
+            }
+            if(user.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN)){
+                if(user.getCustomer()!=null){
+                    organisations = organisationRepository.findAllByCustomer(user.getCustomer().getOrganisation().getId());
+                }
+            }*/
+        }
+        return ResponseEntity.ok().body(organisations);
+    }
+
+    /**
      * {@code GET  /aidas-organisations/:id} : get the "id" organisation.
      *
      * @param id the id of the organisation to retrieve.

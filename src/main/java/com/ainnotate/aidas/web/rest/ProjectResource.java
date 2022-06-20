@@ -2,10 +2,7 @@ package com.ainnotate.aidas.web.rest;
 
 import com.ainnotate.aidas.domain.*;
 import com.ainnotate.aidas.domain.Object;
-import com.ainnotate.aidas.dto.ProjectQcDTO;
-import com.ainnotate.aidas.dto.ProjectVendorMappingDTO;
-import com.ainnotate.aidas.dto.UserDTO;
-import com.ainnotate.aidas.dto.VendorUserDTO;
+import com.ainnotate.aidas.dto.*;
 import com.ainnotate.aidas.repository.*;
 import com.ainnotate.aidas.repository.search.ProjectSearchRepository;
 import com.ainnotate.aidas.constants.AidasConstants;
@@ -187,8 +184,9 @@ public class ProjectResource {
         for(UserDTO userDTO: projectQcDTO.getQcUsers()){
             Project project = projectRepository.getById(projectQcDTO.getProjectId());
             UserCustomerMapping userCustomerMapping = userCustomerMappingRepository.getById(userDTO.getUserCustomerMappingId());
+            System.out.println(userCustomerMapping.getId());
             if(userCustomerMapping!=null){
-                QcProjectMapping qcProjectMapping = qcProjectMappingRepository.getQcProjectMappingByProjectAndCustomerAndUser(project.getId(),project.getCustomer().getId(),userCustomerMapping.getUser().getId());
+                QcProjectMapping qcProjectMapping = qcProjectMappingRepository.getQcProjectMappingByProjectAndCustomerAndUserAndLevel(project.getId(),project.getCustomer().getId(),userCustomerMapping.getUser().getId(),userDTO.getQcLevel());
                 if(qcProjectMapping==null){
                     qcProjectMapping = new QcProjectMapping();
                     qcProjectMapping.setProject(project);
