@@ -1,5 +1,6 @@
 package com.ainnotate.aidas.repository;
 
+import com.ainnotate.aidas.domain.Organisation;
 import com.ainnotate.aidas.domain.Vendor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -33,5 +34,10 @@ public interface VendorRepository extends JpaRepository<Vendor, Long> {
     @Query(value = "select count(*) from vendor where id>0 and status=1", nativeQuery = true)
     Long countAllVendorsForCustomerAdmin();
 
+    @Query(value = "select * from vendor where is_sample_data=1",nativeQuery = true)
+    List<Vendor> getAllSampleVendors();
+
+    @Query(value = "delete from vendor where is_sample_data=1",nativeQuery = true)
+    List<Vendor> deleteAllSampleVendors();
 
 }

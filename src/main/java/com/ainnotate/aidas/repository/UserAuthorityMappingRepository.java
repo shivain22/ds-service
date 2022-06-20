@@ -1,9 +1,6 @@
 package com.ainnotate.aidas.repository;
 
-import com.ainnotate.aidas.domain.AppProperty;
-import com.ainnotate.aidas.domain.UserAuthorityMapping;
-import com.ainnotate.aidas.domain.UserOrganisationMapping;
-import com.ainnotate.aidas.domain.UserVendorMapping;
+import com.ainnotate.aidas.domain.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -18,4 +15,12 @@ public interface UserAuthorityMappingRepository extends JpaRepository<UserAuthor
 
     @Query(value="select * from user_authority_mapping where authority_id=?1 and user_id=?2",nativeQuery = true)
     UserAuthorityMapping findByAuthorityIdAndUserId(Long authorityId, Long userId);
+
+    @Query(value = "select * from user_authority_mapping where is_sample_data=1",nativeQuery = true)
+    List<Organisation> getAllSampleUserAuthorityMappings();
+
+    @Query(value = "delete from user_authority_mapping where is_sample_data=1",nativeQuery = true)
+    List<Organisation> deleteAllSampleUserAuthorityMappings();
+
+
 }

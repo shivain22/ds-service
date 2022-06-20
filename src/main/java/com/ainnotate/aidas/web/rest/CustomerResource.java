@@ -1,8 +1,10 @@
 package com.ainnotate.aidas.web.rest;
 
 import com.ainnotate.aidas.domain.Customer;
+import com.ainnotate.aidas.domain.Property;
 import com.ainnotate.aidas.domain.User;
 import com.ainnotate.aidas.repository.CustomerRepository;
+import com.ainnotate.aidas.repository.PropertyRepository;
 import com.ainnotate.aidas.repository.UserRepository;
 import com.ainnotate.aidas.repository.search.CustomerSearchRepository;
 import com.ainnotate.aidas.constants.AidasConstants;
@@ -52,6 +54,9 @@ public class CustomerResource {
 
     private final CustomerRepository customerRepository;
 
+    @Autowired
+    private PropertyRepository propertyRepository;
+
     private final CustomerSearchRepository aidasCustomerSearchRepository;
 
     @Autowired
@@ -85,6 +90,20 @@ public class CustomerResource {
             (user.getAuthority().getName().equals(AidasConstants.ORG_ADMIN) && user.getOrganisation()!=null && user.getOrganisation().equals(customer.getOrganisation()))){
             Customer result = customerRepository.save(customer);
             aidasCustomerSearchRepository.save(result);
+            List<Property> properties = propertyRepository.findAllStandardProperties();
+            for(Property property:properties){
+                Property p = new Property();
+                p.setName(property.getName());
+                p.setValue(property.getValue());
+                p.setOptional(property.getOptional());
+                p.setDescription(property.getDescription());
+                p.setSystemProperty(property.getSystemProperty());
+                p.setAddToMetadata(property.getAddToMetadata());
+                p.setStatus(property.getStatus());
+                p.setCustomer(customer);
+                propertyRepository.save(p);
+            }
+
             return ResponseEntity
                 .created(new URI("/api/aidas-customers/" + result.getId()))
                 .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))

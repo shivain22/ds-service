@@ -239,4 +239,9 @@ public interface ObjectRepository extends JpaRepository<Object, Long> {
     @Query(value = "select count(*) from object where id>0 and status=1 and is_dummy=0", nativeQuery = true)
     Long countAllObjectsForSuperAdmin();
 
+    @Query(value = "select * from object where is_sample_data=1",nativeQuery = true)
+    List<Organisation> getAllSampleObjects();
+
+    @Query(value = "delete from object where is_sample_data=1",nativeQuery = true)
+    List<Organisation> deleteAllSampleObjects();
 }

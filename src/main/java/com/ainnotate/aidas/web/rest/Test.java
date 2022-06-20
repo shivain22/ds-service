@@ -64,7 +64,7 @@ public class Test {
         }
         id=1;
         for(String s:orgsArr){
-            //System.out.println(i+";"+s+";"+s);
+            System.out.println(s+";"+s);
             String[] name = s.split(" ");
             orgsMap.put(id,"@"+name[0].toLowerCase().trim()+".com");
             id++;
@@ -90,7 +90,7 @@ public class Test {
         orgId=1;
         for(int i=0;i<orgsMap.size();i++) {
                 String names[] = uniqueUsersMap.get(orgId).split(" ");
-                System.out.println(id + ";" + names[0] + ";" + names[1] + ";" + names[0].toLowerCase()+names[1].toLowerCase() + orgsMap.get(orgId) + ";12345678;" + names[0].toLowerCase()+names[1].toLowerCase() + ";" + orgId + ";;;2;");
+                //System.out.println(id + ";" + names[0] + ";" + names[1] + ";" + names[0].toLowerCase()+names[1].toLowerCase() + orgsMap.get(orgId) + ";12345678;" + names[0].toLowerCase()+names[1].toLowerCase() + ";" + orgId + ";;;2;");
                 orgId++;
                 id++;
         }
@@ -98,7 +98,7 @@ public class Test {
         id=orgsMap.size()+1;
         for(int i=0;i<customersMap.size();i++) {
             String names[] = uniqueUsersMap.get(orgId).split(" ");
-            System.out.println(id + ";" + names[0] + ";" + names[1] + ";" + names[0].toLowerCase()+names[1].toLowerCase() + customersMap.get(custId)+";12345678;"+names[0].toLowerCase()+names[1].toLowerCase()+";;"+custId+";;3;");
+            //System.out.println(id + ";" + names[0] + ";" + names[1] + ";" + names[0].toLowerCase()+names[1].toLowerCase() + customersMap.get(custId)+";12345678;"+names[0].toLowerCase()+names[1].toLowerCase()+";;"+custId+";;3;");
             orgId++;
             custId++;
             id++;
@@ -107,7 +107,7 @@ public class Test {
         id=orgsMap.size()+customersMap.size()+1;
         for(int i=0;i<vendorsMap.size();i++) {
             String names[] = uniqueUsersMap.get(orgId).split(" ");
-            System.out.println(id + ";" + names[0] + ";" + names[1] + ";" + names[0].toLowerCase()+names[1].toLowerCase() + vendorsMap.get(vendorId) + ";12345678;" + names[0].toLowerCase()+names[1].toLowerCase() + ";;;" + vendorId + ";4;");
+            //System.out.println(id + ";" + names[0] + ";" + names[1] + ";" + names[0].toLowerCase()+names[1].toLowerCase() + vendorsMap.get(vendorId) + ";12345678;" + names[0].toLowerCase()+names[1].toLowerCase() + ";;;" + vendorId + ";4;");
             vendorId++;
             orgId++;
             custId++;
@@ -120,7 +120,7 @@ public class Test {
                 vendorIdForVendorUser++;
             }
             String names[] = uniqueUsersMap.get(orgId).split(" ");
-            System.out.println(id + ";" + names[0] + ";" + names[1] + ";" + names[0].toLowerCase()+names[1].toLowerCase() + vendorsMap.get(vendorIdForVendorUser) + ";12345678;" + names[0].toLowerCase()+names[1].toLowerCase() + ";;;" + vendorIdForVendorUser + ";5;");
+            //System.out.println(id + ";" + names[0] + ";" + names[1] + ";" + names[0].toLowerCase()+names[1].toLowerCase() + vendorsMap.get(vendorIdForVendorUser) + ";12345678;" + names[0].toLowerCase()+names[1].toLowerCase() + ";;;" + vendorIdForVendorUser + ";5;");
             vendorId++;
             orgId++;
             custId++;
@@ -132,7 +132,7 @@ public class Test {
                 customerIdForQcUser++;
             }
             String names[] = uniqueUsersMap.get(orgId).split(" ");
-            System.out.println(id + ";" + names[0] + ";" + names[1] + ";" + names[0].toLowerCase() +names[1].toLowerCase()+ customersMap.get(customerIdForQcUser)+";12345678;"+names[0].toLowerCase()+names[1].toLowerCase()+";;"+customerIdForQcUser+";;6;");
+            //System.out.println(id + ";" + names[0] + ";" + names[1] + ";" + names[0].toLowerCase() +names[1].toLowerCase()+ customersMap.get(customerIdForQcUser)+";12345678;"+names[0].toLowerCase()+names[1].toLowerCase()+";;"+customerIdForQcUser+";;6;");
             vendorId++;
             orgId++;
             custId++;

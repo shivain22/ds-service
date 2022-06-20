@@ -18,6 +18,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.envers.Audited;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 
 /**
  * A AidasUser.
@@ -66,9 +68,11 @@ public class User extends AbstractAuditingEntity implements Serializable {
     @ManyToOne
     private Organisation organisation;
     @ManyToOne
+    @Field(type = FieldType.Nested)
     @JsonIgnoreProperties(value = { "organisation" }, allowSetters = true)
     private Customer customer;
     @ManyToOne
+    @Field(type = FieldType.Nested)
     private Vendor vendor;
     @NotNull
     @Column(nullable = true,columnDefinition = "integer default 1")
@@ -80,6 +84,7 @@ public class User extends AbstractAuditingEntity implements Serializable {
     @Column(name = "image_url", length = 256)
     private String imageUrl;
     @ManyToOne(fetch = FetchType.EAGER)
+    @Field(type = FieldType.Nested)
     private Authority authority;
 
     public void setAuthorities(Set<Authority> authorities) {
@@ -88,18 +93,22 @@ public class User extends AbstractAuditingEntity implements Serializable {
 
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
     @JsonIgnoreProperties(value = { "user" }, allowSetters = true)
+    @Field(type = FieldType.Nested)
     private Set<UserAuthorityMapping> userAuthorityMappings = new HashSet<>();
 
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
     @JsonIgnoreProperties(value = { "user" }, allowSetters = true)
+    @Field(type = FieldType.Nested)
     private Set<UserOrganisationMapping> userOrganisationMappings = new HashSet<>();
 
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
     @JsonIgnoreProperties(value = { "user" }, allowSetters = true)
+    @Field(type = FieldType.Nested)
     private Set<UserCustomerMapping> userCustomerMappings = new HashSet<>();
 
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
     @JsonIgnoreProperties(value = { "user" }, allowSetters = true)
+    @Field(type = FieldType.Nested)
     private Set<UserVendorMapping> userVendorMappings = new HashSet<>();
 
     private transient Set<Authority> authorities = new HashSet<>();

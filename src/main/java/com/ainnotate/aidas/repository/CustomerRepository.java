@@ -51,5 +51,10 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     @Query(value = "select * from customer where status=1 and organisation_id=?1",nativeQuery = true)
     List<Customer> findAllCustomer(Long organisationId);
 
+    @Query(value = "select * from customer where is_sample_data=1",nativeQuery = true)
+    List<Customer> getAllSampleCustomers();
+
+    @Query(value = "delete from organisation where is_sample_data=1",nativeQuery = true)
+    List<Customer> deleteAllSampleCustomers();
 
 }

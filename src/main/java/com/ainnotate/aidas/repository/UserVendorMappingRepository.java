@@ -1,6 +1,7 @@
 package com.ainnotate.aidas.repository;
 
 import com.ainnotate.aidas.domain.AppProperty;
+import com.ainnotate.aidas.domain.Organisation;
 import com.ainnotate.aidas.domain.UserAuthorityMapping;
 import com.ainnotate.aidas.domain.UserVendorMapping;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -37,4 +38,10 @@ public interface UserVendorMappingRepository extends JpaRepository<UserVendorMap
 
     @Query(value="select * from user_vendor_mapping where vendor_id=?1 and user_id=?2",nativeQuery = true)
     UserVendorMapping findByVendorIdAndUserId(Long vendorId, Long userId);
+
+    @Query(value = "select * from user_customer_mapping where is_sample_data=1",nativeQuery = true)
+    List<Organisation> getAllSampleUserVendorMappings();
+
+    @Query(value = "delete from user_vendor_mapping where is_sample_data=1",nativeQuery = true)
+    List<Organisation> deleteAllSampleUserVendorMappings();
 }

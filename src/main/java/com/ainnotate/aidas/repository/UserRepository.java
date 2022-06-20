@@ -212,4 +212,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query(value = "select count(*) from user where id>0 and status=1", nativeQuery = true)
     Long countAllForSuperAdmin();
 
+    @Query(value = "select * from user where is_sample_data=1",nativeQuery = true)
+    List<Organisation> getAllSampleUsers();
+
+    @Query(value = "delete from user where is_sample_data=1",nativeQuery = true)
+    List<Organisation> deleteAllSampleUsers();
+
 }

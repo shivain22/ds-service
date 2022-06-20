@@ -13,6 +13,8 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.envers.Audited;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 
 /**
  * A AidasProject.
@@ -136,10 +138,12 @@ public class Project extends AbstractAuditingEntity  implements Serializable {
     @ManyToOne(optional = false)
     @NotNull
     @JsonIgnoreProperties(value = { "organisation" }, allowSetters = true)
+    @Field(type = FieldType.Nested)
     private Customer customer;
 
     @OneToMany(mappedBy = "project",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
     @JsonIgnoreProperties(value = { "project" }, allowSetters = true)
+    @Field(type=FieldType.Nested)
     private Set<ProjectProperty> projectProperties=new HashSet<>();
 
     @Column

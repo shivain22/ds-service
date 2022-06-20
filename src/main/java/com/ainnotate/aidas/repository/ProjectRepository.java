@@ -68,4 +68,10 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     @Query(value = "select count(*) from project where id>0 and status=1", nativeQuery = true)
     Long countAllProjectsForSuperAdmin();
 
+    @Query(value = "select * from project where is_sample_data=1",nativeQuery = true)
+    List<Organisation> getAllSampleProjects();
+
+    @Query(value = "delete from project where is_sample_data=1",nativeQuery = true)
+    List<Organisation> deleteAllSampleProjects();
+
 }

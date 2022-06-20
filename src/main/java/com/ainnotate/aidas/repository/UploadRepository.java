@@ -1,5 +1,6 @@
 package com.ainnotate.aidas.repository;
 
+import com.ainnotate.aidas.domain.Organisation;
 import com.ainnotate.aidas.domain.Upload;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -128,10 +129,10 @@ public interface UploadRepository extends JpaRepository<Upload, Long> {
     @Query(value="select * from upload au, user_vendor_mapping_object_mapping auavmaom,object ao, project ap,user_vendor_mapping auavm where au.status=2 and au.user_vendor_mapping_object_mapping_id=auavmaom.id and auavmaom.object_id=ao.id and ao.project_id=ap.id and ap.id=?2 and auavmaom.user_vendor_mapping_id=auavm.id and auavm.user_id=?1",nativeQuery = true)
     List<Upload> findAllByUserAndProjectAllForMetadata(Long userId, Long projectId);
 
-    @Query(value="select * from upload where qc_done_by is null and qc_status=0 and qc_end_date is null and qc_start_date is null limit 1",nativeQuery = true)
+    @Query(value="select * from upload where upload.qc_done_by_id is null and qc_status=0 and qc_end_date is null and qc_start_date is null limit 1",nativeQuery = true)
     Upload findTopByQcNotDoneYet();
 
-    @Query(value="select * from upload where qc_done_by is not null and qc_end_date is null and qc_start_date is not null and qc_status=0 and TIMEstampDIFF(SECOND,qc_start_date,now())>(select value from app_property where name='qc_clean_up_time')",nativeQuery = true)
+    @Query(value="select * from upload where upload.qc_done_by_id is not null and qc_end_date is null and qc_start_date is not null and qc_status=0 and TIMEstampDIFF(SECOND,qc_start_date,now())>(select value from app_property where name='qc_clean_up_time')",nativeQuery = true)
     List<Upload> findUploadsHeldByQcForMoreThan10Mins();
 
     @Query(value = "select count(*) from upload where id>0 and status=1", nativeQuery = true)
@@ -139,5 +140,11 @@ public interface UploadRepository extends JpaRepository<Upload, Long> {
 
     @Query(value = "select count(*) from upload where id>0 and approval_status=?1 and status=1", nativeQuery = true)
     Long countAllUploadsForSuperAdmin(Integer approvalStatus);
+
+    @Query(value = "select * from upload where is_sample_data=1 order by id asc",nativeQuery = true)
+    List<Organisation> getAllSampleUploads();
+
+    @Query(value = "delete from upload where is_sample_data=1",nativeQuery = true)
+    List<Organisation> deleteAllSampleUploads();
 
 }
