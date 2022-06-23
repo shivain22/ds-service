@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -14,6 +15,7 @@ import java.util.List;
  */
 @SuppressWarnings("unused")
 @Repository
+@Transactional
 public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
 
@@ -54,7 +56,8 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     @Query(value = "select * from customer where is_sample_data=1",nativeQuery = true)
     List<Customer> getAllSampleCustomers();
 
-    @Query(value = "delete from organisation where is_sample_data=1",nativeQuery = true)
-    List<Customer> deleteAllSampleCustomers();
+    @Modifying
+    @Query(value = "delete from customer where is_sample_data=1",nativeQuery = true)
+    void deleteAllSampleCustomers();
 
 }

@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -15,6 +16,7 @@ import java.util.List;
  */
 @SuppressWarnings("unused")
 @Repository
+@Transactional
 public interface ObjectRepository extends JpaRepository<Object, Long> {
 
     @Query(value = "select * from object o, project p, customer c where o.project_id=p.id and p.customer_id=c.id and c.organisation_id=?1 and o.status=1 and o.is_dummy=0"
@@ -240,8 +242,9 @@ public interface ObjectRepository extends JpaRepository<Object, Long> {
     Long countAllObjectsForSuperAdmin();
 
     @Query(value = "select * from object where is_sample_data=1",nativeQuery = true)
-    List<Organisation> getAllSampleObjects();
+    List<Object> getAllSampleObjects();
 
+    @Modifying
     @Query(value = "delete from object where is_sample_data=1",nativeQuery = true)
-    List<Organisation> deleteAllSampleObjects();
+    void deleteAllSampleObjects();
 }

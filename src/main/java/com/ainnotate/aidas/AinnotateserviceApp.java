@@ -73,7 +73,7 @@ public class AinnotateserviceApp {
             if (userRepository.findByLogin(user.getUsername()).isPresent()) {
 
                 User myUser = userRepository.findByLogin(user.getUsername()).get();
-                if (!myUser.getKeycloakId().equals(user.getId())) {
+                if (myUser.getKeycloakId()!=null && !myUser.getKeycloakId().equals(user.getId())) {
                     myUser.setKeycloakId(user.getId());
                     userRepository.save(myUser);
                 }
@@ -96,8 +96,10 @@ public class AinnotateserviceApp {
                     userAttrs.put("id",userAttrVals1);
                     user.setAttributes(userAttrs);
                 }
-                UserResource userResource = usersRessource.get(myUser.getKeycloakId());
-                userResource.update(user);
+                if(myUser.getKeycloakId()!=null) {
+                    UserResource userResource = usersRessource.get(myUser.getKeycloakId());
+                    userResource.update(user);
+                }
             }
         }
         Collection<String> activeProfiles = Arrays.asList(env.getActiveProfiles());

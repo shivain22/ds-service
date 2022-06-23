@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,6 +15,7 @@ import java.util.Optional;
  */
 @SuppressWarnings("unused")
 @Repository
+@Transactional
 public interface ProjectRepository extends JpaRepository<Project, Long> {
 
     @Query(value="select * from project p , customer c where p.customer_id=c.id and c.organisation_id=?1 and status=1",nativeQuery = true)
@@ -69,9 +71,10 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     Long countAllProjectsForSuperAdmin();
 
     @Query(value = "select * from project where is_sample_data=1",nativeQuery = true)
-    List<Organisation> getAllSampleProjects();
+    List<Project> getAllSampleProjects();
 
+    @Modifying
     @Query(value = "delete from project where is_sample_data=1",nativeQuery = true)
-    List<Organisation> deleteAllSampleProjects();
+    void deleteAllSampleProjects();
 
 }

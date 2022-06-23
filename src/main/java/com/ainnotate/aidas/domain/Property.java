@@ -67,6 +67,8 @@ public class Property extends AbstractAuditingEntity  implements Serializable {
     @ManyToOne
     private Customer customer;
 
+    @Column(name="passed_from_app",columnDefinition = "integer default 0")
+    private Integer passedFromApp;
 
 
     @Column(name="add_to_metadata")

@@ -34,6 +34,7 @@ public interface OrganisationRepository extends JpaRepository<Organisation, Long
     @Query(value = "select * from organisation where is_sample_data=1 order by id asc",nativeQuery = true)
     List<Organisation> getAllSampleOrganisations();
 
+    @Modifying
     @Query(value = "delete from organisation where is_sample_data=1",nativeQuery = true)
-    List<Organisation> deleteAllSampleOrganisations();
+    void deleteAllSampleOrganisations();
 }

@@ -873,21 +873,16 @@ public class UserResource {
         log.debug("REST request to get a page of AidasQCUsers");
         User loggedInUser = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         Authority authority = authorityRepository.findByName(AidasConstants.QC_USER);
-        //List<ProjectQcDTO> projectQcDTOS = new LinkedList<>();
         ProjectQcDTO projectQcDTO = new ProjectQcDTO();
         Project project= projectRepository.getById(projectId);
-        //if(loggedInUser.getAuthority().getName().equals(AidasConstants.ADMIN)){
-            //List<Customer> customers = customerRepository.findAllCustomer();
-            //for(Customer c:customers){
-                projectQcDTO = new ProjectQcDTO();
-                projectQcDTO.setProjectId(projectId);
-                projectQcDTO.setCustomerId(project.getCustomer().getId());
-                projectQcDTO.setName(project.getCustomer().getName());
-                List<IUserDTO> userDTOs = userRepository.findAllByQcUsersByCustomerAndProject(project.getCustomer().getId(),projectId);
+        projectQcDTO = new ProjectQcDTO();
+        projectQcDTO.setProjectId(projectId);
+        projectQcDTO.setCustomerId(project.getCustomer().getId());
+        projectQcDTO.setName(project.getCustomer().getName());
+        List<IUserDTO> userDTOs = userRepository.findAllByQcUsersByCustomerAndProject(project.getCustomer().getId(),projectId);
         List<UserDTO> list = new LinkedList<>();
         projectQcDTO.setQcUsers1(list);
                 if(userDTOs.size()==0){
-
                     List<IUserDTO> userDTOsNew = userRepository.findAllByQcUsersByCustomerAndProject1(project.getCustomer().getId(),projectId);
                     for(int i=0;i<project.getQcLevels();i++){
                         for(int j=0;j<userDTOsNew.size();j++){
@@ -917,51 +912,6 @@ public class UserResource {
                         projectQcDTO.getQcUsers1().add(udto);
                     }
                 }
-                /*if((userDTOs.size()*project.getQcLevels())==userDTOs.size()){
-                    projectQcDTO.setQcUsers1(userDTOs);
-                }else{
-                   *//* List<IUserDTO> userDTOsNew = userRepository.findAllByQcUsersByCustomerAndProject1(project.getCustomer().getId(),projectId);
-                    //New users added
-                    if(userDTOsNew.size()==0){
-
-                    }else{
-                        //New level added
-                    }*//*
-
-                    for(int i=0;i<project.getQcLevels();i++){
-                        if(projectQcDTO.getQcUsers1()!=null) {
-                            projectQcDTO.getQcUsers1().addAll(userDTOs);
-                        }else{
-                            List<IUserDTO> list = new ArrayList<>();
-                            projectQcDTO.setQcUsers1(list);
-                            projectQcDTO.getQcUsers1().addAll(userDTOs);
-                        }
-                    }
-                }*/
-                //projectQcDTOS.add(projectQcDTO);
-            //}
-        //}
-        //if(loggedInUser.getAuthority().getName().equals(AidasConstants.ORG_ADMIN)){
-            //List<Customer> customers = customerRepository.findAllCustomer(loggedInUser.getOrganisation().getId());
-            //for(Customer c:customers){
-                //projectQcDTO = new ProjectQcDTO();
-                //projectQcDTO.setProjectId(projectId);
-                //projectQcDTO.setCustomerId(c.getId());
-                //projectQcDTO.setName(c.getName());
-                //List<IUserDTO> userDTOs = userRepository.findAllByQcUsersByCustomerAndProject(c.getId(),projectId);
-                //projectQcDTO.setQcUsers(userDTOs);
-                //projectQcDTOS.add(projectQcDTO);
-            //}
-        //}
-        /*if(loggedInUser.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN)){
-            projectQcDTO = new ProjectQcDTO();
-            projectQcDTO.setProjectId(projectId);
-            projectQcDTO.setCustomerId(loggedInUser.getCustomer().getId());
-            projectQcDTO.setName(loggedInUser.getCustomer().getName());
-            List<IUserDTO> userDTOs = userRepository.findAllByQcUsersByCustomerAndProject(loggedInUser.getCustomer().getId(),projectId);
-            projectQcDTO.setQcUsers(userDTOs);
-            projectQcDTOS.add(projectQcDTO);
-        }*/
         return ResponseEntity.ok().body(projectQcDTO);
     }
 

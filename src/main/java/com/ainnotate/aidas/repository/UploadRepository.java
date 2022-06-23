@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 
 import java.util.List;
@@ -15,6 +16,7 @@ import java.util.List;
  */
 @SuppressWarnings("unused")
 @Repository
+@Transactional
 public interface UploadRepository extends JpaRepository<Upload, Long> {
 
     @Query(value = "select count(*) from upload au, object ao,user_vendor_mapping_object_mapping auavmaom where au.user_vendor_mapping_object_mapping_id=auavmaom.id and auavmaom.object_id=ao.id and ao.id=?1 and ao.status=1 and ao.is_dummy=0 ",nativeQuery = true)
@@ -142,9 +144,10 @@ public interface UploadRepository extends JpaRepository<Upload, Long> {
     Long countAllUploadsForSuperAdmin(Integer approvalStatus);
 
     @Query(value = "select * from upload where is_sample_data=1 order by id asc",nativeQuery = true)
-    List<Organisation> getAllSampleUploads();
+    List<Upload> getAllSampleUploads();
 
+    @Modifying
     @Query(value = "delete from upload where is_sample_data=1",nativeQuery = true)
-    List<Organisation> deleteAllSampleUploads();
+    void deleteAllSampleUploads();
 
 }

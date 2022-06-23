@@ -7,6 +7,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -15,6 +17,7 @@ import java.util.Optional;
  */
 @SuppressWarnings("unused")
 @Repository
+@Transactional
 public interface UserRepository extends JpaRepository<User, Long> {
 
 
@@ -131,7 +134,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
         "and ucm.customer_id=?1\n order by qc_level asc" , nativeQuery = true)
     List<IUserDTO>findAllByQcUsersByCustomerAndProject(Long customerId,Long projectId);
 
-    @Query(value = "select * from (select \n" +
+    @Query(value = "select a.userId as userId, a.firstName as firstName, a.lastName as lastName, a.userVendorMappingId as userVendorMappingId, a.userCustomerMappingId userCustomerMappingId, a.qcProjectMappingId as qcProjectMappingId, a.qcLevel as qcLevel from (select \n" +
         "        u.id as userId, \n" +
         "        u.first_name as firstName, \n" +
         "        u.last_name lastName, \n" +
@@ -213,9 +216,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Long countAllForSuperAdmin();
 
     @Query(value = "select * from user where is_sample_data=1",nativeQuery = true)
-    List<Organisation> getAllSampleUsers();
+    List<User> getAllSampleUsers();
 
+    @Modifying
     @Query(value = "delete from user where is_sample_data=1",nativeQuery = true)
-    List<Organisation> deleteAllSampleUsers();
+    void deleteAllSampleUsers();
 
 }

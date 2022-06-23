@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -13,6 +14,7 @@ import java.util.List;
  */
 @SuppressWarnings("unused")
 @Repository
+@Transactional
 public interface ObjectPropertyRepository extends JpaRepository<ObjectProperty, Long> {
 
     @Query(value = "select * from object_property aop where aop.object_id>?1",nativeQuery = true)
@@ -35,4 +37,8 @@ public interface ObjectPropertyRepository extends JpaRepository<ObjectProperty, 
 
     @Query(value = "select count(*) from object_property op where op.object_id=?1 and op.optional=?2",nativeQuery = true)
     Long countObjectProperties(Long objectId, Integer optional);
+
+    @Modifying
+    @Query(value = "delete from object_property where is_sample_data=1",nativeQuery = true)
+    void deleteAllSampleObjectProperty();
 }

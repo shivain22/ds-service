@@ -102,6 +102,19 @@ public class Project extends AbstractAuditingEntity  implements Serializable {
     @Column(name="audio_type")
     @JsonProperty
     private String audioType;
+    @ManyToOne(optional = false)
+    @NotNull
+    @JsonIgnoreProperties(value = { "organisation" }, allowSetters = true)
+    @Field(type = FieldType.Nested,store = false,storeNullValue = false)
+    private Customer customer;
+    @OneToMany(mappedBy = "project",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+    @JsonIgnoreProperties(value = { "project" }, allowSetters = true)
+    @Field(type=FieldType.Nested,store = false,storeNullValue = false)
+    private Set<ProjectProperty> projectProperties=new HashSet<>();
+    @Column
+    private Integer numOfUploadsReqd;
+    @Column(name="buffer_percent")
+    private Integer bufferPercent;
 
     public String getImageType() {
         return imageType;
@@ -134,23 +147,6 @@ public class Project extends AbstractAuditingEntity  implements Serializable {
     public void setExternalDatasetStatus(Integer externalDatasetStatus) {
         this.externalDatasetStatus = externalDatasetStatus;
     }
-
-    @ManyToOne(optional = false)
-    @NotNull
-    @JsonIgnoreProperties(value = { "organisation" }, allowSetters = true)
-    @Field(type = FieldType.Nested)
-    private Customer customer;
-
-    @OneToMany(mappedBy = "project",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
-    @JsonIgnoreProperties(value = { "project" }, allowSetters = true)
-    @Field(type=FieldType.Nested)
-    private Set<ProjectProperty> projectProperties=new HashSet<>();
-
-    @Column
-    private Integer numOfUploadsReqd;
-
-    @Column(name="buffer_percent")
-    private Integer bufferPercent;
 
     public Integer getNumOfUploadsReqd() {
         return numOfUploadsReqd;

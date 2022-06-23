@@ -5,8 +5,10 @@ import com.ainnotate.aidas.domain.Organisation;
 import com.ainnotate.aidas.domain.UserAuthorityMapping;
 import com.ainnotate.aidas.domain.UserVendorMapping;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -14,6 +16,7 @@ import java.util.List;
  * Spring Data JPA repository for the {@link AppProperty} entity.
  */
 @Repository
+@Transactional
 public interface UserVendorMappingRepository extends JpaRepository<UserVendorMapping, Long> {
 
     @Query(value = "select uvm.* " +
@@ -39,9 +42,10 @@ public interface UserVendorMappingRepository extends JpaRepository<UserVendorMap
     @Query(value="select * from user_vendor_mapping where vendor_id=?1 and user_id=?2",nativeQuery = true)
     UserVendorMapping findByVendorIdAndUserId(Long vendorId, Long userId);
 
-    @Query(value = "select * from user_customer_mapping where is_sample_data=1",nativeQuery = true)
-    List<Organisation> getAllSampleUserVendorMappings();
+    @Query(value = "select * from user_vendor_mapping uvm, user_authority_mapping uam where uvm.user_id=uam.user_id and uam.authority_id=5 and uvm.is_sample_data=1 ",nativeQuery = true)
+    List<UserVendorMapping> getAllSampleUserVendorMappings();
 
+    @Modifying
     @Query(value = "delete from user_vendor_mapping where is_sample_data=1",nativeQuery = true)
-    List<Organisation> deleteAllSampleUserVendorMappings();
+    void deleteAllSampleUserVendorMappings();
 }

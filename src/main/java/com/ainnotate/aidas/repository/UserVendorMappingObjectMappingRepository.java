@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -14,6 +15,7 @@ import java.util.List;
  */
 @SuppressWarnings("unused")
 @Repository
+@Transactional
 public interface UserVendorMappingObjectMappingRepository extends JpaRepository<UserVendorMappingObjectMapping, Long> {
 
     @Query(value = "select * from user_vendor_mapping_object_mapping uvmom,user_vendor_mapping uvm where uvmom.user_vendor_mapping_id=uvm.id and uvm.user_id=?1 and object_id=?2", nativeQuery = true)
@@ -36,8 +38,9 @@ public interface UserVendorMappingObjectMappingRepository extends JpaRepository<
     List<UserVendorMappingObjectMapping> findAllByAidasVendor_Id(Long aidasVendorId);
 
     @Query(value = "select * from user_vendor_mapping_object_mapping where is_sample_data=1 order by id asc",nativeQuery = true)
-    List<Organisation> getAllSampleUserVendorMappingObjectMappings();
+    List<UserVendorMappingObjectMapping> getAllSampleUserVendorMappingObjectMappings();
 
+    @Modifying
     @Query(value = "delete from user_vendor_mapping_object_mapping where is_sample_data=1",nativeQuery = true)
-    List<Organisation> deleteAllSampleUserVendorMappingObjectMappings();
+    void deleteAllSampleUserVendorMappingObjectMappings();
 }

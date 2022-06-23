@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -14,6 +15,7 @@ import java.util.List;
  */
 @SuppressWarnings("unused")
 @Repository
+@Transactional
 public interface VendorRepository extends JpaRepository<Vendor, Long> {
 
     @Query(value = "select * from vendor where id>0 and status=1",countQuery = "select count(*) from vendor where id>0 and status=1", nativeQuery = true)
@@ -37,7 +39,8 @@ public interface VendorRepository extends JpaRepository<Vendor, Long> {
     @Query(value = "select * from vendor where is_sample_data=1",nativeQuery = true)
     List<Vendor> getAllSampleVendors();
 
+    @Modifying
     @Query(value = "delete from vendor where is_sample_data=1",nativeQuery = true)
-    List<Vendor> deleteAllSampleVendors();
+    void deleteAllSampleVendors();
 
 }

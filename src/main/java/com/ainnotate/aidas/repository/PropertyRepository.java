@@ -1,6 +1,8 @@
 package com.ainnotate.aidas.repository;
 
 import com.ainnotate.aidas.domain.Organisation;
+import com.ainnotate.aidas.domain.Project;
+import com.ainnotate.aidas.domain.ProjectProperty;
 import com.ainnotate.aidas.domain.Property;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,9 +34,10 @@ public interface PropertyRepository extends JpaRepository<Property, Long> {
     @Query(value="insert into property (is_sample_data, status, add_to_metadata, default_prop, description, name, optional, property_type, system_property, value, customer_id)  (select is_sample_data, status, add_to_metadata, default_prop, description, name, optional, property_type, system_property, value,?1 from property where user_id=-1 )",nativeQuery = true)
     void addNewProperty(Long customerId);
 
-    @Query(value = "select * from project where is_sample_data=1",nativeQuery = true)
-    List<Organisation> getAllSampleProjects();
+    @Query(value = "select * from property where is_sample_data=1",nativeQuery = true)
+    List<Property> getAllSampleProjects();
 
+    @Modifying
     @Query(value = "delete from project where is_sample_data=1",nativeQuery = true)
-    List<Organisation> deleteAllSampleOrganisation();
+    void deleteAllSampleOrganisation();
 }

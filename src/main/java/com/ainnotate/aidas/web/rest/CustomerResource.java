@@ -100,6 +100,7 @@ public class CustomerResource {
                 p.setSystemProperty(property.getSystemProperty());
                 p.setAddToMetadata(property.getAddToMetadata());
                 p.setStatus(property.getStatus());
+                p.setPropertyType(property.getPropertyType());
                 p.setCustomer(customer);
                 propertyRepository.save(p);
             }
