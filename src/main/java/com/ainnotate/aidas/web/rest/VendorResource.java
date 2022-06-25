@@ -1,5 +1,6 @@
 package com.ainnotate.aidas.web.rest;
 
+import com.ainnotate.aidas.domain.User;
 import com.ainnotate.aidas.domain.Vendor;
 import com.ainnotate.aidas.dto.IUserDTO;
 import com.ainnotate.aidas.dto.UserDTO;
@@ -11,8 +12,11 @@ import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
+import java.util.stream.Collectors;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+
+import liquibase.pro.packaged.V;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -204,33 +208,9 @@ public class VendorResource {
     public ResponseEntity<List<VendorUserDTO>> getAllVendorsWithUsers(@PathVariable(value = "projectId", required = false) final Long projectId) {
         log.debug("REST request to get a page of AidasVendors");
         List<VendorUserDTO> vendorUserDtos = new ArrayList<>();
-        List<IUserDTO> vendorUsers = userRepository.findAllUsersOfVendorWithProject(projectId);
-        Map<Long, List<UserDTO>> map = new HashMap<>();
-        VendorUserDTO vendorUserDTO = new VendorUserDTO();
-        List<UserDTO> userDTOs = new ArrayList<>();
-        for(IUserDTO iu:vendorUsers) {
-                if(map.get(iu.getVendorId())==null){
-                    map.put(iu.getVendorId(),userDTOs);
-                    if(userDTOs.size()>0) {
-                        vendorUserDTO.setUserDTOs(userDTOs);
-                        vendorUserDtos.add(vendorUserDTO);
-                    }
-                    vendorUserDTO = new VendorUserDTO();
-                    vendorUserDTO.setVendorId(iu.getVendorId());
-                    vendorUserDTO.setName(iu.getVendorName());
-                    userDTOs = new ArrayList<>();
-                }
-                UserDTO u = new UserDTO();
-                u.setLastName(iu.getLastName());
-                u.setFirstName(iu.getFirstName());
-                u.setUserVendorMappingId(iu.getUserVendorMappingId());
-                u.setUserVendorMappingObjectMappingId(iu.getUserVendorMappingObjectMappingId());
-                u.setUserId(iu.getUserId());
-                u.setStatus(iu.getStatus());
-                userDTOs.add(u);
-            }
-            vendorUserDTO.setUserDTOs(userDTOs);
-            vendorUserDtos.add(vendorUserDTO);
+        List<UserDTO> vendorUsers = userRepository.findAllUsersOfVendorWithProject(projectId);
+        Map<VendorUserDTO, List<UserDTO>> userPerVendor = vendorUsers.stream().collect(Collectors.groupingBy(item->{return new VendorUserDTO(item.getVendorId(),item.getVendorName());}));
+        userPerVendor.forEach((k, v) -> {k.setUserDTOs(v); vendorUserDtos.add(k);});
         return ResponseEntity.ok().body(vendorUserDtos);
     }
 

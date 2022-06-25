@@ -1,5 +1,7 @@
 package com.ainnotate.aidas.dto;
 
+import java.math.BigInteger;
+
 public class UserDTO implements  IUserDTO {
 
     private Long userId;
@@ -13,6 +15,20 @@ public class UserDTO implements  IUserDTO {
     private Long userVendorMappingObjectMappingId;
     private Long vendorId;
     private String vendorName;
+
+    public UserDTO() {
+    }
+
+    public UserDTO( String firstName, String lastName,String login, String vendorName, Long userId, Long userVendorMappingId, Long vendorId, Integer status) {
+        this.userId = userId;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.login = login;
+        this.userVendorMappingId = userVendorMappingId;
+        this.status = status;
+        this.vendorId = vendorId;
+        this.vendorName = vendorName;
+    }
 
     @Override
     public Long getUserId() {

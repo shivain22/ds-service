@@ -32,42 +32,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query(value="select u.id as userId, u.first_name as firstName, u.last_name as lastName, uvm.id as userVendorMappingId, u.login as login from user u, user_authority_mapping uam, user_vendor_mapping uvm where uam.user_id=u.id and uvm.user_id=u.id and uvm.vendor_id=?1 and uam.authority_id=5",nativeQuery = true)
     List<IUserDTO> findAllUsersOfVendor(Long vendorId);
 
-    @Query(value="select a.userId as userId,\n" +
-        "a.firstName as firstName,\n" +
-        "a.lastName as lastName,\n" +
-        "a.userVendorMappingId as userVendorMappingId,\n" +
-        "a.login as login,\n" +
-        "a.vendorId as vendorId,\n" +
-        "a.vendorName as vendorName,\n" +
-        "(CASE WHEN (a.object_count-a.enabledCount) = 0 THEN 1\n" +
-        "\t WHEN (a.object_count-a.enabledCount) > 0 THEN 0 END) as status\n" +
-        " from (\n" +
-        "select \n" +
-        "u.id as userId,\n" +
-        "u.first_name as firstName,\n" +
-        "u.last_name as lastName,\n" +
-        "u.login as login,\n" +
-        "count(o.id) as object_count,\n" +
-        "uvmom.user_vendor_mapping_id as userVendorMappingId, \n" +
-        "count(CASE WHEN uvmom.status = 0 THEN uvmom.status END) as disabledCount,\n" +
-        "count(CASE WHEN uvmom.status = 1 THEN uvmom.status END) as enabledCount,\n" +
-        "v.id as vendorId,\n" +
-        "v.name as vendorName\n" +
-        "from    \n" +
-        "user_vendor_mapping_object_mapping uvmom,\n" +
-        "user_vendor_mapping uvm,\n" +
-        "object o,\n" +
-        "vendor v,\n" +
-        "user u\n" +
-        "where \n" +
-        "uvmom.user_vendor_mapping_id=uvm.id and\n" +
-        "uvm.user_id=u.id and\n" +
-        "uvmom.object_id=o.id and\n" +
-        "uvm.vendor_id=v.id and\n" +
-        "o.project_id=?1\n" +
-        "group by uvmom.user_vendor_mapping_id, uvmom.status,o.project_id\n" +
-        ")a",nativeQuery = true)
-    List<IUserDTO> findAllUsersOfVendorWithProject(Long projectId);
+    @Query(nativeQuery = true)
+    List<UserDTO> findAllUsersOfVendorWithProject(Long projectId);
 
     Optional<User> findOneByLogin(String login);
 

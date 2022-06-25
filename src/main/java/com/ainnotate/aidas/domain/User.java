@@ -1,9 +1,6 @@
 package com.ainnotate.aidas.domain;
 
-import com.ainnotate.aidas.dto.UserAuthorityMappingDTO;
-import com.ainnotate.aidas.dto.UserCustomerMappingDTO;
-import com.ainnotate.aidas.dto.UserOrganisationMappingDTO;
-import com.ainnotate.aidas.dto.UserVendorMappingDTO;
+import com.ainnotate.aidas.dto.*;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.io.Serializable;
 import java.util.HashSet;
@@ -24,6 +21,34 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 /**
  * A AidasUser.
  */
+
+@NamedNativeQuery(name = "User.findAllUsersOfVendorWithProject",
+    query = "select " +
+        "a.firstName as firstName,   " +
+        "a.lastName as lastName,   " +
+        "a.login as login,   " +
+        "a.vendorName as vendorName,   " +
+        "a.userId as userId,   " +
+        "a.userVendorMappingId as userVendorMappingId,   " +
+        "a.vendorId as vendorId,   " +
+        "(CASE WHEN (a.object_count-a.enabledCount) = 0 THEN 1   WHEN (a.object_count-a.enabledCount) > 0 THEN 0 END) as status    " +
+        "from (   select    u.id as userId,   u.first_name as firstName,   u.last_name as lastName,   u.login as login,   count(o.id) as object_count,   uvmom.user_vendor_mapping_id as userVendorMappingId,    count(CASE WHEN uvmom.status = 0 THEN uvmom.status END) as disabledCount,   count(CASE WHEN uvmom.status = 1 THEN uvmom.status END) as enabledCount,   v.id as vendorId,   v.name as vendorName   from       user_vendor_mapping_object_mapping uvmom,   user_vendor_mapping uvm,   object o,   vendor v,   user u   where    uvmom.user_vendor_mapping_id=uvm.id and   uvm.user_id=u.id and   uvmom.object_id=o.id and   uvm.vendor_id=v.id and   o.project_id=?1   group by uvmom.user_vendor_mapping_id, uvmom.status,o.project_id   )a",
+    resultSetMapping = "Mapping.UserDTO")
+@SqlResultSetMapping(name = "Mapping.UserDTO",
+    classes = @ConstructorResult(targetClass = UserDTO.class,
+        columns = {
+            @ColumnResult(name = "firstName",type = String.class),
+            @ColumnResult(name = "lastName",type = String.class),
+            @ColumnResult(name = "login",type = String.class),
+            @ColumnResult(name = "vendorName",type = String.class),
+            @ColumnResult(name = "userId",type = Long.class),
+            @ColumnResult(name = "userVendorMappingId",type = Long.class),
+            @ColumnResult(name = "vendorId",type = Long.class),
+            @ColumnResult(name = "status",type = Integer.class)
+
+    }))
+
+
 @Entity
 @Table(name = "user")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
