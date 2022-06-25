@@ -207,6 +207,7 @@ public class UserResource {
                 user.setCustomer(c);
             }
         }
+        UserVendorMapping userVendorMapping = null;
         if(user.getVendorIds()!=null && user.getVendorIds().size()>0){
             Vendor v = null;
             for(UserVendorMappingDTO vid: user.getVendorIds()){
@@ -215,11 +216,13 @@ public class UserResource {
                 uvm.setVendor(v);
                 uvm.setUser(user);
                 user.getUserVendorMappings().add(uvm);
+                userVendorMapping = uvm;
             }
             if(v!=null){
-                user.getVendors().add(v);
+                user.setVendor(v);
             }
         }
+
         if(user.getAuthorityIds()!=null && user.getAuthorityIds().size()>0){
             Authority a =null;
             for(UserAuthorityMappingDTO aid: user.getAuthorityIds()){
@@ -233,10 +236,24 @@ public class UserResource {
                 user.setAuthority(a);
             }
         }
+
         addUserToKeyCloak(user);
         user.setDeleted(0);
         User result = userRepository.save(user);
         updateUserToKeyCloak(result);
+        List<UserVendorMappingObjectMapping> uvmoms = new ArrayList<>();
+        if(user.getAuthority().getName().equals(AidasConstants.VENDOR_USER)){
+            if(userVendorMapping!=null){
+                for(Object o:objectRepository.findAll()){
+                    UserVendorMappingObjectMapping uvmom = new UserVendorMappingObjectMapping();
+                    uvmom.setUserVendorMapping(userVendorMapping);
+                    uvmom.setObject(o);
+                    uvmom.setStatus(0);
+                    uvmoms.add(uvmom);
+                }
+                userVendorMappingObjectMappingRepository.saveAll(uvmoms);
+            }
+        }
         return ResponseEntity
             .created(new URI("/api/aidas-users/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))

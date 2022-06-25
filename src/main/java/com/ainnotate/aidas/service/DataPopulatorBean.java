@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.sql.*;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -278,6 +279,7 @@ public class DataPopulatorBean implements Runnable {
         deleteAllSampleUploads();
         deleteAllSampleUserVendorMappingObjectMapping();
         deleteAllSampleUserVendorMapping();
+        deleteAllSampleCustomerProperties();
         deleteAllSampleObjectProperties();
         deleteAllSampleObjects();
         deleteAllSampleProjectProperties();
@@ -343,6 +345,9 @@ public class DataPopulatorBean implements Runnable {
     private void deleteAllSampleObjectProperties(){
         objectPropertyRepository.deleteAllSampleObjectProperty();
     }
+    private void deleteAllSampleCustomerProperties(){
+        propertyRepository.deleteAllSampleProperties();
+    }
     List<Organisation> organisations=new LinkedList<>();
     List<Customer> customers = new LinkedList<>();
     List<Vendor> vendors = new ArrayList<>();
@@ -372,19 +377,17 @@ public class DataPopulatorBean implements Runnable {
         properties = new LinkedList<>();
     }
     public void addSampleOrganisations(List<String[]> data){
+        String query="insert into organisation(name,description,status,is_sample_data) values ";
+        String values = "";
         for(String[] d:data ){
-            Organisation o = new Organisation();
-            o.setName(d[0]);
-            o.setDescription(d[1]);
-            o.setStatus(1);
-            o.setSampleData(1);
-            organisations.add(o);
+            values+="('"+d[0]+"','"+d[1]+"',1,1),";
         }
-        organisationRepository.saveAll(organisations);
-        organisationSearchRepository.saveAll(organisations);
+        batchInsert(query+values.substring(0,values.length()-1));
         organisations = organisationRepository.getAllSampleOrganisations();
     }
     private void addSampleCustomers(List<String[]>data){
+        String query="insert into customer(name,description,organisation_id,status,is_sample_data) values ";
+        String values = "";
         int i=0;
         int oid=0;
         for(String[] d:data ){
@@ -392,20 +395,17 @@ public class DataPopulatorBean implements Runnable {
                 if(i>0)
                     oid++;
             }
-            Customer c = new Customer();
-            c.setName(d[0]);
-            c.setDescription(d[1]);
-            c.setStatus(1);
-            c.setSampleData(1);
-            c.setOrganisation(organisations.get(oid));
-            customers.add(c);
+            values+="('"+d[0]+"','"+d[1]+"',"+organisations.get(oid).getId()+",1,1),";
             i++;
         }
-        customerRepository.saveAll(customers);
-        customerSearchRepository.saveAll(customers);
+        batchInsert(query+values.substring(0,values.length()-1));
         customers = customerRepository.getAllSampleCustomers();
+        properties = propertyRepository.findAllDefaultProps();
+        addSamplePropertiesForCustomer();
     }
     private void addSampleVendors(List<String[]> data){
+        String query="insert into vendor(name,description,status,is_sample_data) values ";
+        String values = "";
         for(String[] d:data ){
             Vendor v = new Vendor();
             v.setName(d[0]);
@@ -413,13 +413,15 @@ public class DataPopulatorBean implements Runnable {
             v.setStatus(1);
             v.setSampleData(1);
             vendors.add(v);
+            values+="('"+d[0]+"','"+d[1]+"',1,1),";
         }
-        vendorRepository.saveAll(vendors);
-        vendorSearchRepository.saveAll(vendors);
+        batchInsert(query+values.substring(0,values.length()-1));
         vendors = vendorRepository.getAllSampleVendors();
     }
     private void addSampleUsers(List<String[]> data){
         System.out.println("start batch insert users");
+        String query="insert into user(first_name,last_name,email,login,password,organisation_id,customer_id,vendor_id,authority_id,status,is_sample_data,deleted,locked,alt_email,cc_email) values \n";
+        String values = "";
         int i=0;
         int j=0;
         int k=0;
@@ -427,22 +429,14 @@ public class DataPopulatorBean implements Runnable {
         int m=0;
         int n=0;
         for(String[] d:data ){
-            User u = new User();
-            u.setFirstName(d[0]);
-            u.setLastName(d[1]);
-            u.setEmail(d[2]);
-            u.setPassword(d[3]);
-            u.setLogin(d[4]);
+            values+="('"+d[0]+"','"+d[1]+"','"+d[2]+"','"+d[4]+"','"+d[3]+"',";
             if(i<20)
-                u.setOrganisation(organisations.get(i));
-                u.setAuthority(authorityRepository.findByName(AidasConstants.ORG_ADMIN));
-            if(i>20 && i<221)
-                u.setCustomer(customers.get(i-21));
-                u.setAuthority(authorityRepository.findByName(AidasConstants.CUSTOMER_ADMIN));
-            if(i>220 && i<271)
-                u.setVendor(vendors.get(i-221));
-                u.setAuthority(authorityRepository.findByName(AidasConstants.VENDOR_ADMIN));
-            if(i>270 && i<1271){
+                values+=organisations.get(i).getId()+",null,null,2,1,1,0,0,'shivain22@gmail.com','shivain22@gmail.com'),";
+            if(i>=20 && i<220)
+                values+="null,"+customers.get(i-20).getId()+",null,3,1,1,0,0,'shivain22@gmail.com','shivain22@gmail.com'),";
+            if(i>=220 && i<270)
+                values+="null,null,"+vendors.get(i-220).getId()+",4,1,1,0,0,'shivain22@gmail.com','shivain22@gmail.com'),";
+            if(i>=270 && i<1270){
                 if(i%10==0){{
                     n++;
                     if(n==2){
@@ -454,30 +448,19 @@ public class DataPopulatorBean implements Runnable {
                     }
                 }
                 }
-                u.setVendor(vendors.get(j));
-                u.setAuthority(authorityRepository.findByName(AidasConstants.VENDOR_USER));
+                values+="null,null,"+vendors.get(j).getId()+",5,1,1,0,0,'shivain22@gmail.com','shivain22@gmail.com'),";
             }
-            if(i>1270){
+            if(i>=1270){
                 if(i%5==0){
                     if(i>1271)
                         k++;
                 }
-                u.setCustomer(customers.get(k));
-                u.setAuthority(authorityRepository.findByName(AidasConstants.QC_USER));
+                values+="null,"+customers.get(k).getId()+",null,6,1,1,0,0,'shivain22@gmail.com','shivain22@gmail.com'),";
             }
-            u.setDeleted(0);
-            u.setStatus(1);
-            u.setLocked(0);
-            u.setSampleData(1);
-            u.setAltEmail("shivain22@gmail.com");
-            u.setCcEmails("admin@ainnotate.com");
-            users.add(u);
             i++;
         }
-        userRepository.saveAll(users);
-        userSearchRepository.saveAll(users);
+        batchInsert(query+values.substring(0,values.length()-1));
         users = userRepository.getAllSampleUsers();
-
         System.out.println("Sync with keycloak");
         users = userRepository.findAll();
         for(User u:users){
@@ -496,85 +479,75 @@ public class DataPopulatorBean implements Runnable {
     private void addSampleProjects(List<String[]> data){
         int i=0;
         int j=0;
+        String query="insert into project(name,description,status,is_sample_data,customer_id) values ";
+        String values = "";
         for(String[] d:data ){
-            Project  p = new Project();
-            p.setName(d[0]);
-            p.setDescription(d[1]);
-            p.setStatus(1);
-            p.setAutoCreateObjects(0);
-            p.setBufferPercent(20);
-            p.setExternalDatasetStatus(0);
-            p.setNumOfObjects(0);
-            p.setNumOfUploadsReqd(0);
-            p.setObjectPrefix("");
-            p.setObjectSuffix("");
-            p.setProjectType("image");
-            p.setQcLevels(1);
-            p.setReworkStatus(1);
             if(i%5==0){
                 if(i>0){
                     j++;
                 }
             }
-            p.setCustomer(customers.get(j));
-            p.setSampleData(1);
-            projects.add(p);
+            values += "('"+d[0]+"','"+d[1]+"',1,1,"+customers.get(j).getId()+"),";
         }
-        projectRepository.saveAll(projects);
+        batchInsert(query+values.substring(0,values.length()-1));
         projects = projectRepository.getAllSampleProjects();
-        properties = propertyRepository.findAllDefaultProps();
+
     }
-    private void addSampleObjects(List<String[]> data){
-        int i=0;
-        int j=0;
-        for(String[] d:data ){
-            com.ainnotate.aidas.domain.Object o = new Object();
-            o.setName(d[0]);
-            o.setDescription(d[1]);
-            o.setStatus(1);
-            o.setBufferPercent(20);
-            o.setDummy(0);
-            o.setNumberOfUploadReqd(100);
-            o.setSampleData(1);
-            if(i%5==0){
-                if(i>0){
-                    j++;
-                }
+
+    private void addSamplePropertiesForCustomer(){
+        System.out.println("Properties for customer started");
+        String query="insert into property(name,value,status,is_sample_data,customer_id,optional,property_type,system_property) values ";
+        String values = "";
+        for(Customer c: customers){
+            values="";
+            for(Property p:properties){
+                values+="('"+p.getName()+"','"+p.getValue()+"',1,1,"+c.getId()+",1,1,0),";
             }
-            o.setProject(projects.get(j));
-            objects.add(o);
+            batchInsert(query+values.substring(0,values.length()-1));
         }
-        objectRepository.saveAll(objects);
+        System.out.println("Properties for customer done");
+    }
+
+    private void addSampleObjects(List<String[]> data){
+        String query="insert into object(name,description,status,is_sample_data,project_id,number_of_upload_reqd,buffer_percent) values ";
+        String values = "";
+        for(Project p:projects){
+            values="";
+            for(int i=0;i<5;i++) {
+                values += "('Obj-"+i+"-" + p.getName() + "','Obj-"+i+"-" + p.getDescription() + "',1,1,"+p.getId()+",100,20),";
+            }
+            batchInsert(query+values.substring(0,values.length()-1));
+        }
         objects = objectRepository.getAllSampleObjects();
     }
 
     private void addSampleProjectProperties(){
+        System.out.println("Adding sample project properties");
+        String query="insert into project_property(value,status,is_sample_data,property_id,project_id) values ";
+        String values = "";
         for(Project p:projects){
-            properties.forEach(item->{
-                ProjectProperty pp = new ProjectProperty();
-                pp.setProject(p);
-                pp.setProperty(item);
-                pp.setValue(item.getValue());
-                pp.setStatus(1);
-                pp.setSampleData(1);
-                projectProperties.add(pp);
-            });
+            values="";
+            properties = propertyRepository.getAllSampleProperties(p.getCustomer().getId());
+            for(Property pr:properties){
+                values+= "('"+pr.getValue()+"',1,1,"+pr.getId()+","+p.getId()+"),";
+            }
+            batchInsert(query+values.substring(0,values.length()-1));
         }
-        projectPropertyRepository.saveAll(projectProperties);
+        System.out.println("Added sample project properties");
     }
     private void addSampleObjectProperties(){
+        System.out.println("Adding sample object properties");
+        String query="insert into object_property(value,status,is_sample_data,property_id,object_id) values ";
+        String values = "";
         for(Object o:objects){
-            properties.forEach(item->{
-                ObjectProperty op = new ObjectProperty();
-                op.setObject(o);
-                op.setProperty(item);
-                op.setValue(item.getValue());
-                op.setStatus(1);
-                op.setSampleData(1);
-                objectProperties.add(op);
-            });
+            values="";
+            properties = propertyRepository.getAllSampleProperties(o.getProject().getCustomer().getId());
+            for(Property pr:properties){
+                values+= "('"+pr.getValue()+"',1,1,"+pr.getId()+","+o.getId()+"),";
+            }
+            batchInsert(query+values.substring(0,values.length()-1));
         }
-        objectPropertyRepository.saveAll(objectProperties);
+        System.out.println("Added sample object properties");
     }
 
     private void addSampleUserAuthorityMappings(List<String[]> data){
@@ -625,31 +598,42 @@ public class DataPopulatorBean implements Runnable {
             List<Object> objects = objectRepository.getAllSampleObjects();
             List<UserVendorMapping> userVendorMappings = userVendorMappingRepository.getAllSampleUserVendorMappings();
             for(Object o: objects){
-                for(UserVendorMapping UserVendorMapping: userVendorMappings){
-                        UserVendorMappingObjectMapping uvmom = new UserVendorMappingObjectMapping();
-                        uvmom.setUserVendorMapping(UserVendorMapping);
-                        uvmom.setObject(o);
-                        uvmom.setStatus(1);
-                        uvmom.setSampleData(1);
-                        userVendorMappingObjectMappings.add(uvmom);
+                String values ="";
+                for(UserVendorMapping userVendorMapping: userVendorMappings){
+                    values+="("+userVendorMapping.getId()+","+o.getId()+",1,1),";
                 }
-                userVendorMappingObjectMappingRepository.saveAll(userVendorMappingObjectMappings);
-                userVendorMappingObjectMappings = new LinkedList<>();
+                batchInsert("insert into user_vendor_mapping_object_mapping (user_vendor_mapping_id,object_id,status,is_sample_data) values  "+values.substring(0,values.length()-1));
             }
             System.out.println("completed storing user vendor mapping object mappings");
-            userVendorMappingObjectMappings = userVendorMappingObjectMappingRepository.getAllSampleUserVendorMappingObjectMappings();
+    }
+
+    private void batchInsert(String query){
+        try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3308/ainnotateservice", "root", "")) {
+            if (conn != null) {
+                PreparedStatement ps = conn.prepareStatement(query);
+                ps.executeUpdate();
+            }
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
     }
     private void addSampleUploads(List<String[]> data){
-
-           /* Upload upload = new Upload();
-            upload.setId(Long.parseLong(d[0]));
-            upload.setName(d[1]);
-            upload.setStatus(1);
-            upload.setApprovalStatus(2);
-            upload.setQcStatus(null);
-            upload.setUserVendorMappingObjectMapping(userVendorMappingObjectMappingRepository.getById(Long.parseLong(d[2])));
-            upload.setSampleData(1);
-            uploadRepository.save(upload);*/
+        System.out.println("Started inserting uploads data");
+        List<Long> uvmomids = userVendorMappingObjectMappingRepository.getAllSampleUserVendorMappingObjectMappingsIds();
+        int batchSize=0;
+        String values="";
+        for(Long uvmomid:uvmomids) {
+            for(int i=0;i<2;i++){
+                values +="(1,1,2,'"+uvmomid+".png',"+uvmomid+",'"+uvmomid+".png'),";
+            }
+            batchSize++;
+            if(batchSize==10000){
+                batchInsert("insert into upload (status,is_sample_data,approval_status,object_key,user_vendor_mapping_object_mapping_id,name) values  "+values.substring(0,values.length()-1));
+                batchSize=0;
+                values="";
+            }
+        }
+        System.out.println("Completed inserting uploads");
     }
     private void cleanUpKeyCloakAndDBUsers(){
         System.out.println("Clean up all user data from keycloak");

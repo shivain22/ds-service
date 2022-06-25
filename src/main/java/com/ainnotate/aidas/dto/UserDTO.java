@@ -10,6 +10,9 @@ public class UserDTO implements  IUserDTO {
     private Long userCustomerMappingId;
     private Integer status=0;
     private Long qcLevel;
+    private Long userVendorMappingObjectMappingId;
+    private Long vendorId;
+    private String vendorName;
 
     @Override
     public Long getUserId() {
@@ -52,6 +55,21 @@ public class UserDTO implements  IUserDTO {
     }
 
     @Override
+    public Long getUserVendorMappingObjectMappingId() {
+        return this.userVendorMappingObjectMappingId;
+    }
+
+    @Override
+    public Long getVendorId() {
+        return this.vendorId;
+    }
+
+    @Override
+    public String getVendorName() {
+        return this.vendorName;
+    }
+
+    @Override
     public void setUserId(Long userId) {
             this.userId=userId;
     }
@@ -78,7 +96,7 @@ this.userVendorMappingId=userVendorMappingId;
 
     @Override
     public void setUserCustomerMappingId(Long userCustomerMappingId) {
-this.userCustomerMappingId = userCustomerMappingId;
+        this.userCustomerMappingId = userCustomerMappingId;
     }
 
     @Override
@@ -89,5 +107,20 @@ this.status=status;
     @Override
     public void setQcLevel(Long qcLevel) {
 this.qcLevel = qcLevel;
+    }
+
+    @Override
+    public void setUserVendorMappingObjectMappingId(Long userVendorMappingObjectMappingId) {
+        this.userVendorMappingObjectMappingId= userVendorMappingObjectMappingId;
+    }
+
+    @Override
+    public void setVendorName(String vendorName) {
+        this.vendorName= vendorName;
+    }
+
+    @Override
+    public void setVendorId(Long vendorId) {
+        this.vendorId= vendorId;
     }
 }

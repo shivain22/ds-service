@@ -23,6 +23,6 @@ public interface UserCustomerMappingRepository extends JpaRepository<UserCustome
     List<UserCustomerMapping> getAllSampleUserCustomerMappings();
 
     @Modifying
-    @Query(value = "delete from user_customer_mapping where is_sample_data=1",nativeQuery = true)
+    @Query(value = "delete from user_customer_mapping where is_sample_data=1 order by id desc",nativeQuery = true)
     void deleteAllSampleUserCustomerMappings();
 }

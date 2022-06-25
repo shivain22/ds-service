@@ -27,6 +27,9 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     @Query(value="select p.* from project p, object o,  user_vendor_mapping_object_mapping uvmom,user_vendor_mapping uvm  where  uvmom.object_id=o.id and o.project_id=p.id and uvmom.user_vendor_mapping_id=uvm.id and uvm.user_id =?1 and p.id>-1  and p.status=1 group by p.id ",nativeQuery = true)
     Page<Project> findAllProjectsByVendorUser(Pageable page, Long userId);
 
+    @Query(value="select p.* from project p, object o,  user_vendor_mapping_object_mapping uvmom,user_vendor_mapping uvm  where  uvmom.object_id=o.id and o.project_id=p.id and uvmom.user_vendor_mapping_id=uvm.id and uvm.user_id =?1 and p.id>-1  and p.status=1 group by p.id ",nativeQuery = true)
+    List<Project> findAllProjectsByVendorUserList(Long userId);
+
     @Query(value="select p.* from project p, object o,  user_vendor_mapping_object_mapping uvmom,user_vendor_mapping uvm ,user u where  uvmom.object_id=o.id and o.project_id=p.id and uvmom.user_vendor_mapping_id=uvm.id and uvm.vendor_id= ?1   and p.status=1 ",nativeQuery = true)
     Page<Project> findAllProjectsByVendorAdmin(Pageable page, Long vendorId);
 
@@ -62,9 +65,21 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     @Query(value=" select count(*) from (select ap.id from user_vendor_mapping_object_mapping uvmom,user_vendor_mapping uvm, object ao, project ap where ao.project_id=ap.id and uvmom.object_id=ao.id  and uvmom.user_vendor_mapping_id=uvm.id and uvm.user_id=?1 and ap.status=1 group by ap.id)a",nativeQuery = true)
     Long countAidasProjectByVendorUser(Long aidasVendorUserId);
 
-    @Query(value = "select ap.id as projectId, count(au.id) totalUploaded,SUM(CASE WHEN au.approval_status = 1 THEN 1 ELSE 0 END) AS totalApproved,SUM(CASE WHEN au.approval_status = 0 THEN 1 ELSE 0 END) AS totalRejected,(select sum(ao1.number_of_upload_reqd) from object ao1 where project_id=?1) AS totalPending from project ap left  join object ao on ao.project_id=ap.id left  join user_vendor_mapping_object_mapping uvmom on uvmom.object_id=ao.id left  join upload au on au.user_vendor_mapping_object_mapping_id=uvmom.id left join user_vendor_mapping uvm on uvmom.user_vendor_mapping_id=uvm.id where uvm.user_id= ?2 and  ap.id=?1 and ap.status=1 group by ap.id " +
-        " union " +
-        " select ap.id as projectId, count(au.id) totalUploaded,SUM(CASE WHEN au.approval_status = 1 THEN 1 ELSE 0 END) AS totalApproved,SUM(CASE WHEN au.approval_status = 0 THEN 1 ELSE 0 END) AS totalRejected,(select sum(ao1.number_of_upload_reqd) from object ao1 where project_id=?1) AS totalPending from project ap right  join object ao on ao.project_id=ap.id right  join user_vendor_mapping_object_mapping uvmom on uvmom.object_id=ao.id right  join upload au on au.user_vendor_mapping_object_mapping_id=uvmom.id right join user_vendor_mapping uvm on uvmom.user_vendor_mapping_id=uvm.id where uvm.user_id= ?2 and  ap.id=?1 group by ap.id", nativeQuery = true)
+    @Query(value = "select \n" +
+        "o.project_id projectId," +
+        "count(u.id) totalUploaded,\n" +
+        "SUM(CASE WHEN u.approval_status = 1 THEN 1 ELSE 0 END) AS totalApproved,\n" +
+        "SUM(CASE WHEN u.approval_status = 0 THEN 1 ELSE 0 END) AS totalRejected,\n" +
+        "SUM(CASE WHEN u.approval_status = 2 THEN 1 ELSE 0 END) AS totalPending\n" +
+        "from  \n" +
+        "upload u \n" +
+        "left join user_vendor_mapping_object_mapping uvmom on u.user_vendor_mapping_object_mapping_id=uvmom.id\n" +
+        "left join object o on o.id=uvmom.object_id\n" +
+        "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id\n" +
+        "where \n" +
+        "uvm.user_id=?2\n" +
+        "and \n" +
+        "o.project_id =?1", nativeQuery = true)
     UploadDetail countUploadsByProjectAndUser(Long projectId, Long userId);
 
     @Query(value = "select count(*) from project where id>0 and status=1", nativeQuery = true)
@@ -74,7 +89,7 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     List<Project> getAllSampleProjects();
 
     @Modifying
-    @Query(value = "delete from project where is_sample_data=1",nativeQuery = true)
+    @Query(value = "delete from project where is_sample_data=1 order by id desc",nativeQuery = true)
     void deleteAllSampleProjects();
 
 }

@@ -40,7 +40,7 @@ public interface VendorRepository extends JpaRepository<Vendor, Long> {
     List<Vendor> getAllSampleVendors();
 
     @Modifying
-    @Query(value = "delete from vendor where is_sample_data=1",nativeQuery = true)
+    @Query(value = "delete from vendor where is_sample_data=1 order by id desc",nativeQuery = true)
     void deleteAllSampleVendors();
 
 }

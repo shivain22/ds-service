@@ -25,30 +25,22 @@ public class UserVendorMappingObjectMapping extends AbstractAuditingEntity  impl
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seqGen")
-    @SequenceGenerator(name = "seqGen", sequenceName = "seq", initialValue = 1)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
 
     @Column(name = "date_assigned")
     private ZonedDateTime dateAssigned;
 
-    @ManyToOne(optional = false,fetch = FetchType.EAGER)
+    @ManyToOne(optional = false,fetch = FetchType.LAZY)
     @NotNull
     @JsonIgnoreProperties(value = { "organisation", "customer", "vendor" }, allowSetters = true)
     private UserVendorMapping userVendorMapping;
 
-    @ManyToOne(optional = false,fetch = FetchType.EAGER)
+    @ManyToOne(optional = false,fetch = FetchType.LAZY)
     @NotNull
     @JsonIgnoreProperties(value = { "project" }, allowSetters = true)
     private Object object;
-
-    @OneToMany(mappedBy = "userVendorMappingObjectMapping")
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-    @JsonIgnoreProperties(value = { "aidasUserAidasObjectMapping" }, allowSetters = true)
-    private Set<Upload> uploads = new HashSet<>();
-
-    // jhipster-needle-entity-add-field - JHipster will add fields here
 
     public Long getId() {
         return this.id;
@@ -109,38 +101,6 @@ public class UserVendorMappingObjectMapping extends AbstractAuditingEntity  impl
         return this;
     }
 
-    public Set<Upload> getAidasUploads() {
-        return this.uploads;
-    }
-
-    public void setAidasUploads(Set<Upload> uploads) {
-        if (this.uploads != null) {
-            this.uploads.forEach(i -> i.setAidasUserAidasObjectMapping(null));
-        }
-        if (uploads != null) {
-            uploads.forEach(i -> i.setAidasUserAidasObjectMapping(this));
-        }
-        this.uploads = uploads;
-    }
-
-    public UserVendorMappingObjectMapping aidasUploads(Set<Upload> uploads) {
-        this.setAidasUploads(uploads);
-        return this;
-    }
-
-    public UserVendorMappingObjectMapping addAidasUpload(Upload upload) {
-        this.uploads.add(upload);
-        upload.setAidasUserAidasObjectMapping(this);
-        return this;
-    }
-
-    public UserVendorMappingObjectMapping removeAidasUpload(Upload upload) {
-        this.uploads.remove(upload);
-        upload.setAidasUserAidasObjectMapping(null);
-        return this;
-    }
-
-    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
     @Override
     public boolean equals(java.lang.Object o) {

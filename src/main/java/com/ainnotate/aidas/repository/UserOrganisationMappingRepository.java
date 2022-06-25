@@ -25,6 +25,6 @@ public interface UserOrganisationMappingRepository extends JpaRepository<UserOrg
     List<UserOrganisationMapping> getAllSampleUserOrganisationMappings();
 
     @Modifying
-    @Query(value = "delete from user_organisation_mapping where is_sample_data=1",nativeQuery = true)
+    @Query(value = "delete from user_organisation_mapping where is_sample_data=1 order by id desc",nativeQuery = true)
     void deleteAllSampleUserOrganisationMappings();
 }

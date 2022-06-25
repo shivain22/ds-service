@@ -39,6 +39,6 @@ public interface ObjectPropertyRepository extends JpaRepository<ObjectProperty, 
     Long countObjectProperties(Long objectId, Integer optional);
 
     @Modifying
-    @Query(value = "delete from object_property where is_sample_data=1",nativeQuery = true)
+    @Query(value = "delete from object_property where is_sample_data=1 order by id desc",nativeQuery = true)
     void deleteAllSampleObjectProperty();
 }

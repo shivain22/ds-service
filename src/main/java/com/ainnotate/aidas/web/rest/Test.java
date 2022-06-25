@@ -1,9 +1,12 @@
 package com.ainnotate.aidas.web.rest;
 
+import com.ainnotate.aidas.domain.UserVendorMapping;
 import liquibase.pro.packaged.A;
+import org.apache.commons.lang3.time.StopWatch;
 
 import java.sql.*;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class Test {
     public static void main(String[] args){
@@ -98,7 +101,7 @@ public class Test {
         orgId=1;
         for(int i=0;i<orgsMap.size();i++) {
                 String names[] = uniqueUsersMap.get(orgId).split(" ");
-                System.out.println( names[0] + ";" + names[1] + ";" + names[0].toLowerCase()+names[1].toLowerCase() + orgsMap.get(orgId) + ";12345678;" + names[0].toLowerCase()+names[1].toLowerCase());
+                //System.out.println( names[0] + ";" + names[1] + ";" + names[0].toLowerCase()+names[1].toLowerCase() + orgsMap.get(orgId) + ";12345678;" + names[0].toLowerCase()+names[1].toLowerCase());
                 orgId++;
                 id++;
         }
@@ -106,7 +109,7 @@ public class Test {
         id=orgsMap.size()+1;
         for(int i=0;i<customersMap.size();i++) {
             String names[] = uniqueUsersMap.get(orgId).split(" ");
-            System.out.println(names[0] + ";" + names[1] + ";" + names[0].toLowerCase()+names[1].toLowerCase() + customersMap.get(custId)+";12345678;"+names[0].toLowerCase()+names[1].toLowerCase());
+            //System.out.println(names[0] + ";" + names[1] + ";" + names[0].toLowerCase()+names[1].toLowerCase() + customersMap.get(custId)+";12345678;"+names[0].toLowerCase()+names[1].toLowerCase());
             orgId++;
             custId++;
             id++;
@@ -115,7 +118,7 @@ public class Test {
         id=orgsMap.size()+customersMap.size()+1;
         for(int i=0;i<vendorsMap.size();i++) {
             String names[] = uniqueUsersMap.get(orgId).split(" ");
-            System.out.println(names[0] + ";" + names[1] + ";" + names[0].toLowerCase()+names[1].toLowerCase() + vendorsMap.get(vendorId) + ";12345678;" + names[0].toLowerCase()+names[1].toLowerCase());
+            //System.out.println(names[0] + ";" + names[1] + ";" + names[0].toLowerCase()+names[1].toLowerCase() + vendorsMap.get(vendorId) + ";12345678;" + names[0].toLowerCase()+names[1].toLowerCase());
             vendorId++;
             orgId++;
             custId++;
@@ -128,7 +131,7 @@ public class Test {
                 vendorIdForVendorUser++;
             }
             String names[] = uniqueUsersMap.get(orgId).split(" ");
-            System.out.println(names[0] + ";" + names[1] + ";" + names[0].toLowerCase()+names[1].toLowerCase() + vendorsMap.get(vendorIdForVendorUser) + ";12345678;" + names[0].toLowerCase()+names[1].toLowerCase());
+            //System.out.println(names[0] + ";" + names[1] + ";" + names[0].toLowerCase()+names[1].toLowerCase() + vendorsMap.get(vendorIdForVendorUser) + ";12345678;" + names[0].toLowerCase()+names[1].toLowerCase());
             vendorId++;
             orgId++;
             custId++;
@@ -141,7 +144,7 @@ public class Test {
             }
             String names[] = uniqueUsersMap.get(orgId).split(" ");
             //System.out.println(customerIdForQcUser);
-            System.out.println(names[0] + ";" + names[1] + ";" + names[0].toLowerCase() +names[1].toLowerCase()+"-qc"+customersMap.get(customerIdForQcUser)+";12345678;"+names[0].toLowerCase()+names[1].toLowerCase());
+            //System.out.println(names[0] + ";" + names[1] + ";" + names[0].toLowerCase() +names[1].toLowerCase()+"-qc"+customersMap.get(customerIdForQcUser)+";12345678;"+names[0].toLowerCase()+names[1].toLowerCase());
             vendorId++;
             orgId++;
             custId++;
@@ -173,5 +176,27 @@ public class Test {
             String names[] = uniqueUsersMap.get(orgId).split(" ");
             System.out.println(names[0] + ";" + names[1] + ";" + names[0].toLowerCase() +names[1].toLowerCase());
         }*/
+        StopWatch watch = new StopWatch();
+        watch.start();
+        for(int i=0;i<5000;i++){
+            String values ="";
+            for(j=0;j<1000;j++){
+                values+="("+i+","+i+"),";
+            }
+            System.out.println(i+"------------"+j);
+            try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3308/ainnotateservice", "root", "")) {
+                if (conn != null) {
+                    String query ="insert into test (uid,oid) values"+values.substring(0,values.length()-1);
+                    //System.out.println(query);
+                    PreparedStatement ps = conn.prepareStatement(query);
+                    ps.executeUpdate();
+                }
+            }catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        watch.stop();
+        System.out.println(watch.getTime(TimeUnit.MINUTES));
+
     }
 }

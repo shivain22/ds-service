@@ -245,6 +245,9 @@ public interface ObjectRepository extends JpaRepository<Object, Long> {
     List<Object> getAllSampleObjects();
 
     @Modifying
-    @Query(value = "delete from object where is_sample_data=1",nativeQuery = true)
+    @Query(value = "delete from object where is_sample_data=1 order by id desc",nativeQuery = true)
     void deleteAllSampleObjects();
+
+    @Query(value = "select * from object where is_dummy=1 and project_id=?1",nativeQuery = true)
+    Object getDummyObjectOfProject(Long projectId);
 }

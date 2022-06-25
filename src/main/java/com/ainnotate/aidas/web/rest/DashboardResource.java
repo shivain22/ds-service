@@ -4,6 +4,7 @@ import com.ainnotate.aidas.domain.*;
 import com.ainnotate.aidas.repository.*;
 import com.ainnotate.aidas.constants.AidasConstants;
 import com.ainnotate.aidas.security.SecurityUtils;
+import org.apache.commons.lang3.time.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * REST controller for managing {@link Upload}.
@@ -63,16 +66,21 @@ public class DashboardResource {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         Authority authority = user.getAuthority();
         if(authority.getName().equals(AidasConstants.ADMIN)){
+            StopWatch watch = new StopWatch();
+
             ad.setOrganisationCount(organisationRepository.countAllOrgsForSuperAdmin());
             ad.setCustomerCount(customerRepository.countAidasCustomersForSuperAdmin());
             ad.setVendorCount(vendorRepository.countAllVendorsForSuperAdmin());
             ad.setProjectCount(projectRepository.countAllProjectsForSuperAdmin());
             ad.setObjectCount(objectRepository.countAllObjectsForSuperAdmin());
             ad.setUploadCount(uploadRepository.countAllUploadsForSuperAdmin());
+            ad.setUserCount(userRepository.countAllForSuperAdmin());
+            watch.start();
             ad.setApprovedUploadCount(uploadRepository.countAllUploadsForSuperAdmin(AidasConstants.AIDAS_UPLOAD_APPROVED));
             ad.setRejectedUploadCount(uploadRepository.countAllUploadsForSuperAdmin(AidasConstants.AIDAS_UPLOAD_REJECTED));
             ad.setPendingUploadCount(uploadRepository.countAllUploadsForSuperAdmin(AidasConstants.AIDAS_UPLOAD_PENDING));
-            ad.setUserCount(userRepository.countAllForSuperAdmin());
+            watch.stop();
+            System.out.println(watch.getTime(TimeUnit.SECONDS));
         }
         if(authority.getName().equals(AidasConstants.ORG_ADMIN)){
             ad.setOrganisationCount(1l);

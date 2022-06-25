@@ -57,7 +57,7 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     List<Customer> getAllSampleCustomers();
 
     @Modifying
-    @Query(value = "delete from customer where is_sample_data=1",nativeQuery = true)
+    @Query(value = "delete from customer where is_sample_data=1 order by id desc",nativeQuery = true)
     void deleteAllSampleCustomers();
 
 }

@@ -204,23 +204,33 @@ public class VendorResource {
     public ResponseEntity<List<VendorUserDTO>> getAllVendorsWithUsers(@PathVariable(value = "projectId", required = false) final Long projectId) {
         log.debug("REST request to get a page of AidasVendors");
         List<VendorUserDTO> vendorUserDtos = new ArrayList<>();
-        List<Vendor> vendors = vendorRepository.getAllVendors();
-        for(Vendor v:vendors){
-            VendorUserDTO vendorUserDto = new VendorUserDTO();
-            vendorUserDto.setVendorId(v.getId());
-            vendorUserDto.setName(v.getName());
-            List<IUserDTO> vendorUsers = userRepository.findAllUsersOfVendorWithProject(v.getId(),projectId);
-            for(IUserDTO iu:vendorUsers){
+        List<IUserDTO> vendorUsers = userRepository.findAllUsersOfVendorWithProject(projectId);
+        Map<Long, List<UserDTO>> map = new HashMap<>();
+        VendorUserDTO vendorUserDTO = new VendorUserDTO();
+        List<UserDTO> userDTOs = new ArrayList<>();
+        for(IUserDTO iu:vendorUsers) {
+                if(map.get(iu.getVendorId())==null){
+                    map.put(iu.getVendorId(),userDTOs);
+                    if(userDTOs.size()>0) {
+                        vendorUserDTO.setUserDTOs(userDTOs);
+                        vendorUserDtos.add(vendorUserDTO);
+                    }
+                    vendorUserDTO = new VendorUserDTO();
+                    vendorUserDTO.setVendorId(iu.getVendorId());
+                    vendorUserDTO.setName(iu.getVendorName());
+                    userDTOs = new ArrayList<>();
+                }
                 UserDTO u = new UserDTO();
                 u.setLastName(iu.getLastName());
                 u.setFirstName(iu.getFirstName());
                 u.setUserVendorMappingId(iu.getUserVendorMappingId());
+                u.setUserVendorMappingObjectMappingId(iu.getUserVendorMappingObjectMappingId());
                 u.setUserId(iu.getUserId());
                 u.setStatus(iu.getStatus());
-                vendorUserDto.getUserDTOs().add(u);
+                userDTOs.add(u);
             }
-            vendorUserDtos.add(vendorUserDto);
-        }
+            vendorUserDTO.setUserDTOs(userDTOs);
+            vendorUserDtos.add(vendorUserDTO);
         return ResponseEntity.ok().body(vendorUserDtos);
     }
 

@@ -115,6 +115,7 @@ public class ObjectResource {
         }
         object.setDummy(0);
         object.setStatus(1);
+
         if(object.getObjectProperties()!=null){
             Property ap=null;
             for(ObjectProperty aop: object.getObjectProperties()){
@@ -143,8 +144,17 @@ public class ObjectResource {
             object.setBufferPercent(20);
         }
         Object result = objectRepository.save(object);
-
-        //aidasObjectSearchRepository.save(result);
+        Object dummyObjectOfProject = objectRepository.getDummyObjectOfProject(object.getProject().getId());
+        List<UserVendorMapping> userVendorMappings = userVendorMappingRepository.findAllVendorUserMappings();
+        List<UserVendorMappingObjectMapping> userVendorMappingObjectMappings = new ArrayList<>();
+        for(UserVendorMapping uvm:userVendorMappings){
+            UserVendorMappingObjectMapping uvmom = new UserVendorMappingObjectMapping();
+            uvmom.setUserVendorMapping(uvm);
+            uvmom.setObject(object);
+            uvmom.setStatus(0);
+            userVendorMappingObjectMappings.add(uvmom);
+        }
+        userVendorMappingObjectMappingRepository.saveAll(userVendorMappingObjectMappings);
         return ResponseEntity
             .created(new URI("/api/aidas-objects/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))

@@ -10,6 +10,9 @@ public interface IUserDTO {
     public Long getUserCustomerMappingId();
     public Integer getStatus();
     public Long getQcLevel();
+    public Long getUserVendorMappingObjectMappingId();
+    public Long getVendorId();
+    public String getVendorName();
 
     public void setUserId(Long userId);
     public void setFirstName(String firstName);
@@ -19,4 +22,7 @@ public interface IUserDTO {
     public void setUserCustomerMappingId(Long userCustomerMappingId);
     public void setStatus(Integer status);
     public void setQcLevel(Long qcLevel);
+    public void setUserVendorMappingObjectMappingId(Long userVendorMappingObjectMappingId);
+    public void setVendorName(String vendorName);
+    public void setVendorId(Long vendorId);
 }

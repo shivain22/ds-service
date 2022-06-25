@@ -147,7 +147,7 @@ public interface UploadRepository extends JpaRepository<Upload, Long> {
     List<Upload> getAllSampleUploads();
 
     @Modifying
-    @Query(value = "delete from upload where is_sample_data=1",nativeQuery = true)
+    @Query(value = "delete from upload where is_sample_data=1 order by id desc",nativeQuery = true)
     void deleteAllSampleUploads();
 
 }

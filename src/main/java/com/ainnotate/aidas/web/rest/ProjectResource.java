@@ -13,9 +13,11 @@ import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import org.apache.commons.lang3.time.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -141,6 +143,31 @@ public class ProjectResource {
             project.addAidasProjectProperty(app);
         }
         Project result = projectRepository.save(project);
+        {
+            Object obj = new Object();
+            obj.setName(result.getName()+" - Dummy Object");
+            if(result.getNumOfUploadsReqd()!=null){
+                obj.setNumberOfUploadReqd(result.getNumOfUploadsReqd());
+            }else{
+                obj.setNumberOfUploadReqd(0);
+            }
+            obj.setDescription("Dummy object for project "+result.getName());
+            obj.setProject(result);
+            obj.setBufferPercent(0);
+            obj.setDummy(1);
+            obj.setStatus(0);
+            objectRepository.save(obj);
+            List<UserVendorMapping> userVendorMappings = userVendorMappingRepository.findAllVendorUserMappings();
+            List<UserVendorMappingObjectMapping> userVendorMappingObjectMappings = new ArrayList<>();
+            for(UserVendorMapping uvm:userVendorMappings){
+                UserVendorMappingObjectMapping uvmom = new UserVendorMappingObjectMapping();
+                uvmom.setUserVendorMapping(uvm);
+                uvmom.setObject(obj);
+                uvmom.setStatus(0);
+                userVendorMappingObjectMappings.add(uvmom);
+            }
+            userVendorMappingObjectMappingRepository.saveAll(userVendorMappingObjectMappings);
+        }
         if(result.getAutoCreateObjects()!=null && result.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)){
             for(int i=0;i<result.getNumOfObjects();i++){
                 Object obj = new Object();
@@ -215,45 +242,19 @@ public class ProjectResource {
         if (projectVendorMappingDTO.getProjectId() == null) {
             throw new BadRequestAlertException("A new project cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        Project project = projectRepository.getById(projectVendorMappingDTO.getProjectId());
-        List<Object> objects = objectRepository.findAllObjectsOfProjectInlcudingDummy(project.getId());
-        if(objects.size()==0){
-            Object object = new Object();
-            object.setProject(project);
-            object.setStatus(0);
-            object.setDescription("Dummy object for project, do not delete");
-            object.setNumberOfUploadReqd(0);
-            object.setName("DummyFor"+ project.getName());
-            object.setDummy(1);
-            object = objectRepository.save(object);
-            objects.add(object);
-        }
+        List<Long>userVendorMappingIds = new ArrayList<>();
+        Map<Long,Integer>userVendorMappingStatusMap = new HashMap<>();
         for(VendorUserDTO vendorUserDTO:projectVendorMappingDTO.getVendors()){
-            Vendor v = vendorRepository.getById(vendorUserDTO.getVendorId());
             for(UserDTO userDTO: vendorUserDTO.getUserDTOs()){
-                User u = userRepository.getById(userDTO.getUserId());
-                for(Object ao: objects){
-                    UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserObject(userDTO.getUserId(),ao.getId());
-                    if(uvmom==null){
-                        uvmom = new UserVendorMappingObjectMapping();
-                        UserVendorMapping uvm = userVendorMappingRepository.getById(userDTO.getUserVendorMappingId());//userVendorMappingRepository.findByUserAndVendor(userDTO.getUserId(),v.getId());
-                        if(uvm!=null) {
-                            uvm.setStatus(userDTO.getStatus());
-                        }else {
-                            uvm = new UserVendorMapping();
-                            uvm.setUser(u);
-                            uvm.setVendor(v);
-                            uvm.setStatus(1);
-                            uvm = userVendorMappingRepository.save(uvm);
-                        }
-                        uvmom.setUserVendorMapping(uvm);
-                        uvmom.setObject(ao);
-                    }
-                    uvmom.setStatus(userDTO.getStatus());
-                    userVendorMappingObjectMappingRepository.save(uvmom);
-                }
+                userVendorMappingIds.add(userDTO.getUserVendorMappingId());
+                userVendorMappingStatusMap.put(userDTO.getUserVendorMappingId(),userDTO.getStatus());
             }
         }
+        List<UserVendorMappingObjectMapping> uvmoms = userVendorMappingObjectMappingRepository.getAllUserVendorMappingObjectMappingByUserVendorMappingIdsAndObjectId(projectVendorMappingDTO.getProjectId());
+        for(UserVendorMappingObjectMapping uvmom:uvmoms){
+            uvmom.setStatus(userVendorMappingStatusMap.get(uvmom.getUserVendorMapping().getId()));
+        }
+        userVendorMappingObjectMappingRepository.saveAll(uvmoms);
         return ResponseEntity.ok().body("Successfully mapped vendors to project");
     }
 
@@ -419,7 +420,7 @@ public class ProjectResource {
         existingProject.setAudioType(project.getAudioType());
         existingProject.setVideoType(project.getVideoType());
         existingProject.setImageType(project.getImageType());
-        existingProject.setProjectProperties(project.getProjectProperties());
+        //existingProject.setProjectProperties(project.getProjectProperties());
         Project result = projectRepository.save(existingProject);
         Project projectForSearch = new Project();
         projectForSearch.setId(result.getId());
@@ -528,6 +529,7 @@ public class ProjectResource {
             page =  projectRepository.findAllProjectsByVendorAdmin(pageable, user.getVendor().getId());
         }
         if(user.getAuthority().getName().equals(AidasConstants.VENDOR_USER)){
+            System.out.println("user logged from mobile->"+user.getEmail());
             page =  projectRepository.findAllProjectsByVendorUser(pageable, user.getId());
             for(Project ap: page.getContent()){
                 UploadDetail pu = projectRepository.countUploadsByProjectAndUser(ap.getId(), user.getId());

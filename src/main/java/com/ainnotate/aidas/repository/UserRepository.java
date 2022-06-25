@@ -32,40 +32,42 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query(value="select u.id as userId, u.first_name as firstName, u.last_name as lastName, uvm.id as userVendorMappingId, u.login as login from user u, user_authority_mapping uam, user_vendor_mapping uvm where uam.user_id=u.id and uvm.user_id=u.id and uvm.vendor_id=?1 and uam.authority_id=5",nativeQuery = true)
     List<IUserDTO> findAllUsersOfVendor(Long vendorId);
 
-    @Query(value="select a.userId as userId,a.firstName as firstName,a.lastName as lastName,a.userVendorMappingId as userVendorMappingId,a.login as login,a.status as status from (\n" +
+    @Query(value="select a.userId as userId,\n" +
+        "a.firstName as firstName,\n" +
+        "a.lastName as lastName,\n" +
+        "a.userVendorMappingId as userVendorMappingId,\n" +
+        "a.login as login,\n" +
+        "a.vendorId as vendorId,\n" +
+        "a.vendorName as vendorName,\n" +
+        "(CASE WHEN (a.object_count-a.enabledCount) = 0 THEN 1\n" +
+        "\t WHEN (a.object_count-a.enabledCount) > 0 THEN 0 END) as status\n" +
+        " from (\n" +
         "select \n" +
-        "u.id as userId, \n" +
-        "u.first_name as firstName, \n" +
-        "u.last_name as lastName, \n" +
-        "uvm.id as userVendorMappingId, \n" +
+        "u.id as userId,\n" +
+        "u.first_name as firstName,\n" +
+        "u.last_name as lastName,\n" +
         "u.login as login,\n" +
-        "uvmom.status as status \n" +
-        "from \n" +
-        "user u, \n" +
+        "count(o.id) as object_count,\n" +
+        "uvmom.user_vendor_mapping_id as userVendorMappingId, \n" +
+        "count(CASE WHEN uvmom.status = 0 THEN uvmom.status END) as disabledCount,\n" +
+        "count(CASE WHEN uvmom.status = 1 THEN uvmom.status END) as enabledCount,\n" +
+        "v.id as vendorId,\n" +
+        "v.name as vendorName\n" +
+        "from    \n" +
         "user_vendor_mapping_object_mapping uvmom,\n" +
-        "user_vendor_mapping uvm ,\n" +
-        "object o\n" +
+        "user_vendor_mapping uvm,\n" +
+        "object o,\n" +
+        "vendor v,\n" +
+        "user u\n" +
         "where \n" +
         "uvmom.user_vendor_mapping_id=uvm.id and\n" +
-        "uvm.user_id=u.id \n" +
-        "and uvm.vendor_id=?1\n" +
-        "and o.project_id=?2\n" +
-        "union\n" +
-        "\n" +
-        "select \n" +
-        "u.id as userId, \n" +
-        "u.first_name as firstName, \n" +
-        "u.last_name as lastName, \n" +
-        "uvm.id as userVendorMappingId, \n" +
-        "u.login as login ,\n" +
-        "0 as status\n" +
-        "from \n" +
-        "user u, \n" +
-        "user_vendor_mapping uvm \n" +
-        "where \n" +
-        "uvm.user_id=u.id \n" +
-        "and uvm.vendor_id=?1) a ",nativeQuery = true)
-    List<IUserDTO> findAllUsersOfVendorWithProject(Long vendorId, Long projectId);
+        "uvm.user_id=u.id and\n" +
+        "uvmom.object_id=o.id and\n" +
+        "uvm.vendor_id=v.id and\n" +
+        "o.project_id=?1\n" +
+        "group by uvmom.user_vendor_mapping_id, uvmom.status,o.project_id\n" +
+        ")a",nativeQuery = true)
+    List<IUserDTO> findAllUsersOfVendorWithProject(Long projectId);
 
     Optional<User> findOneByLogin(String login);
 
@@ -107,7 +109,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
         ,countQuery = "select count(*) from user u where  u.status=1 and deleted=0",nativeQuery = true)
     List<User> findAllByIdGreaterThanAndDeletedIsFalse(Long id);
 
-    @Query(value = "select u.* from user u, user_authority_mapping uaa where uaa.user_id=u.id  and uaa.authority_id=?1 and order by u.id desc", nativeQuery = true)
+    @Query(value = "select u.* from user u, user_authority_mapping uaa where uaa.user_id=u.id  and uaa.authority_id=?1 order by u.id desc", nativeQuery = true)
     List<User>findAllByAidasAuthoritiesEquals(Long aidasAuthorityId);
 
 

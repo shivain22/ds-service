@@ -1,6 +1,7 @@
 package com.ainnotate.aidas.repository;
 
 import com.ainnotate.aidas.domain.Organisation;
+import com.ainnotate.aidas.domain.User;
 import com.ainnotate.aidas.domain.UserVendorMappingObjectMapping;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -40,7 +41,16 @@ public interface UserVendorMappingObjectMappingRepository extends JpaRepository<
     @Query(value = "select * from user_vendor_mapping_object_mapping where is_sample_data=1 order by id asc",nativeQuery = true)
     List<UserVendorMappingObjectMapping> getAllSampleUserVendorMappingObjectMappings();
 
+    @Query(value = "select id from user_vendor_mapping_object_mapping where is_sample_data=1 order by id asc",nativeQuery = true)
+    List<Long> getAllSampleUserVendorMappingObjectMappingsIds();
+
     @Modifying
-    @Query(value = "delete from user_vendor_mapping_object_mapping where is_sample_data=1",nativeQuery = true)
+    @Query(value = "delete from user_vendor_mapping_object_mapping where is_sample_data=1 order by id desc",nativeQuery = true)
     void deleteAllSampleUserVendorMappingObjectMappings();
+
+    @Query(value = "",nativeQuery = true)
+    List<UserVendorMappingObjectMapping> getUserVendorMappingObjectMappingByObjectId(Long objectId);
+
+    @Query(value = "select uvmom.* from user_vendor_mapping_object_mapping uvmom, object o where  uvmom.object_id=o.id and o.project_id=?1",nativeQuery = true)
+    List<UserVendorMappingObjectMapping> getAllUserVendorMappingObjectMappingByUserVendorMappingIdsAndObjectId(Long projectId);
 }

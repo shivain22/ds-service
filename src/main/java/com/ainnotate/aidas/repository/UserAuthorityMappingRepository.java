@@ -23,7 +23,7 @@ public interface UserAuthorityMappingRepository extends JpaRepository<UserAuthor
     List<UserAuthorityMapping> getAllSampleUserAuthorityMappings();
 
     @Modifying
-    @Query(value = "delete from user_authority_mapping where is_sample_data=1",nativeQuery = true)
+    @Query(value = "delete from user_authority_mapping where is_sample_data=1 order by id desc",nativeQuery = true)
     void deleteAllSampleUserAuthorityMappings();
 
 
