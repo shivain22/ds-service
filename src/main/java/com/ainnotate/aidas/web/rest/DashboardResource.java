@@ -75,12 +75,11 @@ public class DashboardResource {
             ad.setObjectCount(objectRepository.countAllObjectsForSuperAdmin());
             ad.setUploadCount(uploadRepository.countAllUploadsForSuperAdmin());
             ad.setUserCount(userRepository.countAllForSuperAdmin());
-            watch.start();
-            ad.setApprovedUploadCount(uploadRepository.countAllUploadsForSuperAdmin(AidasConstants.AIDAS_UPLOAD_APPROVED));
+
+            /*ad.setApprovedUploadCount(uploadRepository.countAllUploadsForSuperAdmin(AidasConstants.AIDAS_UPLOAD_APPROVED));
             ad.setRejectedUploadCount(uploadRepository.countAllUploadsForSuperAdmin(AidasConstants.AIDAS_UPLOAD_REJECTED));
-            ad.setPendingUploadCount(uploadRepository.countAllUploadsForSuperAdmin(AidasConstants.AIDAS_UPLOAD_PENDING));
-            watch.stop();
-            System.out.println(watch.getTime(TimeUnit.SECONDS));
+            ad.setPendingUploadCount(uploadRepository.countAllUploadsForSuperAdmin(AidasConstants.AIDAS_UPLOAD_PENDING));*/
+
         }
         if(authority.getName().equals(AidasConstants.ORG_ADMIN)){
             ad.setOrganisationCount(1l);
@@ -89,9 +88,11 @@ public class DashboardResource {
             ad.setProjectCount(projectRepository.countAidasProjectByAidasCustomer_AidasOrganisation(user.getOrganisation().getId()));
             ad.setObjectCount(objectRepository.countAidasObjectByAidasProject_AidasCustomer_AidasOrganisation(user.getOrganisation().getId()));
             ad.setUploadCount(uploadRepository.countAidasUploadByAidasOrganisation(user.getOrganisation().getId()));
-            ad.setApprovedUploadCount(uploadRepository.countAidasUploadByAidasOrganisation(user.getOrganisation().getId(),AidasConstants.AIDAS_UPLOAD_APPROVED));
+
+            /*ad.setApprovedUploadCount(uploadRepository.countAidasUploadByAidasOrganisation(user.getOrganisation().getId(),AidasConstants.AIDAS_UPLOAD_APPROVED));
             ad.setRejectedUploadCount(uploadRepository.countAidasUploadByAidasOrganisation(user.getOrganisation().getId(),AidasConstants.AIDAS_UPLOAD_REJECTED));
             ad.setPendingUploadCount(uploadRepository.countAidasUploadByAidasOrganisation(user.getOrganisation().getId(),AidasConstants.AIDAS_UPLOAD_PENDING));
+            */
             ad.setOrgUsersCount(userRepository.countAllByOrganisation(user.getOrganisation().getId()));
             ad.setCustomerUsersCount(userRepository.countAllByCustomer_Organisation(user.getOrganisation().getId()));
             ad.setAllVendorUsersCount(userRepository.countAllVendorUsers());
@@ -104,9 +105,9 @@ public class DashboardResource {
             ad.setProjectCount(projectRepository.countAidasProjectByAidasCustomer(user.getCustomer().getId()));
             ad.setObjectCount(objectRepository.countAidasObjectByAidasProject_AidasCustomer(user.getCustomer().getId()));
             ad.setUploadCount(uploadRepository.countAidasUploadByAidasCustomer(user.getCustomer().getId()));
-            ad.setApprovedUploadCount(uploadRepository.countAidasUploadByAidasCustomer(user.getCustomer().getId(),AidasConstants.AIDAS_UPLOAD_APPROVED));
+            /*ad.setApprovedUploadCount(uploadRepository.countAidasUploadByAidasCustomer(user.getCustomer().getId(),AidasConstants.AIDAS_UPLOAD_APPROVED));
             ad.setRejectedUploadCount(uploadRepository.countAidasUploadByAidasCustomer(user.getCustomer().getId(),AidasConstants.AIDAS_UPLOAD_REJECTED));
-            ad.setPendingUploadCount(uploadRepository.countAidasUploadByAidasCustomer(user.getCustomer().getId(),AidasConstants.AIDAS_UPLOAD_PENDING));
+            ad.setPendingUploadCount(uploadRepository.countAidasUploadByAidasCustomer(user.getCustomer().getId(),AidasConstants.AIDAS_UPLOAD_PENDING));*/
             ad.setOrgUsersCount(1l);
             ad.setCustomerUsersCount(userRepository.countAllByCustomer(user.getCustomer().getId()));
             ad.setAllVendorUsersCount(userRepository.countAllVendorUsers());
@@ -119,9 +120,9 @@ public class DashboardResource {
             ad.setProjectCount(projectRepository.countAidasProjectByVendor(user.getVendor().getId()));
             ad.setObjectCount(objectRepository.countAidasObjectByVendor(user.getVendor().getId()));
             ad.setUploadCount(uploadRepository.countAidasUploadByAidasVendor(user.getCustomer().getId()));
-            ad.setApprovedUploadCount(uploadRepository.countAidasUploadByAidasVendor(user.getVendor().getId(),AidasConstants.AIDAS_UPLOAD_APPROVED));
+            /*ad.setApprovedUploadCount(uploadRepository.countAidasUploadByAidasVendor(user.getVendor().getId(),AidasConstants.AIDAS_UPLOAD_APPROVED));
             ad.setRejectedUploadCount(uploadRepository.countAidasUploadByAidasVendor(user.getVendor().getId(),AidasConstants.AIDAS_UPLOAD_REJECTED));
-            ad.setPendingUploadCount(uploadRepository.countAidasUploadByAidasVendor(user.getVendor().getId(),AidasConstants.AIDAS_UPLOAD_PENDING));
+            ad.setPendingUploadCount(uploadRepository.countAidasUploadByAidasVendor(user.getVendor().getId(),AidasConstants.AIDAS_UPLOAD_PENDING));*/
             ad.setVendorUsersCount(userRepository.countAllByVendor(user.getVendor().getId()));
             ad.setUserCount(userRepository.countAllByVendor(user.getVendor().getId()));
         }if(authority.getName().equals(AidasConstants.VENDOR_USER)){
@@ -131,9 +132,9 @@ public class DashboardResource {
             ad.setProjectCount(projectRepository.countAidasProjectByVendorUser(user.getId()));
             ad.setObjectCount(objectRepository.countAidasProjectByVendorUser(user.getId()));
             ad.setUploadCount(uploadRepository.countAidasUploadByAidasVendorUser(user.getId()));
-            ad.setApprovedUploadCount(uploadRepository.countAidasUploadByAidasVendorUser(user.getVendor().getId(),AidasConstants.AIDAS_UPLOAD_APPROVED));
+            /*ad.setApprovedUploadCount(uploadRepository.countAidasUploadByAidasVendorUser(user.getVendor().getId(),AidasConstants.AIDAS_UPLOAD_APPROVED));
             ad.setRejectedUploadCount(uploadRepository.countAidasUploadByAidasVendorUser(user.getVendor().getId(),AidasConstants.AIDAS_UPLOAD_REJECTED));
-            ad.setPendingUploadCount(uploadRepository.countAidasUploadByAidasVendorUser(user.getVendor().getId(),AidasConstants.AIDAS_UPLOAD_PENDING));
+            ad.setPendingUploadCount(uploadRepository.countAidasUploadByAidasVendorUser(user.getVendor().getId(),AidasConstants.AIDAS_UPLOAD_PENDING));*/
              ad.setUserCount(1l);
         }
         return ResponseEntity.ok().body(ad);

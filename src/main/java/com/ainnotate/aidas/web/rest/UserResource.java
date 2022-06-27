@@ -901,6 +901,10 @@ public class UserResource {
         projectQcDTO.setQcUsers1(list);
                 if(userDTOs.size()==0){
                     List<IUserDTO> userDTOsNew = userRepository.findAllByQcUsersByCustomerAndProject1(project.getCustomer().getId(),projectId);
+                    if(project.getQcLevels()==null) {
+                        project.setQcLevels(1);
+                        projectRepository.save(project);
+                    }
                     for(int i=0;i<project.getQcLevels();i++){
                         for(int j=0;j<userDTOsNew.size();j++){
                             IUserDTO u = userDTOsNew.get(j);

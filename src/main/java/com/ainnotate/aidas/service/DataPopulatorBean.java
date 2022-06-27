@@ -608,7 +608,7 @@ public class DataPopulatorBean implements Runnable {
     }
 
     private void batchInsert(String query){
-        try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3308/ainnotateservice", "root", "")) {
+        try (Connection conn = DriverManager.getConnection("jdbc:mysql://ainnotateservice-mysql:3306/ainnotateservice", "root", "")) {
             if (conn != null) {
                 PreparedStatement ps = conn.prepareStatement(query);
                 ps.executeUpdate();
@@ -700,7 +700,7 @@ public class DataPopulatorBean implements Runnable {
     public void updateUserToKeyCloak(User myUser) {
         RealmResource realmResource = keycloak.realm(keycloakConfig.getClientRealm());
         UsersResource usersRessource = realmResource.users();
-        org.keycloak.admin.client.resource.UserResource userResource = usersRessource.get(myUser.getKeycloakId());
+        UserResource userResource = usersRessource.get(myUser.getKeycloakId());
         UserRepresentation user = userResource.toRepresentation();
         Map<String,List<String>> userAttrs = new HashMap<>();
         List<String> userAttrsVals = new ArrayList<>();

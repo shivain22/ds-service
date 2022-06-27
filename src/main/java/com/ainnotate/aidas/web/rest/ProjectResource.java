@@ -424,7 +424,7 @@ public class ProjectResource {
         Project result = projectRepository.save(existingProject);
         Project projectForSearch = new Project();
         projectForSearch.setId(result.getId());
-        aidasProjectSearchRepository.save(projectForSearch);
+        //aidasProjectSearchRepository.save(projectForSearch);
         return ResponseEntity
             .ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, project.getId().toString()))
