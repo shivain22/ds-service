@@ -2,7 +2,7 @@ package com.ainnotate.aidas.repository;
 
 import com.ainnotate.aidas.domain.*;
 import com.ainnotate.aidas.domain.Object;
-import com.ainnotate.aidas.dto.IUserDTO;
+import com.ainnotate.aidas.dto.IUploadDetail;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
@@ -61,8 +61,8 @@ public interface ObjectRepository extends JpaRepository<Object, Long> {
     @Query(value="select ao.* from project ap, object ao,  user_vendor_mapping_object_mapping auavmaom,user au,user_vendor_mapping auavm  where  auavmaom.object_id=ao.id and ao.project_id=ap.id and auavmaom.user_vendor_mapping_id=auavm.id and auavm.user_id=au.id and auavm.vendor_id= ?1 and ap.id=?2 and ao.id>-1",nativeQuery = true)
     Page<Object> findAllObjectsByVendorAdminProject(Pageable pageable, Vendor vendor, Long aidasProjectId);
 
-    @Query(value="select ao.* from project ap, object ao,  user_vendor_mapping_object_mapping auavmaom,user_vendor_mapping auavm ,user au where  auavmaom.object_id=ao.id and ao.project_id=ap.id and auavmaom.user_vendor_mapping_id=auavm.id and auavm.user_id=au.id and auavm.vendor_id= ?1 and ap.id=?2 and ao.id>-1 and ao.status=1 and ao.is_dummy=0 group by ao.id",nativeQuery = true)
-    List<Object> getAllObjectsByVendorAdminProject(Vendor vendor, Long aidasProjectId);
+    @Query(value="select o.*from object o,user_vendor_mapping_object_mapping uvmom,user_vendor_mapping uvm where  uvmom.object_id=o.id and uvmom.user_vendor_mapping_id=uvm.id and uvm.vendor_id= ?1 and o.project_id=?2 and o.status =1 and (o.is_dummy is null or o.is_dummy=0)group by o.id",nativeQuery = true)
+    List<Object> getAllObjectsByVendorAdminProject(Long vendor, Long aidasProjectId);
 
     @Query(value="select ao.* from project ap, object ao,  user_vendor_mapping_object_mapping auavmaom,user_vendor_mapping auavm ,user au where  auavmaom.object_id=ao.id and ao.project_id=ap.id and auavmaom.user_vendor_mapping_id=auavm.id and auavm.user_id=au.id and au.id= ?1 and ap.id=?2 and ao.status=1 and ao.is_dummy=0",nativeQuery = true)
     Page<Object> findAllObjectsByCustomerAdminProject(Pageable pageable, Customer customer, Long aidasProjectId);
@@ -88,10 +88,30 @@ public interface ObjectRepository extends JpaRepository<Object, Long> {
     @Query(value=" select count(*) from (select ao.id from user_vendor_mapping_object_mapping uvmom,user_vendor_mapping uvm, object ao where  uvmom.object_id=ao.id and uvmom.user_vendor_mapping_id=uvm.id and uvm.user_id=?1 group by ao.id)a",nativeQuery = true)
     Long countAidasProjectByVendorUser(Long aidasVendorUserId);
 
-    @Query(value="select ao.id as objectId ,count(au.id) totalUploaded, SUM(CASE WHEN au.status = 1 THEN 1 ELSE 0 END) AS totalApproved, SUM(CASE WHEN au.status = 0 THEN 1 ELSE 0 END) AS totalRejected, SUM(CASE WHEN au.status = 2 THEN 1 ELSE 0 END) AS totalPending from object ao left  join  user_vendor_mapping_object_mapping auavmaom on auavmaom.object_id=ao.id left  join upload au on au.user_vendor_mapping_object_mapping_id = auavmaom.id left join user_vendor_mapping auavm on auavmaom.user_vendor_mapping_id=auavm.id left join user au1 on auavm.user_id=au1.id where  au1.id= ?1 and ao.id=?2 and ao.status=1 and ao.is_dummy=0 group by ao.id " +
-        " union " +
-        " select ao.id as objectId ,count(au.id) totalUploaded, SUM(CASE WHEN au.status = 1 THEN 1 ELSE 0 END) AS totalApproved, SUM(CASE WHEN au.status = 0 THEN 1 ELSE 0 END) AS totalRejected, SUM(CASE WHEN au.status = 2 THEN 1 ELSE 0 END) AS totalPending from object ao right  join  user_vendor_mapping_object_mapping auavmaom on auavmaom.object_id=ao.id right  join upload au on au.user_vendor_mapping_object_mapping_id=auavmaom.id right join user_vendor_mapping auavm on auavmaom.user_vendor_mapping_id=auavm.id right join user au1 on auavm.user_id=au1.id where  au1.id= ?1 and ao.id=?2 and ao.status=1 and ao.is_dummy=0 group by ao.id",nativeQuery = true)
-    UploadDetail countUploadsByObjectAndUser(Long aidasUserId, Long aidasObjectId);
+    @Query(value="select \n" +
+        "o.id as objectId ,\n" +
+        "count(u.id) totalUploaded, \n" +
+        "SUM(CASE WHEN u.approval_status = 1 THEN 1 ELSE 0 END) AS totalApproved, \n" +
+        "SUM(CASE WHEN u.approval_status = 0 THEN 1 ELSE 0 END) AS totalRejected, \n" +
+        "SUM(CASE WHEN u.approval_status = 2 THEN 1 ELSE 0 END) AS totalPending \n" +
+        "from upload u \n" +
+        "left  join  user_vendor_mapping_object_mapping uvmom on u.user_vendor_mapping_object_mapping_id=uvmom.id\n" +
+        "left join user_vendor_mapping uvm on uvmom.user_vendor_mapping_id=uvm.id \n" +
+        "left join object o on uvmom.object_id=o.id\n" +
+        "where  uvm.id= ?1 and o.id=?2 and o.status=1  group by o.id \n" +
+        "union \n" +
+        "select \n" +
+        "o.id as objectId ,\n" +
+        "count(u.id) totalUploaded, \n" +
+        "SUM(CASE WHEN u.approval_status = 1 THEN 1 ELSE 0 END) AS totalApproved, \n" +
+        "SUM(CASE WHEN u.approval_status = 0 THEN 1 ELSE 0 END) AS totalRejected, \n" +
+        "SUM(CASE WHEN u.approval_status = 2 THEN 1 ELSE 0 END) AS totalPending \n" +
+        "from upload u \n" +
+        "right  join  user_vendor_mapping_object_mapping uvmom on u.user_vendor_mapping_object_mapping_id=uvmom.id\n" +
+        "right join user_vendor_mapping uvm on uvmom.user_vendor_mapping_id=uvm.id \n" +
+        "right join object o on uvmom.object_id=o.id\n" +
+        "where  uvm.id= ?1 and o.id=?2 and o.status=1  group by o.id",nativeQuery = true)
+    IUploadDetail countUploadsByObjectAndUser(Long aidasUserId, Long aidasObjectId);
 
 
     @Query(value = "select  " +
@@ -131,7 +151,7 @@ public interface ObjectRepository extends JpaRepository<Object, Long> {
         "ao.id=?2 " +
         "and ao.status=1 and ao.is_dummy=0 "+
         "group by ao.id",nativeQuery = true)
-    UploadDetail countUploadsByObjectAndAidasOrganisation(Long aidasOrganisationId, Long aidasObjectId);
+    IUploadDetail countUploadsByObjectAndAidasOrganisation(Long aidasOrganisationId, Long aidasObjectId);
 
     @Query(value = "select  " +
         "ao.id as objectId, " +
@@ -168,7 +188,7 @@ public interface ObjectRepository extends JpaRepository<Object, Long> {
         "ao.id=?2 " +
         "and ao.status=1 and ao.is_dummy=0 "+
         "group by ao.id",nativeQuery = true)
-    UploadDetail countUploadsByObjectAndAidasCustomer(Long aidasCustomerId, Long aidasObjectId);
+    IUploadDetail countUploadsByObjectAndAidasCustomer(Long aidasCustomerId, Long aidasObjectId);
 
     @Query(value = "select  " +
         "ao.id as objectId, " +
@@ -205,7 +225,7 @@ public interface ObjectRepository extends JpaRepository<Object, Long> {
         "and ao.status=1 and ao.is_dummy=0 and "+
         "ao.id=?2 " +
         "group by ao.id",nativeQuery = true)
-    UploadDetail countUploadsByObjectAndAidasVendor(Long aidasVendorId, Long aidasObjectId);
+    IUploadDetail countUploadsByObjectAndAidasVendor(Long aidasVendorId, Long aidasObjectId);
 
     @Query(value = "select  " +
         "ao.id as objectId, " +
@@ -236,7 +256,7 @@ public interface ObjectRepository extends JpaRepository<Object, Long> {
         "ao.id=?1 " +
         "and ao.status=1 and ao.is_dummy=0 "+
         "group by ao.id",nativeQuery = true)
-    UploadDetail countUploadsByObjectAndAidasAdmin(Long aidasObjectId);
+    IUploadDetail countUploadsByObjectAndAidasAdmin(Long aidasObjectId);
 
     @Query(value = "select count(*) from object where id>0 and status=1 and is_dummy=0", nativeQuery = true)
     Long countAllObjectsForSuperAdmin();

@@ -608,7 +608,7 @@ public class DataPopulatorBean implements Runnable {
     }
 
     private void batchInsert(String query){
-        try (Connection conn = DriverManager.getConnection("jdbc:mysql://ainnotateservice-mysql:3306/ainnotateservice", "root", "")) {
+        try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3308/ainnotateservice", "root", "")) {
             if (conn != null) {
                 PreparedStatement ps = conn.prepareStatement(query);
                 ps.executeUpdate();

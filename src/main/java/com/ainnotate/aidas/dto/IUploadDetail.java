@@ -1,10 +1,12 @@
-package com.ainnotate.aidas.domain;
+package com.ainnotate.aidas.dto;
 
 
+import com.ainnotate.aidas.domain.Project;
 
-public interface UploadDetail {
+public interface IUploadDetail {
 
     public Long getProjectId();
+    public Project getProject();
     public Integer getTotalUploaded();
     public Integer getTotalApproved() ;
     public Integer getTotalRejected() ;

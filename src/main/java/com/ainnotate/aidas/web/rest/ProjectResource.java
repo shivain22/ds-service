@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.support.PagedListHolder;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -529,15 +530,7 @@ public class ProjectResource {
             page =  projectRepository.findAllProjectsByVendorAdmin(pageable, user.getVendor().getId());
         }
         if(user.getAuthority().getName().equals(AidasConstants.VENDOR_USER)){
-            System.out.println("user logged from mobile->"+user.getEmail());
-            page =  projectRepository.findAllProjectsByVendorUser(pageable, user.getId());
-            for(Project ap: page.getContent()){
-                UploadDetail pu = projectRepository.countUploadsByProjectAndUser(ap.getId(), user.getId());
-                ap.setTotalUploaded(pu.getTotalUploaded());
-                ap.setTotalApproved(pu.getTotalApproved());
-                ap.setTotalRejected(pu.getTotalRejected());
-                ap.setTotalPending(pu.getTotalPending());
-            }
+            throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
         }
         if(user.getAuthority().getName().equals(AidasConstants.QC_USER)){
             List<Project>qcProjects = projectRepository.findProjectsForQC(user.getId());
@@ -550,6 +543,42 @@ public class ProjectResource {
             throw new BadRequestAlertException("Not Authorised", ENTITY_NAME, "idexists");
         }
     }
+
+    /**
+     * {@code GET  /aidas-projects} : get all the aidasProjects.
+     *
+     * @param pageable the pagination information.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of aidasProjects in body.
+     */
+
+    @GetMapping("/aidas-projects/details")
+    public ResponseEntity<List<ProjectDTO>> getAllAidasProjectDetails(Pageable pageable) {
+        log.debug("REST request to get a page of AidasProjects");
+        User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        Page<ProjectDTO> page = null;
+        if(user.getAuthority().getName().equals(AidasConstants.VENDOR_USER)){
+            List<ProjectDTO> projects =  projectRepository.findProjectWithUploadCountByUser(pageable,user.getId());
+            for(ProjectDTO p:projects){
+                Integer totalApprovedUploads = projectRepository.countUploadsByProject(p.getId());
+                if(totalApprovedUploads!=null) {
+                    p.setTotalRequired(p.getTotalRequired() - totalApprovedUploads);
+                }else{
+                    p.setTotalRequired(p.getTotalRequired());
+                }
+            }
+            PagedListHolder<ProjectDTO> pages = new PagedListHolder(projects);
+            pages.setPage(pageable.getPageNumber()); //set current page number
+            pages.setPageSize(pageable.getPageSize()); // set the size of page
+            if(pages.getPageList()!=null) {
+                return ResponseEntity.ok().body(pages.getPageList());
+            }else{
+                throw new BadRequestAlertException("Not Authorised", ENTITY_NAME, "idexists");
+            }
+        }
+        throw new BadRequestAlertException("Not Authorised", ENTITY_NAME, "idexists");
+    }
+
+
 
     /**
      * {@code GET  /aidas-projects/:id} : get the "id" project.

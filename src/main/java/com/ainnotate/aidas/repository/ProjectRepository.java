@@ -1,6 +1,8 @@
 package com.ainnotate.aidas.repository;
 
 import com.ainnotate.aidas.domain.*;
+import com.ainnotate.aidas.dto.IUploadDetail;
+import com.ainnotate.aidas.dto.ProjectDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
@@ -25,7 +27,7 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
 
 
     @Query(value="select p.* from project p, object o,  user_vendor_mapping_object_mapping uvmom,user_vendor_mapping uvm  where  uvmom.object_id=o.id and o.project_id=p.id and uvmom.user_vendor_mapping_id=uvm.id and uvm.user_id =?1 and p.id>-1  and p.status=1 group by p.id ",nativeQuery = true)
-    Page<Project> findAllProjectsByVendorUser(Pageable page, Long userId);
+    List<Project> findAllProjectsByVendorUser(Long userId);
 
     @Query(value="select p.* from project p, object o,  user_vendor_mapping_object_mapping uvmom,user_vendor_mapping uvm  where  uvmom.object_id=o.id and o.project_id=p.id and uvmom.user_vendor_mapping_id=uvm.id and uvm.user_id =?1 and p.id>-1  and p.status=1 group by p.id ",nativeQuery = true)
     List<Project> findAllProjectsByVendorUserList(Long userId);
@@ -65,22 +67,11 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     @Query(value=" select count(*) from (select ap.id from user_vendor_mapping_object_mapping uvmom,user_vendor_mapping uvm, object ao, project ap where ao.project_id=ap.id and uvmom.object_id=ao.id  and uvmom.user_vendor_mapping_id=uvm.id and uvm.user_id=?1 and ap.status=1 group by ap.id)a",nativeQuery = true)
     Long countAidasProjectByVendorUser(Long aidasVendorUserId);
 
-    @Query(value = "select \n" +
-        "o.project_id projectId," +
-        "count(u.id) totalUploaded,\n" +
-        "SUM(CASE WHEN u.approval_status = 1 THEN 1 ELSE 0 END) AS totalApproved,\n" +
-        "SUM(CASE WHEN u.approval_status = 0 THEN 1 ELSE 0 END) AS totalRejected,\n" +
-        "SUM(CASE WHEN u.approval_status = 2 THEN 1 ELSE 0 END) AS totalPending\n" +
-        "from  \n" +
-        "upload u \n" +
-        "left join user_vendor_mapping_object_mapping uvmom on u.user_vendor_mapping_object_mapping_id=uvmom.id\n" +
-        "left join object o on o.id=uvmom.object_id\n" +
-        "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id\n" +
-        "where \n" +
-        "uvm.user_id=?2\n" +
-        "and \n" +
-        "o.project_id =?1", nativeQuery = true)
-    UploadDetail countUploadsByProjectAndUser(Long projectId, Long userId);
+    @Query(nativeQuery = true)
+    List<ProjectDTO> findProjectWithUploadCountByUser(Pageable page, Long userId);
+
+    @Query(value=" select count(*) from upload u, user_vendor_mapping_object_mapping uvmom, object o where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and u.approval_status=1 group by o.project_id",nativeQuery = true)
+    Integer countUploadsByProject(Long projectId);
 
     @Query(value = "select count(*) from project where id>0 and status=1", nativeQuery = true)
     Long countAllProjectsForSuperAdmin();

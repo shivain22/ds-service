@@ -1,14 +1,7 @@
 package com.ainnotate.aidas.service;
-
-
-import com.ainnotate.aidas.constants.AidasConstants;
-import com.ainnotate.aidas.domain.Customer;
-import com.ainnotate.aidas.domain.Organisation;
 import com.ainnotate.aidas.domain.TaskDefinition;
-import com.ainnotate.aidas.domain.Upload;
 import com.ainnotate.aidas.repository.*;
 import com.ainnotate.aidas.repository.search.*;
-import com.ainnotate.aidas.web.rest.UserResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

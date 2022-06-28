@@ -2,6 +2,7 @@ package com.ainnotate.aidas.web.rest;
 
 import com.ainnotate.aidas.domain.*;
 import com.ainnotate.aidas.domain.Object;
+import com.ainnotate.aidas.dto.IUploadDetail;
 import com.ainnotate.aidas.dto.ObjectVendorMappingDTO;
 import com.ainnotate.aidas.dto.UserDTO;
 import com.ainnotate.aidas.dto.VendorUserDTO;
@@ -485,7 +486,7 @@ public class ObjectResource {
                     object.setUploadsCompleted(uploadsCompleted);
                     Integer uploadsRemaining = (object.getNumberOfUploadReqd()+((object.getNumberOfUploadReqd()*(object.getBufferPercent())/100))-uploadsCompleted);
                     object.setUploadsRemaining(uploadsRemaining);
-                    UploadDetail ud = objectRepository.countUploadsByObjectAndAidasAdmin(object.getId());
+                    IUploadDetail ud = objectRepository.countUploadsByObjectAndAidasAdmin(object.getId());
                     object.setTotalUploaded(ud.getTotalUploaded());
                     object.setTotalApproved(ud.getTotalApproved());
                     object.setTotalRejected(ud.getTotalRejected());
@@ -501,7 +502,7 @@ public class ObjectResource {
                     object.setUploadsCompleted(uploadsCompleted);
                     Integer uploadsRemaining = (object.getNumberOfUploadReqd()+((object.getNumberOfUploadReqd()*(object.getBufferPercent())/100))-uploadsCompleted);
                     object.setUploadsRemaining(uploadsRemaining);
-                    UploadDetail ud = objectRepository.countUploadsByObjectAndAidasOrganisation(user.getOrganisation().getId(), object.getId());
+                    IUploadDetail ud = objectRepository.countUploadsByObjectAndAidasOrganisation(user.getOrganisation().getId(), object.getId());
                     object.setTotalUploaded(ud.getTotalUploaded());
                     object.setTotalApproved(ud.getTotalApproved());
                     object.setTotalRejected(ud.getTotalRejected());
@@ -517,7 +518,7 @@ public class ObjectResource {
                     object.setUploadsCompleted(uploadsCompleted);
                     Integer uploadsRemaining = (object.getNumberOfUploadReqd()+((object.getNumberOfUploadReqd()*(object.getBufferPercent())/100))-uploadsCompleted);
                     object.setUploadsRemaining(uploadsRemaining);
-                    UploadDetail ud = objectRepository.countUploadsByObjectAndAidasCustomer(user.getCustomer().getId(), object.getId());
+                    IUploadDetail ud = objectRepository.countUploadsByObjectAndAidasCustomer(user.getCustomer().getId(), object.getId());
                     object.setTotalUploaded(ud.getTotalUploaded());
                     object.setTotalApproved(ud.getTotalApproved());
                     object.setTotalRejected(ud.getTotalRejected());
@@ -526,14 +527,14 @@ public class ObjectResource {
             }
         }
         if(user.getAuthority().getName().equals(AidasConstants.VENDOR_ADMIN) ){
-            objects = objectRepository.getAllObjectsByVendorAdminProject(user.getVendor(),projectId);
+            objects = objectRepository.getAllObjectsByVendorAdminProject(user.getVendor().getId(),projectId);
             if(objects!=null && objects.size()>0){
                 for(Object object : objects){
                     Integer uploadsCompleted = uploadRepository.countAidasUploadByAidasUserAidasObjectMapping_AidasObject(object.getId());
                     object.setUploadsCompleted(uploadsCompleted);
                     Integer uploadsRemaining = (object.getNumberOfUploadReqd()+((object.getNumberOfUploadReqd()*(object.getBufferPercent())/100))-uploadsCompleted);
                     object.setUploadsRemaining(uploadsRemaining);
-                    UploadDetail ud = objectRepository.countUploadsByObjectAndAidasVendor(user.getVendor().getId(), object.getId());
+                    IUploadDetail ud = objectRepository.countUploadsByObjectAndAidasVendor(user.getVendor().getId(), object.getId());
                     object.setTotalUploaded(ud.getTotalUploaded());
                     object.setTotalApproved(ud.getTotalApproved());
                     object.setTotalRejected(ud.getTotalRejected());
@@ -542,14 +543,14 @@ public class ObjectResource {
             }
         }
         if( user.getAuthority().getName().equals(AidasConstants.VENDOR_USER)){
-            objects = objectRepository.getAllObjectsByVendorAdminProject(user.getVendor(),projectId);
+            objects = objectRepository.getAllObjectsByVendorAdminProject(user.getVendor().getId(),projectId);
             if(objects!=null && objects.size()>0){
                 for(Object object : objects){
                     Integer uploadsCompleted = uploadRepository.countAidasUploadByAidasUserAidasObjectMapping_AidasObject(object.getId());
                     object.setUploadsCompleted(uploadsCompleted);
                     Integer uploadsRemaining = (object.getNumberOfUploadReqd()+((object.getNumberOfUploadReqd()*(object.getBufferPercent())/100))-uploadsCompleted);
                     object.setUploadsRemaining(uploadsRemaining);
-                    UploadDetail ud = objectRepository.countUploadsByObjectAndUser(user.getId(), object.getId());
+                    IUploadDetail ud = objectRepository.countUploadsByObjectAndUser(user.getId(), object.getId());
                     object.setTotalUploaded(ud.getTotalUploaded());
                     object.setTotalApproved(ud.getTotalApproved());
                     object.setTotalRejected(ud.getTotalRejected());

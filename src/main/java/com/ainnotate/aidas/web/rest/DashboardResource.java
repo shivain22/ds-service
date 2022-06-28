@@ -132,9 +132,9 @@ public class DashboardResource {
             ad.setProjectCount(projectRepository.countAidasProjectByVendorUser(user.getId()));
             ad.setObjectCount(objectRepository.countAidasProjectByVendorUser(user.getId()));
             ad.setUploadCount(uploadRepository.countAidasUploadByAidasVendorUser(user.getId()));
-            /*ad.setApprovedUploadCount(uploadRepository.countAidasUploadByAidasVendorUser(user.getVendor().getId(),AidasConstants.AIDAS_UPLOAD_APPROVED));
+            ad.setApprovedUploadCount(uploadRepository.countAidasUploadByAidasVendorUser(user.getVendor().getId(),AidasConstants.AIDAS_UPLOAD_APPROVED));
             ad.setRejectedUploadCount(uploadRepository.countAidasUploadByAidasVendorUser(user.getVendor().getId(),AidasConstants.AIDAS_UPLOAD_REJECTED));
-            ad.setPendingUploadCount(uploadRepository.countAidasUploadByAidasVendorUser(user.getVendor().getId(),AidasConstants.AIDAS_UPLOAD_PENDING));*/
+            ad.setPendingUploadCount(uploadRepository.countAidasUploadByAidasVendorUser(user.getVendor().getId(),AidasConstants.AIDAS_UPLOAD_PENDING));
              ad.setUserCount(1l);
         }
         return ResponseEntity.ok().body(ad);

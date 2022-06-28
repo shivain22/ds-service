@@ -1,5 +1,7 @@
 package com.ainnotate.aidas.domain;
 
+import com.ainnotate.aidas.dto.ProjectDTO;
+import com.ainnotate.aidas.dto.UserDTO;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.io.Serializable;
 import java.util.HashSet;
@@ -19,12 +21,186 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 /**
  * A AidasProject.
  */
+
+
+@NamedNativeQuery(name = "Project.findProjectWithUploadCountByUser",
+    query = "(select " +
+        "        p.id," +
+        "        sum(o.number_of_upload_reqd) as totalRequired, " +
+        "        count(u.id) as totalUploaded, " +
+        "        SUM(CASE WHEN u.approval_status = 1 THEN 1 ELSE 0 END) AS totalApproved,  " +
+        "        SUM(CASE WHEN u.approval_status = 0 THEN 1 ELSE 0 END) AS totalRejected,   " +
+        "        SUM(CASE WHEN u.approval_status = 2 THEN 1 ELSE 0 END) AS totalPending," +
+        "        p.status ," +
+        "        p.audio_type ," +
+        "        p.auto_create_objects ," +
+        "        p.buffer_percent ," +
+        "        p.description ," +
+        "        p.external_dataset_status ," +
+        "        p.image_type ," +
+        "        p.name ," +
+        "        p.num_of_objects ," +
+        "        p.num_of_uploads_reqd ," +
+        "        p.object_prefix ," +
+        "        p.object_suffix ," +
+        "        p.project_type ," +
+        "        p.qc_levels ," +
+        "        p.rework_status ," +
+        "        p.video_type " +
+        "        from upload u    " +
+        "        left join user_vendor_mapping_object_mapping uvmom on u.user_vendor_mapping_object_mapping_id=uvmom.id   " +
+        "        left join object o on o.id=uvmom.object_id   " +
+        "        left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id   " +
+        "        left join project p on o.project_id=p.id" +
+        "        where    uvm.user_id=?1  " +
+        "        group by p.id,uvmom.id order by p.id desc) union  " +
+        " (select " +
+        "        p.id," +
+        "        sum(o.number_of_upload_reqd) as totalRequired, " +
+        "        0 as totalUploaded, " +
+        "        0 AS totalApproved,  " +
+        "        0 AS totalRejected,   " +
+        "        0 AS totalPending," +
+        "        p.status ," +
+        "        p.audio_type ," +
+        "        p.auto_create_objects ," +
+        "        p.buffer_percent ," +
+        "        p.description ," +
+        "        p.external_dataset_status ," +
+        "        p.image_type ," +
+        "        p.name ," +
+        "        p.num_of_objects ," +
+        "        p.num_of_uploads_reqd ," +
+        "        p.object_prefix ," +
+        "        p.object_suffix ," +
+        "        p.project_type ," +
+        "        p.qc_levels ," +
+        "        p.rework_status ," +
+        "        p.video_type " +
+        "        from  user_vendor_mapping_object_mapping uvmom  " +
+        "        left join object o on o.id=uvmom.object_id   " +
+        "        left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id   " +
+        "        left join project p on o.project_id=p.id" +
+        "        where    uvm.user_id=?1 and p.id not in(" +
+            "select " +
+        "        p.id" +
+        "        from upload u    " +
+        "        left join user_vendor_mapping_object_mapping uvmom on u.user_vendor_mapping_object_mapping_id=uvmom.id   " +
+        "        left join object o on o.id=uvmom.object_id   " +
+        "        left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id   " +
+        "        left join project p on o.project_id=p.id" +
+        "        where    uvm.user_id=?1  " +
+        "        group by p.id order by p.id desc"+
+        ") " +
+    "        group by p.id order by p.id desc)  ",
+    resultSetMapping = "Mapping.ProjectDTO")
+
+@NamedNativeQuery(name = "Project.findProjectWithUploadCountByUser.count",
+    query = "select count(*) from ((select " +
+        "        p.id," +
+        "        count(u.id) as totalUploaded, " +
+        "        SUM(CASE WHEN u.approval_status = 1 THEN 1 ELSE 0 END) AS totalApproved,  " +
+        "        SUM(CASE WHEN u.approval_status = 0 THEN 1 ELSE 0 END) AS totalRejected,   " +
+        "        SUM(CASE WHEN u.approval_status = 2 THEN 1 ELSE 0 END) AS totalPending," +
+        "        p.status ," +
+        "        p.audio_type ," +
+        "        p.auto_create_objects ," +
+        "        p.buffer_percent ," +
+        "        p.description ," +
+        "        p.external_dataset_status ," +
+        "        p.image_type ," +
+        "        p.name ," +
+        "        p.num_of_objects ," +
+        "        p.num_of_uploads_reqd ," +
+        "        p.object_prefix ," +
+        "        p.object_suffix ," +
+        "        p.project_type ," +
+        "        p.qc_levels ," +
+        "        p.rework_status ," +
+        "        p.video_type " +
+        "        from upload u    " +
+        "        left join user_vendor_mapping_object_mapping uvmom on u.user_vendor_mapping_object_mapping_id=uvmom.id   " +
+        "        left join object o on o.id=uvmom.object_id   " +
+        "        left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id   " +
+        "        left join project p on o.project_id=p.id" +
+        "        where    uvm.user_id=?1  " +
+        "        group by p.id order by p.id desc) union  " +
+        " (select " +
+        "        p.id," +
+        "        0 as totalUploaded, " +
+        "        0 AS totalApproved,  " +
+        "        0 AS totalRejected,   " +
+        "        0 AS totalPending," +
+        "        p.status ," +
+        "        p.audio_type ," +
+        "        p.auto_create_objects ," +
+        "        p.buffer_percent ," +
+        "        p.description ," +
+        "        p.external_dataset_status ," +
+        "        p.image_type ," +
+        "        p.name ," +
+        "        p.num_of_objects ," +
+        "        p.num_of_uploads_reqd ," +
+        "        p.object_prefix ," +
+        "        p.object_suffix ," +
+        "        p.project_type ," +
+        "        p.qc_levels ," +
+        "        p.rework_status ," +
+        "        p.video_type " +
+        "        from  user_vendor_mapping_object_mapping uvmom  " +
+        "        left join object o on o.id=uvmom.object_id   " +
+        "        left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id   " +
+        "        left join project p on o.project_id=p.id" +
+        "        where    uvm.user_id=?1 and p.id not in(" +
+        "select " +
+        "        p.id" +
+        "        from upload u    " +
+        "        left join user_vendor_mapping_object_mapping uvmom on u.user_vendor_mapping_object_mapping_id=uvmom.id   " +
+        "        left join object o on o.id=uvmom.object_id   " +
+        "        left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id   " +
+        "        left join project p on o.project_id=p.id" +
+        "        where    uvm.user_id=?1  " +
+        "        group by p.id order by p.id desc"+
+        ") " +
+        "        group by p.id order by p.id desc))a  ")
+
+
+@SqlResultSetMapping(name = "Mapping.ProjectDTO",
+    classes = @ConstructorResult(targetClass = ProjectDTO.class,
+        columns = {
+            @ColumnResult(name = "id",type = Long.class),
+            @ColumnResult(name = "totalRequired",type = Integer.class),
+            @ColumnResult(name = "totalUploaded",type = Integer.class),
+            @ColumnResult(name = "totalApproved",type = Integer.class),
+            @ColumnResult(name = "totalRejected",type = Integer.class),
+            @ColumnResult(name = "totalPending",type = Integer.class),
+            @ColumnResult(name = "status",type = Integer.class),
+            @ColumnResult(name = "audio_type",type = String.class),
+            @ColumnResult(name = "auto_create_objects",type = Integer.class),
+            @ColumnResult(name = "buffer_percent",type = Integer.class),
+            @ColumnResult(name = "description",type = String.class),
+            @ColumnResult(name = "external_dataset_status",type = Integer.class),
+            @ColumnResult(name = "image_type",type = String.class),
+            @ColumnResult(name = "name",type = String.class),
+            @ColumnResult(name = "num_of_objects",type = Integer.class),
+            @ColumnResult(name = "num_of_uploads_reqd",type = Integer.class),
+            @ColumnResult(name = "object_prefix",type = String.class),
+            @ColumnResult(name = "object_suffix",type = String.class),
+            @ColumnResult(name = "project_type",type = String.class),
+            @ColumnResult(name = "qc_levels",type = Integer.class),
+            @ColumnResult(name = "rework_status",type = Integer.class),
+            @ColumnResult(name = "video_type",type = String.class)
+        }))
+
+
 @Entity
 @Table(name = "project")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @org.springframework.data.elasticsearch.annotations.Document(indexName = "aidasproject")
 @Audited
 public class Project extends AbstractAuditingEntity  implements Serializable {
+
+
 
     private static final long serialVersionUID = 1L;
 
