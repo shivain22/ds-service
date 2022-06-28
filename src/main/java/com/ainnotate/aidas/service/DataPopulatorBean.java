@@ -479,7 +479,7 @@ public class DataPopulatorBean implements Runnable {
     private void addSampleProjects(List<String[]> data){
         int i=0;
         int j=0;
-        String query="insert into project(name,description,status,is_sample_data,customer_id) values ";
+        String query="insert into project(name,description,status,is_sample_data,customer_id,project_type) values ";
         String values = "";
         for(String[] d:data ){
             if(i%5==0){
@@ -487,7 +487,7 @@ public class DataPopulatorBean implements Runnable {
                     j++;
                 }
             }
-            values += "('"+d[0]+"','"+d[1]+"',1,1,"+customers.get(j).getId()+"),";
+            values += "('"+d[0]+"','"+d[1]+"',1,1,"+customers.get(j).getId()+",'image'),";
         }
         batchInsert(query+values.substring(0,values.length()-1));
         projects = projectRepository.getAllSampleProjects();
@@ -608,7 +608,7 @@ public class DataPopulatorBean implements Runnable {
     }
 
     private void batchInsert(String query){
-        try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3308/ainnotateservice", "root", "")) {
+        try (Connection conn = DriverManager.getConnection("jdbc:mysql://ainnotateservice-mysql:3306/ainnotateservice", "root", "")) {
             if (conn != null) {
                 PreparedStatement ps = conn.prepareStatement(query);
                 ps.executeUpdate();

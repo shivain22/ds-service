@@ -1,5 +1,7 @@
 package com.ainnotate.aidas.dto;
 
+import java.util.HashMap;
+
 public class UploadDTO {
 
     private Long userId;
@@ -7,7 +9,7 @@ public class UploadDTO {
     private String uploadUrl;
     private String etag;
     private String objectKey;
-    private String uploadMetadata;
+    private HashMap<String,String> uploadMetadata;
 
     public String getObjectKey() {
         return objectKey;
@@ -17,11 +19,11 @@ public class UploadDTO {
         this.objectKey = objectKey;
     }
 
-    public String getUploadMetadata() {
+    public HashMap<String, String> getUploadMetadata() {
         return uploadMetadata;
     }
 
-    public void setUploadMetadata(String uploadMetadata) {
+    public void setUploadMetadata(HashMap<String, String> uploadMetadata) {
         this.uploadMetadata = uploadMetadata;
     }
 

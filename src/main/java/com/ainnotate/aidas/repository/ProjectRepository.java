@@ -70,7 +70,7 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     @Query(nativeQuery = true)
     List<ProjectDTO> findProjectWithUploadCountByUser(Pageable page, Long userId);
 
-    @Query(value=" select count(*) from upload u, user_vendor_mapping_object_mapping uvmom, object o where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and u.approval_status=1 group by o.project_id",nativeQuery = true)
+    @Query(value=" select count(*) from upload u, user_vendor_mapping_object_mapping uvmom, object o where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and u.approval_status=1 and o.project_id=?1 group by o.project_id ",nativeQuery = true)
     Integer countUploadsByProject(Long projectId);
 
     @Query(value = "select count(*) from project where id>0 and status=1", nativeQuery = true)

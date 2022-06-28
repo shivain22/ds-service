@@ -20,4 +20,18 @@ id;name;value;system_property;property_type;optional;description;default_prop;us
 19;captureAudio;false;false;1;true;Enable audio for video projects;1;-1
 20;fileName;test;false;1;true;Filename;1;-1
 21;phoneModel;Samsung;false;1;true;Phone Model;1;-1
-22;videoDuration;10:00;false;1;true;Vdieo Duration;1;-1
+22;videoDuration;10:00;false;1;true;Video Duration;1;-1
+23;os;android;false;1;true;Operating System;1;-1
+24;osVersion;12;false;1;true;Operation System Version;1;-1
+25;phoneModel;Samsung;false;1;true;Samsung;1;-1
+26;fileSize;100KB;false;1;true;File Size;1;-1
+27;imageFormat;jpeg;false;1;true;Image Format;1;-1
+28;videoContainerFormat;mp4;false;1;true;Video Container Format;1;-1
+29;videoCompressionFormat;h264;false;1;true;Video Compression Format;1;-1
+30;videoFps;30;false;1;true;Video FPS;1;-1
+31;audioFormat;wav;false;1;true;Audio Format;1;-1
+32;audioSamplingRate;44100;false;1;true;Audio Sampling Rate;1;-1
+33;audioBitsPerSample;16;false;1;true;Audio Bits Per Sample;1;-1
+34;audioChannels;1;false;1;true;Audio Channels;1;-1
+35;audioBitRate;128kbps;false;1;true;Audio Bit Rate;1;-1
+36;videoBitRate;5000kbps;false;1;true;Vdieo Duration;1;-1

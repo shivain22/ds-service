@@ -24,36 +24,62 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 
 
 @NamedNativeQuery(name = "Project.findProjectWithUploadCountByUser",
-    query = "(select " +
-        "        p.id," +
-        "        sum(o.number_of_upload_reqd) as totalRequired, " +
-        "        count(u.id) as totalUploaded, " +
-        "        SUM(CASE WHEN u.approval_status = 1 THEN 1 ELSE 0 END) AS totalApproved,  " +
-        "        SUM(CASE WHEN u.approval_status = 0 THEN 1 ELSE 0 END) AS totalRejected,   " +
-        "        SUM(CASE WHEN u.approval_status = 2 THEN 1 ELSE 0 END) AS totalPending," +
-        "        p.status ," +
-        "        p.audio_type ," +
-        "        p.auto_create_objects ," +
-        "        p.buffer_percent ," +
-        "        p.description ," +
-        "        p.external_dataset_status ," +
-        "        p.image_type ," +
-        "        p.name ," +
-        "        p.num_of_objects ," +
-        "        p.num_of_uploads_reqd ," +
-        "        p.object_prefix ," +
-        "        p.object_suffix ," +
-        "        p.project_type ," +
-        "        p.qc_levels ," +
-        "        p.rework_status ," +
-        "        p.video_type " +
-        "        from upload u    " +
-        "        left join user_vendor_mapping_object_mapping uvmom on u.user_vendor_mapping_object_mapping_id=uvmom.id   " +
-        "        left join object o on o.id=uvmom.object_id   " +
-        "        left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id   " +
-        "        left join project p on o.project_id=p.id" +
-        "        where    uvm.user_id=?1  " +
-        "        group by p.id,uvmom.id order by p.id desc) union  " +
+    query = "select \n" +
+        "projectId as id, \n" +
+        "sum(totalRequired) as totalRequired,\n" +
+        "sum(totalUploaded) as totalUploaded,\n" +
+        "sum(totalApproved) as totalApproved,\n" +
+        "sum(totalRejected) as totalRejected,\n" +
+        "sum(totalPending) as totalPending,\n" +
+        "a.status , \n" +
+        "a.audio_type , \n" +
+        "a.auto_create_objects , \n" +
+        "a.buffer_percent , \n" +
+        "a.description , \n" +
+        "a.external_dataset_status , \n" +
+        "a.image_type , \n" +
+        "a.name , \n" +
+        "a.num_of_objects , \n" +
+        "a.num_of_uploads_reqd , \n" +
+        "a.object_prefix , \n" +
+        "a.object_suffix , \n" +
+        "a.project_type , \n" +
+        "a.qc_levels , \n" +
+        "a.rework_status , \n" +
+        "a.video_type \n" +
+        "from (\n" +
+        "select \n" +
+        "p.id as projectId,\n" +
+        "o.id as objectId,\n" +
+        "o.number_of_upload_reqd as totalRequired, \n" +
+        "count(u.id) as totalUploaded, \n" +
+        "sum(CASE WHEN u.approval_status = 1 THEN 1 ELSE 0 END) AS totalApproved,  \n" +
+        "sum(CASE WHEN u.approval_status = 0 THEN 1 ELSE 0 END) AS totalRejected,   \n" +
+        "sum(CASE WHEN u.approval_status = 2 THEN 1 ELSE 0 END) AS totalPending, \n" +
+        "p.status , \n" +
+        "p.audio_type , \n" +
+        "p.auto_create_objects , \n" +
+        "p.buffer_percent , \n" +
+        "p.description , \n" +
+        "p.external_dataset_status , \n" +
+        "p.image_type , \n" +
+        "p.name , \n" +
+        "p.num_of_objects , \n" +
+        "p.num_of_uploads_reqd , \n" +
+        "p.object_prefix , \n" +
+        "p.object_suffix , \n" +
+        "p.project_type , \n" +
+        "p.qc_levels , \n" +
+        "p.rework_status , \n" +
+        "p.video_type \n" +
+        "from upload u    \n" +
+        "left join user_vendor_mapping_object_mapping uvmom on u.user_vendor_mapping_object_mapping_id=uvmom.id   \n" +
+        "left join object o on o.id=uvmom.object_id   \n" +
+        "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id   \n" +
+        "left join project p on o.project_id=p.id \n" +
+        "where    uvm.user_id=271  \n" +
+        "group by o.id,u.user_vendor_mapping_object_mapping_id\n" +
+        ") a group by projectId union "+
         " (select " +
         "        p.id," +
         "        sum(o.number_of_upload_reqd) as totalRequired, " +
@@ -92,7 +118,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
         "        where    uvm.user_id=?1  " +
         "        group by p.id order by p.id desc"+
         ") " +
-    "        group by p.id order by p.id desc)  ",
+        "        group by p.id order by p.id desc)  ",
     resultSetMapping = "Mapping.ProjectDTO")
 
 @NamedNativeQuery(name = "Project.findProjectWithUploadCountByUser.count",

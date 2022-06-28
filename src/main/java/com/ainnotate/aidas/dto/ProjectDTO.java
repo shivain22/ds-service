@@ -16,6 +16,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 
@@ -204,6 +205,16 @@ public class ProjectDTO extends AbstractAuditingEntity implements Serializable {
     private Integer numOfUploadsReqd;
 
     private Integer bufferPercent;
+
+    private List<ProjectProperty> aidasProjectProperties;
+
+    public List<ProjectProperty> getAidasProjectProperties() {
+        return aidasProjectProperties;
+    }
+
+    public void setAidasProjectProperties(List<ProjectProperty> aidasProjectProperties) {
+        this.aidasProjectProperties = aidasProjectProperties;
+    }
 
     public Long getId() {
         return id;

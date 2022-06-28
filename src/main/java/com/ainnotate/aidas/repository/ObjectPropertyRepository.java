@@ -20,7 +20,7 @@ public interface ObjectPropertyRepository extends JpaRepository<ObjectProperty, 
     @Query(value = "select * from object_property aop where aop.object_id>?1",nativeQuery = true)
     Page<ObjectProperty> findAllByAidasObjectIdGreaterThan(Pageable page, Long objectId);
 
-    @Query(value = "select * from object_property op , property p , object o where op.object_id=o.id and op.property_id=p.id",nativeQuery = true)
+    @Query(value = "select * from object_property op  where op.object_id=?1 and op.property_id=?2",nativeQuery = true)
     ObjectProperty findByAidasObject_IdAndAidasProperty_Id(Long aidasObjectId, Long aidasPropertiesId);
 
     //property_type =2 which is equal to property_type metadata
@@ -41,4 +41,7 @@ public interface ObjectPropertyRepository extends JpaRepository<ObjectProperty, 
     @Modifying
     @Query(value = "delete from object_property where is_sample_data=1 order by id desc",nativeQuery = true)
     void deleteAllSampleObjectProperty();
+
+    @Query(value = "select * from object_property where object_id=?1",nativeQuery = true)
+    List<ObjectProperty> getAllObjectPropertyForObject(Long objectId);
 }

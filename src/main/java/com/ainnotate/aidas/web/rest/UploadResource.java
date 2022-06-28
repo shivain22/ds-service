@@ -267,7 +267,7 @@ public class UploadResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/aidas-uploads/dto")
-    public ResponseEntity<Upload> createAidasUploadFromDto(@Valid @RequestBody UploadDTO uploadDto) throws URISyntaxException {
+    public ResponseEntity<Upload> createAidasUploadFromDto( @RequestBody UploadDTO uploadDto) throws URISyntaxException {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to save AidasUpload : {}", uploadDto);
         Authority authority = user.getAuthority();
@@ -296,44 +296,41 @@ public class UploadResource {
             if (uploadDto.getEtag() == null) {
                 throw new BadRequestAlertException("No Etag Id", ENTITY_NAME, "idexists");
             }
-
             Upload upload = new Upload();
-            UserVendorMappingObjectMapping auaom = userVendorMappingObjectMappingRepository.findByUserObject(uploadDto.getUserId(),uploadDto.getObjectId());
-
-
-
-            Object object = upload.getUserVendorMappingObjectMapping().getObject();
-            Project project = upload.getUserVendorMappingObjectMapping().getObject().getProject();
+            UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserObject(uploadDto.getUserId(),uploadDto.getObjectId());
+            Object object = uvmom.getObject();
+            Project project = object.getProject();
             Customer customer = project.getCustomer();
-
-            upload.setUserVendorMappingObjectMapping(auaom);
+            upload.setUserVendorMappingObjectMapping(uvmom);
             upload.setDateUploaded(Instant.now());
             upload.setName(uploadDto.getObjectKey());
             upload.setUploadUrl(uploadDto.getUploadUrl());
             upload.setUploadEtag(uploadDto.getEtag());
             upload.setObjectKey(uploadDto.getObjectKey());
             upload.setApprovalStatus(AidasConstants.AIDAS_UPLOAD_PENDING);
-
             Long mandatoryProjectProperties = projectPropertyRepository.countProjectPropertyByProjectAndOptional(project.getId(),AidasConstants.AIDAS_PROPERTY_REQUIRED);
             Long mandatoryObjectProperties = objectPropertyRepository.countObjectProperties(object.getId(),AidasConstants.AIDAS_PROPERTY_REQUIRED);
-
             if(mandatoryObjectProperties==0 && mandatoryProjectProperties==0){
                 upload.setMetadataStatus(AidasConstants.AIDAS_UPLOAD_METADATA_REQUIRED);
             }else {
                 upload.setMetadataStatus(AidasConstants.AIDAS_UPLOAD_METADATA_COMPLETED);
             }
-            upload.setStatus(AidasConstants.AIDAS_UPLOAD_PENDING);
+            upload.setApprovalStatus(AidasConstants.AIDAS_UPLOAD_PENDING);
             upload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
-
             try {
                 Upload result = uploadRepository.save(upload);
-                JsonParser springParser = JsonParserFactory.getJsonParser();
-                Map < String, java.lang.Object> map = springParser.parseMap(upload.getUploadMetaData());
-                for (Map.Entry < String, java.lang.Object> entry: map.entrySet()) {
-                    Property property = propertyRepository.getByNameAndUserId(entry.getValue().toString(),customer.getId());
+                System.out.println("My Test::"+uploadDto.getUploadMetadata());
+
+                for (Map.Entry < String, String> entry:uploadDto.getUploadMetadata().entrySet() ) {
+                    System.out.println("key:"+entry.getKey()+" value:"+entry.getValue());
+                    Property property = propertyRepository.getByNameAndUserId(entry.getKey().trim(),customer.getId());
+                    System.out.println(property);
                     if(property!=null) {
                         ProjectProperty projectProperty = projectPropertyRepository.findByProjectAndProperty(project.getId(), property.getId());
+                        System.out.println(projectProperty);
                         ObjectProperty objectProperty = objectPropertyRepository.findByAidasObject_IdAndAidasProperty_Id(object.getId(), property.getId());
+                        System.out.println(objectProperty);
+
                         if(projectProperty!=null){
                             UploadMetaData uploadMetaData = new UploadMetaData();
                             uploadMetaData.setUpload(upload);
@@ -350,17 +347,16 @@ public class UploadResource {
                         }
                     }
                 }
-                //aidasUploadSearchRepository.save(result);
                 return ResponseEntity
                     .created(new URI("/api/aidas-uploads/" + result.getId()))
                     .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
                     .body(result);
             }catch(Exception e){
                 e.printStackTrace();
-                throw new BadRequestAlertException("Internal error occured.  Contact administrator "+e.getMessage(), ENTITY_NAME, "idexists");
+                throw new BadRequestAlertException("Internal error occured.  Contact administrator", ENTITY_NAME, "idexists");
             }
         }
-        throw new BadRequestAlertException("Internal error occured.  Contact administrator", ENTITY_NAME, "idexists");
+        throw new BadRequestAlertException("End of Upload...No way ", ENTITY_NAME, "idexists");
     }
 
     /**

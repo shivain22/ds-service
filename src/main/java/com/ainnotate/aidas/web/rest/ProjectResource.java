@@ -54,6 +54,9 @@ public class ProjectResource {
     private final ProjectRepository projectRepository;
 
     @Autowired
+    private ProjectPropertyRepository projectPropertyRepository;
+
+    @Autowired
     private QcProjectMappingRepository qcProjectMappingRepository;
 
     private final ProjectSearchRepository aidasProjectSearchRepository;
@@ -560,6 +563,8 @@ public class ProjectResource {
             List<ProjectDTO> projects =  projectRepository.findProjectWithUploadCountByUser(pageable,user.getId());
             for(ProjectDTO p:projects){
                 Integer totalApprovedUploads = projectRepository.countUploadsByProject(p.getId());
+                List<ProjectProperty> projectProperties = projectPropertyRepository.findAllProjectProperty(p.getId());
+                p.setAidasProjectProperties(projectProperties);
                 if(totalApprovedUploads!=null) {
                     p.setTotalRequired(p.getTotalRequired() - totalApprovedUploads);
                 }else{

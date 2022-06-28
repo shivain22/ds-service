@@ -3,6 +3,7 @@ package com.ainnotate.aidas.repository;
 import com.ainnotate.aidas.domain.*;
 import com.ainnotate.aidas.domain.Object;
 import com.ainnotate.aidas.dto.IUploadDetail;
+import com.ainnotate.aidas.dto.ObjectDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
@@ -61,8 +62,22 @@ public interface ObjectRepository extends JpaRepository<Object, Long> {
     @Query(value="select ao.* from project ap, object ao,  user_vendor_mapping_object_mapping auavmaom,user au,user_vendor_mapping auavm  where  auavmaom.object_id=ao.id and ao.project_id=ap.id and auavmaom.user_vendor_mapping_id=auavm.id and auavm.user_id=au.id and auavm.vendor_id= ?1 and ap.id=?2 and ao.id>-1",nativeQuery = true)
     Page<Object> findAllObjectsByVendorAdminProject(Pageable pageable, Vendor vendor, Long aidasProjectId);
 
-    @Query(value="select o.*from object o,user_vendor_mapping_object_mapping uvmom,user_vendor_mapping uvm where  uvmom.object_id=o.id and uvmom.user_vendor_mapping_id=uvm.id and uvm.vendor_id= ?1 and o.project_id=?2 and o.status =1 and (o.is_dummy is null or o.is_dummy=0)group by o.id",nativeQuery = true)
-    List<Object> getAllObjectsByVendorAdminProject(Long vendor, Long aidasProjectId);
+    @Query(nativeQuery = true)
+    List<ObjectDTO> getAllObjectsByVendorUserProject(Pageable pageable,Long userId);
+
+    @Query(value="select \n" +
+        "o.*, \n" +
+        "count(u.id) as totalUploaded, \n" +
+        "sum(CASE WHEN u.approval_status = 1 THEN 1 ELSE 0 END) AS totalApproved,  \n" +
+        "sum(CASE WHEN u.approval_status = 0 THEN 1 ELSE 0 END) AS totalRejected,   \n" +
+        "sum(CASE WHEN u.approval_status = 2 THEN 1 ELSE 0 END) AS totalPending \n" +
+        "from upload u    \n" +
+        "left join user_vendor_mapping_object_mapping uvmom on u.user_vendor_mapping_object_mapping_id=uvmom.id   \n" +
+        "left join object o on o.id=uvmom.object_id   \n" +
+        "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id \n" +
+        "where    uvm.vendor_id=?1  \n" +
+        "group by o.id,u.user_vendor_mapping_object_mapping_id",nativeQuery = true)
+    List<Object> getAllObjectsByVendorAdminProject(Long vendorId);
 
     @Query(value="select ao.* from project ap, object ao,  user_vendor_mapping_object_mapping auavmaom,user_vendor_mapping auavm ,user au where  auavmaom.object_id=ao.id and ao.project_id=ap.id and auavmaom.user_vendor_mapping_id=auavm.id and auavm.user_id=au.id and au.id= ?1 and ap.id=?2 and ao.status=1 and ao.is_dummy=0",nativeQuery = true)
     Page<Object> findAllObjectsByCustomerAdminProject(Pageable pageable, Customer customer, Long aidasProjectId);

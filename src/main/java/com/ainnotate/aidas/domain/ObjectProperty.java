@@ -1,5 +1,6 @@
 package com.ainnotate.aidas.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.io.Serializable;
 import javax.persistence.*;
@@ -34,7 +35,8 @@ public class ObjectProperty extends AbstractAuditingEntity  implements Serializa
 
     @ManyToOne(optional = false)
     @NotNull
-    @JsonIgnoreProperties(value = { "project" }, allowSetters = true)
+    @JsonIgnoreProperties(value = { "project","objectProperties","customer" }, allowSetters = true)
+    @JsonIgnore
     private Object object;
 
     @ManyToOne(optional = false)

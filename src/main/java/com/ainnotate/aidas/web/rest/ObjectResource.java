@@ -2,10 +2,7 @@ package com.ainnotate.aidas.web.rest;
 
 import com.ainnotate.aidas.domain.*;
 import com.ainnotate.aidas.domain.Object;
-import com.ainnotate.aidas.dto.IUploadDetail;
-import com.ainnotate.aidas.dto.ObjectVendorMappingDTO;
-import com.ainnotate.aidas.dto.UserDTO;
-import com.ainnotate.aidas.dto.VendorUserDTO;
+import com.ainnotate.aidas.dto.*;
 import com.ainnotate.aidas.repository.*;
 import com.ainnotate.aidas.repository.search.ObjectSearchRepository;
 import com.ainnotate.aidas.constants.AidasConstants;
@@ -23,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.support.PagedListHolder;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -527,8 +525,8 @@ public class ObjectResource {
             }
         }
         if(user.getAuthority().getName().equals(AidasConstants.VENDOR_ADMIN) ){
-            objects = objectRepository.getAllObjectsByVendorAdminProject(user.getVendor().getId(),projectId);
-            if(objects!=null && objects.size()>0){
+            objects = objectRepository.getAllObjectsByVendorAdminProject(user.getVendor().getId());
+            /*if(objects!=null && objects.size()>0){
                 for(Object object : objects){
                     Integer uploadsCompleted = uploadRepository.countAidasUploadByAidasUserAidasObjectMapping_AidasObject(object.getId());
                     object.setUploadsCompleted(uploadsCompleted);
@@ -540,11 +538,11 @@ public class ObjectResource {
                     object.setTotalRejected(ud.getTotalRejected());
                     object.setTotalPending(ud.getTotalPending());
                 }
-            }
+            }*/
         }
-        if( user.getAuthority().getName().equals(AidasConstants.VENDOR_USER)){
-            objects = objectRepository.getAllObjectsByVendorAdminProject(user.getVendor().getId(),projectId);
-            if(objects!=null && objects.size()>0){
+        /*if( user.getAuthority().getName().equals(AidasConstants.VENDOR_USER)){
+            objects = objectRepository.getAllObjectsByVendorUserProject(pageable,user.getId());
+            *//*if(objects!=null && objects.size()>0){
                 for(Object object : objects){
                     Integer uploadsCompleted = uploadRepository.countAidasUploadByAidasUserAidasObjectMapping_AidasObject(object.getId());
                     object.setUploadsCompleted(uploadsCompleted);
@@ -556,10 +554,37 @@ public class ObjectResource {
                     object.setTotalRejected(ud.getTotalRejected());
                     object.setTotalPending(ud.getTotalPending());
                 }
-            }
-        }
+            }*//*
+        }*/
         return ResponseEntity.ok().body(objects);
     }
+
+
+
+    @GetMapping("/aidas-projects/{id}/aidas-objects/details")
+    public ResponseEntity<List<ObjectDTO>> getAllAidasObjectsOfProjectForVendorUser(Pageable pageable, @PathVariable(value = "id", required = false) final Long projectId) {
+        log.debug("REST request to get a page of AidasObjects");
+        User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        List<ObjectDTO> objects = null;
+        if( user.getAuthority().getName().equals(AidasConstants.VENDOR_USER)){
+            objects = objectRepository.getAllObjectsByVendorUserProject(pageable,user.getId());
+            if(objects!=null && objects.size()>0){
+                for(ObjectDTO object : objects){
+                    List<ObjectProperty>objectProperties = objectPropertyRepository.getAllObjectPropertyForObject(object.getId());
+                    object.setObjectProperties(objectProperties);
+                }
+            }
+        }
+        PagedListHolder<ObjectDTO> pages = new PagedListHolder(objects);
+        pages.setPage(pageable.getPageNumber()); //set current page number
+        pages.setPageSize(pageable.getPageSize()); // set the size of page
+        if(pages.getPageList()!=null) {
+            return ResponseEntity.ok().body(pages.getPageList());
+        }else{
+            throw new BadRequestAlertException("Not Authorised", ENTITY_NAME, "idexists");
+        }
+    }
+
 
     /**
      * {@code GET  /aidas-objects/:id} : get the "id" object.
