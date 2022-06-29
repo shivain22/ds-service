@@ -75,4 +75,5 @@ public interface UserVendorMappingRepository extends JpaRepository<UserVendorMap
 
     @Query(value = "select * from user_vendor_mapping uvm where uvm.vendor_id in (?1)",nativeQuery = true)
     List<UserVendorMapping> findAllUserVendorMappingByUserIds(List<Long> userIds);
+
 }

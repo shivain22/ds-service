@@ -8,6 +8,7 @@ import com.ainnotate.aidas.repository.*;
 import com.ainnotate.aidas.repository.search.UserSearchRepository;
 import com.ainnotate.aidas.constants.AidasConstants;
 import com.ainnotate.aidas.security.SecurityUtils;
+import com.ainnotate.aidas.service.UserAddingTask;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 
 import java.io.IOException;
@@ -44,6 +45,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
@@ -110,6 +112,12 @@ public class UserResource {
 
     @Autowired
     private OrganisationRepository organisationRepository;
+
+    @Autowired
+    TaskExecutor userVendorMappingObjectMappingTaskExecutor;
+
+    @Autowired
+    UserAddingTask userVendorMappingObjectMappingTask;
 
     private final UserSearchRepository aidasUserSearchRepository;
 
@@ -241,17 +249,10 @@ public class UserResource {
         user.setDeleted(0);
         User result = userRepository.save(user);
         updateUserToKeyCloak(result);
-        List<UserVendorMappingObjectMapping> uvmoms = new ArrayList<>();
-        if(user.getAuthority().getName().equals(AidasConstants.VENDOR_USER)){
-            if(userVendorMapping!=null){
-                for(Object o:objectRepository.findAll()){
-                    UserVendorMappingObjectMapping uvmom = new UserVendorMappingObjectMapping();
-                    uvmom.setUserVendorMapping(userVendorMapping);
-                    uvmom.setObject(o);
-                    uvmom.setStatus(0);
-                    uvmoms.add(uvmom);
-                }
-                userVendorMappingObjectMappingRepository.saveAll(uvmoms);
+        if(user.getAuthority().getName().equals(AidasConstants.VENDOR_USER)) {
+            if (userVendorMapping != null) {
+                userVendorMappingObjectMappingTask.setUserVendorMapping(userVendorMapping);
+                userVendorMappingObjectMappingTaskExecutor.execute(userVendorMappingObjectMappingTask);
             }
         }
         return ResponseEntity

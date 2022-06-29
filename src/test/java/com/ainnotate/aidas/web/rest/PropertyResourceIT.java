@@ -89,7 +89,6 @@ class PropertyResourceIT {
         Property property = new Property()
             .name(DEFAULT_NAME)
             .value(DEFAULT_VALUE)
-            .systemProperty(DEFAULT_SYSTEM_PROPERTY)
             .optional(DEFAULT_OPTIONAL)
             .description(DEFAULT_DESCRIPTION);
         return property;
@@ -105,7 +104,6 @@ class PropertyResourceIT {
         Property property = new Property()
             .name(UPDATED_NAME)
             .value(UPDATED_VALUE)
-            .systemProperty(UPDATED_SYSTEM_PROPERTY)
             .optional(UPDATED_OPTIONAL)
             .description(UPDATED_DESCRIPTION);
         return property;
@@ -136,7 +134,6 @@ class PropertyResourceIT {
         Property testProperty = propertyList.get(propertyList.size() - 1);
         assertThat(testProperty.getName()).isEqualTo(DEFAULT_NAME);
         assertThat(testProperty.getValue()).isEqualTo(DEFAULT_VALUE);
-        assertThat(testProperty.getSystemProperty()).isEqualTo(DEFAULT_SYSTEM_PROPERTY);
         assertThat(testProperty.getOptional()).isEqualTo(DEFAULT_OPTIONAL);
         assertThat(testProperty.getDescription()).isEqualTo(DEFAULT_DESCRIPTION);
 
@@ -219,7 +216,6 @@ class PropertyResourceIT {
     void checkSystemPropertyIsRequired() throws Exception {
         int databaseSizeBeforeTest = propertyRepository.findAll().size();
         // set the field null
-        property.setSystemProperty(null);
 
         // Create the AidasProperties, which fails.
 
@@ -318,7 +314,6 @@ class PropertyResourceIT {
         updatedProperty
             .name(UPDATED_NAME)
             .value(UPDATED_VALUE)
-            .systemProperty(UPDATED_SYSTEM_PROPERTY)
             .optional(UPDATED_OPTIONAL)
             .description(UPDATED_DESCRIPTION);
 
@@ -337,7 +332,7 @@ class PropertyResourceIT {
         Property testProperty = propertyList.get(propertyList.size() - 1);
         assertThat(testProperty.getName()).isEqualTo(UPDATED_NAME);
         assertThat(testProperty.getValue()).isEqualTo(UPDATED_VALUE);
-        assertThat(testProperty.getSystemProperty()).isEqualTo(UPDATED_SYSTEM_PROPERTY);
+
         assertThat(testProperty.getOptional()).isEqualTo(UPDATED_OPTIONAL);
         assertThat(testProperty.getDescription()).isEqualTo(UPDATED_DESCRIPTION);
 
@@ -446,7 +441,6 @@ class PropertyResourceIT {
         Property testProperty = propertyList.get(propertyList.size() - 1);
         assertThat(testProperty.getName()).isEqualTo(UPDATED_NAME);
         assertThat(testProperty.getValue()).isEqualTo(DEFAULT_VALUE);
-        assertThat(testProperty.getSystemProperty()).isEqualTo(DEFAULT_SYSTEM_PROPERTY);
         assertThat(testProperty.getOptional()).isEqualTo(UPDATED_OPTIONAL);
         assertThat(testProperty.getDescription()).isEqualTo(UPDATED_DESCRIPTION);
     }
@@ -466,7 +460,7 @@ class PropertyResourceIT {
         partialUpdatedProperty
             .name(UPDATED_NAME)
             .value(UPDATED_VALUE)
-            .systemProperty(UPDATED_SYSTEM_PROPERTY)
+
             .optional(UPDATED_OPTIONAL)
             .description(UPDATED_DESCRIPTION);
 
@@ -485,7 +479,6 @@ class PropertyResourceIT {
         Property testProperty = propertyList.get(propertyList.size() - 1);
         assertThat(testProperty.getName()).isEqualTo(UPDATED_NAME);
         assertThat(testProperty.getValue()).isEqualTo(UPDATED_VALUE);
-        assertThat(testProperty.getSystemProperty()).isEqualTo(UPDATED_SYSTEM_PROPERTY);
         assertThat(testProperty.getOptional()).isEqualTo(UPDATED_OPTIONAL);
         assertThat(testProperty.getDescription()).isEqualTo(UPDATED_DESCRIPTION);
     }

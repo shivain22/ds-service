@@ -18,4 +18,22 @@ public class ThreadPoolConfig {
         return executor;
     }
 
+    @Bean
+    public TaskExecutor userVendorMappingObjectMappingTaskExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(5);
+        executor.setMaxPoolSize(10);
+        executor.setQueueCapacity(25);
+        return executor;
+    }
+
+    @Bean
+    public TaskExecutor objectMappingTaskExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(5);
+        executor.setMaxPoolSize(10);
+        executor.setQueueCapacity(25);
+        return executor;
+    }
+
 }

@@ -64,7 +64,7 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     @Query(value = "select count(*)from (select ap.id,count(*) from user_vendor_mapping_object_mapping uvmom,user_vendor_mapping uvm, user au, object ao, project ap where uvmom.object_id=ao.id and uvmom.user_vendor_mapping_id=uvm.id and uvm.user_id=au.id and ao.project_id=ap.id and uvm.vendor_id=?1 and ap.status=1 group by ap.id) a", nativeQuery = true)
     Long countAidasProjectByVendor(Long vendorId);
 
-    @Query(value=" select count(*) from (select ap.id from user_vendor_mapping_object_mapping uvmom,user_vendor_mapping uvm, object ao, project ap where ao.project_id=ap.id and uvmom.object_id=ao.id  and uvmom.user_vendor_mapping_id=uvm.id and uvm.user_id=?1 and ap.status=1 group by ap.id)a",nativeQuery = true)
+    @Query(value=" select count(*) from (select ap.id from user_vendor_mapping_object_mapping uvmom,user_vendor_mapping uvm, object ao, project ap where ao.project_id=ap.id and uvmom.object_id=ao.id  and uvmom.user_vendor_mapping_id=uvm.id and uvm.user_id=?1 and ap.status=1 and uvmom.status=1 group by ap.id)a",nativeQuery = true)
     Long countAidasProjectByVendorUser(Long aidasVendorUserId);
 
     @Query(nativeQuery = true)

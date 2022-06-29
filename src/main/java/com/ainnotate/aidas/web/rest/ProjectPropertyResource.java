@@ -184,7 +184,6 @@ public class ProjectPropertyResource {
                     property.setName(properyProjectPropertyDTO.getName());
                     property.setDefaultProp(properyProjectPropertyDTO.getDefaultProp());
                     property.setPropertyType(properyProjectPropertyDTO.getPropertyType());
-                    property.setSystemProperty(properyProjectPropertyDTO.getSystemProperty());
                     property.setDescription(properyProjectPropertyDTO.getDescription());
                     property.setValue(properyProjectPropertyDTO.getValue());
                     property = propertyRepository.save(property);

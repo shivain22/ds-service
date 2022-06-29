@@ -151,9 +151,6 @@ public class PropertyResource {
                 if (property.getValue() != null) {
                     existingAidasProperties.setValue(property.getValue());
                 }
-                if (property.getSystemProperty() != null) {
-                    existingAidasProperties.setSystemProperty(property.getSystemProperty());
-                }
                 if (property.getOptional() != null) {
                     existingAidasProperties.setOptional(property.getOptional());
                 }

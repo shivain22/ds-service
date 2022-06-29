@@ -19,7 +19,7 @@ import org.hibernate.envers.Audited;
  * A AidasObject.
  */
 @NamedNativeQuery(name="Object.getAllObjectsByVendorUserProject",
-query = "select \n" +
+query = "(select \n" +
     "o.id," +
     "o.project_id as projectId,"+
     "o.parent_object_id parentObjectId,"+
@@ -38,31 +38,95 @@ query = "select \n" +
     "left join user_vendor_mapping_object_mapping uvmom on u.user_vendor_mapping_object_mapping_id=uvmom.id   \n" +
     "left join object o on o.id=uvmom.object_id   \n" +
     "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id \n" +
-    "where    uvm.user_id=?1  \n" +
-    "group by o.id,u.user_vendor_mapping_object_mapping_id",resultSetMapping = "Mapping.ObjectDTO")
+    "where    uvm.user_id=?1 and uvmom.status=1 and o.status=1 and o.is_dummy=0 \n" +
+    "group by o.id,u.user_vendor_mapping_object_mapping_id ) union "+
+    "(select \n" +
+    "o.id," +
+    "o.project_id as projectId,"+
+    "o.parent_object_id parentObjectId,"+
+    "o.number_of_upload_reqd as totalRequired," +
+    "0 as totalUploaded, \n" +
+    "0 AS totalApproved,  \n" +
+    "0 AS totalRejected,   \n" +
+    "0 AS totalPending, \n" +
+    "o.buffer_percent as bufferPercent," +
+    "o.name as name," +
+    "o.description as description," +
+    "o.image_type as imageType," +
+    "o.audio_type as audioType," +
+    "o.video_type as videoType " +
+    "from user_vendor_mapping_object_mapping uvmom    \n" +
+    "left join object o on o.id=uvmom.object_id   \n" +
+    "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id \n" +
+    "where    uvm.user_id=?1  and o.status=1 and o.is_dummy=0 \n" +
+    " and uvmom.id not in (" +
+    "(select \n" +
+    "uvmom.id " +
+    "from upload u    \n" +
+    "left join user_vendor_mapping_object_mapping uvmom on u.user_vendor_mapping_object_mapping_id=uvmom.id   \n" +
+    "left join object o on o.id=uvmom.object_id   \n" +
+    "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id \n" +
+    "where    uvm.user_id=?1 and o.status=1 and o.is_dummy=0 \n" +
+    "group by o.id,u.user_vendor_mapping_object_mapping_id ) "+
+    ")"+
+    "group by o.id ) "
 
-@NamedNativeQuery(name="Object.getAllObjectsByVendorUserProject.count",query = "select count(*) from (select  \n" +
-    "o.id, \n" +
-    "o.project_id as projectId,\n" +
-    "o.number_of_upload_reqd as totalRequired, \n" +
-    "count(u.id) as totalUploaded,  \n" +
-    "sum(CASE WHEN u.approval_status = 1 THEN 1 ELSE 0 END) AS totalApproved,   \n" +
-    "sum(CASE WHEN u.approval_status = 0 THEN 1 ELSE 0 END) AS totalRejected,    \n" +
-    "sum(CASE WHEN u.approval_status = 2 THEN 1 ELSE 0 END) AS totalPending,  \n" +
-    "o.project_id, \n" +
-    "o.parent_object_id , \n" +
-    "o.buffer_percent , \n" +
-    "o.name , \n" +
-    "o.description , \n" +
-    "o.image_type , \n" +
-    "o.audio_type , \n" +
-    "o.video_type  \n" +
-    "from upload u     \n" +
-    "left join user_vendor_mapping_object_mapping uvmom on u.user_vendor_mapping_object_mapping_id=uvmom.id    \n" +
-    "left join object o on o.id=uvmom.object_id    \n" +
-    "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id  \n" +
-    "where    uvm.user_id=?1   \n" +
-    "group by o.id,u.user_vendor_mapping_object_mapping_id) a")
+    ,resultSetMapping = "Mapping.ObjectDTO")
+
+@NamedNativeQuery(name="Object.getAllObjectsByVendorUserProject.count",
+    query =
+        "select count(*) from ((select \n" +
+            "o.id," +
+            "o.project_id as projectId,"+
+            "o.parent_object_id parentObjectId,"+
+            "o.number_of_upload_reqd as totalRequired," +
+            "count(u.id) as totalUploaded, \n" +
+            "sum(CASE WHEN u.approval_status = 1 THEN 1 ELSE 0 END) AS totalApproved,  \n" +
+            "sum(CASE WHEN u.approval_status = 0 THEN 1 ELSE 0 END) AS totalRejected,   \n" +
+            "sum(CASE WHEN u.approval_status = 2 THEN 1 ELSE 0 END) AS totalPending, \n" +
+            "o.buffer_percent as bufferPercent," +
+            "o.name as name," +
+            "o.description as description," +
+            "o.image_type as imageType," +
+            "o.audio_type as audioType," +
+            "o.video_type as videoType " +
+            "from upload u    \n" +
+            "left join user_vendor_mapping_object_mapping uvmom on u.user_vendor_mapping_object_mapping_id=uvmom.id   \n" +
+            "left join object o on o.id=uvmom.object_id   \n" +
+            "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id \n" +
+            "where    uvm.user_id=?1 and uvmom.status=1 and o.status=1 and o.is_dummy=0 \n" +
+            "group by o.id,u.user_vendor_mapping_object_mapping_id ) union "+
+            "(select \n" +
+            "o.id," +
+            "o.project_id as projectId,"+
+            "o.parent_object_id parentObjectId,"+
+            "o.number_of_upload_reqd as totalRequired," +
+            "0 as totalUploaded, \n" +
+            "0 AS totalApproved,  \n" +
+            "0 AS totalRejected,   \n" +
+            "0 AS totalPending, \n" +
+            "o.buffer_percent as bufferPercent," +
+            "o.name as name," +
+            "o.description as description," +
+            "o.image_type as imageType," +
+            "o.audio_type as audioType," +
+            "o.video_type as videoType " +
+            "from user_vendor_mapping_object_mapping uvmom    \n" +
+            "left join object o on o.id=uvmom.object_id   \n" +
+            "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id \n" +
+            "where    uvm.user_id=?1 and o.status=1 and o.is_dummy=0 \n" +
+            " and uvmom.id not in (" +
+            "(select \n" +
+            "uvmom.id " +
+            "from upload u    \n" +
+            "left join user_vendor_mapping_object_mapping uvmom on u.user_vendor_mapping_object_mapping_id=uvmom.id   \n" +
+            "left join object o on o.id=uvmom.object_id   \n" +
+            "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id \n" +
+            "where    uvm.user_id=?1  \n" +
+            "group by o.id,u.user_vendor_mapping_object_mapping_id ) "+
+            ")"+
+            "group by o.id ))a "
+)
 @SqlResultSetMapping(name = "Mapping.ObjectDTO",
     classes = @ConstructorResult(targetClass = ObjectDTO.class,
         columns = {

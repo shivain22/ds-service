@@ -8,6 +8,7 @@ import com.ainnotate.aidas.repository.search.ObjectSearchRepository;
 import com.ainnotate.aidas.constants.AidasConstants;
 import com.ainnotate.aidas.security.SecurityUtils;
 import com.ainnotate.aidas.service.DownloadUploadS3;
+import com.ainnotate.aidas.service.ObjectAddingTask;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 
 import java.net.URI;
@@ -77,6 +78,12 @@ public class ObjectResource {
     @Autowired
     private UserVendorMappingRepository userVendorMappingRepository;
 
+    @Autowired
+    private TaskExecutor objectMappingTaskExecutor;
+
+    @Autowired
+    private ObjectAddingTask objectAddingTask;
+
     public ObjectResource(ObjectRepository objectRepository, ObjectSearchRepository aidasObjectSearchRepository) {
         this.objectRepository = objectRepository;
         this.aidasObjectSearchRepository = aidasObjectSearchRepository;
@@ -143,17 +150,9 @@ public class ObjectResource {
             object.setBufferPercent(20);
         }
         Object result = objectRepository.save(object);
-        Object dummyObjectOfProject = objectRepository.getDummyObjectOfProject(object.getProject().getId());
-        List<UserVendorMapping> userVendorMappings = userVendorMappingRepository.findAllVendorUserMappings();
-        List<UserVendorMappingObjectMapping> userVendorMappingObjectMappings = new ArrayList<>();
-        for(UserVendorMapping uvm:userVendorMappings){
-            UserVendorMappingObjectMapping uvmom = new UserVendorMappingObjectMapping();
-            uvmom.setUserVendorMapping(uvm);
-            uvmom.setObject(object);
-            uvmom.setStatus(0);
-            userVendorMappingObjectMappings.add(uvmom);
-        }
-        userVendorMappingObjectMappingRepository.saveAll(userVendorMappingObjectMappings);
+        objectAddingTask.setObject(result);
+        objectAddingTask.setDummy(false);
+        objectMappingTaskExecutor.execute(objectAddingTask);
         return ResponseEntity
             .created(new URI("/api/aidas-objects/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))

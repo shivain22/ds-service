@@ -8,6 +8,7 @@ import com.ainnotate.aidas.repository.search.ProjectSearchRepository;
 import com.ainnotate.aidas.constants.AidasConstants;
 import com.ainnotate.aidas.security.SecurityUtils;
 import com.ainnotate.aidas.service.DownloadUploadS3;
+import com.ainnotate.aidas.service.ObjectAddingTask;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 
 import java.net.URI;
@@ -87,6 +88,14 @@ public class ProjectResource {
     @Autowired
     private UploadRepository uploadRepository;
 
+    @Autowired
+    private TaskExecutor objectMappingTaskExecutor;
+
+    @Autowired
+    private ObjectAddingTask objectAddingTask;
+
+
+
     public ProjectResource(ProjectRepository projectRepository, ProjectSearchRepository aidasProjectSearchRepository) {
         this.projectRepository = projectRepository;
         this.aidasProjectSearchRepository = aidasProjectSearchRepository;
@@ -161,16 +170,9 @@ public class ProjectResource {
             obj.setDummy(1);
             obj.setStatus(0);
             objectRepository.save(obj);
-            List<UserVendorMapping> userVendorMappings = userVendorMappingRepository.findAllVendorUserMappings();
-            List<UserVendorMappingObjectMapping> userVendorMappingObjectMappings = new ArrayList<>();
-            for(UserVendorMapping uvm:userVendorMappings){
-                UserVendorMappingObjectMapping uvmom = new UserVendorMappingObjectMapping();
-                uvmom.setUserVendorMapping(uvm);
-                uvmom.setObject(obj);
-                uvmom.setStatus(0);
-                userVendorMappingObjectMappings.add(uvmom);
-            }
-            userVendorMappingObjectMappingRepository.saveAll(userVendorMappingObjectMappings);
+            objectAddingTask.setDummy(true);
+            objectAddingTask.setObject(obj);
+            objectMappingTaskExecutor.execute(objectAddingTask);
         }
         if(result.getAutoCreateObjects()!=null && result.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)){
             for(int i=0;i<result.getNumOfObjects();i++){
@@ -190,6 +192,8 @@ public class ProjectResource {
                 obj.setBufferPercent(result.getBufferPercent());
                 obj.setDummy(0);
                 objectRepository.save(obj);
+                objectAddingTask.setObject(obj);
+                objectMappingTaskExecutor.execute(objectAddingTask);
             }
         }
         //aidasProjectSearchRepository.save(result.getId());

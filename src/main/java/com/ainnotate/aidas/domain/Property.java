@@ -36,10 +36,6 @@ public class Property extends AbstractAuditingEntity  implements Serializable {
     private String value;
 
     @NotNull
-    @Column(name = "system_property", nullable = true)
-    private Integer systemProperty;
-
-    @NotNull
     @Column(name="property_type", nullable = true)
     private Integer propertyType;
 
@@ -56,6 +52,15 @@ public class Property extends AbstractAuditingEntity  implements Serializable {
     @ManyToOne
     private User user;
 
+    @ManyToOne
+    private Customer customer;
+
+    @Column(name="passed_from_app",columnDefinition = "integer default 0")
+    private Integer passedFromApp;
+
+    @Column(name="add_to_metadata")
+    private Integer addToMetadata;
+
     public Customer getCustomer() {
         return customer;
     }
@@ -63,16 +68,6 @@ public class Property extends AbstractAuditingEntity  implements Serializable {
     public void setCustomer(Customer customer) {
         this.customer = customer;
     }
-
-    @ManyToOne
-    private Customer customer;
-
-    @Column(name="passed_from_app",columnDefinition = "integer default 0")
-    private Integer passedFromApp;
-
-
-    @Column(name="add_to_metadata")
-    private Integer addToMetadata;
 
     public User getUser() {
         return user;
@@ -111,17 +106,21 @@ public class Property extends AbstractAuditingEntity  implements Serializable {
         return this.id;
     }
 
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public Property id(Long id) {
         this.setId(id);
         return this;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     public String getName() {
         return this.name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public Property name(String name) {
@@ -129,36 +128,17 @@ public class Property extends AbstractAuditingEntity  implements Serializable {
         return this;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public String getValue() {
         return this.value;
-    }
-
-    public Property value(String value) {
-        this.setValue(value);
-        return this;
     }
 
     public void setValue(String value) {
         this.value = value;
     }
 
-
-
-    public Property systemProperty(Integer systemProperty) {
-        this.setSystemProperty(systemProperty);
+    public Property value(String value) {
+        this.setValue(value);
         return this;
-    }
-
-    public Integer getSystemProperty() {
-        return systemProperty;
-    }
-
-    public void setSystemProperty(Integer systemProperty) {
-        this.systemProperty = systemProperty;
     }
 
     public Property optional(Integer optional) {
@@ -178,13 +158,13 @@ public class Property extends AbstractAuditingEntity  implements Serializable {
         return this.description;
     }
 
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     public Property description(String description) {
         this.setDescription(description);
         return this;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
@@ -213,7 +193,6 @@ public class Property extends AbstractAuditingEntity  implements Serializable {
             "id=" + getId() +
             ", name='" + getName() + "'" +
             ", value='" + getValue() + "'" +
-            ", systemProperty='" + getSystemProperty() + "'" +
             ", optional='" + getOptional() + "'" +
             ", description='" + getDescription() + "'" +
             "}";

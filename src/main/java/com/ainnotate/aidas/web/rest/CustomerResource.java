@@ -97,7 +97,6 @@ public class CustomerResource {
                 p.setValue(property.getValue());
                 p.setOptional(property.getOptional());
                 p.setDescription(property.getDescription());
-                p.setSystemProperty(property.getSystemProperty());
                 p.setAddToMetadata(property.getAddToMetadata());
                 p.setStatus(property.getStatus());
                 p.setPropertyType(property.getPropertyType());

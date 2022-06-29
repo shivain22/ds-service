@@ -77,7 +77,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
         "left join object o on o.id=uvmom.object_id   \n" +
         "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id   \n" +
         "left join project p on o.project_id=p.id \n" +
-        "where    uvm.user_id=271  \n" +
+        "where    uvm.user_id=?1 and uvmom.status=1  \n" +
         "group by o.id,u.user_vendor_mapping_object_mapping_id\n" +
         ") a group by projectId union "+
         " (select " +
@@ -107,7 +107,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
         "        left join object o on o.id=uvmom.object_id   " +
         "        left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id   " +
         "        left join project p on o.project_id=p.id" +
-        "        where    uvm.user_id=?1 and p.id not in(" +
+        "        where    uvm.user_id=?1 and uvmom.status=1 and p.id not in(" +
             "select " +
         "        p.id" +
         "        from upload u    " +
@@ -115,7 +115,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
         "        left join object o on o.id=uvmom.object_id   " +
         "        left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id   " +
         "        left join project p on o.project_id=p.id" +
-        "        where    uvm.user_id=?1  " +
+        "        where    uvm.user_id=?1 and uvmom.status=1 " +
         "        group by p.id order by p.id desc"+
         ") " +
         "        group by p.id order by p.id desc)  ",
@@ -149,7 +149,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
         "        left join object o on o.id=uvmom.object_id   " +
         "        left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id   " +
         "        left join project p on o.project_id=p.id" +
-        "        where    uvm.user_id=?1  " +
+        "        where    uvm.user_id=?1 and uvmom.status=1 " +
         "        group by p.id order by p.id desc) union  " +
         " (select " +
         "        p.id," +
