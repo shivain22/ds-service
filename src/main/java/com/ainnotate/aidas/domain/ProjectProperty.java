@@ -40,6 +40,37 @@ public class ProjectProperty extends AbstractAuditingEntity  implements Serializ
     @Column
     private Integer optional;
 
+    @Column(name = "default_prop")
+    private Integer defaultProp;
+    @Column(name="passed_from_app",columnDefinition = "integer default 0")
+    private Integer passedFromApp;
+    @Column(name="add_to_metadata")
+    private Integer addToMetadata;
+
+    public Integer getDefaultProp() {
+        return defaultProp;
+    }
+
+    public void setDefaultProp(Integer defaultProp) {
+        this.defaultProp = defaultProp;
+    }
+
+    public Integer getPassedFromApp() {
+        return passedFromApp;
+    }
+
+    public void setPassedFromApp(Integer passedFromApp) {
+        this.passedFromApp = passedFromApp;
+    }
+
+    public Integer getAddToMetadata() {
+        return addToMetadata;
+    }
+
+    public void setAddToMetadata(Integer addToMetadata) {
+        this.addToMetadata = addToMetadata;
+    }
+
     @Override
     public Integer getStatus() {
         return status;

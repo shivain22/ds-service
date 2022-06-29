@@ -2,6 +2,16 @@ package com.ainnotate.aidas.dto;
 
 public class ProjectPropertyDTO {
 
+    private Long projectPropertyId;
+
+    public Long getProjectPropertyId() {
+        return projectPropertyId;
+    }
+
+    public void setProjectPropertyId(Long projectPropertyId) {
+        this.projectPropertyId = projectPropertyId;
+    }
+
     private String name;
     private String value;
     private Integer systemProperty;

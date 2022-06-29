@@ -44,19 +44,37 @@ public class ObjectProperty extends AbstractAuditingEntity  implements Serializa
     private Property property;
 
     @Column
-    private Integer status;
-
-    @Column
     private Integer optional;
 
-    @Override
-    public Integer getStatus() {
-        return status;
+    @Column(name = "default_prop")
+    private Integer defaultProp;
+    @Column(name="passed_from_app",columnDefinition = "integer default 0")
+    private Integer passedFromApp;
+    @Column(name="add_to_metadata")
+    private Integer addToMetadata;
+
+    public Integer getDefaultProp() {
+        return defaultProp;
     }
 
-    @Override
-    public void setStatus(Integer status) {
-        this.status = status;
+    public void setDefaultProp(Integer defaultProp) {
+        this.defaultProp = defaultProp;
+    }
+
+    public Integer getPassedFromApp() {
+        return passedFromApp;
+    }
+
+    public void setPassedFromApp(Integer passedFromApp) {
+        this.passedFromApp = passedFromApp;
+    }
+
+    public Integer getAddToMetadata() {
+        return addToMetadata;
+    }
+
+    public void setAddToMetadata(Integer addToMetadata) {
+        this.addToMetadata = addToMetadata;
     }
 
     public Integer getOptional() {

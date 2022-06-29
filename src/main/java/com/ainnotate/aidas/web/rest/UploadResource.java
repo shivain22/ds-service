@@ -2,9 +2,7 @@ package com.ainnotate.aidas.web.rest;
 
 import com.ainnotate.aidas.domain.*;
 import com.ainnotate.aidas.domain.Object;
-import com.ainnotate.aidas.dto.UploadByUserObjectMappingDto;
-import com.ainnotate.aidas.dto.UploadDTO;
-import com.ainnotate.aidas.dto.UploadMetadataDTO;
+import com.ainnotate.aidas.dto.*;
 import com.ainnotate.aidas.repository.*;
 import com.ainnotate.aidas.repository.search.UploadSearchRepository;
 import com.ainnotate.aidas.constants.AidasConstants;
@@ -24,10 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.json.JsonParser;
-import org.springframework.boot.json.JsonParserFactory;
 import org.springframework.core.task.TaskExecutor;
-import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
@@ -330,7 +325,6 @@ public class UploadResource {
                         System.out.println(projectProperty);
                         ObjectProperty objectProperty = objectPropertyRepository.findByAidasObject_IdAndAidasProperty_Id(object.getId(), property.getId());
                         System.out.println(objectProperty);
-
                         if(projectProperty!=null){
                             UploadMetaData uploadMetaData = new UploadMetaData();
                             uploadMetaData.setUpload(upload);
@@ -787,23 +781,51 @@ public class UploadResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of aidasUploads in body.
      */
     @GetMapping("/aidas-uploads/metadata/{projectId}")
-    public ResponseEntity<List<UploadsMetadata>> getAllAidasUploadsForMetadata(@PathVariable Long projectId) {
+    public ResponseEntity<List<UploadsMetadataDTO>> getAllAidasUploadsForMetadata(@PathVariable Long projectId) {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         Authority authority = user.getAuthority();
         Project project = projectRepository.getById(projectId);
-        List<UploadsMetadata>uploadsMetadataList = new ArrayList<>();
+        List<UploadsMetadataDTO> uploadsMetadataDTOList = new ArrayList<>();
         if(authority.getName().equals(AidasConstants.VENDOR_USER)){
             List<Upload> uploads = uploadRepository.findAllByUserAndProjectAllForMetadata(user.getId(),projectId);
-            UploadsMetadata uploadsMetadata = new UploadsMetadata();
+            UploadsMetadataDTO uploadsMetadataDTO = new UploadsMetadataDTO();
             List<ProjectProperty> projectProperties = projectPropertyRepository.findAllAidasProjectPropertyForMetadata(projectId);
             for(Upload au : uploads) {
+                Set<UploadMetaData> uploadMetaDatas = au.getUploadMetaDataSet();
                 List<ObjectProperty> objectProperties = objectPropertyRepository.findAllUncommonAidasObjectPropertyForMetadata(au.getUserVendorMappingObjectMapping().getObject().getId(),projectId);
-                uploadsMetadata.setAidasUploads(au);
-                uploadsMetadata.setProjectProperties(projectProperties);
-                uploadsMetadata.setObjectProperties(objectProperties);
-                uploadsMetadataList.add(uploadsMetadata);
+                UploadDTO uploadDTO = new UploadDTO();
+                uploadDTO.setUploadId(au.getId());
+                uploadDTO.setObjectKey(au.getObjectKey());
+                uploadsMetadataDTO.setUploadDTO(uploadDTO);
+                List<ProjectPropertyDTO> projectPropertyDTOS = new ArrayList<>();
+                for(ProjectProperty p:projectProperties){
+                    ProjectPropertyDTO pp = new ProjectPropertyDTO();
+                    pp.setProjectPropertyId(p.getId());
+                    pp.setName(p.getProperty().getName());
+                    projectPropertyDTOS.add(pp);
+                    for(UploadMetaData um:uploadMetaDatas){
+                        if(um.getProjectProperty()!=null && um.getProjectProperty().getId().equals(p.getId())){
+                            pp.setValue(um.getValue());
+                        }
+                    }
+                }
+                uploadsMetadataDTO.setProjectProperties(projectPropertyDTOS);
+                List<ObjectPropertyDTO> objectPropertyDTOS = new ArrayList<>();
+                for(ObjectProperty o:objectProperties){
+                    ObjectPropertyDTO oo = new ObjectPropertyDTO();
+                    oo.setObjectPropertyId(o.getId());
+                    oo.setName(o.getProperty().getName());
+                    objectPropertyDTOS.add(oo);
+                    for(UploadMetaData um:uploadMetaDatas){
+                        if(um.getObjectProperty()!=null && um.getObjectProperty().getId().equals(o.getId())){
+                            oo.setValue(um.getValue());
+                        }
+                    }
+                }
+                uploadsMetadataDTO.setObjectProperties(objectPropertyDTOS);
+                uploadsMetadataDTOList.add(uploadsMetadataDTO);
             }
-            return ResponseEntity.ok().body(uploadsMetadataList);
+            return ResponseEntity.ok().body(uploadsMetadataDTOList);
         }
         throw new BadRequestAlertException("VENDOR_USER only allowed", ENTITY_NAME, "notauthorised");
     }

@@ -96,11 +96,12 @@ public class CustomerResource {
                 p.setName(property.getName());
                 p.setValue(property.getValue());
                 p.setOptional(property.getOptional());
+                p.setDefaultProp(property.getDefaultProp());
                 p.setDescription(property.getDescription());
                 p.setAddToMetadata(property.getAddToMetadata());
                 p.setStatus(property.getStatus());
                 p.setPropertyType(property.getPropertyType());
-                p.setCustomer(customer);
+                p.setCustomer(result);
                 propertyRepository.save(p);
             }
 

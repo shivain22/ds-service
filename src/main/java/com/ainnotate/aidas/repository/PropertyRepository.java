@@ -25,6 +25,12 @@ public interface PropertyRepository extends JpaRepository<Property, Long> {
     @Query(value="select * from property where default_prop=1",nativeQuery = true)
     List<Property> findAllDefaultProps();
 
+    @Query(value="select * from property where default_prop=1 and customer_id=?1",nativeQuery = true)
+    List<Property> findAllDefaultPropsOfCustomer(Long customerId);
+
+    @Query(value="select * from property where default_prop=1 and user_id=?1",nativeQuery = true)
+    List<Property> findAllDefaultPropsOfUser(Long userId);
+
 
     @Query(value="select * from property where name=?1 and customer_id=?2",nativeQuery = true)
     Property getByNameAndUserId(String name, Long customerId);

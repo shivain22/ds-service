@@ -57,9 +57,16 @@ public class Property extends AbstractAuditingEntity  implements Serializable {
 
     @Column(name="passed_from_app",columnDefinition = "integer default 0")
     private Integer passedFromApp;
-
     @Column(name="add_to_metadata")
     private Integer addToMetadata;
+
+    public Integer getPassedFromApp() {
+        return passedFromApp;
+    }
+
+    public void setPassedFromApp(Integer passedFromApp) {
+        this.passedFromApp = passedFromApp;
+    }
 
     public Customer getCustomer() {
         return customer;

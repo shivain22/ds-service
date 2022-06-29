@@ -146,7 +146,7 @@ public class ProjectResource {
             }
         }
 
-        List<Property> aidasProperties = propertyRepository.findAllDefaultProps();
+        List<Property> aidasProperties = propertyRepository.findAllDefaultPropsOfCustomer(project.getCustomer().getId());
         for(Property ap:aidasProperties){
             ProjectProperty app = new ProjectProperty();
             app.setProject(project);
@@ -169,6 +169,14 @@ public class ProjectResource {
             obj.setBufferPercent(0);
             obj.setDummy(1);
             obj.setStatus(0);
+            for(Property ap:aidasProperties){
+                ObjectProperty opp = new ObjectProperty();
+                opp.setObject(obj);
+                opp.setProperty(ap);
+                opp.setValue(ap.getValue());
+                opp.setOptional(ap.getOptional());
+                obj.addAidasObjectProperty(opp);
+            }
             objectRepository.save(obj);
             objectAddingTask.setDummy(true);
             objectAddingTask.setObject(obj);
@@ -550,6 +558,51 @@ public class ProjectResource {
             throw new BadRequestAlertException("Not Authorised", ENTITY_NAME, "idexists");
         }
     }
+
+    /**
+     * {@code GET  /aidas-projects} : get all the aidasProjects.
+
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of aidasProjects in body.
+     */
+
+    @GetMapping("/aidas-projects/dropdown")
+    public ResponseEntity<List<Project>> getAllAidasProjectsForDropDown() {
+        log.debug("REST request to get a page of AidasProjects");
+        User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        List<Project> page = new ArrayList();
+        if(user.getAuthority().getName().equals(AidasConstants.ADMIN)){
+            page = projectRepository.findAllByIdGreaterThanForDropDown(0l);
+        }
+        if(user.getAuthority().getName().equals(AidasConstants.ORG_ADMIN) && user.getOrganisation()!=null ){
+            page = projectRepository.findAllByAidasCustomer_AidasOrganisationForDropDown(user.getOrganisation().getId());
+        }
+        if( user.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN) && user.getCustomer()!=null ){
+            page = projectRepository.findAllByAidasCustomerForDropDown( user.getCustomer().getId());
+        }
+        if(user.getAuthority().getName().equals(AidasConstants.VENDOR_ADMIN)){
+            page =  projectRepository.findAllProjectsByVendorAdminDropDown(user.getVendor().getId());
+        }
+        if(user.getAuthority().getName().equals(AidasConstants.VENDOR_USER)){
+            List<ProjectDTO> projects =  projectRepository.findProjectWithUploadCountByUserForDropDown(user.getId());
+            for(ProjectDTO pdto:projects){
+                Project p =  new Project();
+                p.setId(pdto.getId());
+                p.setName(pdto.getName());
+                page.add(p);
+            }
+        }
+        if(user.getAuthority().getName().equals(AidasConstants.QC_USER)){
+            List<Project>qcProjects = projectRepository.findProjectsForQC(user.getId());
+            return ResponseEntity.ok().body(qcProjects);
+        }
+        if(page!=null) {
+            return ResponseEntity.ok().body(page);
+        }else{
+            throw new BadRequestAlertException("Not Authorised", ENTITY_NAME, "idexists");
+        }
+    }
+
+
 
     /**
      * {@code GET  /aidas-projects} : get all the aidasProjects.

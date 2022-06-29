@@ -128,7 +128,7 @@ public interface UploadRepository extends JpaRepository<Upload, Long> {
     Page<Upload> findAllByUser(Long userId, Integer approvalStatus, Pageable pageable);
 
 
-    @Query(value="select * from upload au, user_vendor_mapping_object_mapping auavmaom,object ao, project ap,user_vendor_mapping auavm where au.status=2 and au.user_vendor_mapping_object_mapping_id=auavmaom.id and auavmaom.object_id=ao.id and ao.project_id=ap.id and ap.id=?2 and auavmaom.user_vendor_mapping_id=auavm.id and auavm.user_id=?1",nativeQuery = true)
+    @Query(value="select * from upload au, user_vendor_mapping_object_mapping auavmaom,object ao, project ap,user_vendor_mapping auavm where au.approval_status=2 and au.user_vendor_mapping_object_mapping_id=auavmaom.id and auavmaom.object_id=ao.id and ao.project_id=ap.id and ap.id=?2 and auavmaom.user_vendor_mapping_id=auavm.id and auavm.user_id=?1",nativeQuery = true)
     List<Upload> findAllByUserAndProjectAllForMetadata(Long userId, Long projectId);
 
     @Query(value="select * from upload where upload.qc_done_by_id is null and qc_status=0 and qc_end_date is null and qc_start_date is null limit 1",nativeQuery = true)

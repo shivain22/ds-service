@@ -370,6 +370,19 @@ public class ProjectPropertyResource {
     }
 
     /**
+     * {@code GET  /aidas-project-property/dropdown} : get all the projectProperties.
+     *
+     * @param projectId the pagination information.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of projectProperties in body.
+     */
+    @GetMapping("/aidas-project-property/dropdown")
+    public ResponseEntity<List<ProjectProperty>> getAllAidasProjectProperties(@PathVariable(value = "projectId", required = false) final Long projectId) {
+        log.debug("REST request to get a page of AidasProjectProperties");
+        List<ProjectProperty> page = projectPropertyRepository.findAllByAidasProjectIdGreaterThanForDropDown(-1l);
+        return ResponseEntity.ok().body(page);
+    }
+
+    /**
      * {@code GET  /aidas-project-property/:id} : get the "id" projectProperty.
      *
      * @param id the id of the projectProperty to retrieve.

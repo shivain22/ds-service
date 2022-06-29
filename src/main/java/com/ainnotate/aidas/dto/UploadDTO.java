@@ -4,6 +4,16 @@ import java.util.HashMap;
 
 public class UploadDTO {
 
+    private Long uploadId;
+
+    public Long getUploadId() {
+        return uploadId;
+    }
+
+    public void setUploadId(Long uploadId) {
+        this.uploadId = uploadId;
+    }
+
     private Long userId;
     private Long objectId;
     private String uploadUrl;

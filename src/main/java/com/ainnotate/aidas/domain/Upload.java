@@ -1,5 +1,6 @@
 package com.ainnotate.aidas.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.io.Serializable;
 import java.time.Instant;
@@ -64,6 +65,7 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
     @Fetch(FetchMode.SUBSELECT)
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     @JsonIgnoreProperties(value = { "upload" }, allowSetters = true)
+    @JsonIgnore
     private Set<UploadRejectMapping> uploadRejectMappings = new HashSet<>();
 
     public Set<UploadRejectMapping> getAidasUploadRejectMappings() {
@@ -81,6 +83,7 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
     @Fetch(FetchMode.SUBSELECT)
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     @JsonIgnoreProperties(value = { "upload","project","object" }, allowSetters = true)
+    @JsonIgnore
     private Set<UploadMetaData> uploadMetaDataSet = new HashSet<>();
 
     @Column(name="status", nullable=false)
@@ -104,7 +107,8 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
     private Integer metadataStatus;
 
     @ManyToOne
-    @JsonIgnoreProperties(value={"user"})
+    @JsonIgnoreProperties(value={"user","project"})
+    @JsonIgnore
     private QcProjectMapping qcDoneBy;
 
     @Column(name="qc_start_date", nullable=true)
@@ -245,6 +249,7 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
 
     @ManyToOne(optional = false,fetch = FetchType.EAGER)
     @JsonIgnoreProperties(value = { "user", "object", "aidasUploads" }, allowSetters = true)
+    @JsonIgnore
     private UserVendorMappingObjectMapping userVendorMappingObjectMapping;
 
 
