@@ -470,6 +470,36 @@ public class ObjectResource {
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
+    @GetMapping("/aidas-projects/{id}/aidas-objects/dropdown")
+    public ResponseEntity<List<Object>> getAllAidasObjectsOfProjectForDropdown( @PathVariable(value = "id", required = false) final Long projectId) {
+        log.debug("REST request to get a page of AidasObjects");
+        User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        List<Object> objects =new ArrayList<>();
+        if(user.getAuthority().getName().equals(AidasConstants.ADMIN)){
+            objects = objectRepository.getAllByIdGreaterThanAndAidasProject_Id(0l,projectId);
+        }
+        if(user.getAuthority().getName().equals(AidasConstants.ORG_ADMIN) && user.getOrganisation()!=null ){
+            objects = objectRepository.getAllByAidasProject_AidasCustomer_AidasOrganisationAndAidasProject_Id(user.getOrganisation().getId(),projectId);
+        }
+        if( user.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN) && user.getCustomer()!=null ){
+            objects = objectRepository.getAllByAidasProject_AidasCustomerAndAidasProject_Id(user.getCustomer().getId(),projectId);
+        }
+        if(user.getAuthority().getName().equals(AidasConstants.VENDOR_ADMIN) ){
+            objects = objectRepository.getAllObjectsByVendorAdminProject(user.getVendor().getId());
+        }
+        if( user.getAuthority().getName().equals(AidasConstants.VENDOR_USER)){
+            List<ObjectDTO> objectDTOs = objectRepository.getAllObjectsByVendorUserProjectForDropdown(user.getId());
+            for(ObjectDTO odto:objectDTOs){
+                Object o = new Object();
+                o.setId(odto.getId());
+                o.setName(odto.getName());
+                objects.add(o);
+            }
+        }
+        return ResponseEntity.ok().body(objects);
+    }
+
+
     @GetMapping("/aidas-projects/{id}/aidas-objects")
     public ResponseEntity<List<Object>> getAllAidasObjectsOfProject(Pageable pageable, @PathVariable(value = "id", required = false) final Long projectId) {
         log.debug("REST request to get a page of AidasObjects");

@@ -179,7 +179,7 @@ public class UploadResource {
                 if(umd.getProjectPropertyId()!=null){
                     ProjectProperty projectProperty = projectPropertyRepository.getById(umd.getProjectPropertyId());
                     aum.setProjectProperty(projectProperty);
-                    if(projectProperty.getOptional().equals(AidasConstants.AIDAS_PROPERTY_REQUIRED)){
+                    if(projectProperty.getOptional()!=null && projectProperty.getOptional().equals(AidasConstants.AIDAS_PROPERTY_REQUIRED)){
                         if(umd.getUploadId()==null){
                             failed.add(aum);
                         }else if(umd.getValue().trim().length()==0){
@@ -791,8 +791,9 @@ public class UploadResource {
             UploadsMetadataDTO uploadsMetadataDTO = new UploadsMetadataDTO();
             List<ProjectProperty> projectProperties = projectPropertyRepository.findAllAidasProjectPropertyForMetadata(projectId);
             for(Upload au : uploads) {
-                Set<UploadMetaData> uploadMetaDatas = au.getUploadMetaDataSet();
+                List<UploadMetaData> uploadMetaDatas = uploadMetaDataRepository.getAllUploadMetaDataForUpload(au.getId());
                 List<ObjectProperty> objectProperties = objectPropertyRepository.findAllUncommonAidasObjectPropertyForMetadata(au.getUserVendorMappingObjectMapping().getObject().getId(),projectId);
+                uploadsMetadataDTO = new UploadsMetadataDTO();
                 UploadDTO uploadDTO = new UploadDTO();
                 uploadDTO.setUploadId(au.getId());
                 uploadDTO.setObjectKey(au.getObjectKey());

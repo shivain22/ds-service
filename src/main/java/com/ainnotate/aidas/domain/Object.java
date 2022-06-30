@@ -146,6 +146,135 @@ query = "(select \n" +
             @ColumnResult(name = "videoType",type = String.class)
         }))
 
+
+
+@NamedNativeQuery(name="Object.getAllObjectsByVendorUserProjectForDropdown",
+    query = "(select \n" +
+        "o.id," +
+        "o.project_id as projectId,"+
+        "o.parent_object_id parentObjectId,"+
+        "o.number_of_upload_reqd as totalRequired," +
+        "count(u.id) as totalUploaded, \n" +
+        "sum(CASE WHEN u.approval_status = 1 THEN 1 ELSE 0 END) AS totalApproved,  \n" +
+        "sum(CASE WHEN u.approval_status = 0 THEN 1 ELSE 0 END) AS totalRejected,   \n" +
+        "sum(CASE WHEN u.approval_status = 2 THEN 1 ELSE 0 END) AS totalPending, \n" +
+        "o.buffer_percent as bufferPercent," +
+        "o.name as name," +
+        "o.description as description," +
+        "o.image_type as imageType," +
+        "o.audio_type as audioType," +
+        "o.video_type as videoType " +
+        "from upload u    \n" +
+        "left join user_vendor_mapping_object_mapping uvmom on u.user_vendor_mapping_object_mapping_id=uvmom.id   \n" +
+        "left join object o on o.id=uvmom.object_id   \n" +
+        "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id \n" +
+        "where    uvm.user_id=?1 and uvmom.status=1 and o.status=1 and o.is_dummy=0 \n" +
+        "group by o.id,u.user_vendor_mapping_object_mapping_id ) union "+
+        "(select \n" +
+        "o.id," +
+        "o.project_id as projectId,"+
+        "o.parent_object_id parentObjectId,"+
+        "o.number_of_upload_reqd as totalRequired," +
+        "0 as totalUploaded, \n" +
+        "0 AS totalApproved,  \n" +
+        "0 AS totalRejected,   \n" +
+        "0 AS totalPending, \n" +
+        "o.buffer_percent as bufferPercent," +
+        "o.name as name," +
+        "o.description as description," +
+        "o.image_type as imageType," +
+        "o.audio_type as audioType," +
+        "o.video_type as videoType " +
+        "from user_vendor_mapping_object_mapping uvmom    \n" +
+        "left join object o on o.id=uvmom.object_id   \n" +
+        "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id \n" +
+        "where    uvm.user_id=?1  and o.status=1 and o.is_dummy=0 \n" +
+        " and uvmom.id not in (" +
+        "(select \n" +
+        "uvmom.id " +
+        "from upload u    \n" +
+        "left join user_vendor_mapping_object_mapping uvmom on u.user_vendor_mapping_object_mapping_id=uvmom.id   \n" +
+        "left join object o on o.id=uvmom.object_id   \n" +
+        "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id \n" +
+        "where    uvm.user_id=?1 and o.status=1 and o.is_dummy=0 \n" +
+        "group by o.id,u.user_vendor_mapping_object_mapping_id ) "+
+        ")"+
+        "group by o.id ) "
+
+    ,resultSetMapping = "Mapping.ObjectDTOForDropdown")
+
+@NamedNativeQuery(name="Object.getAllObjectsByVendorUserProjectForDropdown.count",
+    query =
+        "select count(*) from ((select \n" +
+            "o.id," +
+            "o.project_id as projectId,"+
+            "o.parent_object_id parentObjectId,"+
+            "o.number_of_upload_reqd as totalRequired," +
+            "count(u.id) as totalUploaded, \n" +
+            "sum(CASE WHEN u.approval_status = 1 THEN 1 ELSE 0 END) AS totalApproved,  \n" +
+            "sum(CASE WHEN u.approval_status = 0 THEN 1 ELSE 0 END) AS totalRejected,   \n" +
+            "sum(CASE WHEN u.approval_status = 2 THEN 1 ELSE 0 END) AS totalPending, \n" +
+            "o.buffer_percent as bufferPercent," +
+            "o.name as name," +
+            "o.description as description," +
+            "o.image_type as imageType," +
+            "o.audio_type as audioType," +
+            "o.video_type as videoType " +
+            "from upload u    \n" +
+            "left join user_vendor_mapping_object_mapping uvmom on u.user_vendor_mapping_object_mapping_id=uvmom.id   \n" +
+            "left join object o on o.id=uvmom.object_id   \n" +
+            "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id \n" +
+            "where    uvm.user_id=?1 and uvmom.status=1 and o.status=1 and o.is_dummy=0 \n" +
+            "group by o.id,u.user_vendor_mapping_object_mapping_id ) union "+
+            "(select \n" +
+            "o.id," +
+            "o.project_id as projectId,"+
+            "o.parent_object_id parentObjectId,"+
+            "o.number_of_upload_reqd as totalRequired," +
+            "0 as totalUploaded, \n" +
+            "0 AS totalApproved,  \n" +
+            "0 AS totalRejected,   \n" +
+            "0 AS totalPending, \n" +
+            "o.buffer_percent as bufferPercent," +
+            "o.name as name," +
+            "o.description as description," +
+            "o.image_type as imageType," +
+            "o.audio_type as audioType," +
+            "o.video_type as videoType " +
+            "from user_vendor_mapping_object_mapping uvmom    \n" +
+            "left join object o on o.id=uvmom.object_id   \n" +
+            "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id \n" +
+            "where    uvm.user_id=?1 and o.status=1 and o.is_dummy=0 \n" +
+            " and uvmom.id not in (" +
+            "(select \n" +
+            "uvmom.id " +
+            "from upload u    \n" +
+            "left join user_vendor_mapping_object_mapping uvmom on u.user_vendor_mapping_object_mapping_id=uvmom.id   \n" +
+            "left join object o on o.id=uvmom.object_id   \n" +
+            "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id \n" +
+            "where    uvm.user_id=?1  \n" +
+            "group by o.id,u.user_vendor_mapping_object_mapping_id ) "+
+            ")"+
+            "group by o.id ))a "
+)
+@SqlResultSetMapping(name = "Mapping.ObjectDTOForDropdown",
+    classes = @ConstructorResult(targetClass = ObjectDTO.class,
+        columns = {
+            @ColumnResult(name = "id",type = Long.class),
+            @ColumnResult(name = "totalRequired",type = Integer.class),
+            @ColumnResult(name = "totalUploaded",type = Integer.class),
+            @ColumnResult(name = "totalApproved",type = Integer.class),
+            @ColumnResult(name = "totalRejected",type = Integer.class),
+            @ColumnResult(name = "totalPending",type = Integer.class),
+            @ColumnResult(name = "projectId",type = Long.class),
+            @ColumnResult(name = "parentObjectId",type = Long.class),
+            @ColumnResult(name = "bufferPercent",type = Integer.class),
+            @ColumnResult(name = "name",type = String.class),
+            @ColumnResult(name = "description",type = String.class),
+            @ColumnResult(name = "imageType",type = String.class),
+            @ColumnResult(name = "audioType",type = String.class),
+            @ColumnResult(name = "videoType",type = String.class)
+        }))
 @Entity
 @Table(name = "object")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)

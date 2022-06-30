@@ -83,7 +83,6 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
     @Fetch(FetchMode.SUBSELECT)
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     @JsonIgnoreProperties(value = { "upload","project","object" }, allowSetters = true)
-    @JsonIgnore
     private Set<UploadMetaData> uploadMetaDataSet = new HashSet<>();
 
     @Column(name="status", nullable=false)
@@ -157,6 +156,7 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
         this.uploadRejectMappings = uploadRejectMappings;
     }
 
+    @JsonIgnore
     public Set<UploadMetaData> getUploadMetaDataSet() {
         return uploadMetaDataSet;
     }
@@ -185,6 +185,7 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
         return uploadMetaDataSet;
     }
 
+    @JsonIgnore
     public void setAidasUploadMetaDataSet(Set<UploadMetaData> uploadMetaDataSet) {
         this.uploadMetaDataSet = uploadMetaDataSet;
     }

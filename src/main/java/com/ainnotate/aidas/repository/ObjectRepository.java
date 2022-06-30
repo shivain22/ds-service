@@ -65,6 +65,9 @@ public interface ObjectRepository extends JpaRepository<Object, Long> {
     @Query(nativeQuery = true)
     List<ObjectDTO> getAllObjectsByVendorUserProject(Pageable pageable,Long userId);
 
+    @Query(nativeQuery = true)
+    List<ObjectDTO> getAllObjectsByVendorUserProjectForDropdown(Long userId);
+
     @Query(value="select \n" +
         "o.*, \n" +
         "count(u.id) as totalUploaded, \n" +
@@ -273,7 +276,7 @@ public interface ObjectRepository extends JpaRepository<Object, Long> {
         "group by ao.id",nativeQuery = true)
     IUploadDetail countUploadsByObjectAndAidasAdmin(Long aidasObjectId);
 
-    @Query(value = "select count(*) from object where id>0 and status=1 and is_dummy=0", nativeQuery = true)
+    @Query(value = "select count(*) from object where id>0 and status=1 ", nativeQuery = true)
     Long countAllObjectsForSuperAdmin();
 
     @Query(value = "select * from object where is_sample_data=1",nativeQuery = true)

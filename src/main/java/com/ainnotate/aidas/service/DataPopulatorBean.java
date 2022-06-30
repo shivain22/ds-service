@@ -496,12 +496,12 @@ public class DataPopulatorBean implements Runnable {
 
     private void addSamplePropertiesForCustomer(){
         System.out.println("Properties for customer started");
-        String query="insert into property(name,value,status,is_sample_data,customer_id,optional,property_type,system_property) values ";
+        String query="insert into property(name,value,status,is_sample_data,customer_id,optional,property_type) values ";
         String values = "";
         for(Customer c: customers){
             values="";
             for(Property p:properties){
-                values+="('"+p.getName()+"','"+p.getValue()+"',1,1,"+c.getId()+",1,1,0),";
+                values+="('"+p.getName()+"','"+p.getValue()+"',1,1,"+c.getId()+",1,1),";
             }
             batchInsert(query+values.substring(0,values.length()-1));
         }
@@ -509,12 +509,12 @@ public class DataPopulatorBean implements Runnable {
     }
 
     private void addSampleObjects(List<String[]> data){
-        String query="insert into object(name,description,status,is_sample_data,project_id,number_of_upload_reqd,buffer_percent) values ";
+        String query="insert into object(name,description,status,is_sample_data,project_id,number_of_upload_reqd,buffer_percent,is_dummy) values ";
         String values = "";
         for(Project p:projects){
             values="";
             for(int i=0;i<5;i++) {
-                values += "('Obj-"+i+"-" + p.getName() + "','Obj-"+i+"-" + p.getDescription() + "',1,1,"+p.getId()+",100,20),";
+                values += "('Obj-"+i+"-" + p.getName() + "','Obj-"+i+"-" + p.getDescription() + "',1,1,"+p.getId()+",100,20,0),";
             }
             batchInsert(query+values.substring(0,values.length()-1));
         }
@@ -608,7 +608,7 @@ public class DataPopulatorBean implements Runnable {
     }
 
     private void batchInsert(String query){
-        try (Connection conn = DriverManager.getConnection("jdbc:mysql://ainnotateservice-mysql:3306/ainnotateservice", "root", "")) {
+        try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3308/ainnotateservice", "root", "")) {
             if (conn != null) {
                 PreparedStatement ps = conn.prepareStatement(query);
                 ps.executeUpdate();
@@ -622,9 +622,10 @@ public class DataPopulatorBean implements Runnable {
         List<Long> uvmomids = userVendorMappingObjectMappingRepository.getAllSampleUserVendorMappingObjectMappingsIds();
         int batchSize=0;
         String values="";
+
         for(Long uvmomid:uvmomids) {
             for(int i=0;i<2;i++){
-                values +="(1,1,2,'"+uvmomid+".png',"+uvmomid+",'"+uvmomid+".png'),";
+                values +="(1,1,2,'"+i+"-"+uvmomid+".png',"+uvmomid+",'"+i+"-"+uvmomid+".png'),";
             }
             batchSize++;
             if(batchSize==10000){
@@ -632,6 +633,7 @@ public class DataPopulatorBean implements Runnable {
                 batchSize=0;
                 values="";
             }
+
         }
         System.out.println("Completed inserting uploads");
     }

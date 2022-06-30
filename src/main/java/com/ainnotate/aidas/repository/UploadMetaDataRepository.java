@@ -23,5 +23,8 @@ public interface UploadMetaDataRepository extends JpaRepository<UploadMetaData, 
     @Query(value = "delete from upload_meta_data where is_sample_data=1 order by id desc",nativeQuery = true)
     void deleteAllSampleUploadMetadata();
 
+    @Query(value="select * from upload_meta_data where upload_id=?",nativeQuery = true)
+    List<UploadMetaData> getAllUploadMetaDataForUpload(Long uploadId);
+
 
 }
