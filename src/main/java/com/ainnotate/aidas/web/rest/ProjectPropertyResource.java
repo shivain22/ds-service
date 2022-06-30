@@ -186,10 +186,14 @@ public class ProjectPropertyResource {
                     property.setPropertyType(properyProjectPropertyDTO.getPropertyType());
                     property.setDescription(properyProjectPropertyDTO.getDescription());
                     property.setValue(properyProjectPropertyDTO.getValue());
+                    property.setAddToMetadata(properyProjectPropertyDTO.getAddToMetadata());
                     property = propertyRepository.save(property);
                     ProjectProperty projectProperty = new ProjectProperty();
                     projectProperty.setProject(project);
                     projectProperty.setProperty(property);
+                    projectProperty.setOptional(property.getOptional());
+                    projectProperty.setAddToMetadata(property.getAddToMetadata());
+                    projectProperty.setDefaultProp(property.getDefaultProp());
                     projectProperty.setValue(properyProjectPropertyDTO.getAidasProjectPropertyValue());
                     ProjectProperty result = projectPropertyRepository.save(projectProperty);
                     i++;
@@ -253,6 +257,7 @@ public class ProjectPropertyResource {
                 ProjectProperty projectProperty = projectPropertyRepository.findByProjectAndProperty(projectPropertyDTO.getAidasProjectId(), projectPropertyDTO.getAidasPropertyId());
                 if (projectProperty != null) {
                     projectProperty.setValue(projectPropertyDTO.getValue());
+                    projectProperty.setAddToMetadata(projectPropertyDTO.getAddToMetadata());
                     ProjectProperty result = projectPropertyRepository.save(projectProperty);
                     i++;
                 } else {

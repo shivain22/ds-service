@@ -21,6 +21,15 @@ public class ProjectPropertyDTO {
     private Integer defaultProp;
     private Long aidasProjectId;
     private Long aidasPropertyId;
+    private Integer addToMetadata;
+
+    public Integer getAddToMetadata() {
+        return addToMetadata;
+    }
+
+    public void setAddToMetadata(Integer addToMetadata) {
+        this.addToMetadata = addToMetadata;
+    }
 
     public Long getAidasPropertyId() {
         return aidasPropertyId;

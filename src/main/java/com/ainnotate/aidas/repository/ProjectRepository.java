@@ -66,7 +66,7 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     @Query(value = "select * from project where status=1 and id>0 order by id desc",nativeQuery = true)
     List<Project> findAllByIdGreaterThanForDropDown(Long id);
 
-    @Query(value = "select * from project p, qc_project_mapping qpm, user_customer_mapping ucm where qpm.user_customer_mapping_id=ucm.id and ucm.user_id=? and qpm.project_id=p.id and status=1 and id>0 order by id desc",nativeQuery = true)
+    @Query(value = "select p.* from project p, qc_project_mapping qpm, user_customer_mapping ucm where qpm.user_customer_mapping_id=ucm.id and ucm.user_id=? and qpm.project_id=p.id and p.status=1 and qpm.status=1 and ucm.status=1 and p.id>0 order by p.id desc",nativeQuery = true)
     List<Project> findProjectsForQC(Long userId);
 
     @Query(value = "select count(*) from project p , customer c where p.customer_id=c.id and c.organisation_id=?1 and p.status=1",nativeQuery = true)

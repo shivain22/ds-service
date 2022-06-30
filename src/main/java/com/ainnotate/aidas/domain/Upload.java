@@ -156,7 +156,7 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
         this.uploadRejectMappings = uploadRejectMappings;
     }
 
-    @JsonIgnore
+
     public Set<UploadMetaData> getUploadMetaDataSet() {
         return uploadMetaDataSet;
     }
@@ -179,15 +179,6 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
 
     public void setUserVendorMappingObjectMapping(UserVendorMappingObjectMapping userVendorMappingObjectMapping) {
         this.userVendorMappingObjectMapping = userVendorMappingObjectMapping;
-    }
-
-    public Set<UploadMetaData> getAidasUploadMetaDataSet() {
-        return uploadMetaDataSet;
-    }
-
-    @JsonIgnore
-    public void setAidasUploadMetaDataSet(Set<UploadMetaData> uploadMetaDataSet) {
-        this.uploadMetaDataSet = uploadMetaDataSet;
     }
 
     public Integer getMetadataStatus() {

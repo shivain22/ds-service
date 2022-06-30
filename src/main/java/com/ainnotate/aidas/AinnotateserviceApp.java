@@ -65,7 +65,7 @@ public class AinnotateserviceApp {
      */
     @PostConstruct
     public void initApplication() {
-        /*RealmResource realmResource = keycloak.realm(keycloakConfig.getClientRealm());
+        RealmResource realmResource = keycloak.realm(keycloakConfig.getClientRealm());
         UsersResource usersRessource = realmResource.users();
         List<User> aidasUsers =  userRepository.findAll();
         List<UserRepresentation> users = usersRessource.list();
@@ -101,7 +101,7 @@ public class AinnotateserviceApp {
                     userResource.update(user);
                 }
             }
-        }*/
+        }
         Collection<String> activeProfiles = Arrays.asList(env.getActiveProfiles());
         if (
             activeProfiles.contains(JHipsterConstants.SPRING_PROFILE_DEVELOPMENT) &&

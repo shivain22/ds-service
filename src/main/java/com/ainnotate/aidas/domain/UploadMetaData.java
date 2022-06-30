@@ -1,5 +1,6 @@
 package com.ainnotate.aidas.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.io.Serializable;
 import javax.persistence.*;
@@ -98,6 +99,7 @@ public class UploadMetaData extends AbstractAuditingEntity  implements Serializa
         this.value = value;
     }
 
+    @JsonIgnore
     public Upload getUpload() {
         return this.upload;
     }

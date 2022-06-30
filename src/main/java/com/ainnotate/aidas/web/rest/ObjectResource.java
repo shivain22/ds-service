@@ -488,7 +488,7 @@ public class ObjectResource {
             objects = objectRepository.getAllObjectsByVendorAdminProject(user.getVendor().getId());
         }
         if( user.getAuthority().getName().equals(AidasConstants.VENDOR_USER)){
-            List<ObjectDTO> objectDTOs = objectRepository.getAllObjectsByVendorUserProjectForDropdown(user.getId());
+            List<ObjectDTO> objectDTOs = objectRepository.getAllObjectsByVendorUserProjectForDropdown(user.getId(),projectId);
             for(ObjectDTO odto:objectDTOs){
                 Object o = new Object();
                 o.setId(odto.getId());
@@ -596,7 +596,7 @@ public class ObjectResource {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         List<ObjectDTO> objects = null;
         if( user.getAuthority().getName().equals(AidasConstants.VENDOR_USER)){
-            objects = objectRepository.getAllObjectsByVendorUserProject(pageable,user.getId());
+            objects = objectRepository.getAllObjectsByVendorUserProjectWithProjectId(pageable,user.getId(),projectId);
             if(objects!=null && objects.size()>0){
                 for(ObjectDTO object : objects){
                     List<ObjectProperty>objectProperties = objectPropertyRepository.getAllObjectPropertyForObject(object.getId());

@@ -886,7 +886,7 @@ public class UploadResource {
         if(authority.getName().equals(AidasConstants.VENDOR_USER)){
 
         }
-        Upload upload = uploadRepository.findTopByQcNotDoneYet();
+        Upload upload = uploadRepository.findTopByQcNotDoneYet(projectId);
         Customer customer = upload.getUserVendorMappingObjectMapping().getObject().getProject().getCustomer();
         Project project = upload.getUserVendorMappingObjectMapping().getObject().getProject();
         QcProjectMapping qpm = qcProjectMappingRepository.getQcProjectMappingByProjectAndCustomerAndUser(project.getId(),customer.getId(),user.getId());
