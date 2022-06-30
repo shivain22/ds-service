@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 /**
  * Spring Data JPA repository for the {@link QcProjectMapping} entity.
  */
@@ -20,8 +22,8 @@ public interface QcProjectMappingRepository extends JpaRepository<QcProjectMappi
     QcProjectMapping getQcProjectMappingByProjectAndCustomerAndUserAndLevel(Long projectId, Long customerId, Long userId,Long qcLevel);
 
     @Query(value = "select * from qc_project_mapping qpm,  user_customer_mapping ucm where " +
-        "qpm.project_id=?1 and qpm.user_customer_mapping_id = ucm.id and ucm.customer_id=?2 and ucm.user_id=?3 ",nativeQuery = true)
-    QcProjectMapping getQcProjectMappingByProjectAndCustomerAndUser(Long projectId, Long customerId, Long userId);
+        "qpm.project_id=?1 and qpm.user_customer_mapping_id = ucm.id and ucm.customer_id=?2 and ucm.user_id=?3 order by qpm.qc_level asc",nativeQuery = true)
+    List<QcProjectMapping> getQcProjectMappingByProjectAndCustomerAndUser(Long projectId, Long customerId, Long userId);
 
 
 

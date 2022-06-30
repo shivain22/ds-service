@@ -153,6 +153,9 @@ public class ProjectResource {
             app.setProperty(ap);
             app.setValue(ap.getValue());
             app.setOptional(ap.getOptional());
+            app.setAddToMetadata(1);
+            app.setPassedFromApp(1);
+            app.setStatus(1);
             project.addAidasProjectProperty(app);
         }
         Project result = projectRepository.save(project);
@@ -175,6 +178,9 @@ public class ProjectResource {
                 opp.setProperty(ap);
                 opp.setValue(ap.getValue());
                 opp.setOptional(ap.getOptional());
+                opp.setAddToMetadata(1);
+                opp.setPassedFromApp(1);
+                opp.setStatus(1);
                 obj.addAidasObjectProperty(opp);
             }
             objectRepository.save(obj);

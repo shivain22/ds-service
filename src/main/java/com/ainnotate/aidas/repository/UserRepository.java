@@ -92,51 +92,15 @@ public interface UserRepository extends JpaRepository<User, Long> {
         "from \n" +
         "qc_project_mapping qpc, \n" +
         "user u,\n" +
-        "user_customer_mapping ucm, \n" +
-        "customer c\n" +
+        "user_customer_mapping ucm \n" +
         "where \n" +
+        "qpc.user_customer_mapping_id=ucm.id and\n" +
         "ucm.user_id=u.id and\n" +
-        "qpc.user_customer_mapping_id=ucm.id\n" +
-        "and ucm.customer_id=c.id\n" +
-        "and qpc.project_id=?2\n" +
-        "and ucm.customer_id=?1\n order by qc_level asc" , nativeQuery = true)
-    List<IUserDTO>findAllByQcUsersByCustomerAndProject(Long customerId,Long projectId);
+        "qpc.project_id=?1 \n"
+        , nativeQuery = true)
+    List<IUserDTO>findAllByQcUsersByCustomerAndProject(Long projectId);
 
-    @Query(value = "select a.userId as userId, a.firstName as firstName, a.lastName as lastName, a.userVendorMappingId as userVendorMappingId, a.userCustomerMappingId userCustomerMappingId, a.qcProjectMappingId as qcProjectMappingId, a.qcLevel as qcLevel from (select \n" +
-        "        u.id as userId, \n" +
-        "        u.first_name as firstName, \n" +
-        "        u.last_name lastName, \n" +
-        "        0 as userVendorMappingId,\n" +
-        "        ucm.id as userCustomerMappingId,\n" +
-        "        0 as qcProjectMappingId, \n" +
-        "        0 as status,   \n" +
-        "        0 as qcLevel \n" +
-        "        from \n" +
-        "        user u,\n" +
-        "        user_authority_mapping uam,\n" +
-        "        user_customer_mapping ucm,\n" +
-        "        customer c\n" +
-        "        where u.id=ucm.user_id and\n" +
-        "        ucm.customer_id=c.id \n" +
-        "        and uam.user_id=u.id \n" +
-        "        and uam.authority_id=6 and\n" +
-        "        c.id=?1)a where a.userId not in (" +
-        " select \n" +
-        "u.id as userId \n" +
-        "from \n" +
-        "qc_project_mapping qpc, \n" +
-        "user u,\n" +
-        "user_customer_mapping ucm, \n" +
-        "customer c\n" +
-        "where \n" +
-        "ucm.user_id=u.id and\n" +
-        "qpc.user_customer_mapping_id=ucm.id\n" +
-        "and ucm.customer_id=c.id\n" +
-        "and qpc.project_id=?2\n" +
-        "and ucm.customer_id=?1\n " +
-        "group by userId" +
-        ") order by qcLevel asc", nativeQuery = true)
-    List<IUserDTO>findAllByQcUsersByCustomerAndProject1(Long customerId,Long projectId);
+
 
 
 

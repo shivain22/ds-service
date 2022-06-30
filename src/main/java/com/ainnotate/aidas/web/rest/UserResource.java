@@ -202,6 +202,7 @@ public class UserResource {
                 user.setOrganisation(o);
             }
         }
+        UserCustomerMapping userCustomerMapping = null;
         if(user.getCustomerIds()!=null && user.getCustomerIds().size()>0){
             Customer c =null;
             for(UserCustomerMappingDTO cid: user.getCustomerIds()){
@@ -210,6 +211,7 @@ public class UserResource {
                 ucm.setCustomer(c);
                 ucm.setUser(user);
                 user.getUserCustomerMappings().add(ucm);
+                userCustomerMapping = ucm;
             }
             if(c!=null){
                 user.setCustomer(c);
@@ -251,6 +253,13 @@ public class UserResource {
         updateUserToKeyCloak(result);
         if(user.getAuthority().getName().equals(AidasConstants.VENDOR_USER)) {
             if (userVendorMapping != null) {
+                userVendorMappingObjectMappingTask.setUserVendorMapping(userVendorMapping);
+                userVendorMappingObjectMappingTaskExecutor.execute(userVendorMappingObjectMappingTask);
+            }
+        }
+
+        if(user.getAuthority().getName().equals(AidasConstants.QC_USER)) {
+            if (userCustomerMapping != null) {
                 userVendorMappingObjectMappingTask.setUserVendorMapping(userVendorMapping);
                 userVendorMappingObjectMappingTaskExecutor.execute(userVendorMappingObjectMappingTask);
             }
@@ -893,47 +902,23 @@ public class UserResource {
         Authority authority = authorityRepository.findByName(AidasConstants.QC_USER);
         ProjectQcDTO projectQcDTO = new ProjectQcDTO();
         Project project= projectRepository.getById(projectId);
-        projectQcDTO = new ProjectQcDTO();
         projectQcDTO.setProjectId(projectId);
         projectQcDTO.setCustomerId(project.getCustomer().getId());
         projectQcDTO.setName(project.getCustomer().getName());
-        List<IUserDTO> userDTOs = userRepository.findAllByQcUsersByCustomerAndProject(project.getCustomer().getId(),projectId);
-        List<UserDTO> list = new LinkedList<>();
-        projectQcDTO.setQcUsers1(list);
-                if(userDTOs.size()==0){
-                    List<IUserDTO> userDTOsNew = userRepository.findAllByQcUsersByCustomerAndProject1(project.getCustomer().getId(),projectId);
-                    if(project.getQcLevels()==null) {
-                        project.setQcLevels(1);
-                        projectRepository.save(project);
-                    }
-                    for(int i=0;i<project.getQcLevels();i++){
-                        for(int j=0;j<userDTOsNew.size();j++){
-                            IUserDTO u = userDTOsNew.get(j);
-                            UserDTO udto = new UserDTO();
-                            udto.setQcLevel(Long.valueOf(i+1));
-                            udto.setUserCustomerMappingId(u.getUserCustomerMappingId());
-                            udto.setUserId(u.getUserId());
-                            udto.setFirstName(u.getFirstName());
-                            udto.setLastName(u.getLastName());
-                            udto.setLogin(u.getLogin());
-                            udto.setStatus(u.getStatus());
-                            projectQcDTO.getQcUsers1().add(udto);
-                        }
-                    }
-                }else{
-                    for(int j=0;j<userDTOs.size();j++){
-                        IUserDTO u = userDTOs.get(j);
-                        UserDTO udto = new UserDTO();
-                        udto.setQcLevel(u.getQcLevel());
-                        udto.setUserCustomerMappingId(u.getUserCustomerMappingId());
-                        udto.setUserId(u.getUserId());
-                        udto.setFirstName(u.getFirstName());
-                        udto.setLastName(u.getLastName());
-                        udto.setLogin(u.getLogin());
-                        udto.setStatus(u.getStatus());
-                        projectQcDTO.getQcUsers1().add(udto);
-                    }
-                }
+        projectQcDTO.setQcUsers1(new ArrayList<>());
+        List<IUserDTO> userDTOs = userRepository.findAllByQcUsersByCustomerAndProject(projectId);
+        for (int j = 0; j < userDTOs.size(); j++) {
+            IUserDTO u = userDTOs.get(j);
+            UserDTO udto = new UserDTO();
+            udto.setQcLevel(u.getQcLevel());
+            udto.setUserCustomerMappingId(u.getUserCustomerMappingId());
+            udto.setUserId(u.getUserId());
+            udto.setFirstName(u.getFirstName());
+            udto.setLastName(u.getLastName());
+            udto.setLogin(u.getLogin());
+            udto.setStatus(u.getStatus());
+            projectQcDTO.getQcUsers1().add(udto);
+        }
         return ResponseEntity.ok().body(projectQcDTO);
     }
 
