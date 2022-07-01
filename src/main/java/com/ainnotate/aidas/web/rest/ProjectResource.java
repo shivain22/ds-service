@@ -231,20 +231,11 @@ public class ProjectResource {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to add AidasQcUsers : {}", projectQcDTO);
         for(UserDTO userDTO: projectQcDTO.getQcUsers()){
-            Project project = projectRepository.getById(projectQcDTO.getProjectId());
-            UserCustomerMapping userCustomerMapping = userCustomerMappingRepository.getById(userDTO.getUserCustomerMappingId());
-            System.out.println(userCustomerMapping.getId());
-            if(userCustomerMapping!=null){
-                QcProjectMapping qcProjectMapping = qcProjectMappingRepository.getQcProjectMappingByProjectAndCustomerAndUserAndLevel(project.getId(),project.getCustomer().getId(),userCustomerMapping.getUser().getId(),userDTO.getQcLevel());
-                if(qcProjectMapping==null){
-                    qcProjectMapping = new QcProjectMapping();
-                    qcProjectMapping.setProject(project);
-                    qcProjectMapping.setUserCustomerMapping(userCustomerMapping);
-                }
-                qcProjectMapping.setQcLevel(userDTO.getQcLevel());
-                qcProjectMapping.setStatus(userDTO.getStatus());
-                qcProjectMappingRepository.save(qcProjectMapping);
-            }
+            //the uservendormappingid coming from the frontend is actually qpc.id -- check the method which fetch list of qc users for project.
+            QcProjectMapping qpc = qcProjectMappingRepository.getById(userDTO.getUserCustomerMappingId());
+            qpc.setStatus(userDTO.getStatus());
+            qpc.setQcLevel(userDTO.getQcLevel());
+            qcProjectMappingRepository.save(qpc);
         }
         return ResponseEntity.ok().body("Successfully added project qc level");
     }

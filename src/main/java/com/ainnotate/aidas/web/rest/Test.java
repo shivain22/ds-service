@@ -178,23 +178,26 @@ public class Test {
         }*/
         StopWatch watch = new StopWatch();
         watch.start();
-        for(int i=0;i<5000;i++){
-            String values ="";
-            for(j=0;j<1000;j++){
-                values+="("+i+","+i+"),";
+
+        String val="";
+        k=201;
+        for(int i=1;i<1001;i++){
+            for( j=k;j<k+5;j++){
+                val +="(0,"+i+","+j+"),";
             }
-            System.out.println(i+"------------"+j);
-            try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3308/ainnotateservice", "root", "")) {
+            if(i%5==0) {
+                k = j;
+            }
+        }
+         try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3308/ainnotateservice", "root", "")) {
                 if (conn != null) {
-                    String query ="insert into test (uid,oid) values"+values.substring(0,values.length()-1);
-                    //System.out.println(query);
-                    PreparedStatement ps = conn.prepareStatement(query);
-                    ps.executeUpdate();
+                   String q = "insert into qc_project_mapping(status,project_id,user_customer_mapping_id) values "+val.substring(0,val.length()-1);
+                   PreparedStatement ps = conn.prepareStatement(q);
+                   ps.executeUpdate();
                 }
             }catch (Exception e) {
                 e.printStackTrace();
             }
-        }
         watch.stop();
         System.out.println(watch.getTime(TimeUnit.MINUTES));
 

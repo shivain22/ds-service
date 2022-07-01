@@ -1,10 +1,22 @@
 package com.ainnotate.aidas.dto;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class UploadMetadataDTO {
     private Long uploadId;
     private Long projectPropertyId;
     private String value;
     private Long objectPropertyId;
+    Map<String,String> uploadMetaDatas = new HashMap<>();
+
+    public Map<String, String> getUploadMetaDatas() {
+        return uploadMetaDatas;
+    }
+
+    public void setUploadMetaDatas(Map<String, String> uploadMetaDatas) {
+        this.uploadMetaDatas = uploadMetaDatas;
+    }
 
     public Long getObjectPropertyId() {
         return objectPropertyId;

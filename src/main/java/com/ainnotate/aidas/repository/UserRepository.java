@@ -85,8 +85,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
         "u.first_name as firstName, \n" +
         "u.last_name lastName, \n" +
         "0 as userVendorMappingId,\n" +
-        "ucm.id as userCustomerMappingId,\n" +
-        "qpc.id as qcProjectMappingId, \n" +
+        "qpc.id as userCustomerMappingId,\n" +
+        "ucm.id as qcProjectMappingId, \n" + //changed this to get qpc.id instead of customer mapping id so that the add function can directly work on qpc
         "qpc.status as status,   \n" +
         "qpc.qc_level as qcLevel "+
         "from \n" +

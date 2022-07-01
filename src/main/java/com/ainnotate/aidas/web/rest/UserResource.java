@@ -260,7 +260,7 @@ public class UserResource {
 
         if(user.getAuthority().getName().equals(AidasConstants.QC_USER)) {
             if (userCustomerMapping != null) {
-                userVendorMappingObjectMappingTask.setUserVendorMapping(userVendorMapping);
+                userVendorMappingObjectMappingTask.setUserCustomerMapping(userCustomerMapping);
                 userVendorMappingObjectMappingTaskExecutor.execute(userVendorMappingObjectMappingTask);
             }
         }

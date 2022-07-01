@@ -1,11 +1,14 @@
 package com.ainnotate.aidas.domain;
 
+import com.ainnotate.aidas.dto.UploadMetadataDTO;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.io.Serializable;
 import java.time.Instant;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.persistence.*;
 
@@ -49,6 +52,64 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
     @ManyToOne(optional = true)
     @JsonIgnoreProperties(value = { "object" }, allowSetters = true)
     private Upload reworkUpload;
+    @Column(name = "status_modified_date")
+    private ZonedDateTime statusModifiedDate;
+    @OneToMany(mappedBy = "upload",fetch = FetchType.EAGER,cascade = CascadeType.ALL)
+    @Fetch(FetchMode.SUBSELECT)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    @JsonIgnoreProperties(value = { "upload" }, allowSetters = true)
+    @JsonIgnore
+    private Set<UploadRejectMapping> uploadRejectMappings = new HashSet<>();
+    @Column(name = "object_key",  nullable = true)
+    private String objectKey;
+    @OneToMany(mappedBy = "upload",fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SUBSELECT)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    @JsonIgnoreProperties(value = { "upload","project","object" }, allowSetters = true)
+    private Set<UploadMetaData> uploadMetaDataSet = new HashSet<>();
+    @Column(name="status", nullable=false)
+    private Integer status;
+    @Column(name="approval_status",nullable = true)
+    private Integer approvalStatus;
+    @Column(name="qc_status", nullable=true)
+    private Integer qcStatus;
+    @Column(name="metadata_status", nullable=true)
+    private Integer metadataStatus;
+    @ManyToOne
+    @JsonIgnoreProperties(value={"user","project"})
+    @JsonIgnore
+    private QcProjectMapping qcDoneBy;
+    @Column(name="qc_start_date", nullable=true)
+    private Instant qcStartDate;
+    @Column(name="qc_end_date", nullable=true)
+    private Instant qcEndDate;
+    @Column(name="external_dataset_status")
+    @JsonProperty
+    private Integer externalDatasetStatus;
+    @JsonProperty
+    private transient String uploadMetaData;
+    @Transient
+    private Integer reworkCount;
+    @ManyToOne(optional = false,fetch = FetchType.EAGER)
+    @JsonIgnoreProperties(value = { "user", "object", "aidasUploads" }, allowSetters = true)
+    @JsonIgnore
+    private UserVendorMappingObjectMapping userVendorMappingObjectMapping;
+
+    public List<UploadMetadataDTO> getUploadMetaDatas(){
+        List<UploadMetadataDTO> uds = new ArrayList<>();
+        if(this.uploadMetaDataSet!=null){
+            for(UploadMetaData u:uploadMetaDataSet){
+                UploadMetadataDTO ud = new UploadMetadataDTO();
+                if(u.getProjectProperty()!=null){
+                    ud.getUploadMetaDatas().put(u.getProjectProperty().getProperty().getName(),u.getValue());
+                }else if(u.getObjectProperty()!=null){
+                    ud.getUploadMetaDatas().put(u.getObjectProperty().getProperty().getName(),u.getValue());
+                }
+                uds.add(ud);
+            }
+        }
+        return uds;
+    }
 
     public Upload getReworkAidasUpload() {
         return reworkUpload;
@@ -58,16 +119,6 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
         this.reworkUpload = reworkUpload;
     }
 
-    @Column(name = "status_modified_date")
-    private ZonedDateTime statusModifiedDate;
-
-    @OneToMany(mappedBy = "upload",fetch = FetchType.EAGER,cascade = CascadeType.ALL)
-    @Fetch(FetchMode.SUBSELECT)
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-    @JsonIgnoreProperties(value = { "upload" }, allowSetters = true)
-    @JsonIgnore
-    private Set<UploadRejectMapping> uploadRejectMappings = new HashSet<>();
-
     public Set<UploadRejectMapping> getAidasUploadRejectMappings() {
         return uploadRejectMappings;
     }
@@ -76,21 +127,6 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
         this.uploadRejectMappings = uploadRejectMappings;
     }
 
-    @Column(name = "object_key",  nullable = true)
-    private String objectKey;
-
-    @OneToMany(mappedBy = "upload",fetch = FetchType.EAGER)
-    @Fetch(FetchMode.SUBSELECT)
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-    @JsonIgnoreProperties(value = { "upload","project","object" }, allowSetters = true)
-    private Set<UploadMetaData> uploadMetaDataSet = new HashSet<>();
-
-    @Column(name="status", nullable=false)
-    private Integer status;
-
-    @Column(name="approval_status",nullable = true)
-    private Integer approvalStatus;
-
     public Integer getApprovalStatus() {
         return approvalStatus;
     }
@@ -98,29 +134,6 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
     public void setApprovalStatus(Integer approvalStatus) {
         this.approvalStatus = approvalStatus;
     }
-
-    @Column(name="qc_status", nullable=true)
-    private Integer qcStatus;
-
-    @Column(name="metadata_status", nullable=true)
-    private Integer metadataStatus;
-
-    @ManyToOne
-    @JsonIgnoreProperties(value={"user","project"})
-    @JsonIgnore
-    private QcProjectMapping qcDoneBy;
-
-    @Column(name="qc_start_date", nullable=true)
-    private Instant qcStartDate;
-
-    @Column(name="qc_end_date", nullable=true)
-    private Instant qcEndDate;
-    @Column(name="external_dataset_status")
-    @JsonProperty
-    private Integer externalDatasetStatus;
-
-    @JsonProperty
-    private transient String uploadMetaData;
 
     public String getUploadMetaData() {
         return uploadMetaData;
@@ -137,8 +150,6 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
     public void setExternalDatasetStatus(Integer externalDatasetStatus) {
         this.externalDatasetStatus = externalDatasetStatus;
     }
-    @Transient
-    private Integer reworkCount;
 
     public Upload getReworkUpload() {
         return reworkUpload;
@@ -155,7 +166,6 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
     public void setUploadRejectMappings(Set<UploadRejectMapping> uploadRejectMappings) {
         this.uploadRejectMappings = uploadRejectMappings;
     }
-
 
     public Set<UploadMetaData> getUploadMetaDataSet() {
         return uploadMetaDataSet;
@@ -239,13 +249,6 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
         this.objectKey = objectKey;
     }
 
-    @ManyToOne(optional = false,fetch = FetchType.EAGER)
-    @JsonIgnoreProperties(value = { "user", "object", "aidasUploads" }, allowSetters = true)
-    @JsonIgnore
-    private UserVendorMappingObjectMapping userVendorMappingObjectMapping;
-
-
-
     public String getUploadUrl() {
         return uploadUrl;
     }
@@ -269,20 +272,26 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
         return this.id;
     }
 
-    public Upload id(Long id) {
-        this.setId(id);
-        return this;
-    }
-    public Upload status(Integer status) {
-        this.setStatus(status);
-        return this;
-    }
     public void setId(Long id) {
         this.id = id;
     }
 
+    public Upload id(Long id) {
+        this.setId(id);
+        return this;
+    }
+
+    public Upload status(Integer status) {
+        this.setStatus(status);
+        return this;
+    }
+
     public String getName() {
         return this.name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public Upload name(String name) {
@@ -290,12 +299,12 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
         return this;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public Instant getDateUploaded() {
         return this.dateUploaded;
+    }
+
+    public void setDateUploaded(Instant dateUploaded) {
+        this.dateUploaded = dateUploaded;
     }
 
     public Upload dateUploaded(Instant dateUploaded) {
@@ -303,23 +312,17 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
         return this;
     }
 
-    public void setDateUploaded(Instant dateUploaded) {
-        this.dateUploaded = dateUploaded;
-    }
-
-
-
     public ZonedDateTime getStatusModifiedDate() {
         return this.statusModifiedDate;
+    }
+
+    public void setStatusModifiedDate(ZonedDateTime statusModifiedDate) {
+        this.statusModifiedDate = statusModifiedDate;
     }
 
     public Upload statusModifiedDate(ZonedDateTime statusModifiedDate) {
         this.setStatusModifiedDate(statusModifiedDate);
         return this;
-    }
-
-    public void setStatusModifiedDate(ZonedDateTime statusModifiedDate) {
-        this.statusModifiedDate = statusModifiedDate;
     }
 
     public void setAidasUserAidasObjectMapping(UserVendorMappingObjectMapping userVendorMappingObjectMapping) {
