@@ -488,6 +488,7 @@ public class DataPopulatorBean implements Runnable {
                 }
             }
             values += "('"+d[0]+"','"+d[1]+"',1,1,"+customers.get(j).getId()+",'image'),";
+            i++;
         }
         batchInsert(query+values.substring(0,values.length()-1));
         projects = projectRepository.getAllSampleProjects();

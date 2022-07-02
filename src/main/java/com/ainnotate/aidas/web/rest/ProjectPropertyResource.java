@@ -177,6 +177,7 @@ public class ProjectPropertyResource {
         int i=0;
         try {
             for(ProperyProjectPropertyDTO properyProjectPropertyDTO : properyProjectPropertyDTOS) {
+
                 Project project = projectRepository.getById(properyProjectPropertyDTO.getAidasProjectId());
                 Property property = new Property();
                 if (project != null && property != null) {
@@ -187,6 +188,8 @@ public class ProjectPropertyResource {
                     property.setDescription(properyProjectPropertyDTO.getDescription());
                     property.setValue(properyProjectPropertyDTO.getValue());
                     property.setAddToMetadata(properyProjectPropertyDTO.getAddToMetadata());
+                    property.setValue("Not yet filled");
+                    property.setPropertyType(2);
                     property = propertyRepository.save(property);
                     ProjectProperty projectProperty = new ProjectProperty();
                     projectProperty.setProject(project);
@@ -254,14 +257,17 @@ public class ProjectPropertyResource {
         int i=0;
         try {
             for(ProjectPropertyDTO projectPropertyDTO : projectPropertyDTOS) {
-                ProjectProperty projectProperty = projectPropertyRepository.findByProjectAndProperty(projectPropertyDTO.getAidasProjectId(), projectPropertyDTO.getAidasPropertyId());
-                if (projectProperty != null) {
-                    projectProperty.setValue(projectPropertyDTO.getValue());
-                    projectProperty.setAddToMetadata(projectPropertyDTO.getAddToMetadata());
-                    ProjectProperty result = projectPropertyRepository.save(projectProperty);
-                    i++;
-                } else {
-                    //throw new BadRequestAlertException("Error occured when trying to map aidas property to project", ENTITY_NAME, "idexists");
+                if(projectPropertyDTO.getProjectPropertyId()!=null) {
+                    ProjectProperty projectProperty = projectPropertyRepository.getById(projectPropertyDTO.getProjectPropertyId());
+                    if (projectProperty != null) {
+                        projectProperty.setValue(projectPropertyDTO.getValue());
+                        projectProperty.setAddToMetadata(projectPropertyDTO.getAddToMetadata());
+                        projectProperty.setOptional(projectPropertyDTO.getOptional());
+                        ProjectProperty result = projectPropertyRepository.save(projectProperty);
+                        i++;
+                    } else {
+                        //throw new BadRequestAlertException("Error occured when trying to map aidas property to project", ENTITY_NAME, "idexists");
+                    }
                 }
             }
         }

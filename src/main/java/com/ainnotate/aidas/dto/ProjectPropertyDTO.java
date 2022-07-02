@@ -23,6 +23,7 @@ public class ProjectPropertyDTO {
     private Long aidasPropertyId;
     private Integer addToMetadata;
 
+
     public Integer getAddToMetadata() {
         return addToMetadata;
     }

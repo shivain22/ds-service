@@ -101,9 +101,11 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
             for(UploadMetaData u:uploadMetaDataSet){
                 UploadMetadataDTO ud = new UploadMetadataDTO();
                 if(u.getProjectProperty()!=null){
-                    ud.getUploadMetaDatas().put(u.getProjectProperty().getProperty().getName(),u.getValue());
+                    ud.setName(u.getProjectProperty().getProperty().getName());
+                    ud.setValue(u.getValue());
                 }else if(u.getObjectProperty()!=null){
-                    ud.getUploadMetaDatas().put(u.getObjectProperty().getProperty().getName(),u.getValue());
+                    ud.setName(u.getProjectProperty().getProperty().getName());
+                    ud.setValue(u.getValue());
                 }
                 uds.add(ud);
             }

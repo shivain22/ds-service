@@ -7,15 +7,15 @@ public class UploadMetadataDTO {
     private Long uploadId;
     private Long projectPropertyId;
     private String value;
+    private String name;
     private Long objectPropertyId;
-    Map<String,String> uploadMetaDatas = new HashMap<>();
 
-    public Map<String, String> getUploadMetaDatas() {
-        return uploadMetaDatas;
+    public String getName() {
+        return name;
     }
 
-    public void setUploadMetaDatas(Map<String, String> uploadMetaDatas) {
-        this.uploadMetaDatas = uploadMetaDatas;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public Long getObjectPropertyId() {

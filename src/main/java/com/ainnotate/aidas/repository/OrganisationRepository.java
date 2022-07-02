@@ -28,6 +28,9 @@ public interface OrganisationRepository extends JpaRepository<Organisation, Long
     @Query(value = "select * from organisation where id=?1 and status=1",nativeQuery = true)
     Page<Organisation> findAllByCustomer(Long id, Pageable page);
 
+    @Query(value = "select * from organisation where id=?1 and status=1",nativeQuery = true)
+    List<Organisation> findOrgOfCustomer(Long id);
+
     @Query(value = "select count(*) from organisation where id > 0 and status=1", nativeQuery = true)
     Long countAllOrgsForSuperAdmin();
 

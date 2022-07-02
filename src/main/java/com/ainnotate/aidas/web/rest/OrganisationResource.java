@@ -10,10 +10,7 @@ import com.ainnotate.aidas.security.SecurityUtils;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Predicate;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -247,22 +244,22 @@ public class OrganisationResource {
     @GetMapping("/aidas-organisations/dropdown")
     public ResponseEntity<List<Organisation>> getAllOrganisationsForDropDown() {
         log.debug("REST request to get a page of AidasOrganisations");
-        List<Organisation> organisations=null;
+        List<Organisation> organisations=new ArrayList<>();
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         if(user.getAuthority().getName().equals(AidasConstants.ADMIN)) {
             organisations = organisationRepository.findAllByIdGreaterThanForDropDown(-1l);
         }
-        else{
-            /*if(user.getAuthority().getName().equals(AidasConstants.ORG_ADMIN)){
+        {
+            if(user.getAuthority().getName().equals(AidasConstants.ORG_ADMIN)){
                 if(user.getOrganisation()!=null){
-                    organisations = organisationRepository.findAllById(user.getOrganisation().getId());
+                    organisations.add(user.getOrganisation());
                 }
             }
             if(user.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN)){
                 if(user.getCustomer()!=null){
-                    organisations = organisationRepository.findAllByCustomer(user.getCustomer().getOrganisation().getId());
+                    organisations = organisationRepository.findOrgOfCustomer(user.getCustomer().getOrganisation().getId());
                 }
-            }*/
+            }
         }
         return ResponseEntity.ok().body(organisations);
     }

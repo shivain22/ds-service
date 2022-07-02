@@ -790,7 +790,7 @@ public class UploadResource {
         Authority authority = user.getAuthority();
         Project project = projectRepository.getById(projectId);
         List<UploadsMetadataDTO> uploadsMetadataDTOList = new ArrayList<>();
-        if(authority.getName().equals(AidasConstants.VENDOR_USER)){
+        //if(authority.getName().equals(AidasConstants.VENDOR_USER)){
             List<Upload> uploads = uploadRepository.findAllByUserAndProjectAllForMetadata(user.getId(),projectId);
             UploadsMetadataDTO uploadsMetadataDTO = new UploadsMetadataDTO();
             List<ProjectProperty> projectProperties = projectPropertyRepository.findAllAidasProjectPropertyForMetadata(projectId);
@@ -831,8 +831,8 @@ public class UploadResource {
                 uploadsMetadataDTOList.add(uploadsMetadataDTO);
             }
             return ResponseEntity.ok().body(uploadsMetadataDTOList);
-        }
-        throw new BadRequestAlertException("VENDOR_USER only allowed", ENTITY_NAME, "notauthorised");
+        //}
+        //throw new BadRequestAlertException("VENDOR_USER only allowed", ENTITY_NAME, "notauthorised");
     }
 
 

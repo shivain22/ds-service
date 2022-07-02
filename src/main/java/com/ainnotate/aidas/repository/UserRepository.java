@@ -45,10 +45,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
         ,countQuery = "select count(*) from user u, user_customer_mapping ucm where u.id=ucm.user_id and ucm.customer_id=?1 and u.status=1 and deleted=0",nativeQuery = true)
     List<User> findAllByDeletedIsFalseAndAidasCustomer(Long customerId);
 
-    @Query(value = "select * from user u, user_customer_mapping ucm,customer c where u.id=ucm.user_id and ucm.customer_id=c.id and c.organisation_id=?1 and u.status=1 and deleted=0" +
-        " union select * from user u, user_organisation_mapping uom where uom.user_id=u.id and uom.organisation_id=?1"
-        ,countQuery = "select count(*) from (select * from user u, user_customer_mapping ucm,customer c where u.id=ucm.user_id and ucm.customer_id=c.id and c.organisation_id=?1 and u.status=1 and deleted=0" +
-        " union select * from user u, user_organisation_mapping uom where uom.user_id=u.id and uom.organisation_id=?1 ) as orgusers",nativeQuery = true)
+    @Query(value = "select u.* from user u, user_customer_mapping ucm,customer c where u.id=ucm.user_id and ucm.customer_id=c.id and c.organisation_id=?1 and u.status=1 and deleted=0" +
+        " union select u.* from user u, user_organisation_mapping uom where uom.user_id=u.id and uom.organisation_id=?1"
+        ,countQuery = "select count(*) from (select u.id from user u, user_customer_mapping ucm,customer c where u.id=ucm.user_id and ucm.customer_id=c.id and c.organisation_id=?1 and u.status=1 and deleted=0" +
+        " union select u.id from user u, user_organisation_mapping uom where uom.user_id=u.id and uom.organisation_id=?1 ) as orgusers",nativeQuery = true)
     Page<User> findAllByDeletedIsFalseAndAidasOrganisation_OrAidasCustomer_AidasOrganisation(Pageable pageable, Organisation organisation, Organisation aidasCustomerOrganisation);
 
 
