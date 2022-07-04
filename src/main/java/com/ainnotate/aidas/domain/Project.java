@@ -580,7 +580,7 @@ public class Project extends AbstractAuditingEntity  implements Serializable {
     @Column(name="buffer_percent")
     private Integer bufferPercent;
 
-    @ManyToOne
+    @ManyToOne(optional = true)
     @JoinColumn(name = "category_id", nullable = true, foreignKey = @ForeignKey(name="fk_project_category"))
     private Category category;
 

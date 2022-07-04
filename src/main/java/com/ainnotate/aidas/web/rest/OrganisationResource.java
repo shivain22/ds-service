@@ -97,7 +97,6 @@ public class OrganisationResource {
         if (organisation.getId() != null) {
             throw new BadRequestAlertException("A new organisation cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        try {
             Organisation result = organisationRepository.save(organisation);
             Set<AppProperty> appProperties = appPropertyRepository.getAppPropertyOfOrganisation(-1l);
             result.setAppProperties(appProperties);
@@ -105,9 +104,6 @@ public class OrganisationResource {
                 .created(new URI("/api/aidas-organisations/" + result.getId()))
                 .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
                 .body(result);
-        }catch(Exception e){
-            throw new BadRequestAlertException("Error::"+e.getMessage(), ENTITY_NAME, "uqkey");
-        }
     }
 
     /**

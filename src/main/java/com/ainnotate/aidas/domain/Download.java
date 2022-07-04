@@ -72,7 +72,7 @@ public class Download extends AbstractAuditingEntity  implements Serializable {
     private Object object;
 
     @ManyToOne
-    @JoinColumn(name = "project_id", nullable = true, foreignKey = @ForeignKey(name="fk_download-project"))
+    @JoinColumn(name = "project_id", nullable = true, foreignKey = @ForeignKey(name="fk_download_project"))
     private Project project;
 
     public String getUploadUrl() {
