@@ -584,6 +584,14 @@ public class Project extends AbstractAuditingEntity  implements Serializable {
     @JoinColumn(name = "category_id", nullable = true, foreignKey = @ForeignKey(name="fk_project_category"))
     private Category category;
 
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
     public String getImageType() {
         return imageType;
     }

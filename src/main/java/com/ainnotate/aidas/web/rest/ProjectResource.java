@@ -94,7 +94,8 @@ public class ProjectResource {
     @Autowired
     private ObjectAddingTask objectAddingTask;
 
-
+    @Autowired
+    private CategoryRepository categoryRepository;
 
     public ProjectResource(ProjectRepository projectRepository, ProjectSearchRepository aidasProjectSearchRepository) {
         this.projectRepository = projectRepository;
@@ -157,6 +158,11 @@ public class ProjectResource {
             app.setPassedFromApp(0);
             app.setStatus(1);
             project.addAidasProjectProperty(app);
+        }
+        if(project.getCategory()!=null && project.getCategory().getId()!=null){
+            Category c = categoryRepository.getById(project.getCategory().getId());
+            project.setProjectType(c.getName());
+            project.setCategory(c);
         }
         Project result = projectRepository.save(project);
         {

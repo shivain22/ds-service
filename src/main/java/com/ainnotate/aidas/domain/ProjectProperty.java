@@ -56,7 +56,7 @@ public class ProjectProperty extends AbstractAuditingEntity  implements Serializ
     private Integer addToMetadata;
 
     @ManyToOne
-    @JoinColumn(name = "category_id", nullable = false, foreignKey = @ForeignKey(name="fk_project_property_category"))
+    @JoinColumn(name = "category_id", nullable = true, foreignKey = @ForeignKey(name="fk_project_property_category"))
     private Category category;
 
     public Category getCategory() {
