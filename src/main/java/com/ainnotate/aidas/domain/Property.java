@@ -13,9 +13,16 @@ import org.hibernate.envers.Audited;
  * A AidasProperties.
  */
 @Entity
-@Table(name = "property")
+@Table(name = "property",indexes = {
+    @Index(name="idx_property_category",columnList = "category_id"),
+    @Index(name="idx_property_user",columnList = "user_id"),
+    @Index(name="idx_property_customer",columnList = "customer_id")
+},
+    uniqueConstraints={
+        @UniqueConstraint(name = "uk_property_cid_uid",columnNames={"name", "customer_id","user_id"})
+    })
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-@org.springframework.data.elasticsearch.annotations.Document(indexName = "aidasproperty")
+@org.springframework.data.elasticsearch.annotations.Document(indexName = "property")
 @Audited
 @FilterDef(name="statusFilter", parameters=@ParamDef(name="status",type ="java.lang.Integer"))
 public class Property extends AbstractAuditingEntity  implements Serializable {
@@ -50,15 +57,29 @@ public class Property extends AbstractAuditingEntity  implements Serializable {
     private Integer defaultProp;
 
     @ManyToOne
+    @JoinColumn(name = "user_id", nullable = true, foreignKey = @ForeignKey(name="fk_property_user"))
     private User user;
 
     @ManyToOne
+    @JoinColumn(name = "customer_id", nullable = true, foreignKey = @ForeignKey(name="fk_property_customer"))
     private Customer customer;
 
     @Column(name="passed_from_app",columnDefinition = "integer default 0")
     private Integer passedFromApp;
     @Column(name="add_to_metadata")
     private Integer addToMetadata;
+
+    @ManyToOne
+    @JoinColumn(name = "category_id", nullable = true, foreignKey = @ForeignKey(name="fk_property_category"))
+    private Category category;
+
+    public Category getProjectCategory() {
+        return category;
+    }
+
+    public void setProjectCategory(Category category) {
+        this.category = category;
+    }
 
     public Integer getPassedFromApp() {
         return passedFromApp;

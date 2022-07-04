@@ -28,9 +28,6 @@ public interface ObjectRepository extends JpaRepository<Object, Long> {
         countQuery = "select count(*) from object o, project p, customer c where o.project_id=p.id and p.customer_id=c.id and c.organisation_id=?1 and p.id=?2 and o.status=1 and o.is_dummy=0",nativeQuery = true)
     Page<Object> findAllByAidasProject_AidasCustomer_AidasOrganisationAndAidasProject_Id (Pageable pageable, Long organisationId, Long projectId);
 
-    @Query(value = "select * from object o, project p, customer c where o.project_id=p.id and p.customer_id=c.id and c.organisation_id=?1 and p.id=?2 and o.status=1 and o.is_dummy=0",
-        countQuery = "select count(*) from object o, project p, customer c where o.project_id=p.id and p.customer_id=c.id and c.organisation_id=?1 and p.id=?2 and o.status=1 and o.is_dummy=0",nativeQuery = true)
-    List<Object> getAllByAidasProject_AidasCustomer_AidasOrganisationAndAidasProject_Id (Long organisationId, Long projectId);
 
     @Query(value = "select * from object o, project p, customer c where o.project_id=p.id and p.customer_id=?1 and p.id=?2 and o.status=1 and o.is_dummy=0",
         countQuery = "select count(*) from object o, project p, customer c where o.project_id=p.id and p.customer_id=?1 and p.id=?2 and o.status=1 and o.is_dummy=0",nativeQuery = true)
@@ -47,8 +44,12 @@ public interface ObjectRepository extends JpaRepository<Object, Long> {
         countQuery = "select count(*) from object where status=1 and id>0 and is_dummy=0 and object.project_id=?1",nativeQuery = true)
     Page<Object> findAllByIdGreaterThanAndAidasProject_Id(Long id, Long projectId, Pageable page);
 
-    @Query(value = "select * from object where status=1 and is_dummy=0 and id>?1 and project_id=?2",nativeQuery = true)
-    List<Object> getAllByIdGreaterThanAndAidasProject_Id(Long id, Long projectId);
+
+    @Query(value="select o.* from object o where status=1 and is_dummy=0 and project_id=?1",nativeQuery = true)
+    List<Object> getAllObjectsOfProject(Long projectId);
+
+    @Query(nativeQuery = true)
+    List<ObjectDTO> getAllObjectDTOsOfProject(Long projectId);
 
     @Query(value="select ao.* from project ap, object ao,  user_vendor_mapping_object_mapping auavmaom,user_vendor_mapping auavm ,user au where  auavmaom.object_id=ao.id and ao.project_id=ap.id and auavmaom.user_vendor_mapping_id=auavm.id and auavm.user_id=au.id and au.id= ?1 and ao.status=1 and ao.is_dummy=0",nativeQuery = true)
     Page<Object> findAllObjectsByVendorUser(Pageable page, User user);
@@ -136,148 +137,39 @@ public interface ObjectRepository extends JpaRepository<Object, Long> {
 
 
     @Query(value = "select  " +
-        "ao.id as objectId, " +
+        "o.id as objectId, " +
         "count(au.id) as totalUploaded,  " +
         "SUM(CASE WHEN au.status = 1 THEN 1 ELSE 0 END) AS totalApproved,  " +
         "SUM(CASE WHEN au.status = 0 THEN 1 ELSE 0 END) AS totalRejected,  " +
         "SUM(CASE WHEN au.status = 2 THEN 1 ELSE 0 END) AS totalPending " +
         "from  " +
-        "object ao " +
-        "left  join  user_vendor_mapping_object_mapping auavmaom on auavmaom.object_id=ao.id  " +
+        "object o " +
+        "left  join  user_vendor_mapping_object_mapping auavmaom on auavmaom.object_id=o.id  " +
         "left  join upload au on au.user_vendor_mapping_object_mapping_id=auavmaom.id  " +
-        "left join project ap on ap.id=ao.project_id " +
-        "left join customer ac on ac.id=ap.customer_id " +
-        "left join organisation ao1 on ao1.id=ac.organisation_id " +
         "where " +
-        "ao1.id=?2 and " +
-        "ao.id=?1 " +
-        "and ao.status=1 and ao.is_dummy=0 "+
-        "group by ao.id " +
+        "o.id=?1 " +
+        "and o.status=1 and o.is_dummy=0 "+
+        "group by o.id " +
         "union " +
         "select  " +
-        "ao.id as objectId, " +
+        "o.id as objectId, " +
         "count(au.id) as totalUploaded,  " +
         "SUM(CASE WHEN au.status = 1 THEN 1 ELSE 0 END) AS totalApproved,  " +
         "SUM(CASE WHEN au.status = 0 THEN 1 ELSE 0 END) AS totalRejected,  " +
         "SUM(CASE WHEN au.status = 2 THEN 1 ELSE 0 END) AS totalPending " +
         "from  " +
-        "object ao " +
-        "right  join  user_vendor_mapping_object_mapping auavmaom on auavmaom.object_id=ao.id  " +
+        "object o " +
+        "right  join  user_vendor_mapping_object_mapping auavmaom on auavmaom.object_id=o.id  " +
         "right  join upload au on au.user_vendor_mapping_object_mapping_id=auavmaom.id  " +
-        "right join project ap on ap.id=ao.project_id " +
-        "right join customer ac on ac.id=ap.customer_id " +
-        "right join organisation ao1 on ao1.id=ac.organisation_id " +
         "where " +
-        "ao1.id=?1 and " +
-        "ao.id=?2 " +
-        "and ao.status=1 and ao.is_dummy=0 "+
-        "group by ao.id",nativeQuery = true)
-    IUploadDetail countUploadsByObjectAndAidasOrganisation(Long aidasOrganisationId, Long aidasObjectId);
+        "o.id=?1  " +
+        "and o.status=1 and o.is_dummy=0 "+
+        "group by o.id",nativeQuery = true)
+    IUploadDetail countUploadsByObject(Long objectId);
 
-    @Query(value = "select  " +
-        "ao.id as objectId, " +
-        "count(au.id) as totalUploaded,  " +
-        "SUM(CASE WHEN au.status = 1 THEN 1 ELSE 0 END) AS totalApproved,  " +
-        "SUM(CASE WHEN au.status = 0 THEN 1 ELSE 0 END) AS totalRejected,  " +
-        "SUM(CASE WHEN au.status = 2 THEN 1 ELSE 0 END) AS totalPending " +
-        "from  " +
-        "object ao " +
-        "left  join  user_vendor_mapping_object_mapping auavmaom on auavmaom.object_id=ao.id  " +
-        "left  join upload au on au.user_vendor_mapping_object_mapping_id=auavmaom.id  " +
-        "left join project ap on ap.id=ao.project_id " +
-        "left join customer ac on ac.id=ap.customer_id " +
-        "where " +
-        "ac.id=?2 and " +
-        "ao.id=?1 " +
-        "and ao.status=1 and ao.is_dummy=0 "+
-        "group by ao.id " +
-        "union " +
-        "select  " +
-        "ao.id as objectId, " +
-        "count(au.id) as totalUploaded,  " +
-        "SUM(CASE WHEN au.status = 1 THEN 1 ELSE 0 END) AS totalApproved,  " +
-        "SUM(CASE WHEN au.status = 0 THEN 1 ELSE 0 END) AS totalRejected,  " +
-        "SUM(CASE WHEN au.status = 2 THEN 1 ELSE 0 END) AS totalPending " +
-        "from  " +
-        "object ao " +
-        "right  join  user_vendor_mapping_object_mapping auavmaom on auavmaom.object_id=ao.id  " +
-        "right  join upload au on au.user_vendor_mapping_object_mapping_id=auavmaom.id  " +
-        "right join project ap on ap.id=ao.project_id " +
-        "right join customer ac on ac.id=ap.customer_id " +
-        "where " +
-        "ac.id=?1 and " +
-        "ao.id=?2 " +
-        "and ao.status=1 and ao.is_dummy=0 "+
-        "group by ao.id",nativeQuery = true)
-    IUploadDetail countUploadsByObjectAndAidasCustomer(Long aidasCustomerId, Long aidasObjectId);
 
-    @Query(value = "select  " +
-        "ao.id as objectId, " +
-        "count(au.id) as totalUploaded,  " +
-        "SUM(CASE WHEN au.status = 1 THEN 1 ELSE 0 END) AS totalApproved,  " +
-        "SUM(CASE WHEN au.status = 0 THEN 1 ELSE 0 END) AS totalRejected,  " +
-        "SUM(CASE WHEN au.status = 2 THEN 1 ELSE 0 END) AS totalPending " +
-        "from  " +
-        "object ao " +
-        "left  join  user_vendor_mapping_object_mapping auavmaom on auavmaom.object_id=ao.id  " +
-        "left  join upload au on au.user_vendor_mapping_object_mapping_id=auavmaom.id  " +
-        "left  join user_vendor_mapping auavm on auavmaom.user_vendor_mapping_id=auavm.id  " +
-        "left  join user au1 on auavm.user_id=au1.id  " +
-        "where " +
-        "au1.id=?2 and " +
-        "ao.id=?1 " +
-        "and ao.status=1 and ao.is_dummy=0 "+
-        "group by ao.id " +
-        "union " +
-        "select  " +
-        "ao.id as objectId, " +
-        "count(au.id) as totalUploaded,  " +
-        "SUM(CASE WHEN au.status = 1 THEN 1 ELSE 0 END) AS totalApproved,  " +
-        "SUM(CASE WHEN au.status = 0 THEN 1 ELSE 0 END) AS totalRejected,  " +
-        "SUM(CASE WHEN au.status = 2 THEN 1 ELSE 0 END) AS totalPending " +
-        "from  " +
-        "object ao " +
-        "right  join  user_vendor_mapping_object_mapping auavmaom on auavmaom.object_id=ao.id  " +
-        "right  join upload au on au.user_vendor_mapping_object_mapping_id=auavmaom.id  " +
-        "left  join user_vendor_mapping auavm on auavmaom.user_vendor_mapping_id=auavm.id  " +
-        "left  join user au1 on auavm.user_id=au1.id  " +
-        "where " +
-        "au1.id=?1  " +
-        "and ao.status=1 and ao.is_dummy=0 and "+
-        "ao.id=?2 " +
-        "group by ao.id",nativeQuery = true)
-    IUploadDetail countUploadsByObjectAndAidasVendor(Long aidasVendorId, Long aidasObjectId);
 
-    @Query(value = "select  " +
-        "ao.id as objectId, " +
-        "count(au.id) as totalUploaded,  " +
-        "SUM(CASE WHEN au.status = 1 THEN 1 ELSE 0 END) AS totalApproved,  " +
-        "SUM(CASE WHEN au.status = 0 THEN 1 ELSE 0 END) AS totalRejected,  " +
-        "SUM(CASE WHEN au.status = 2 THEN 1 ELSE 0 END) AS totalPending " +
-        "from  " +
-        "object ao " +
-        "left  join  user_vendor_mapping_object_mapping auavmaom on auavmaom.object_id=ao.id  " +
-        "left  join upload au on au.user_vendor_mapping_object_mapping_id=auavmaom.id  " +
-        "where " +
-        "ao.id=?1 " +
-        "and ao.status=1 and ao.is_dummy=0 "+
-        "group by ao.id " +
-        "union " +
-        "select  " +
-        "ao.id as objectId, " +
-        "count(au.id) as totalUploaded,  " +
-        "SUM(CASE WHEN au.status = 1 THEN 1 ELSE 0 END) AS totalApproved,  " +
-        "SUM(CASE WHEN au.status = 0 THEN 1 ELSE 0 END) AS totalRejected,  " +
-        "SUM(CASE WHEN au.status = 2 THEN 1 ELSE 0 END) AS totalPending " +
-        "from  " +
-        "object ao " +
-        "right  join  user_vendor_mapping_object_mapping auavmaom on auavmaom.object_id=ao.id  " +
-        "right  join upload au on au.user_vendor_mapping_object_mapping_id=auavmaom.id  " +
-        "where " +
-        "ao.id=?1 " +
-        "and ao.status=1 and ao.is_dummy=0 "+
-        "group by ao.id",nativeQuery = true)
-    IUploadDetail countUploadsByObjectAndAidasAdmin(Long aidasObjectId);
+
 
     @Query(value = "select count(*) from object where id>0 and status=1 ", nativeQuery = true)
     Long countAllObjectsForSuperAdmin();

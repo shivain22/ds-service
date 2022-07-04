@@ -13,9 +13,16 @@ import org.hibernate.envers.Audited;
  * A AidasProjectProperty.
  */
 @Entity
-@Table(name = "project_property")
+@Table(name = "project_property",indexes = {
+    @Index(name="idx_project_property_category",columnList = "category_id"),
+    @Index(name="idx_project_property_object",columnList = "project_id"),
+    @Index(name="idx_project_property_property",columnList = "property_id")
+},
+    uniqueConstraints={
+        @UniqueConstraint(name = "uk_project_property_object_property",columnNames={"property_id", "project_id"})
+    })
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-@org.springframework.data.elasticsearch.annotations.Document(indexName = "aidasprojectproperty")
+@org.springframework.data.elasticsearch.annotations.Document(indexName = "projectproperty")
 @Audited
 public class ProjectProperty extends AbstractAuditingEntity  implements Serializable {
 
@@ -32,6 +39,7 @@ public class ProjectProperty extends AbstractAuditingEntity  implements Serializ
     @ManyToOne(optional = false)
     @NotNull
     @JsonIgnoreProperties(value = { "customer","projectProperties" }, allowSetters = true)
+    @JoinColumn(name = "project_id", nullable = false, foreignKey = @ForeignKey(name="fk_project_property_object"))
     private Project project;
 
     @Column
@@ -47,6 +55,17 @@ public class ProjectProperty extends AbstractAuditingEntity  implements Serializ
     @Column(name="add_to_metadata")
     private Integer addToMetadata;
 
+    @ManyToOne
+    @JoinColumn(name = "category_id", nullable = false, foreignKey = @ForeignKey(name="fk_project_property_category"))
+    private Category category;
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
     public Integer getDefaultProp() {
         return defaultProp;
     }

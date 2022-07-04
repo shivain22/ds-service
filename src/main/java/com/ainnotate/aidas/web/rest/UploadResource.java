@@ -176,7 +176,7 @@ public class UploadResource {
                 objectPropertiesCount.put(object.getId(),mandatoryObjectProperties);
                 UploadMetaData aum = new UploadMetaData();
                 aum.setUpload(upload);
-                if(umd.getProjectPropertyId()!=null){
+                if(umd.getProjectProperty()!=null && umd.getProjectProperty() && umd.getProjectPropertyId()!=null){
                     ProjectProperty projectProperty = projectPropertyRepository.getById(umd.getProjectPropertyId());
                     aum.setProjectProperty(projectProperty);
                     if(projectProperty.getOptional()!=null && projectProperty.getOptional().equals(AidasConstants.AIDAS_PROPERTY_REQUIRED)){
@@ -192,7 +192,7 @@ public class UploadResource {
                         success.add(aum);
                     }
                 }
-                else if(umd.getObjectPropertyId()!=null){
+                else if(umd.getProjectProperty()!=null && !umd.getProjectProperty() && umd.getObjectPropertyId()!=null){
                     ObjectProperty objectProperty = objectPropertyRepository.getById(umd.getObjectPropertyId());
                     aum.setObjectProperty(objectProperty);
                     if(objectProperty.getOptional().equals(AidasConstants.AIDAS_PROPERTY_REQUIRED)){
@@ -214,14 +214,14 @@ public class UploadResource {
                 uploadMetaDataRepository.save(aum);
             }
             for (Map.Entry<Upload,Long> entry : uploadPropertiesCount.entrySet()){
-                Project project = entry.getKey().getUserVendorMappingObjectMapping().getObject().getProject();
-                Object object = entry.getKey().getUserVendorMappingObjectMapping().getObject();
-                Long totalMandatoryProperties = projectPropertiesCount.get(project.getId()) + objectPropertiesCount.get(object.getId());
-                if(entry.getValue().equals(totalMandatoryProperties)){
+                ///Project project = entry.getKey().getUserVendorMappingObjectMapping().getObject().getProject();
+                //Object object = entry.getKey().getUserVendorMappingObjectMapping().getObject();
+                //Long totalMandatoryProperties = projectPropertiesCount.get(project.getId()) + objectPropertiesCount.get(object.getId());
+                //if(entry.getValue().equals(totalMandatoryProperties)){
                     entry.getKey().setMetadataStatus(AidasConstants.AIDAS_UPLOAD_METADATA_COMPLETED);
-                }else{
-                    entry.getKey().setMetadataStatus(AidasConstants.AIDAS_UPLOAD_METADATA_REQUIRED);
-                }
+                //}else{
+                   // entry.getKey().setMetadataStatus(AidasConstants.AIDAS_UPLOAD_METADATA_REQUIRED);
+                //}
                 uploadRepository.save(entry.getKey());
             }
                 return ResponseEntity.ok().body(failed);
@@ -305,11 +305,11 @@ public class UploadResource {
             upload.setApprovalStatus(AidasConstants.AIDAS_UPLOAD_PENDING);
             Long mandatoryProjectProperties = projectPropertyRepository.countProjectPropertyByProjectAndOptional(project.getId(),AidasConstants.AIDAS_PROPERTY_REQUIRED);
             Long mandatoryObjectProperties = objectPropertyRepository.countObjectProperties(object.getId(),AidasConstants.AIDAS_PROPERTY_REQUIRED);
-            if(mandatoryObjectProperties==0 && mandatoryProjectProperties==0){
+            //if(mandatoryObjectProperties==0 && mandatoryProjectProperties==0){
+                //upload.setMetadataStatus(AidasConstants.AIDAS_UPLOAD_METADATA_COMPLETED);
+           // }else {
                 upload.setMetadataStatus(AidasConstants.AIDAS_UPLOAD_METADATA_REQUIRED);
-            }else {
-                upload.setMetadataStatus(AidasConstants.AIDAS_UPLOAD_METADATA_COMPLETED);
-            }
+            //}
             upload.setApprovalStatus(AidasConstants.AIDAS_UPLOAD_PENDING);
             upload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
             try {
@@ -317,9 +317,7 @@ public class UploadResource {
                 System.out.println("My Test::"+uploadDto.getUploadMetadata());
 
                 for (Map.Entry < String, String> entry:uploadDto.getUploadMetadata().entrySet() ) {
-                    System.out.println("key:"+entry.getKey()+" value:"+entry.getValue());
                     Property property = propertyRepository.getByNameAndUserId(entry.getKey().trim(),customer.getId());
-                    System.out.println(property);
                     if(property!=null) {
                         ProjectProperty projectProperty = projectPropertyRepository.findByProjectAndProperty(project.getId(), property.getId());
                         System.out.println(projectProperty);
@@ -402,11 +400,11 @@ public class UploadResource {
             Long mandatoryProjectProperties = projectPropertyRepository.countProjectPropertyByProjectAndOptional(project.getId(),AidasConstants.AIDAS_PROPERTY_REQUIRED);
             Long mandatoryObjectProperties = objectPropertyRepository.countObjectProperties(object.getId(),AidasConstants.AIDAS_PROPERTY_REQUIRED);
 
-            if(mandatoryObjectProperties==0 && mandatoryProjectProperties==0){
+            //if(mandatoryObjectProperties==0 && mandatoryProjectProperties==0){
+               // upload.setMetadataStatus(AidasConstants.AIDAS_UPLOAD_METADATA_COMPLETED);
+            //}else {
                 upload.setMetadataStatus(AidasConstants.AIDAS_UPLOAD_METADATA_REQUIRED);
-            }else {
-                upload.setMetadataStatus(AidasConstants.AIDAS_UPLOAD_METADATA_COMPLETED);
-            }
+            //}
             upload.setStatus(AidasConstants.AIDAS_UPLOAD_PENDING);
             upload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
 

@@ -12,7 +12,13 @@ import java.util.Objects;
  * An authority (a security role) used by Spring Security.
  */
 @Entity
-@Table(name = "user_customer_mapping")
+@Table(name = "user_customer_mapping",indexes = {
+    @Index(name="idx_ucm_user",columnList = "user_id"),
+    @Index(name="idx_ucm_customer",columnList = "customer_id")
+},
+    uniqueConstraints={
+        @UniqueConstraint(name = "uk_ucm_user_customer",columnNames={"user_id", "customer_id"})
+    })
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @Audited
 public class UserCustomerMapping extends AbstractAuditingEntity implements Serializable {
@@ -38,9 +44,11 @@ public class UserCustomerMapping extends AbstractAuditingEntity implements Seria
     private Long id;
 
     @ManyToOne
+    @JoinColumn(name = "customer_id", nullable = true, foreignKey = @ForeignKey(name="fk_ucm_customer"))
     private Customer customer;
 
     @ManyToOne
+    @JoinColumn(name = "user_id", nullable = true, foreignKey = @ForeignKey(name="fk_ucm_user"))
     private User user;
 
 

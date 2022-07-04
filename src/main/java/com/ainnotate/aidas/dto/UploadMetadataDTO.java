@@ -9,6 +9,15 @@ public class UploadMetadataDTO {
     private String value;
     private String name;
     private Long objectPropertyId;
+    private Boolean projectProperty;
+
+    public Boolean getProjectProperty() {
+        return projectProperty;
+    }
+
+    public void setProjectProperty(Boolean projectProperty) {
+        this.projectProperty = projectProperty;
+    }
 
     public String getName() {
         return name;

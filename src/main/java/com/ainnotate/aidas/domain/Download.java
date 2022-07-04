@@ -12,9 +12,12 @@ import java.time.Instant;
  * A AidasUpload.
  */
 @Entity
-@Table(name = "download")
+@Table(name = "download",indexes = {
+    @Index(name="idx_download_object",columnList = "object_id"),
+    @Index(name="idx_download_project",columnList = "project_id")
+})
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-@org.springframework.data.elasticsearch.annotations.Document(indexName = "aidasdownload")
+@org.springframework.data.elasticsearch.annotations.Document(indexName = "download")
 @Audited
 public class Download extends AbstractAuditingEntity  implements Serializable {
 
@@ -25,10 +28,11 @@ public class Download extends AbstractAuditingEntity  implements Serializable {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "name", length = 100, nullable = true)
+    @Column(name = "name", length = 1000, nullable = true)
     private String name;
 
-    @Column(name = "upload_url",  nullable = true)
+    @Lob
+    @Column(name = "upload_url", nullable = true)
     private String uploadUrl;
 
     @Column(name = "upload_etag",  nullable = true)
@@ -37,22 +41,22 @@ public class Download extends AbstractAuditingEntity  implements Serializable {
     @Column(name = "date_uploaded")
     private Instant dateUploaded;
 
-    @Column(name = "bucket_name", length = 150, nullable = true)
+    @Column(name = "bucket_name", length = 250, nullable = true)
     private String bucketName;
 
-    @Column(name = "aws_key", length = 150, nullable = true)
+    @Column(name = "aws_key", length = 250, nullable = true)
     private String awsKey;
 
-    @Column(name = "aws_secret", length = 150, nullable = true)
+    @Column(name = "aws_secret", length = 1500, nullable = true)
     private String awsSecret;
 
     @Column(name = "region", length = 150, nullable = true)
     private String region;
 
-    @Column(name = "object_key", length = 150, nullable = true)
+    @Column(name = "object_key", length = 500, nullable = true)
     private String objectKey;
-
-    @Column(name = "upload_object_ids", length = 3500, nullable = true)
+    @Lob
+    @Column(name = "upload_object_ids",  nullable = true)
     private String uploadedObjectIds;
 
     public String getUploadedObjectIds() {
@@ -64,9 +68,11 @@ public class Download extends AbstractAuditingEntity  implements Serializable {
     }
 
     @ManyToOne
+    @JoinColumn(name = "object_id", nullable = true, foreignKey = @ForeignKey(name="fk_download_object"))
     private Object object;
 
     @ManyToOne
+    @JoinColumn(name = "project_id", nullable = true, foreignKey = @ForeignKey(name="fk_download-project"))
     private Project project;
 
     public String getUploadUrl() {

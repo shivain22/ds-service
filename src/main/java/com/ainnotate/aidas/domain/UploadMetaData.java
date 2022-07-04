@@ -12,9 +12,16 @@ import org.hibernate.envers.Audited;
  * A AidasUploadMetaData.
  */
 @Entity
-@Table(name = "upload_meta_data")
+@Table(name = "upload_meta_data",indexes = {
+    @Index(name="idx_umd_opid",columnList = "object_property_id"),
+    @Index(name="idx_umd_ppid",columnList = "project_property_id"),
+    @Index(name="idx_umd_upid",columnList = "upload_id")
+},
+    uniqueConstraints={
+        @UniqueConstraint(name = "uk_umd_opid_ppid_upid",columnNames={"object_property_id", "project_property_id","upload_id"})
+    })
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-@org.springframework.data.elasticsearch.annotations.Document(indexName = "aidasuploadmetadata")
+@org.springframework.data.elasticsearch.annotations.Document(indexName = "uploadmetadata")
 @Audited
 public class UploadMetaData extends AbstractAuditingEntity  implements Serializable {
 
@@ -33,14 +40,17 @@ public class UploadMetaData extends AbstractAuditingEntity  implements Serializa
 
     @ManyToOne
     @JsonIgnoreProperties(value = { "aidasUserAidasObjectMapping" }, allowSetters = true)
+    @JoinColumn(name = "upload_id", nullable = true, foreignKey = @ForeignKey(name="fk_umd_upload"))
     private Upload upload;
 
     @ManyToOne
     @JsonIgnoreProperties(value = { "aidasUserAidasObjectMapping" }, allowSetters = true)
+    @JoinColumn(name = "project_property_id", nullable = true, foreignKey = @ForeignKey(name="fk_umd_project_property"))
     private ProjectProperty projectProperty;
 
     @ManyToOne
     @JsonIgnoreProperties(value = { "aidasUserAidasObjectMapping" }, allowSetters = true)
+    @JoinColumn(name = "object_property_id", nullable = true, foreignKey = @ForeignKey(name="fk_umd_object_property_id"))
     private ObjectProperty objectProperty;
 
     public ObjectProperty getObjectProperty() {

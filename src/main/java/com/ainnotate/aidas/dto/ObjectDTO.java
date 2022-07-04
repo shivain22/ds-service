@@ -28,8 +28,17 @@ public class ObjectDTO extends AbstractAuditingEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
 
+    public ObjectDTO(){
+
+    }
+
+    public ObjectDTO(Long id, String name){
+        this.id=id;
+        this.name=name;
+    }
     public ObjectDTO(
        Long id,
+       Long userVendorMappingObjectMappingId,
        Integer totalRequired,
        Integer totalUploaded,
        Integer totalApproved,
@@ -45,6 +54,7 @@ public class ObjectDTO extends AbstractAuditingEntity implements Serializable {
        String videoType
     ){
             this.id=id;
+            this.userVendorMappingObjectMappingId=userVendorMappingObjectMappingId;
             this.totalRequired=totalRequired;
             this.totalUploaded=totalUploaded;
             this.totalApproved=totalApproved;
@@ -76,6 +86,15 @@ public class ObjectDTO extends AbstractAuditingEntity implements Serializable {
     private String videoType;
     private String audioType;
     private Integer totalRequired;
+    private Long userVendorMappingObjectMappingId;
+
+    public Long getUserVendorMappingObjectMappingId() {
+        return userVendorMappingObjectMappingId;
+    }
+
+    public void setUserVendorMappingObjectMappingId(Long userVendorMappingObjectMappingId) {
+        this.userVendorMappingObjectMappingId = userVendorMappingObjectMappingId;
+    }
 
     public Long getProjectId() {
         return projectId;

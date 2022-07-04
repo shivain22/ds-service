@@ -15,7 +15,7 @@ import org.hibernate.envers.Audited;
 @Entity
 @Table(name = "vendor")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-@org.springframework.data.elasticsearch.annotations.Document(indexName = "aidasvendor")
+@org.springframework.data.elasticsearch.annotations.Document(indexName = "vendor")
 @Audited
 public class Vendor extends AbstractAuditingEntity  implements Serializable {
 

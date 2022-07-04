@@ -94,7 +94,7 @@ spring:
   mail:
     host: smtp.zeptomail.in
     port: 587
-    username: santhosh@ainnotate.com  #Replace this field with your Gmail username.
+    username: noreply@ainnotate.com  #Replace this field with your Gmail username.
     password: PHtE6r1fQ+m5g2cq+kAEsaS5FpKtM4spqL9jKwkVuI9FD6VSTk0GqdEsw2K+rR8qAPNCHfSdzIo85eubtuyAI2nvPGxPX2qyqK3sx/VYSPOZsbq6x00ZsV8bfk3VXI7qctZr0ifRv9qX           #Replace this field with your Gmail password/App password.
     protocol: smtp
     tls: true
@@ -102,7 +102,7 @@ spring:
     properties.mail.smtp:
       auth: true
       starttls.enable: true
-      ssl.trust: smtp.gmail.com
+      ssl.trust: smtp.zeptomail.in
       debug: false
 server:
   port: 8081

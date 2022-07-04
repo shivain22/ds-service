@@ -63,7 +63,7 @@ public class UserAddingTask implements  Runnable{
                 userVendorMappingObjectMappingRepository.saveAll(uvmoms);
             }
             if(userCustomerMapping!=null){
-                List<Project> projects = projectRepository.findAllByAidasCustomerForDropDown(userCustomerMapping.getCustomer().getId());
+                List<Project> projects = projectRepository.findAllByAidasCustomer(userCustomerMapping.getCustomer().getId());
                 List<QcProjectMapping> qpms = new ArrayList<>();
                 for(Project p : projects){
                     if(p.getQcLevels()!=null) {

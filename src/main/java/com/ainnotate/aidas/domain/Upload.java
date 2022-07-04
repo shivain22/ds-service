@@ -23,9 +23,16 @@ import org.hibernate.envers.Audited;
  * A AidasUpload.
  */
 @Entity
-@Table(name = "upload")
+@Table(name = "upload",indexes = {
+    @Index(name="idx_upload_uvmom",columnList = "user_vendor_mapping_object_mapping_id"),
+    @Index(name="idx_upload_upload",columnList = "rework_upload_id"),
+    @Index(name="idx_upload_qc_done_by",columnList = "qc_done_by_id")
+},
+    uniqueConstraints={
+        @UniqueConstraint(name = "uk_upload_uvumom",columnNames={"object_key", "user_vendor_mapping_object_mapping_id"})
+    })
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-@org.springframework.data.elasticsearch.annotations.Document(indexName = "aidasupload")
+@org.springframework.data.elasticsearch.annotations.Document(indexName = "upload")
 @Audited
 public class Upload extends AbstractAuditingEntity  implements Serializable {
 
@@ -51,6 +58,7 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
 
     @ManyToOne(optional = true)
     @JsonIgnoreProperties(value = { "object" }, allowSetters = true)
+    @JoinColumn(name = "rework_upload_id", nullable = true, foreignKey = @ForeignKey(name="fk_upload_rework_upload"))
     private Upload reworkUpload;
     @Column(name = "status_modified_date")
     private ZonedDateTime statusModifiedDate;
@@ -78,6 +86,7 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
     @ManyToOne
     @JsonIgnoreProperties(value={"user","project"})
     @JsonIgnore
+    @JoinColumn(name = "qc_done_by_id", nullable = true, foreignKey = @ForeignKey(name="fk_upload_qc_done_by"))
     private QcProjectMapping qcDoneBy;
     @Column(name="qc_start_date", nullable=true)
     private Instant qcStartDate;
@@ -93,6 +102,7 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
     @ManyToOne(optional = false,fetch = FetchType.EAGER)
     @JsonIgnoreProperties(value = { "user", "object", "aidasUploads" }, allowSetters = true)
     @JsonIgnore
+    @JoinColumn(name = "user_vendor_mapping_object_mapping_id", nullable = true, foreignKey = @ForeignKey(name="fk_upload_uvmom"))
     private UserVendorMappingObjectMapping userVendorMappingObjectMapping;
 
     public List<UploadMetadataDTO> getUploadMetaDatas(){
@@ -100,11 +110,11 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
         if(this.uploadMetaDataSet!=null){
             for(UploadMetaData u:uploadMetaDataSet){
                 UploadMetadataDTO ud = new UploadMetadataDTO();
-                if(u.getProjectProperty()!=null){
+                if(u.getProjectProperty()!=null && u.getProjectProperty().getProperty()!=null && u.getProjectProperty().getProperty().getName()!=null && u.getValue()!=null ){
                     ud.setName(u.getProjectProperty().getProperty().getName());
                     ud.setValue(u.getValue());
-                }else if(u.getObjectProperty()!=null){
-                    ud.setName(u.getProjectProperty().getProperty().getName());
+                }else if(u.getObjectProperty()!=null && u.getObjectProperty().getProperty()!=null && u.getObjectProperty().getProperty().getName()!=null  && u.getValue()!=null){
+                    ud.setName(u.getObjectProperty().getProperty().getName());
                     ud.setValue(u.getValue());
                 }
                 uds.add(ud);

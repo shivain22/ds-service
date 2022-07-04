@@ -119,6 +119,9 @@ public class UserResource {
     @Autowired
     UserAddingTask userVendorMappingObjectMappingTask;
 
+    @Autowired
+    private AppPropertyRepository appPropertyRepository;
+
     private final UserSearchRepository aidasUserSearchRepository;
 
     public UserResource(UserRepository userRepository, UserSearchRepository aidasUserSearchRepository, Keycloak keycloak) {
@@ -249,6 +252,10 @@ public class UserResource {
 
         addUserToKeyCloak(user);
         user.setDeleted(0);
+
+        Set<AppProperty> appProperties = appPropertyRepository.getAppPropertyOfUser(-1l);
+        user.setAppProperties(appProperties);
+
         User result = userRepository.save(user);
         updateUserToKeyCloak(result);
         if(user.getAuthority().getName().equals(AidasConstants.VENDOR_USER)) {

@@ -16,9 +16,15 @@ import org.hibernate.envers.Audited;
  * A AidasUserAidasObjectMapping.
  */
 @Entity
-@Table(name = "user_vendor_mapping_object_mapping")
+@Table(name = "user_vendor_mapping_object_mapping",indexes = {
+    @Index(name="idx_uvmom_object",columnList = "object_id"),
+    @Index(name="idx_uvmom_uvm",columnList = "user_vendor_mapping_id")
+},
+    uniqueConstraints={
+        @UniqueConstraint(name = "uk_uvmid_oid",columnNames={"user_vendor_mapping_id", "object_id"})
+    })
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-@org.springframework.data.elasticsearch.annotations.Document(indexName = "aidasuseraidasobjectmapping")
+@org.springframework.data.elasticsearch.annotations.Document(indexName = "uservendorobjectmapping")
 @Audited
 public class UserVendorMappingObjectMapping extends AbstractAuditingEntity  implements Serializable {
 
@@ -35,11 +41,13 @@ public class UserVendorMappingObjectMapping extends AbstractAuditingEntity  impl
     @ManyToOne(optional = false,fetch = FetchType.LAZY)
     @NotNull
     @JsonIgnoreProperties(value = { "organisation", "customer", "vendor" }, allowSetters = true)
+    @JoinColumn(name = "user_vendor_mapping_id", nullable = true, foreignKey = @ForeignKey(name="fk_uvmom_uvm"))
     private UserVendorMapping userVendorMapping;
 
     @ManyToOne(optional = false,fetch = FetchType.LAZY)
     @NotNull
     @JsonIgnoreProperties(value = { "project" }, allowSetters = true)
+    @JoinColumn(name = "object_id", nullable = true, foreignKey = @ForeignKey(name="fk_uvmom_object"))
     private Object object;
 
     public Long getId() {

@@ -13,9 +13,13 @@ import org.hibernate.envers.Audited;
  * A AidasOrganisation.
  */
 @Entity
-@Table(name = "organisation",uniqueConstraints = {@UniqueConstraint(columnNames = "name",name = "org_name_uk")})
+@Table(name = "organisation"
+    ,
+    uniqueConstraints={
+        @UniqueConstraint(name = "uk_organisation_name",columnNames={"name"})
+    })
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-@org.springframework.data.elasticsearch.annotations.Document(indexName = "aidasorganisation")
+@org.springframework.data.elasticsearch.annotations.Document(indexName = "organisation")
 @Audited
 public class Organisation extends AbstractAuditingEntity  implements Serializable {
 

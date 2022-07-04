@@ -131,6 +131,7 @@ query = "(select \n" +
     classes = @ConstructorResult(targetClass = ObjectDTO.class,
         columns = {
             @ColumnResult(name = "id",type = Long.class),
+            @ColumnResult(name = "userVendorMappingObjectMappingId",type = Long.class),
             @ColumnResult(name = "totalRequired",type = Integer.class),
             @ColumnResult(name = "totalUploaded",type = Integer.class),
             @ColumnResult(name = "totalApproved",type = Integer.class),
@@ -154,6 +155,7 @@ query = "(select \n" +
     query = "(select \n" +
         "o.id," +
         "o.project_id as projectId,"+
+        "uvmom.id as userVendorMappingObjectMappingId,"+
         "o.parent_object_id parentObjectId,"+
         "o.number_of_upload_reqd as totalRequired," +
         "count(u.id) as totalUploaded, \n" +
@@ -174,6 +176,7 @@ query = "(select \n" +
         "group by o.id,u.user_vendor_mapping_object_mapping_id ) union "+
         "(select \n" +
         "o.id," +
+        "uvmom.id as userVendorMappingObjectMappingId,"+
         "o.project_id as projectId,"+
         "o.parent_object_id parentObjectId,"+
         "o.number_of_upload_reqd as totalRequired," +
@@ -209,6 +212,7 @@ query = "(select \n" +
     query =
         "select count(*) from ((select \n" +
             "o.id," +
+            "uvmom.id as userVendorMappingObjectMappingId,"+
             "o.project_id as projectId,"+
             "o.parent_object_id parentObjectId,"+
             "o.number_of_upload_reqd as totalRequired," +
@@ -230,6 +234,7 @@ query = "(select \n" +
             "group by o.id,u.user_vendor_mapping_object_mapping_id ) union "+
             "(select \n" +
             "o.id," +
+            "uvmom.id as userVendorMappingObjectMappingId,"+
             "o.project_id as projectId,"+
             "o.parent_object_id parentObjectId,"+
             "o.number_of_upload_reqd as totalRequired," +
@@ -411,10 +416,32 @@ query = "(select \n" +
             @ColumnResult(name = "audioType",type = String.class),
             @ColumnResult(name = "videoType",type = String.class)
         }))
+
+@NamedNativeQuery(
+    name = "Object.getAllObjectDTOsOfProject",
+    query="select id,name from object where status=1 and is_dummy=0 and project_id=?1",
+    resultSetMapping = "Mapping.getAllObjectDTOsOfProject"
+)
+@SqlResultSetMapping(name = "Mapping.getAllObjectDTOsOfProject",
+    classes = @ConstructorResult(targetClass = ObjectDTO.class,
+        columns = {
+            @ColumnResult(name = "id",type = Long.class),
+            @ColumnResult(name = "name",type = String.class)
+        }))
+
+
+
+
 @Entity
-@Table(name = "object")
+@Table(name = "object",indexes = {
+    @Index(name="idx_object_parent_object",columnList = "parent_object_id"),
+    @Index(name="idx_object_project",columnList = "project_id")
+},
+    uniqueConstraints={
+        @UniqueConstraint(name = "uk_object_project_name",columnNames={"name", "project_id"})
+    })
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-@org.springframework.data.elasticsearch.annotations.Document(indexName = "aidasobject")
+@org.springframework.data.elasticsearch.annotations.Document(indexName = "object")
 @Audited
 public class Object extends AbstractAuditingEntity  implements Serializable {
 
@@ -443,6 +470,7 @@ public class Object extends AbstractAuditingEntity  implements Serializable {
     @ManyToOne(optional = false)
     @NotNull
     @JsonIgnoreProperties(value = { "customer" }, allowSetters = true)
+    @JoinColumn(name = "project_id", nullable = false, foreignKey = @ForeignKey(name="fk_object_project"))
     private Project project;
 
     @Column(name="is_dummy")
@@ -468,6 +496,7 @@ public class Object extends AbstractAuditingEntity  implements Serializable {
 
     @ManyToOne(optional = true)
     @JsonIgnoreProperties(value = { "project","customer" }, allowSetters = true)
+    @JoinColumn(name = "parent_object_id", nullable = true, foreignKey = @ForeignKey(name="fk_object_parent_object"))
     private Object parentObject;
 
     public Object getParentAidasObject() {

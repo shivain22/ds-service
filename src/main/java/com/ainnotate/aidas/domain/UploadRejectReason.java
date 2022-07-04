@@ -14,7 +14,12 @@ import java.util.Objects;
  * An authority (a security role) used by Spring Security.
  */
 @Entity
-@Table(name = "upload_reject_reason")
+@Table(name = "upload_reject_reason",indexes = {
+    @Index(name="idx_urr_reason",columnList = "reason")
+},
+    uniqueConstraints={
+        @UniqueConstraint(name = "uk_urr_reason",columnNames={"reason"})
+    })
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @Audited
 public class UploadRejectReason extends AbstractAuditingEntity  implements Serializable {

@@ -52,46 +52,33 @@ public class ObjectAddingTask implements  Runnable{
 
     @Override
     public void run() {
-            if(getDummy()){
-                List<UserVendorMapping> userVendorMappings = userVendorMappingRepository.findAll();
-                List<UserVendorMappingObjectMapping> userVendorMappingObjectMappings=new ArrayList<>();
-                for(UserVendorMapping uvm:userVendorMappings){
-                    UserVendorMappingObjectMapping uvmom1 = new UserVendorMappingObjectMapping();
-                    uvmom1.setUserVendorMapping(uvm);
-                    uvmom1.setObject(object);
-                    uvmom1.setStatus(0);
-                    userVendorMappingObjectMappings.add(uvmom1);
-                }
-                userVendorMappingObjectMappingRepository.saveAll(userVendorMappingObjectMappings);
-                List<UserCustomerMapping> qcUserCustomerMapping = userCustomerMappingRepository.getAllQcUserCustomerMapping(object.getProject().getCustomer().getId());
-                List<QcProjectMapping> qpms = new ArrayList<>();
-                for(UserCustomerMapping ucm : qcUserCustomerMapping){
-                    if(object.getProject().getQcLevels()!=null) {
-                        for( int i=0;i<object.getProject().getQcLevels();i++) {
-                            QcProjectMapping qpm = new QcProjectMapping();
-                            qpm.setUserCustomerMapping(ucm);
-                            qpm.setProject(object.getProject());
-                            qpm.setStatus(0);
-                            qpm.setQcLevel(Long.valueOf(i+1));
-                            qpms.add(qpm);
-                        }
+        List<UserVendorMapping> userVendorMappings = userVendorMappingRepository.findAll();
+        List<UserVendorMappingObjectMapping> uvmoms=new ArrayList<>();
+        for(UserVendorMapping uvm:userVendorMappings){
+            UserVendorMappingObjectMapping uvmom = new UserVendorMappingObjectMapping();
+            uvmom.setUserVendorMapping(uvm);
+            uvmom.setObject(object);
+            uvmom.setStatus(0);
+            uvmoms.add(uvmom);
+        }
+        userVendorMappingObjectMappingRepository.saveAll(uvmoms);
+        if(getDummy()) {
+            List<UserCustomerMapping> qcUserCustomerMapping = userCustomerMappingRepository.getAllQcUserCustomerMapping(object.getProject().getCustomer().getId());
+            List<QcProjectMapping> qpms = new ArrayList<>();
+            for (UserCustomerMapping ucm : qcUserCustomerMapping) {
+                if (object.getProject().getQcLevels() != null) {
+                    for (int i = 0; i < object.getProject().getQcLevels(); i++) {
+                        QcProjectMapping qpm = new QcProjectMapping();
+                        qpm.setUserCustomerMapping(ucm);
+                        qpm.setProject(object.getProject());
+                        qpm.setStatus(0);
+                        qpm.setQcLevel(Long.valueOf(i + 1));
+                        qpms.add(qpm);
                     }
                 }
-                qcProjectMappingRepository.saveAll(qpms);
-            }else{
-                Object dummyObject = objectRepository.getDummyObjectOfProject(object.getProject().getId());
-                List<UserVendorMappingObjectMapping> uvmoms = userVendorMappingObjectMappingRepository.getAllUserVendorMappingObjectMappingsByObjectId(dummyObject.getId());
-                List<UserVendorMappingObjectMapping> userVendorMappingObjectMappings=new ArrayList<>();
-                for(UserVendorMappingObjectMapping uvmom:uvmoms){
-                    UserVendorMappingObjectMapping uvmom1 = new UserVendorMappingObjectMapping();
-                    uvmom1.setUserVendorMapping(uvmom.getUserVendorMapping());
-                    uvmom1.setObject(object);
-                    uvmom1.setStatus(uvmom.getStatus());
-                    userVendorMappingObjectMappings.add(uvmom1);
-                }
-                userVendorMappingObjectMappingRepository.saveAll(userVendorMappingObjectMappings);
             }
+            qcProjectMappingRepository.saveAll(qpms);
         }
-
+    }
 }
 

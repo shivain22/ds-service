@@ -4,6 +4,7 @@ import com.ainnotate.aidas.constants.AidasConstants;
 import com.ainnotate.aidas.domain.*;
 import com.ainnotate.aidas.domain.Object;
 import com.ainnotate.aidas.repository.*;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -24,6 +25,7 @@ import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequ
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import java.io.*;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -135,6 +137,8 @@ public class DownloadUploadS3  implements  Runnable{
     private JavaMailSender javaMailSender;
 
     @Autowired
+    private ObjectPropertyRepository objectPropertyRepository;
+    @Autowired
     private AppPropertyRepository appPropertyRepository;
 
 
@@ -150,85 +154,57 @@ public class DownloadUploadS3  implements  Runnable{
     private String globalUploadBucketName = "";
     private String globalUploadPrefix;
 
+    private String fromEmail;
+    private String emailToken;
+
     public DownloadUploadS3(){
 
     }
 
+    private void setProperties(Set<AppProperty> appProperties){
+        for(AppProperty appProperty :appProperties){
+            if(appProperty.getName().equals(AidasConstants.DOWNLOAD_ACCESS_KEY_KEY_NAME) && appProperty.getValue()!=null)
+                globalDownloadAccessKey = appProperty.getValue();
+            if(appProperty.getName().equals(AidasConstants.DOWNLOAD_ACCESS_SECRET_KEY_NAME) && appProperty.getValue()!=null)
+                globalDownloadAccessSecret = appProperty.getValue();
+            if(appProperty.getName().equals(AidasConstants.DOWNLOAD_REGION_KEY_NAME) && appProperty.getValue()!=null)
+                globalDownloadRegion = appProperty.getValue();
+            if(appProperty.getName().equals(AidasConstants.DOWNLOAD_BUCKETNAME_KEY_NAME) && appProperty.getValue()!=null)
+                globalDownloadBucketName = appProperty.getValue();
+            if(appProperty.getName().equals(AidasConstants.DOWNLOAD_PREFIX_KEY_NAME) && appProperty.getValue()!=null)
+                globalDownloadPrefix = appProperty.getValue();
+
+
+            if(appProperty.getName().equals(AidasConstants.UPLOAD_ACCESS_KEY_KEY_NAME) && appProperty.getValue()!=null)
+                globalUploadAccessKey = appProperty.getValue();
+            if(appProperty.getName().equals(AidasConstants.UPLOAD_ACCESS_SECRET_KEY_NAME) && appProperty.getValue()!=null)
+                globalUploadAccessSecret = appProperty.getValue();
+            if(appProperty.getName().equals(AidasConstants.UPLOAD_REGION_KEY_NAME) && appProperty.getValue()!=null)
+                globalUploadRegion = appProperty.getValue();
+            if(appProperty.getName().equals(AidasConstants.UPLOAD_BUCKETNAME_KEY_NAME) && appProperty.getValue()!=null)
+                globalUploadBucketName = appProperty.getValue();
+            if(appProperty.getName().equals(AidasConstants.UPLOAD_PREFIX_KEY_NAME) && appProperty.getValue()!=null)
+                globalUploadPrefix = appProperty.getValue();
+
+            AppProperty app  = appPropertyRepository.getAppProperty(-1l,"fromEmail");
+            fromEmail = app.getValue();
+            app = appPropertyRepository.getAppProperty(-1l,"emailToken");
+            emailToken = app.getValue();
+
+        }
+    }
     private void setGlobalDefaultValues(){
-        if(user.getAuthority().getId().equals(AidasConstants.ADMIN)){
-            Set<AppProperty> aidasAppProperties = user.getAppProperties();
-            for(AppProperty appProperty1 :aidasAppProperties){
-                if(appProperty1.getName().equals(AidasConstants.DEFAULT_STORAGE_KEY_NAME) && appProperty1.getName().equals(AidasConstants.S3)){
-                    AppProperty aap = appPropertyRepository.getAppProperty(user.getId(),AidasConstants.DOWNLOAD_ACCESS_KEY_KEY_NAME);
-                    if(aap!=null)
-                        globalDownloadAccessKey = aap.getValue();
-                    aap = appPropertyRepository.getAppProperty(user.getId(),AidasConstants.DOWNLOAD_ACCESS_SECRET_KEY_NAME);
-                    if(aap!=null)
-                        globalDownloadAccessSecret = aap.getValue();
-                    aap = appPropertyRepository.getAppProperty(user.getId(),AidasConstants.DOWNLOAD_REGION_KEY_NAME);
-                    if(aap!=null)
-                        globalDownloadRegion = aap.getValue();
-                    aap = appPropertyRepository.getAppProperty(user.getId(),AidasConstants.DOWNLOAD_BUCKETNAME_KEY_NAME);
-                    if(aap!=null)
-                        globalDownloadBucketName = aap.getValue();
-                    aap = appPropertyRepository.getAppProperty(user.getId(),AidasConstants.DOWNLOAD_PREFIX_KEY_NAME);
-                    if(aap!=null)
-                        globalDownloadPrefix = aap.getValue();
-                    aap = appPropertyRepository.getAppProperty(user.getId(),AidasConstants.UPLOAD_PREFIX_KEY_NAME);
-                    if(aap!=null)
-                        globalUploadPrefix = aap.getValue();
-                }
-            }
+        if(user.getAuthority().getName().equals(AidasConstants.ADMIN)){
+            setProperties(appPropertyRepository.getAppPropertyOfUser(user.getId()));
         }
-        if(user.getAuthority().getId().equals(AidasConstants.ORG_ADMIN)){
-            Set<AppProperty> aidasAppProperties = user.getOrganisation().getAppProperties();
-            for(AppProperty appProperty1 :aidasAppProperties){
-                if(appProperty1.getName().equals(AidasConstants.DEFAULT_STORAGE_KEY_NAME) && appProperty1.getName().equals(AidasConstants.S3)){
-                    AppProperty aap = appPropertyRepository.getAppProperty(user.getId(),AidasConstants.DOWNLOAD_ACCESS_KEY_KEY_NAME);
-                    if(aap!=null)
-                        globalDownloadAccessKey = aap.getValue();
-                    aap = appPropertyRepository.getAppProperty(user.getId(),AidasConstants.DOWNLOAD_ACCESS_SECRET_KEY_NAME);
-                    if(aap!=null)
-                        globalDownloadAccessSecret = aap.getValue();
-                    aap = appPropertyRepository.getAppProperty(user.getId(),AidasConstants.DOWNLOAD_REGION_KEY_NAME);
-                    if(aap!=null)
-                        globalDownloadRegion = aap.getValue();
-                    aap = appPropertyRepository.getAppProperty(user.getId(),AidasConstants.DOWNLOAD_BUCKETNAME_KEY_NAME);
-                    if(aap!=null)
-                        globalDownloadBucketName = aap.getValue();
-                    aap = appPropertyRepository.getAppProperty(user.getId(),AidasConstants.DOWNLOAD_PREFIX_KEY_NAME);
-                    if(aap!=null)
-                        globalDownloadPrefix = aap.getValue();
-                    aap = appPropertyRepository.getAppProperty(user.getId(),AidasConstants.UPLOAD_PREFIX_KEY_NAME);
-                    if(aap!=null)
-                        globalUploadPrefix = aap.getValue();
-                }
-            }
+        if(user.getAuthority().getName().equals(AidasConstants.ORG_ADMIN)){
+            setProperties(appPropertyRepository.getAppPropertyOfOrganisation(user.getOrganisation().getId()));
         }
-        if(user.getAuthority().getId().equals(AidasConstants.CUSTOMER_ADMIN)){
-            Set<AppProperty> aidasAppProperties = user.getCustomer().getAppProperties();
-            for(AppProperty appProperty1 :aidasAppProperties){
-                if(appProperty1.getName().equals(AidasConstants.DEFAULT_STORAGE_KEY_NAME) && appProperty1.getName().equals(AidasConstants.S3)){
-                    AppProperty aap = appPropertyRepository.getAppProperty(user.getId(),AidasConstants.DOWNLOAD_ACCESS_KEY_KEY_NAME);
-                    if(aap!=null)
-                        globalDownloadAccessKey = aap.getValue();
-                    aap = appPropertyRepository.getAppProperty(user.getId(),AidasConstants.DOWNLOAD_ACCESS_SECRET_KEY_NAME);
-                    if(aap!=null)
-                        globalDownloadAccessSecret = aap.getValue();
-                    aap = appPropertyRepository.getAppProperty(user.getId(),AidasConstants.DOWNLOAD_REGION_KEY_NAME);
-                    if(aap!=null)
-                        globalDownloadRegion = aap.getValue();
-                    aap = appPropertyRepository.getAppProperty(user.getId(),AidasConstants.DOWNLOAD_BUCKETNAME_KEY_NAME);
-                    if(aap!=null)
-                        globalDownloadBucketName = aap.getValue();
-                    aap = appPropertyRepository.getAppProperty(user.getId(),AidasConstants.DOWNLOAD_PREFIX_KEY_NAME);
-                    if(aap!=null)
-                        globalDownloadPrefix = aap.getValue();
-                    aap = appPropertyRepository.getAppProperty(user.getId(),AidasConstants.UPLOAD_PREFIX_KEY_NAME);
-                    if(aap!=null)
-                        globalUploadPrefix = aap.getValue();
-                }
-            }
+        if(user.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN)){
+            setProperties(appPropertyRepository.getAppPropertyOfCustomer(user.getCustomer().getId()));
+        }
+        if(user.getAuthority().getName().equals(AidasConstants.VENDOR_ADMIN)){
+            setProperties(appPropertyRepository.getAppPropertyOfVendor(user.getVendor().getId()));
         }
     }
     public void setUp(Project project, String status){
@@ -343,7 +319,12 @@ public class DownloadUploadS3  implements  Runnable{
                 downloadRepository.save(download);
             }
         }catch(Exception e){
-            MimeMessage msg = javaMailSender.createMimeMessage();
+            try {
+                sendMail(user.getEmail(), user.getFirstName()+" "+user.getLastName(), " Unable to Download ",this.zipFileKey);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+            /*MimeMessage msg = javaMailSender.createMimeMessage();
             MimeMessageHelper helper = null;
             try {
                 helper = new MimeMessageHelper(msg, true);
@@ -354,14 +335,15 @@ public class DownloadUploadS3  implements  Runnable{
                 e.printStackTrace();
             } catch (MessagingException ex) {
                 ex.printStackTrace();
-            }
+            }*/
         }
     }
 
 
     private Map<String,String> getObjectProperties(Upload au){
         Map<String,String> uploadLocProps = new HashMap<>();
-        for (ObjectProperty aop : au.getUserVendorMappingObjectMapping().getObject().getObjectProperties()) {
+        List<ObjectProperty> objectProperties = objectPropertyRepository.getAllObjectPropertyForObject(object.getId());
+        for (ObjectProperty aop : objectProperties) {
             if (aop.getProperty().getName().equals("accessKey")) {
                 uploadLocProps.put("accessKey",aop.getValue());
             }
@@ -384,6 +366,7 @@ public class DownloadUploadS3  implements  Runnable{
         PipedInputStream is = new PipedInputStream(os);
         AwsBasicCredentials awsCreds = AwsBasicCredentials.create(accessKey, accessSecret);
         S3Client s3client = S3Client.builder().credentialsProvider(StaticCredentialsProvider.create(awsCreds)).region(Region.of(region)).build();
+        System.out.println(bucketName+"==="+globalUploadPrefix);
         GetObjectRequest getObjectRequest = GetObjectRequest.builder().bucket(bucketName).key(globalUploadPrefix+"/"+key).build();
         s3client.getObject(getObjectRequest, ResponseTransformer.toFile(dest));
     }
@@ -408,7 +391,7 @@ public class DownloadUploadS3  implements  Runnable{
         }
     }
 
-    private URL upload(String accessKey, String accessSecret, String bucketName, String region) throws MessagingException {
+    private URL upload(String accessKey, String accessSecret, String bucketName, String region) throws MessagingException, IOException {
         Map<String, String> metadata = new HashMap<>();
         metadata.put("x-amz-meta-file", this.zipFileKey);
         AwsBasicCredentials awsCreds = AwsBasicCredentials.create(accessKey, accessSecret);
@@ -432,14 +415,15 @@ public class DownloadUploadS3  implements  Runnable{
                 .build();
         PresignedGetObjectRequest presignedGetObjectRequest = presigner.presignGetObject(getObjectPresignRequest);
 
-        MimeMessage msg = javaMailSender.createMimeMessage();
+        /*MimeMessage msg = javaMailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(msg, true);
         helper.setTo(user.getEmail());
         helper.setSubject("Download objects"+this.zipFileKey);
         helper.setText("<h1>Check attachment for zipfiles!</h1>"+presignedGetObjectRequest.url(), true);
         FileSystemResource res = new FileSystemResource(new File(this.zipFile));
         helper.addAttachment(this.zipFileKey, res);
-        javaMailSender.send(msg);
+        javaMailSender.send(msg);*/
+        sendMail(user.getEmail(), user.getFirstName()+" "+user.getLastName(), presignedGetObjectRequest.url().toString(),this.zipFileKey);
         File f = new File(this.tempFolder);
         if(f.exists()){
             if(f.isDirectory()){
@@ -473,5 +457,61 @@ public class DownloadUploadS3  implements  Runnable{
             }
         }
         return bytesArray;
+    }
+
+    private void sendMail(String email, String  name, String downloadUrl,String fileName) throws IOException {
+        String postUrl = "https://api.zeptomail.in/v1.1/email";
+        BufferedReader br = null;
+        HttpURLConnection conn = null;
+        String output = null;
+        StringBuilder sb = new StringBuilder();
+        System.out.println(email);
+        try {
+            URL url = new URL(postUrl);
+            conn = (HttpURLConnection) url.openConnection();
+            conn.setDoOutput(true);
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setRequestProperty("Accept", "application/json");
+            conn.setRequestProperty("Authorization", "Zoho-enczapikey "+emailToken);
+            JSONObject object = new JSONObject("{\n" +
+                "  \"bounce_address\":\"aidas@bounce.ainnotate.com\",\n" +
+                "  \"from\": { \"address\": \""+fromEmail+"\"},\n" +
+                "  \"to\": [{\"email_address\": {\"address\": \""+email+"\",\"name\": \""+name+"\"}}],\n" +
+                "  \"subject\":\"Your Download is ready.\",\n" +
+                "  \"htmlbody\":\"<div><b>"+downloadUrl+"</b></div>\"\n" +
+                "}");
+            OutputStream os = conn.getOutputStream();
+            os.write(object.toString().getBytes());
+            os.flush();
+            br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
+            while ((output = br.readLine()) != null) {
+                sb.append(output);
+            }
+            System.out.println(sb.toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+            /*br = new BufferedReader(new InputStreamReader((conn.getErrorStream())));
+            while ((output = br.readLine()) != null) {
+                sb.append(output);
+            }
+            System.out.println(sb.toString());*/
+        } finally {
+            try {
+                if (br != null) {
+                    br.close();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            try {
+                if (conn != null) {
+                    conn.disconnect();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+
+            }
+        }
     }
 }

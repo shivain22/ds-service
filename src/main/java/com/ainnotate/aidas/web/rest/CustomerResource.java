@@ -1,8 +1,10 @@
 package com.ainnotate.aidas.web.rest;
 
+import com.ainnotate.aidas.domain.AppProperty;
 import com.ainnotate.aidas.domain.Customer;
 import com.ainnotate.aidas.domain.Property;
 import com.ainnotate.aidas.domain.User;
+import com.ainnotate.aidas.repository.AppPropertyRepository;
 import com.ainnotate.aidas.repository.CustomerRepository;
 import com.ainnotate.aidas.repository.PropertyRepository;
 import com.ainnotate.aidas.repository.UserRepository;
@@ -12,10 +14,7 @@ import com.ainnotate.aidas.security.SecurityUtils;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
@@ -55,6 +54,9 @@ public class CustomerResource {
     private final CustomerRepository customerRepository;
 
     @Autowired
+    private AppPropertyRepository appPropertyRepository;
+
+    @Autowired
     private PropertyRepository propertyRepository;
 
     private final CustomerSearchRepository aidasCustomerSearchRepository;
@@ -89,7 +91,8 @@ public class CustomerResource {
         if( user.getAuthority().getName().equals(AidasConstants.ADMIN) ||
             (user.getAuthority().getName().equals(AidasConstants.ORG_ADMIN) && user.getOrganisation()!=null && user.getOrganisation().equals(customer.getOrganisation()))){
             Customer result = customerRepository.save(customer);
-            aidasCustomerSearchRepository.save(result);
+            Set<AppProperty> appProperties = appPropertyRepository.getAppPropertyOfCustomer(-1l);
+            result.setAppProperties(appProperties);
             List<Property> properties = propertyRepository.findAllStandardProperties();
             for(Property property:properties){
                 Property p = new Property();

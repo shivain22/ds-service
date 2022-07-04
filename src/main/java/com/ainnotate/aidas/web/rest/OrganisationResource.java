@@ -1,7 +1,9 @@
 package com.ainnotate.aidas.web.rest;
 
+import com.ainnotate.aidas.domain.AppProperty;
 import com.ainnotate.aidas.domain.Organisation;
 import com.ainnotate.aidas.domain.User;
+import com.ainnotate.aidas.repository.AppPropertyRepository;
 import com.ainnotate.aidas.repository.OrganisationRepository;
 import com.ainnotate.aidas.repository.UserRepository;
 import com.ainnotate.aidas.repository.search.OrganisationSearchRepository;
@@ -53,6 +55,8 @@ public class OrganisationResource {
 
     private final OrganisationRepository organisationRepository;
 
+    @Autowired
+    private AppPropertyRepository appPropertyRepository;
 
 
     private final OrganisationSearchRepository aidasOrganisationSearchRepository;
@@ -95,7 +99,8 @@ public class OrganisationResource {
         }
         try {
             Organisation result = organisationRepository.save(organisation);
-            aidasOrganisationSearchRepository.save(result);
+            Set<AppProperty> appProperties = appPropertyRepository.getAppPropertyOfOrganisation(-1l);
+            result.setAppProperties(appProperties);
             return ResponseEntity
                 .created(new URI("/api/aidas-organisations/" + result.getId()))
                 .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))

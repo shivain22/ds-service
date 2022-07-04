@@ -13,7 +13,12 @@ import org.hibernate.envers.Audited;
  * A AidasCustomer.
  */
 @Entity
-@Table(name = "customer")
+@Table(name = "customer",indexes = {
+    @Index(name="idx_customer_organisation",columnList = "organisation_id")
+},
+    uniqueConstraints={
+        @UniqueConstraint(name = "uk_customer_organisation_name",columnNames={"name", "organisation_id"})
+    })
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @org.springframework.data.elasticsearch.annotations.Document(indexName = "aidascustomer")
 @Audited
@@ -36,6 +41,7 @@ public class Customer extends AbstractAuditingEntity  implements Serializable {
 
     @ManyToOne(optional = false)
     @NotNull
+    @JoinColumn(name = "organisation_id", nullable = true, foreignKey = @ForeignKey(name="fk_customer_organisation"))
     private Organisation organisation;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here

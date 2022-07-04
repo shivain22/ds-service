@@ -14,7 +14,13 @@ import java.util.Objects;
  * An authority (a security role) used by Spring Security.
  */
 @Entity
-@Table(name = "user_authority_mapping")
+@Table(name = "user_authority_mapping",indexes = {
+    @Index(name="idx_uam_user",columnList = "user_id"),
+    @Index(name="idx_uam_authority",columnList = "authority_id")
+},
+    uniqueConstraints={
+        @UniqueConstraint(name = "uk_uam_user_authority",columnNames={"user_id", "authority_id"})
+    })
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @Audited
 public class UserAuthorityMapping extends AbstractAuditingEntity implements Serializable {
@@ -40,10 +46,12 @@ public class UserAuthorityMapping extends AbstractAuditingEntity implements Seri
     private Long id;
 
     @ManyToOne
+    @JoinColumn(name = "authority_id", nullable = true, foreignKey = @ForeignKey(name="fk_uam_authority"))
     private Authority authority;
 
     @ManyToOne
     @JsonIgnore
+    @JoinColumn(name = "user_id", nullable = true, foreignKey = @ForeignKey(name="fk_uam_user"))
     private User user;
 
     public void setAuthority(Authority authority) {

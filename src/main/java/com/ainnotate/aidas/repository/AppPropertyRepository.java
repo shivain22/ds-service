@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Spring Data JPA repository for the {@link AppProperty} entity.
@@ -17,6 +18,18 @@ public interface AppPropertyRepository extends JpaRepository<AppProperty, Long> 
 
     @Query(value = "select * from app_property app where app.user_id=?1 and app.name=?2",nativeQuery = true)
     AppProperty getAppProperty(Long aidasUserId, String key );
+
+    @Query(value = "select * from app_property app where app.organisation_id=?1",nativeQuery = true)
+    Set<AppProperty> getAppPropertyOfOrganisation(Long organisationId);
+
+    @Query(value = "select * from app_property app where app.customer_id=?1",nativeQuery = true)
+    Set<AppProperty> getAppPropertyOfCustomer(Long customerId);
+
+    @Query(value = "select * from app_property app where app.vendor_id=?1",nativeQuery = true)
+    Set<AppProperty> getAppPropertyOfVendor(Long vendorId);
+
+    @Query(value = "select * from app_property app where app.user_id=?1",nativeQuery = true)
+    Set<AppProperty> getAppPropertyOfUser(Long userId);
 
     @Query(value = "select * from app_property app where app.user_id=?1 and app.name like concat('%',?2) ",nativeQuery = true)
     List<AppProperty> getAppPropertyLike(Long aidasUserId, String key );

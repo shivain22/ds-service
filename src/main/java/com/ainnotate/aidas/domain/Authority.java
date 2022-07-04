@@ -13,9 +13,14 @@ import org.hibernate.envers.Audited;
  * An authority (a security role) used by Spring Security.
  */
 @Entity
-@Table(name = "authority")
+@Table(name = "authority",indexes = {
+    @Index(name="idx_authority_name",columnList = "name")
+},
+    uniqueConstraints={
+        @UniqueConstraint(name = "uk_authority_name",columnNames={"name"})})
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @Audited
+@org.springframework.data.elasticsearch.annotations.Document(indexName = "authority")
 public class Authority extends AbstractAuditingEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;

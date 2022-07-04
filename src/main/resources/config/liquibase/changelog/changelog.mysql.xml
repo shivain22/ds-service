@@ -5,7 +5,7 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.5.xsd
                         http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
-    <changeSet author="shiva (generated)" id="1656518586983-1">
+    <changeSet author="shiva (generated)" id="1656931187761-1">
         <createTable tableName="app_property">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -20,7 +20,7 @@
             <column name="name" type="VARCHAR(50)">
                 <constraints nullable="false"/>
             </column>
-            <column name="value" type="VARCHAR(50)">
+            <column name="value" type="LONGTEXT">
                 <constraints nullable="false"/>
             </column>
             <column name="customer_id" type="BIGINT"/>
@@ -29,7 +29,7 @@
             <column name="vendor_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-2">
+    <changeSet author="shiva (generated)" id="1656931187761-2">
         <createTable tableName="app_property_aud">
             <column name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -46,14 +46,14 @@
             <column name="is_sample_data" type="INT"/>
             <column defaultValueNumeric="1" name="status" type="BIGINT"/>
             <column name="name" type="VARCHAR(50)"/>
-            <column name="value" type="VARCHAR(50)"/>
+            <column name="value" type="LONGTEXT"/>
             <column name="customer_id" type="BIGINT"/>
             <column name="organisation_id" type="BIGINT"/>
             <column name="user_id" type="BIGINT"/>
             <column name="vendor_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-3">
+    <changeSet author="shiva (generated)" id="1656931187761-3">
         <createTable tableName="authority">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -66,11 +66,11 @@
             <column name="is_sample_data" type="INT"/>
             <column defaultValueNumeric="1" name="status" type="BIGINT"/>
             <column name="name" type="VARCHAR(50)">
-                <constraints nullable="false"/>
+                <constraints nullable="false" unique="true"/>
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-4">
+    <changeSet author="shiva (generated)" id="1656931187761-4">
         <createTable tableName="authority_aud">
             <column name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -89,7 +89,45 @@
             <column name="name" type="VARCHAR(50)"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-5">
+    <changeSet author="shiva (generated)" id="1656931187761-5">
+        <createTable tableName="category">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="created_by" type="VARCHAR(50)"/>
+            <column name="created_date" type="datetime"/>
+            <column name="last_modified_by" type="VARCHAR(50)"/>
+            <column name="last_modified_date" type="datetime"/>
+            <column name="rating" type="INT"/>
+            <column name="is_sample_data" type="INT"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
+            <column name="name" type="VARCHAR(500)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="value" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-6">
+        <createTable tableName="category_aud">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="rev" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="revtype" type="TINYINT(3)"/>
+            <column name="created_by" type="VARCHAR(50)"/>
+            <column name="created_date" type="datetime"/>
+            <column name="last_modified_by" type="VARCHAR(50)"/>
+            <column name="last_modified_date" type="datetime"/>
+            <column name="rating" type="INT"/>
+            <column name="is_sample_data" type="INT"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
+            <column name="name" type="VARCHAR(500)"/>
+            <column name="value" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-7">
         <createTable tableName="customer">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -110,7 +148,7 @@
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-6">
+    <changeSet author="shiva (generated)" id="1656931187761-8">
         <createTable tableName="customer_app_properties">
             <column name="customer_id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -120,7 +158,7 @@
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-7">
+    <changeSet author="shiva (generated)" id="1656931187761-9">
         <createTable tableName="customer_app_properties_aud">
             <column name="rev" type="INT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -134,7 +172,7 @@
             <column name="revtype" type="TINYINT(3)"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-8">
+    <changeSet author="shiva (generated)" id="1656931187761-10">
         <createTable tableName="customer_aud">
             <column name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -155,7 +193,7 @@
             <column name="organisation_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-9">
+    <changeSet author="shiva (generated)" id="1656931187761-11">
         <createTable tableName="download">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -167,21 +205,21 @@
             <column name="rating" type="INT"/>
             <column name="is_sample_data" type="INT"/>
             <column defaultValueNumeric="1" name="status" type="BIGINT"/>
-            <column name="aws_key" type="VARCHAR(150)"/>
-            <column name="aws_secret" type="VARCHAR(150)"/>
-            <column name="bucket_name" type="VARCHAR(150)"/>
+            <column name="aws_key" type="VARCHAR(250)"/>
+            <column name="aws_secret" type="VARCHAR(1500)"/>
+            <column name="bucket_name" type="VARCHAR(250)"/>
             <column name="date_uploaded" type="datetime"/>
-            <column name="name" type="VARCHAR(100)"/>
-            <column name="object_key" type="VARCHAR(150)"/>
+            <column name="name" type="VARCHAR(1000)"/>
+            <column name="object_key" type="VARCHAR(500)"/>
             <column name="region" type="VARCHAR(150)"/>
             <column name="upload_etag" type="VARCHAR(255)"/>
-            <column name="upload_url" type="VARCHAR(255)"/>
-            <column name="upload_object_ids" type="VARCHAR(3500)"/>
+            <column name="upload_url" type="LONGTEXT"/>
+            <column name="upload_object_ids" type="LONGTEXT"/>
             <column name="object_id" type="BIGINT"/>
             <column name="project_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-10">
+    <changeSet author="shiva (generated)" id="1656931187761-12">
         <createTable tableName="download_aud">
             <column name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -197,21 +235,21 @@
             <column name="rating" type="INT"/>
             <column name="is_sample_data" type="INT"/>
             <column defaultValueNumeric="1" name="status" type="BIGINT"/>
-            <column name="aws_key" type="VARCHAR(150)"/>
-            <column name="aws_secret" type="VARCHAR(150)"/>
-            <column name="bucket_name" type="VARCHAR(150)"/>
+            <column name="aws_key" type="VARCHAR(250)"/>
+            <column name="aws_secret" type="VARCHAR(1500)"/>
+            <column name="bucket_name" type="VARCHAR(250)"/>
             <column name="date_uploaded" type="datetime"/>
-            <column name="name" type="VARCHAR(100)"/>
-            <column name="object_key" type="VARCHAR(150)"/>
+            <column name="name" type="VARCHAR(1000)"/>
+            <column name="object_key" type="VARCHAR(500)"/>
             <column name="region" type="VARCHAR(150)"/>
             <column name="upload_etag" type="VARCHAR(255)"/>
-            <column name="upload_url" type="VARCHAR(255)"/>
-            <column name="upload_object_ids" type="VARCHAR(3500)"/>
+            <column name="upload_url" type="LONGTEXT"/>
+            <column name="upload_object_ids" type="LONGTEXT"/>
             <column name="object_id" type="BIGINT"/>
             <column name="project_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-11">
+    <changeSet author="shiva (generated)" id="1656931187761-13">
         <createTable tableName="object">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -241,7 +279,7 @@
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-12">
+    <changeSet author="shiva (generated)" id="1656931187761-14">
         <createTable tableName="object_aud">
             <column name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -269,7 +307,7 @@
             <column name="project_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-13">
+    <changeSet author="shiva (generated)" id="1656931187761-15">
         <createTable tableName="object_property">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -286,6 +324,7 @@
             <column name="optional" type="INT"/>
             <column defaultValueNumeric="0" name="passed_from_app" type="INT"/>
             <column name="value" type="VARCHAR(255)"/>
+            <column name="category_id" type="BIGINT"/>
             <column name="object_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
@@ -294,7 +333,7 @@
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-14">
+    <changeSet author="shiva (generated)" id="1656931187761-16">
         <createTable tableName="object_property_aud">
             <column name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -315,11 +354,12 @@
             <column name="optional" type="INT"/>
             <column defaultValueNumeric="0" name="passed_from_app" type="INT"/>
             <column name="value" type="VARCHAR(255)"/>
+            <column name="category_id" type="BIGINT"/>
             <column name="object_id" type="BIGINT"/>
             <column name="property_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-15">
+    <changeSet author="shiva (generated)" id="1656931187761-17">
         <createTable tableName="organisation">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -337,7 +377,7 @@
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-16">
+    <changeSet author="shiva (generated)" id="1656931187761-18">
         <createTable tableName="organisation_app_properties">
             <column name="organisation_id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -347,7 +387,7 @@
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-17">
+    <changeSet author="shiva (generated)" id="1656931187761-19">
         <createTable tableName="organisation_app_properties_aud">
             <column name="rev" type="INT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -361,7 +401,7 @@
             <column name="revtype" type="TINYINT(3)"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-18">
+    <changeSet author="shiva (generated)" id="1656931187761-20">
         <createTable tableName="organisation_aud">
             <column name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -381,7 +421,7 @@
             <column name="name" type="VARCHAR(500)"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-19">
+    <changeSet author="shiva (generated)" id="1656931187761-21">
         <createTable tableName="project">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -410,12 +450,13 @@
             <column name="qc_levels" type="INT"/>
             <column name="rework_status" type="INT"/>
             <column name="video_type" type="VARCHAR(255)"/>
+            <column name="category_id" type="BIGINT"/>
             <column name="customer_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-20">
+    <changeSet author="shiva (generated)" id="1656931187761-22">
         <createTable tableName="project_aud">
             <column name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -446,10 +487,11 @@
             <column name="qc_levels" type="INT"/>
             <column name="rework_status" type="INT"/>
             <column name="video_type" type="VARCHAR(255)"/>
+            <column name="category_id" type="BIGINT"/>
             <column name="customer_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-21">
+    <changeSet author="shiva (generated)" id="1656931187761-23">
         <createTable tableName="project_property">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -466,13 +508,16 @@
             <column name="optional" type="INT"/>
             <column defaultValueNumeric="0" name="passed_from_app" type="INT"/>
             <column name="value" type="VARCHAR(255)"/>
+            <column name="category_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
             <column name="project_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
             <column name="property_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-22">
+    <changeSet author="shiva (generated)" id="1656931187761-24">
         <createTable tableName="project_property_aud">
             <column name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -493,11 +538,12 @@
             <column name="optional" type="INT"/>
             <column defaultValueNumeric="0" name="passed_from_app" type="INT"/>
             <column name="value" type="VARCHAR(255)"/>
+            <column name="category_id" type="BIGINT"/>
             <column name="project_id" type="BIGINT"/>
             <column name="property_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-23">
+    <changeSet author="shiva (generated)" id="1656931187761-25">
         <createTable tableName="property">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -525,11 +571,12 @@
             <column name="value" type="VARCHAR(100)">
                 <constraints nullable="false"/>
             </column>
+            <column name="category_id" type="BIGINT"/>
             <column name="customer_id" type="BIGINT"/>
             <column name="user_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-24">
+    <changeSet author="shiva (generated)" id="1656931187761-26">
         <createTable tableName="property_aud">
             <column name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -553,11 +600,12 @@
             <column defaultValueNumeric="0" name="passed_from_app" type="INT"/>
             <column name="property_type" type="INT"/>
             <column name="value" type="VARCHAR(100)"/>
+            <column name="category_id" type="BIGINT"/>
             <column name="customer_id" type="BIGINT"/>
             <column name="user_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-25">
+    <changeSet author="shiva (generated)" id="1656931187761-27">
         <createTable tableName="qc_project_mapping">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -570,11 +618,15 @@
             <column name="is_sample_data" type="INT"/>
             <column defaultValueNumeric="1" name="status" type="BIGINT"/>
             <column name="qc_level" type="BIGINT"/>
-            <column name="project_id" type="BIGINT"/>
-            <column name="user_customer_mapping_id" type="BIGINT"/>
+            <column name="project_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_customer_mapping_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-26">
+    <changeSet author="shiva (generated)" id="1656931187761-28">
         <createTable tableName="qc_project_mapping_aud">
             <column name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -595,7 +647,7 @@
             <column name="user_customer_mapping_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-27">
+    <changeSet author="shiva (generated)" id="1656931187761-29">
         <createTable tableName="revinfo">
             <column autoIncrement="true" name="rev" type="INT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -603,7 +655,7 @@
             <column name="revtstmp" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-28">
+    <changeSet author="shiva (generated)" id="1656931187761-30">
         <createTable tableName="upload">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -634,7 +686,7 @@
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-29">
+    <changeSet author="shiva (generated)" id="1656931187761-31">
         <createTable tableName="upload_aud">
             <column name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -667,7 +719,7 @@
             <column name="user_vendor_mapping_object_mapping_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-30">
+    <changeSet author="shiva (generated)" id="1656931187761-32">
         <createTable tableName="upload_meta_data">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -686,7 +738,7 @@
             <column name="upload_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-31">
+    <changeSet author="shiva (generated)" id="1656931187761-33">
         <createTable tableName="upload_meta_data_aud">
             <column name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -709,47 +761,7 @@
             <column name="upload_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-32">
-        <createTable tableName="upload_rej_reason">
-            <column autoIncrement="true" name="id" type="BIGINT">
-                <constraints nullable="false" primaryKey="true"/>
-            </column>
-            <column name="created_by" type="VARCHAR(50)"/>
-            <column name="created_date" type="datetime"/>
-            <column name="last_modified_by" type="VARCHAR(50)"/>
-            <column name="last_modified_date" type="datetime"/>
-            <column name="rating" type="INT"/>
-            <column name="is_sample_data" type="INT"/>
-            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
-            <column name="upload_id" type="BIGINT">
-                <constraints nullable="false"/>
-            </column>
-            <column name="upload_reject_reason_id" type="BIGINT">
-                <constraints nullable="false"/>
-            </column>
-        </createTable>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-33">
-        <createTable tableName="upload_rej_reason_aud">
-            <column name="id" type="BIGINT">
-                <constraints nullable="false" primaryKey="true"/>
-            </column>
-            <column name="rev" type="INT">
-                <constraints nullable="false" primaryKey="true"/>
-            </column>
-            <column name="revtype" type="TINYINT(3)"/>
-            <column name="created_by" type="VARCHAR(50)"/>
-            <column name="created_date" type="datetime"/>
-            <column name="last_modified_by" type="VARCHAR(50)"/>
-            <column name="last_modified_date" type="datetime"/>
-            <column name="rating" type="INT"/>
-            <column name="is_sample_data" type="INT"/>
-            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
-            <column name="upload_id" type="BIGINT"/>
-            <column name="upload_reject_reason_id" type="BIGINT"/>
-        </createTable>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-34">
+    <changeSet author="shiva (generated)" id="1656931187761-34">
         <createTable tableName="upload_reject_reason">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -765,11 +777,11 @@
                 <constraints nullable="false"/>
             </column>
             <column name="reason" type="VARCHAR(500)">
-                <constraints nullable="false"/>
+                <constraints nullable="false" unique="true"/>
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-35">
+    <changeSet author="shiva (generated)" id="1656931187761-35">
         <createTable tableName="upload_reject_reason_aud">
             <column name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -789,7 +801,47 @@
             <column name="reason" type="VARCHAR(500)"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-36">
+    <changeSet author="shiva (generated)" id="1656931187761-36">
+        <createTable tableName="upload_reject_reason_mapping">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="created_by" type="VARCHAR(50)"/>
+            <column name="created_date" type="datetime"/>
+            <column name="last_modified_by" type="VARCHAR(50)"/>
+            <column name="last_modified_date" type="datetime"/>
+            <column name="rating" type="INT"/>
+            <column name="is_sample_data" type="INT"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
+            <column name="upload_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="upload_reject_reason_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-37">
+        <createTable tableName="upload_reject_reason_mapping_aud">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="rev" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="revtype" type="TINYINT(3)"/>
+            <column name="created_by" type="VARCHAR(50)"/>
+            <column name="created_date" type="datetime"/>
+            <column name="last_modified_by" type="VARCHAR(50)"/>
+            <column name="last_modified_date" type="datetime"/>
+            <column name="rating" type="INT"/>
+            <column name="is_sample_data" type="INT"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
+            <column name="upload_id" type="BIGINT"/>
+            <column name="upload_reject_reason_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-38">
         <createTable tableName="user">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -808,7 +860,7 @@
             <column name="cc_email" type="VARCHAR(255)"/>
             <column defaultValueNumeric="0" name="deleted" type="INT"/>
             <column name="email" type="VARCHAR(255)">
-                <constraints nullable="false"/>
+                <constraints nullable="false" unique="true"/>
             </column>
             <column name="first_name" type="VARCHAR(100)">
                 <constraints nullable="false"/>
@@ -820,7 +872,9 @@
             <column defaultValueNumeric="0" name="locked" type="INT">
                 <constraints nullable="false"/>
             </column>
-            <column name="login" type="VARCHAR(50)"/>
+            <column name="login" type="VARCHAR(50)">
+                <constraints unique="true"/>
+            </column>
             <column name="password" type="VARCHAR(20)"/>
             <column name="authority_id" type="BIGINT"/>
             <column name="customer_id" type="BIGINT"/>
@@ -828,7 +882,7 @@
             <column name="vendor_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-37">
+    <changeSet author="shiva (generated)" id="1656931187761-39">
         <createTable tableName="user_app_properties">
             <column name="user_id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -838,7 +892,7 @@
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-38">
+    <changeSet author="shiva (generated)" id="1656931187761-40">
         <createTable tableName="user_app_properties_aud">
             <column name="rev" type="INT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -852,7 +906,7 @@
             <column name="revtype" type="TINYINT(3)"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-39">
+    <changeSet author="shiva (generated)" id="1656931187761-41">
         <createTable tableName="user_aud">
             <column name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -887,7 +941,7 @@
             <column name="vendor_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-40">
+    <changeSet author="shiva (generated)" id="1656931187761-42">
         <createTable tableName="user_authority_mapping">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -903,7 +957,7 @@
             <column name="user_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-41">
+    <changeSet author="shiva (generated)" id="1656931187761-43">
         <createTable tableName="user_authority_mapping_aud">
             <column name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -923,7 +977,7 @@
             <column name="user_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-42">
+    <changeSet author="shiva (generated)" id="1656931187761-44">
         <createTable tableName="user_customer_mapping">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -939,7 +993,7 @@
             <column name="user_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-43">
+    <changeSet author="shiva (generated)" id="1656931187761-45">
         <createTable tableName="user_customer_mapping_aud">
             <column name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -959,7 +1013,7 @@
             <column name="user_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-44">
+    <changeSet author="shiva (generated)" id="1656931187761-46">
         <createTable tableName="user_json_storage">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -972,10 +1026,12 @@
             <column name="is_sample_data" type="INT"/>
             <column defaultValueNumeric="1" name="status" type="BIGINT"/>
             <column name="json_pay_load" type="LONGTEXT"/>
-            <column name="user_id" type="BIGINT"/>
+            <column name="user_id" type="BIGINT">
+                <constraints unique="true"/>
+            </column>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-45">
+    <changeSet author="shiva (generated)" id="1656931187761-47">
         <createTable tableName="user_json_storage_aud">
             <column name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -995,7 +1051,7 @@
             <column name="user_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-46">
+    <changeSet author="shiva (generated)" id="1656931187761-48">
         <createTable tableName="user_organisation_mapping">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -1011,7 +1067,7 @@
             <column name="user_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-47">
+    <changeSet author="shiva (generated)" id="1656931187761-49">
         <createTable tableName="user_organisation_mapping_aud">
             <column name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -1031,7 +1087,7 @@
             <column name="user_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-48">
+    <changeSet author="shiva (generated)" id="1656931187761-50">
         <createTable tableName="user_vendor_mapping">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -1047,7 +1103,7 @@
             <column name="vendor_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-49">
+    <changeSet author="shiva (generated)" id="1656931187761-51">
         <createTable tableName="user_vendor_mapping_aud">
             <column name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -1067,7 +1123,7 @@
             <column name="vendor_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-50">
+    <changeSet author="shiva (generated)" id="1656931187761-52">
         <createTable tableName="user_vendor_mapping_object_mapping">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -1088,7 +1144,7 @@
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-51">
+    <changeSet author="shiva (generated)" id="1656931187761-53">
         <createTable tableName="user_vendor_mapping_object_mapping_aud">
             <column name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -1109,7 +1165,7 @@
             <column name="user_vendor_mapping_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-52">
+    <changeSet author="shiva (generated)" id="1656931187761-54">
         <createTable tableName="vendor">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -1127,7 +1183,7 @@
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-53">
+    <changeSet author="shiva (generated)" id="1656931187761-55">
         <createTable tableName="vendor_app_properties">
             <column name="vendor_id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -1137,7 +1193,7 @@
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-54">
+    <changeSet author="shiva (generated)" id="1656931187761-56">
         <createTable tableName="vendor_app_properties_aud">
             <column name="rev" type="INT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -1151,7 +1207,7 @@
             <column name="revtype" type="TINYINT(3)"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-55">
+    <changeSet author="shiva (generated)" id="1656931187761-57">
         <createTable tableName="vendor_aud">
             <column name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -1171,7 +1227,7 @@
             <column name="name" type="VARCHAR(500)"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-56">
+    <changeSet author="shiva (generated)" id="1656931187761-58">
         <createTable tableName="vendor_users">
             <column name="vendor_id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -1181,7 +1237,7 @@
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-57">
+    <changeSet author="shiva (generated)" id="1656931187761-59">
         <createTable tableName="vendor_users_aud">
             <column name="rev" type="INT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -1195,562 +1251,642 @@
             <column name="revtype" type="TINYINT(3)"/>
         </createTable>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-58">
+    <changeSet author="shiva (generated)" id="1656931187761-60">
+        <addUniqueConstraint columnNames="name, organisation_id, customer_id, vendor_id, user_id" constraintName="uk_ap_oid_cid_vid_uid" tableName="app_property"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-61">
+        <addUniqueConstraint columnNames="vendor_id, user_id" constraintName="uk_ap_oid_cid_vid_uid" tableName="user_vendor_mapping"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-62">
+        <addUniqueConstraint columnNames="name, organisation_id" constraintName="uk_customer_organisation_name" tableName="customer"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-63">
+        <addUniqueConstraint columnNames="name, project_id" constraintName="uk_object_project_name" tableName="object"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-64">
+        <addUniqueConstraint columnNames="property_id, object_id" constraintName="uk_object_property_object_property" tableName="object_property"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-65">
+        <addUniqueConstraint columnNames="name, customer_id" constraintName="uk_project_customer_name" tableName="project"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-66">
+        <addUniqueConstraint columnNames="property_id, project_id" constraintName="uk_project_property_object_property" tableName="project_property"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-67">
+        <addUniqueConstraint columnNames="name, customer_id, user_id" constraintName="uk_property_cid_uid" tableName="property"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-68">
+        <addUniqueConstraint columnNames="user_customer_mapping_id, project_id" constraintName="uk_qpm_ucmid_pid" tableName="qc_project_mapping"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-69">
+        <addUniqueConstraint columnNames="user_id, authority_id" constraintName="uk_uam_user_authority" tableName="user_authority_mapping"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-70">
+        <addUniqueConstraint columnNames="user_id, customer_id" constraintName="uk_ucm_user_customer" tableName="user_customer_mapping"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-71">
+        <addUniqueConstraint columnNames="object_property_id, project_property_id, upload_id" constraintName="uk_umd_opid_ppid_upid" tableName="upload_meta_data"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-72">
+        <addUniqueConstraint columnNames="organisation_id, user_id" constraintName="uk_uom_uid_oid" tableName="user_organisation_mapping"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-73">
+        <addUniqueConstraint columnNames="object_key, user_vendor_mapping_object_mapping_id" constraintName="uk_upload_uvumom" tableName="upload"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-74">
+        <addUniqueConstraint columnNames="upload_id, upload_reject_reason_id" constraintName="uk_urm_up_urr" tableName="upload_reject_reason_mapping"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-75">
+        <addUniqueConstraint columnNames="user_vendor_mapping_id, object_id" constraintName="uk_uvmid_oid" tableName="user_vendor_mapping_object_mapping"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-76">
         <createIndex indexName="FK1eko8d24nrxexmu5daw5luku8" tableName="user_organisation_mapping_aud">
             <column name="rev"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-59">
-        <createIndex indexName="FK1gto5a06aaue87pckwc1mqumg" tableName="object">
-            <column name="project_id"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-60">
-        <createIndex indexName="FK1xnd3xqua4xqavy9406u8dfeb" tableName="project_property">
-            <column name="project_id"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-61">
-        <createIndex indexName="FK22is3lgbsjrbenhvtpjyl90dy" tableName="user">
-            <column name="organisation_id"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-62">
-        <createIndex indexName="FK2ap0359xd4jqynxtfyi9f9h4d" tableName="upload">
-            <column name="rework_upload_id"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-63">
-        <createIndex indexName="FK38kcds472d3yu4irj009ijdrw" tableName="app_property">
-            <column name="organisation_id"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-64">
-        <createIndex indexName="FK3d9s25wlcbahjkyey4p51r5k6" tableName="upload_meta_data">
-            <column name="object_property_id"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-65">
+    <changeSet author="shiva (generated)" id="1656931187761-77">
         <createIndex indexName="FK3fiaui9nu7my1tolfjsxsgjjw" tableName="authority_aud">
             <column name="rev"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-66">
+    <changeSet author="shiva (generated)" id="1656931187761-78">
         <createIndex indexName="FK4iemt8cqujrnsk6er67q9xe64" tableName="upload_meta_data_aud">
             <column name="rev"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-67">
-        <createIndex indexName="FK51njvck50nuf57ngcfuhnjxye" tableName="property">
-            <column name="user_id"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-68">
+    <changeSet author="shiva (generated)" id="1656931187761-79">
         <createIndex indexName="FK6en2j0ece9sxmb66l1d8vleal" tableName="user_authority_mapping_aud">
             <column name="rev"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-69">
-        <createIndex indexName="FK6k7o899wy788m2gle2tcxtja" tableName="download">
-            <column name="project_id"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-70">
-        <createIndex indexName="FK7fb0g9yyfl3p2tyx7k3tq6bej" tableName="project_property">
-            <column name="property_id"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-71">
+    <changeSet author="shiva (generated)" id="1656931187761-80">
         <createIndex indexName="FK89ntto9kobwahrwxbne2nqcnr" tableName="user_aud">
             <column name="rev"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-72">
-        <createIndex indexName="FK8aylf4frbptatf2p6pftnsab6" tableName="app_property">
-            <column name="customer_id"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-73">
-        <createIndex indexName="FK8hetgat4qj8bp9alcbv1iuvpb" tableName="upload_meta_data">
-            <column name="upload_id"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-74">
-        <createIndex indexName="FK90kifi7dehhva03q5hc81ptyr" tableName="object">
-            <column name="parent_object_id"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-75">
-        <createIndex indexName="FK92uytxal87p8f1rlor3v9r07g" tableName="upload_rej_reason">
-            <column name="upload_reject_reason_id"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-76">
+    <changeSet author="shiva (generated)" id="1656931187761-81">
         <createIndex indexName="FKav2dv9e80l9ulvwyb9aa8p3q1" tableName="user_vendor_mapping_object_mapping_aud">
             <column name="rev"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-77">
-        <createIndex indexName="FKax3ohrweiy18fuyplbgkl2ha6" tableName="upload_rej_reason_aud">
-            <column name="rev"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-78">
+    <changeSet author="shiva (generated)" id="1656931187761-82">
         <createIndex indexName="FKbax3qj40a4fxbpk03gaqswe57" tableName="property_aud">
             <column name="rev"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-79">
-        <createIndex indexName="FKbkhx7l0gtmm3qcfmbrj0s9ojg" tableName="user_vendor_mapping">
-            <column name="user_id"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-80">
-        <createIndex indexName="FKbyl9w218sef6tsg8xsybrhvs" tableName="qc_project_mapping">
-            <column name="user_customer_mapping_id"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-81">
+    <changeSet author="shiva (generated)" id="1656931187761-83">
         <createIndex indexName="FKc6vcjl6x3bkypyetyrymokbxy" tableName="upload_reject_reason_aud">
             <column name="rev"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-82">
-        <createIndex indexName="FKd8uj8ahe1nyrp1upesm24rx3p" tableName="user_customer_mapping">
-            <column name="customer_id"/>
+    <changeSet author="shiva (generated)" id="1656931187761-84">
+        <createIndex indexName="FKc9m640crhsib2ws80um6xuk1w" tableName="category_aud">
+            <column name="rev"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-83">
-        <createIndex indexName="FKdcaf0qxcdhxd8s3ll7g4mfequ" tableName="user_vendor_mapping_object_mapping">
-            <column name="user_vendor_mapping_id"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-84">
-        <createIndex indexName="FKdptx0i3ky01svofwjytq5iry0" tableName="user">
-            <column name="customer_id"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-85">
-        <createIndex indexName="FKe8s501591fb0lymd2twws04no" tableName="upload_rej_reason">
-            <column name="upload_id"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-86">
+    <changeSet author="shiva (generated)" id="1656931187761-85">
         <createIndex indexName="FKeh5knytjb74d1gxagmy9i3jpw" tableName="user_json_storage_aud">
             <column name="rev"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-87">
-        <createIndex indexName="FKeqru7l4svggrlln7vep34v2pu" tableName="upload_meta_data">
-            <column name="project_property_id"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-88">
-        <createIndex indexName="FKevu1vdprkflq542egi93sik7i" tableName="app_property">
-            <column name="vendor_id"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-89">
+    <changeSet author="shiva (generated)" id="1656931187761-86">
         <createIndex indexName="FKfb6767p3ssyday3r8vj0dh5o8" tableName="organisation_aud">
             <column name="rev"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-90">
-        <createIndex indexName="FKfrnjdcp3fyln71te5yyurg1xh" tableName="qc_project_mapping">
-            <column name="project_id"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-91">
+    <changeSet author="shiva (generated)" id="1656931187761-87">
         <createIndex indexName="FKft1nkykcg4b4v9u3770hkqsya" tableName="qc_project_mapping_aud">
             <column name="rev"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-92">
-        <createIndex indexName="FKg1456ji7qkf6xcghx1coani9v" tableName="user_json_storage">
-            <column name="user_id"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-93">
+    <changeSet author="shiva (generated)" id="1656931187761-88">
         <createIndex indexName="FKgfwtmwfqmkddg7g0pg36luq54" tableName="customer_aud">
             <column name="rev"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-94">
+    <changeSet author="shiva (generated)" id="1656931187761-89">
         <createIndex indexName="FKgla54up9squc2iwidqordojlg" tableName="app_property_aud">
             <column name="rev"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-95">
-        <createIndex indexName="FKh7mhqj5rbpb5tl62gybxccry" tableName="app_property">
-            <column name="user_id"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-96">
-        <createIndex indexName="FKhcygddxc4ytpp75s5bsrsol4o" tableName="upload">
-            <column name="user_vendor_mapping_object_mapping_id"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-97">
+    <changeSet author="shiva (generated)" id="1656931187761-90">
         <createIndex indexName="FKhpyjeoaogy6gmqbsd60rxol7s" tableName="object_aud">
             <column name="rev"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-98">
+    <changeSet author="shiva (generated)" id="1656931187761-91">
         <createIndex indexName="FKhuwi2oht6r1g4vmin1nk417t" tableName="object_property_aud">
             <column name="rev"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-99">
+    <changeSet author="shiva (generated)" id="1656931187761-92">
         <createIndex indexName="FKi3n73vslsm5lo05ydc4iuoim1" tableName="upload_aud">
             <column name="rev"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-100">
+    <changeSet author="shiva (generated)" id="1656931187761-93">
         <createIndex indexName="FKilg6iykfqrxs44nyskxritwx8" tableName="user_customer_mapping_aud">
             <column name="rev"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-101">
-        <createIndex indexName="FKiqsmtl9el4tl3wjhnx3henfj3" tableName="user_customer_mapping">
-            <column name="user_id"/>
+    <changeSet author="shiva (generated)" id="1656931187761-94">
+        <createIndex indexName="FKjyp2l1q18oajv4vjqwqqkjyrc" tableName="upload_reject_reason_mapping_aud">
+            <column name="rev"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-102">
-        <createIndex indexName="FKj948tru2ilgqxfxsppp9mom5j" tableName="project">
-            <column name="customer_id"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-103">
-        <createIndex indexName="FKjo4gugnbaufkntm2niq4f3eaw" tableName="user_authority_mapping">
-            <column name="user_id"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-104">
-        <createIndex indexName="FKkdaldowj43jem72axn9t2aj9o" tableName="object_property">
-            <column name="property_id"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-105">
-        <createIndex indexName="FKl61jrnhw9qyarra9sf97k3i63" tableName="object_property">
-            <column name="object_id"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-106">
+    <changeSet author="shiva (generated)" id="1656931187761-95">
         <createIndex indexName="FKlqyhnf1lo1jvbu1o7ri3kd307" tableName="vendor_aud">
             <column name="rev"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-107">
-        <createIndex indexName="FKm09vego1td9a1untujhs18kfe" tableName="upload">
-            <column name="qc_done_by_id"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-108">
-        <createIndex indexName="FKm2mseuy9h38j6k8kktbwawqlu" tableName="user_organisation_mapping">
-            <column name="organisation_id"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-109">
-        <createIndex indexName="FKml7axqwpnbcmt93vjv7gk68x1" tableName="user_vendor_mapping">
-            <column name="vendor_id"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-110">
+    <changeSet author="shiva (generated)" id="1656931187761-96">
         <createIndex indexName="FKn0f019dvuswsjtv1uqcrbgh5v" tableName="project_property_aud">
             <column name="rev"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-111">
-        <createIndex indexName="FKnyf2kourwjg5wibx5o3jsjbmw" tableName="customer">
-            <column name="organisation_id"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-112">
-        <createIndex indexName="FKo8khk0aec0vl4h76nf20jympn" tableName="property">
-            <column name="customer_id"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-113">
-        <createIndex indexName="FKokrgxdbtf7tirfx1d1qtg9n24" tableName="user">
-            <column name="authority_id"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-114">
+    <changeSet author="shiva (generated)" id="1656931187761-97">
         <createIndex indexName="FKopyic7nw8dtert65wbq7tagou" tableName="user_vendor_mapping_aud">
             <column name="rev"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-115">
+    <changeSet author="shiva (generated)" id="1656931187761-98">
         <createIndex indexName="FKp5c8ufep9yom9pltfpsn52dm" tableName="download_aud">
             <column name="rev"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-116">
+    <changeSet author="shiva (generated)" id="1656931187761-99">
         <createIndex indexName="FKpnojd25gxjyn8jg0mj5k96mcl" tableName="project_aud">
             <column name="rev"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-117">
-        <createIndex indexName="FKqftt0i0f8h41lxhlap5euj6if" tableName="user_authority_mapping">
-            <column name="authority_id"/>
+    <changeSet author="shiva (generated)" id="1656931187761-100">
+        <createIndex indexName="idx_ap_customer" tableName="app_property">
+            <column name="customer_id"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-118">
-        <createIndex indexName="FKqgrourq3uxvrs7bbxbhbi458y" tableName="user">
-            <column name="vendor_id"/>
+    <changeSet author="shiva (generated)" id="1656931187761-101">
+        <createIndex indexName="idx_ap_organisation" tableName="app_property">
+            <column name="organisation_id"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-119">
-        <createIndex indexName="FKrosalyx285h1jouxwradm89a2" tableName="download">
-            <column name="object_id"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-120">
-        <createIndex indexName="FKs0mwy0upog29v2p4g5f1ie9rr" tableName="user_vendor_mapping_object_mapping">
-            <column name="object_id"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-121">
-        <createIndex indexName="FKt1a3a7043tny0laxr8f3vw9a0" tableName="user_organisation_mapping">
+    <changeSet author="shiva (generated)" id="1656931187761-102">
+        <createIndex indexName="idx_ap_user" tableName="app_property">
             <column name="user_id"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-122">
+    <changeSet author="shiva (generated)" id="1656931187761-103">
+        <createIndex indexName="idx_ap_vendor" tableName="app_property">
+            <column name="vendor_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-104">
+        <createIndex indexName="idx_customer_organisation" tableName="customer">
+            <column name="organisation_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-105">
+        <createIndex indexName="idx_download_object" tableName="download">
+            <column name="object_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-106">
+        <createIndex indexName="idx_download_project" tableName="download">
+            <column name="project_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-107">
+        <createIndex indexName="idx_object_parent_object" tableName="object">
+            <column name="parent_object_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-108">
+        <createIndex indexName="idx_object_project" tableName="object">
+            <column name="project_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-109">
+        <createIndex indexName="idx_object_property_category" tableName="object_property">
+            <column name="category_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-110">
+        <createIndex indexName="idx_object_property_object" tableName="object_property">
+            <column name="object_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-111">
+        <createIndex indexName="idx_object_property_property" tableName="object_property">
+            <column name="property_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-112">
+        <createIndex indexName="idx_project_category" tableName="project">
+            <column name="category_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-113">
+        <createIndex indexName="idx_project_customer" tableName="project">
+            <column name="customer_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-114">
+        <createIndex indexName="idx_project_property_category" tableName="project_property">
+            <column name="category_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-115">
+        <createIndex indexName="idx_project_property_object" tableName="project_property">
+            <column name="project_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-116">
+        <createIndex indexName="idx_project_property_property" tableName="project_property">
+            <column name="property_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-117">
+        <createIndex indexName="idx_property_category" tableName="property">
+            <column name="category_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-118">
+        <createIndex indexName="idx_property_customer" tableName="property">
+            <column name="customer_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-119">
+        <createIndex indexName="idx_property_user" tableName="property">
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-120">
+        <createIndex indexName="idx_qpm_project" tableName="qc_project_mapping">
+            <column name="project_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-121">
+        <createIndex indexName="idx_qpm_ucm" tableName="qc_project_mapping">
+            <column name="user_customer_mapping_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-122">
+        <createIndex indexName="idx_uam_authority" tableName="user_authority_mapping">
+            <column name="authority_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-123">
+        <createIndex indexName="idx_uam_user" tableName="user_authority_mapping">
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-124">
+        <createIndex indexName="idx_ucm_customer" tableName="user_customer_mapping">
+            <column name="customer_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-125">
+        <createIndex indexName="idx_ucm_user" tableName="user_customer_mapping">
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-126">
+        <createIndex indexName="idx_umd_opid" tableName="upload_meta_data">
+            <column name="object_property_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-127">
+        <createIndex indexName="idx_umd_ppid" tableName="upload_meta_data">
+            <column name="project_property_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-128">
+        <createIndex indexName="idx_umd_upid" tableName="upload_meta_data">
+            <column name="upload_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-129">
+        <createIndex indexName="idx_uom_organisation" tableName="user_organisation_mapping">
+            <column name="organisation_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-130">
+        <createIndex indexName="idx_uom_user" tableName="user_organisation_mapping">
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-131">
+        <createIndex indexName="idx_upload_qc_done_by" tableName="upload">
+            <column name="qc_done_by_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-132">
+        <createIndex indexName="idx_upload_upload" tableName="upload">
+            <column name="rework_upload_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-133">
+        <createIndex indexName="idx_upload_uvmom" tableName="upload">
+            <column name="user_vendor_mapping_object_mapping_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-134">
+        <createIndex indexName="idx_urm_reject_reason" tableName="upload_reject_reason_mapping">
+            <column name="upload_reject_reason_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-135">
+        <createIndex indexName="idx_urm_upload" tableName="upload_reject_reason_mapping">
+            <column name="upload_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-136">
+        <createIndex indexName="idx_user_authority" tableName="user">
+            <column name="authority_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-137">
+        <createIndex indexName="idx_user_customer" tableName="user">
+            <column name="customer_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-138">
+        <createIndex indexName="idx_user_organisation" tableName="user">
+            <column name="organisation_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-139">
+        <createIndex indexName="idx_user_vendor" tableName="user">
+            <column name="vendor_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-140">
+        <createIndex indexName="idx_uvm_user" tableName="user_vendor_mapping">
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-141">
+        <createIndex indexName="idx_uvm_vendor" tableName="user_vendor_mapping">
+            <column name="vendor_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-142">
+        <createIndex indexName="idx_uvmom_object" tableName="user_vendor_mapping_object_mapping">
+            <column name="object_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-143">
+        <createIndex indexName="idx_uvmom_uvm" tableName="user_vendor_mapping_object_mapping">
+            <column name="user_vendor_mapping_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-144">
         <addForeignKeyConstraint baseColumnNames="users_id" baseTableName="vendor_users" constraintName="FK1dsm3g52ema8q8s9pgrmyp3cl" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="user" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-123">
+    <changeSet author="shiva (generated)" id="1656931187761-145">
         <addForeignKeyConstraint baseColumnNames="rev" baseTableName="user_organisation_mapping_aud" constraintName="FK1eko8d24nrxexmu5daw5luku8" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-124">
-        <addForeignKeyConstraint baseColumnNames="project_id" baseTableName="object" constraintName="FK1gto5a06aaue87pckwc1mqumg" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="project" validate="true"/>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-125">
+    <changeSet author="shiva (generated)" id="1656931187761-146">
         <addForeignKeyConstraint baseColumnNames="app_properties_id" baseTableName="organisation_app_properties" constraintName="FK1niswcjqsgribf64ej1b3i8i3" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="app_property" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-126">
+    <changeSet author="shiva (generated)" id="1656931187761-147">
         <addForeignKeyConstraint baseColumnNames="rev" baseTableName="user_app_properties_aud" constraintName="FK1oy4k93d6wi4kv94je2ep34ac" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-127">
-        <addForeignKeyConstraint baseColumnNames="project_id" baseTableName="project_property" constraintName="FK1xnd3xqua4xqavy9406u8dfeb" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="project" validate="true"/>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-128">
-        <addForeignKeyConstraint baseColumnNames="organisation_id" baseTableName="user" constraintName="FK22is3lgbsjrbenhvtpjyl90dy" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="organisation" validate="true"/>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-129">
-        <addForeignKeyConstraint baseColumnNames="rework_upload_id" baseTableName="upload" constraintName="FK2ap0359xd4jqynxtfyi9f9h4d" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="upload" validate="true"/>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-130">
-        <addForeignKeyConstraint baseColumnNames="organisation_id" baseTableName="app_property" constraintName="FK38kcds472d3yu4irj009ijdrw" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="organisation" validate="true"/>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-131">
-        <addForeignKeyConstraint baseColumnNames="object_property_id" baseTableName="upload_meta_data" constraintName="FK3d9s25wlcbahjkyey4p51r5k6" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="object_property" validate="true"/>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-132">
+    <changeSet author="shiva (generated)" id="1656931187761-148">
         <addForeignKeyConstraint baseColumnNames="rev" baseTableName="vendor_app_properties_aud" constraintName="FK3dk7glbgqijge8wnfuc67n1g4" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-133">
+    <changeSet author="shiva (generated)" id="1656931187761-149">
         <addForeignKeyConstraint baseColumnNames="rev" baseTableName="authority_aud" constraintName="FK3fiaui9nu7my1tolfjsxsgjjw" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-134">
+    <changeSet author="shiva (generated)" id="1656931187761-150">
         <addForeignKeyConstraint baseColumnNames="rev" baseTableName="upload_meta_data_aud" constraintName="FK4iemt8cqujrnsk6er67q9xe64" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-135">
-        <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="property" constraintName="FK51njvck50nuf57ngcfuhnjxye" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="user" validate="true"/>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-136">
+    <changeSet author="shiva (generated)" id="1656931187761-151">
         <addForeignKeyConstraint baseColumnNames="app_properties_id" baseTableName="user_app_properties" constraintName="FK6734fjdawhp13chokw8dudurt" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="app_property" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-137">
+    <changeSet author="shiva (generated)" id="1656931187761-152">
         <addForeignKeyConstraint baseColumnNames="rev" baseTableName="user_authority_mapping_aud" constraintName="FK6en2j0ece9sxmb66l1d8vleal" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-138">
-        <addForeignKeyConstraint baseColumnNames="project_id" baseTableName="download" constraintName="FK6k7o899wy788m2gle2tcxtja" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="project" validate="true"/>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-139">
+    <changeSet author="shiva (generated)" id="1656931187761-153">
         <addForeignKeyConstraint baseColumnNames="property_id" baseTableName="project_property" constraintName="FK7fb0g9yyfl3p2tyx7k3tq6bej" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="property" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-140">
+    <changeSet author="shiva (generated)" id="1656931187761-154">
         <addForeignKeyConstraint baseColumnNames="vendor_id" baseTableName="vendor_app_properties" constraintName="FK89adboy1dd5iksjyhpevafrq1" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="vendor" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-141">
+    <changeSet author="shiva (generated)" id="1656931187761-155">
         <addForeignKeyConstraint baseColumnNames="rev" baseTableName="user_aud" constraintName="FK89ntto9kobwahrwxbne2nqcnr" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-142">
-        <addForeignKeyConstraint baseColumnNames="customer_id" baseTableName="app_property" constraintName="FK8aylf4frbptatf2p6pftnsab6" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="customer" validate="true"/>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-143">
-        <addForeignKeyConstraint baseColumnNames="upload_id" baseTableName="upload_meta_data" constraintName="FK8hetgat4qj8bp9alcbv1iuvpb" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="upload" validate="true"/>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-144">
-        <addForeignKeyConstraint baseColumnNames="parent_object_id" baseTableName="object" constraintName="FK90kifi7dehhva03q5hc81ptyr" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="object" validate="true"/>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-145">
-        <addForeignKeyConstraint baseColumnNames="upload_reject_reason_id" baseTableName="upload_rej_reason" constraintName="FK92uytxal87p8f1rlor3v9r07g" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="upload_reject_reason" validate="true"/>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-146">
+    <changeSet author="shiva (generated)" id="1656931187761-156">
         <addForeignKeyConstraint baseColumnNames="rev" baseTableName="customer_app_properties_aud" constraintName="FKab05ehnk7lxjq443ixwm8x9iu" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-147">
+    <changeSet author="shiva (generated)" id="1656931187761-157">
         <addForeignKeyConstraint baseColumnNames="rev" baseTableName="vendor_users_aud" constraintName="FKaf9hb1echbgei2v9jgwn9fj8k" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-148">
+    <changeSet author="shiva (generated)" id="1656931187761-158">
         <addForeignKeyConstraint baseColumnNames="rev" baseTableName="user_vendor_mapping_object_mapping_aud" constraintName="FKav2dv9e80l9ulvwyb9aa8p3q1" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-149">
-        <addForeignKeyConstraint baseColumnNames="rev" baseTableName="upload_rej_reason_aud" constraintName="FKax3ohrweiy18fuyplbgkl2ha6" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-150">
+    <changeSet author="shiva (generated)" id="1656931187761-159">
         <addForeignKeyConstraint baseColumnNames="rev" baseTableName="property_aud" constraintName="FKbax3qj40a4fxbpk03gaqswe57" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-151">
-        <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="user_vendor_mapping" constraintName="FKbkhx7l0gtmm3qcfmbrj0s9ojg" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="user" validate="true"/>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-152">
-        <addForeignKeyConstraint baseColumnNames="user_customer_mapping_id" baseTableName="qc_project_mapping" constraintName="FKbyl9w218sef6tsg8xsybrhvs" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="user_customer_mapping" validate="true"/>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-153">
+    <changeSet author="shiva (generated)" id="1656931187761-160">
         <addForeignKeyConstraint baseColumnNames="rev" baseTableName="upload_reject_reason_aud" constraintName="FKc6vcjl6x3bkypyetyrymokbxy" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-154">
+    <changeSet author="shiva (generated)" id="1656931187761-161">
+        <addForeignKeyConstraint baseColumnNames="rev" baseTableName="category_aud" constraintName="FKc9m640crhsib2ws80um6xuk1w" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-162">
         <addForeignKeyConstraint baseColumnNames="rev" baseTableName="organisation_app_properties_aud" constraintName="FKd5do0f7td52l1fyq8bwt0vg1k" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-155">
-        <addForeignKeyConstraint baseColumnNames="customer_id" baseTableName="user_customer_mapping" constraintName="FKd8uj8ahe1nyrp1upesm24rx3p" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="customer" validate="true"/>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-156">
-        <addForeignKeyConstraint baseColumnNames="user_vendor_mapping_id" baseTableName="user_vendor_mapping_object_mapping" constraintName="FKdcaf0qxcdhxd8s3ll7g4mfequ" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="user_vendor_mapping" validate="true"/>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-157">
-        <addForeignKeyConstraint baseColumnNames="customer_id" baseTableName="user" constraintName="FKdptx0i3ky01svofwjytq5iry0" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="customer" validate="true"/>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-158">
-        <addForeignKeyConstraint baseColumnNames="upload_id" baseTableName="upload_rej_reason" constraintName="FKe8s501591fb0lymd2twws04no" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="upload" validate="true"/>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-159">
+    <changeSet author="shiva (generated)" id="1656931187761-163">
         <addForeignKeyConstraint baseColumnNames="rev" baseTableName="user_json_storage_aud" constraintName="FKeh5knytjb74d1gxagmy9i3jpw" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-160">
-        <addForeignKeyConstraint baseColumnNames="project_property_id" baseTableName="upload_meta_data" constraintName="FKeqru7l4svggrlln7vep34v2pu" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="project_property" validate="true"/>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-161">
-        <addForeignKeyConstraint baseColumnNames="vendor_id" baseTableName="app_property" constraintName="FKevu1vdprkflq542egi93sik7i" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="vendor" validate="true"/>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-162">
+    <changeSet author="shiva (generated)" id="1656931187761-164">
         <addForeignKeyConstraint baseColumnNames="rev" baseTableName="organisation_aud" constraintName="FKfb6767p3ssyday3r8vj0dh5o8" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-163">
+    <changeSet author="shiva (generated)" id="1656931187761-165">
         <addForeignKeyConstraint baseColumnNames="app_properties_id" baseTableName="vendor_app_properties" constraintName="FKfq9728sa9amyttoerm37olut0" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="app_property" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-164">
-        <addForeignKeyConstraint baseColumnNames="project_id" baseTableName="qc_project_mapping" constraintName="FKfrnjdcp3fyln71te5yyurg1xh" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="project" validate="true"/>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-165">
+    <changeSet author="shiva (generated)" id="1656931187761-166">
         <addForeignKeyConstraint baseColumnNames="rev" baseTableName="qc_project_mapping_aud" constraintName="FKft1nkykcg4b4v9u3770hkqsya" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-166">
-        <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="user_json_storage" constraintName="FKg1456ji7qkf6xcghx1coani9v" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="user" validate="true"/>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-167">
+    <changeSet author="shiva (generated)" id="1656931187761-167">
         <addForeignKeyConstraint baseColumnNames="rev" baseTableName="customer_aud" constraintName="FKgfwtmwfqmkddg7g0pg36luq54" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-168">
+    <changeSet author="shiva (generated)" id="1656931187761-168">
         <addForeignKeyConstraint baseColumnNames="rev" baseTableName="app_property_aud" constraintName="FKgla54up9squc2iwidqordojlg" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-169">
+    <changeSet author="shiva (generated)" id="1656931187761-169">
         <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="user_app_properties" constraintName="FKh6nyxx7anbl38fyrh84pqnunw" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="user" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-170">
-        <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="app_property" constraintName="FKh7mhqj5rbpb5tl62gybxccry" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="user" validate="true"/>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-171">
-        <addForeignKeyConstraint baseColumnNames="user_vendor_mapping_object_mapping_id" baseTableName="upload" constraintName="FKhcygddxc4ytpp75s5bsrsol4o" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="user_vendor_mapping_object_mapping" validate="true"/>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-172">
+    <changeSet author="shiva (generated)" id="1656931187761-170">
         <addForeignKeyConstraint baseColumnNames="rev" baseTableName="object_aud" constraintName="FKhpyjeoaogy6gmqbsd60rxol7s" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-173">
+    <changeSet author="shiva (generated)" id="1656931187761-171">
         <addForeignKeyConstraint baseColumnNames="rev" baseTableName="object_property_aud" constraintName="FKhuwi2oht6r1g4vmin1nk417t" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-174">
+    <changeSet author="shiva (generated)" id="1656931187761-172">
         <addForeignKeyConstraint baseColumnNames="rev" baseTableName="upload_aud" constraintName="FKi3n73vslsm5lo05ydc4iuoim1" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-175">
+    <changeSet author="shiva (generated)" id="1656931187761-173">
         <addForeignKeyConstraint baseColumnNames="rev" baseTableName="user_customer_mapping_aud" constraintName="FKilg6iykfqrxs44nyskxritwx8" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-176">
-        <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="user_customer_mapping" constraintName="FKiqsmtl9el4tl3wjhnx3henfj3" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="user" validate="true"/>
+    <changeSet author="shiva (generated)" id="1656931187761-174">
+        <addForeignKeyConstraint baseColumnNames="rev" baseTableName="upload_reject_reason_mapping_aud" constraintName="FKjyp2l1q18oajv4vjqwqqkjyrc" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-177">
-        <addForeignKeyConstraint baseColumnNames="customer_id" baseTableName="project" constraintName="FKj948tru2ilgqxfxsppp9mom5j" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="customer" validate="true"/>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-178">
-        <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="user_authority_mapping" constraintName="FKjo4gugnbaufkntm2niq4f3eaw" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="user" validate="true"/>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-179">
-        <addForeignKeyConstraint baseColumnNames="property_id" baseTableName="object_property" constraintName="FKkdaldowj43jem72axn9t2aj9o" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="property" validate="true"/>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-180">
-        <addForeignKeyConstraint baseColumnNames="object_id" baseTableName="object_property" constraintName="FKl61jrnhw9qyarra9sf97k3i63" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="object" validate="true"/>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-181">
+    <changeSet author="shiva (generated)" id="1656931187761-175">
         <addForeignKeyConstraint baseColumnNames="customer_id" baseTableName="customer_app_properties" constraintName="FKlnnm5si3hrhn4qeodxrypmrel" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="customer" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-182">
+    <changeSet author="shiva (generated)" id="1656931187761-176">
         <addForeignKeyConstraint baseColumnNames="rev" baseTableName="vendor_aud" constraintName="FKlqyhnf1lo1jvbu1o7ri3kd307" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-183">
-        <addForeignKeyConstraint baseColumnNames="qc_done_by_id" baseTableName="upload" constraintName="FKm09vego1td9a1untujhs18kfe" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="qc_project_mapping" validate="true"/>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-184">
-        <addForeignKeyConstraint baseColumnNames="organisation_id" baseTableName="user_organisation_mapping" constraintName="FKm2mseuy9h38j6k8kktbwawqlu" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="organisation" validate="true"/>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-185">
-        <addForeignKeyConstraint baseColumnNames="vendor_id" baseTableName="user_vendor_mapping" constraintName="FKml7axqwpnbcmt93vjv7gk68x1" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="vendor" validate="true"/>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-186">
+    <changeSet author="shiva (generated)" id="1656931187761-177">
         <addForeignKeyConstraint baseColumnNames="organisation_id" baseTableName="organisation_app_properties" constraintName="FKmm6q3841gcask0an0gaixkp0l" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="organisation" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-187">
+    <changeSet author="shiva (generated)" id="1656931187761-178">
         <addForeignKeyConstraint baseColumnNames="rev" baseTableName="project_property_aud" constraintName="FKn0f019dvuswsjtv1uqcrbgh5v" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-188">
-        <addForeignKeyConstraint baseColumnNames="organisation_id" baseTableName="customer" constraintName="FKnyf2kourwjg5wibx5o3jsjbmw" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="organisation" validate="true"/>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-189">
-        <addForeignKeyConstraint baseColumnNames="customer_id" baseTableName="property" constraintName="FKo8khk0aec0vl4h76nf20jympn" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="customer" validate="true"/>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-190">
-        <addForeignKeyConstraint baseColumnNames="authority_id" baseTableName="user" constraintName="FKokrgxdbtf7tirfx1d1qtg9n24" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="authority" validate="true"/>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-191">
+    <changeSet author="shiva (generated)" id="1656931187761-179">
         <addForeignKeyConstraint baseColumnNames="rev" baseTableName="user_vendor_mapping_aud" constraintName="FKopyic7nw8dtert65wbq7tagou" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-192">
+    <changeSet author="shiva (generated)" id="1656931187761-180">
         <addForeignKeyConstraint baseColumnNames="rev" baseTableName="download_aud" constraintName="FKp5c8ufep9yom9pltfpsn52dm" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-193">
+    <changeSet author="shiva (generated)" id="1656931187761-181">
         <addForeignKeyConstraint baseColumnNames="rev" baseTableName="project_aud" constraintName="FKpnojd25gxjyn8jg0mj5k96mcl" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="rev" referencedTableName="revinfo" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-194">
-        <addForeignKeyConstraint baseColumnNames="authority_id" baseTableName="user_authority_mapping" constraintName="FKqftt0i0f8h41lxhlap5euj6if" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="authority" validate="true"/>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-195">
-        <addForeignKeyConstraint baseColumnNames="vendor_id" baseTableName="user" constraintName="FKqgrourq3uxvrs7bbxbhbi458y" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="vendor" validate="true"/>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-196">
+    <changeSet author="shiva (generated)" id="1656931187761-182">
         <addForeignKeyConstraint baseColumnNames="app_properties_id" baseTableName="customer_app_properties" constraintName="FKrema793gm7tbce5sjva8rw0iu" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="app_property" validate="true"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-197">
-        <addForeignKeyConstraint baseColumnNames="object_id" baseTableName="download" constraintName="FKrosalyx285h1jouxwradm89a2" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="object" validate="true"/>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-198">
-        <addForeignKeyConstraint baseColumnNames="object_id" baseTableName="user_vendor_mapping_object_mapping" constraintName="FKs0mwy0upog29v2p4g5f1ie9rr" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="object" validate="true"/>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-199">
-        <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="user_organisation_mapping" constraintName="FKt1a3a7043tny0laxr8f3vw9a0" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="user" validate="true"/>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1656518586983-200">
+    <changeSet author="shiva (generated)" id="1656931187761-183">
         <addForeignKeyConstraint baseColumnNames="vendor_id" baseTableName="vendor_users" constraintName="FKtpkhii7t7v8mnwuq4dlurh3vv" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="vendor" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-184">
+        <addForeignKeyConstraint baseColumnNames="customer_id" baseTableName="app_property" constraintName="fk_ap_customer" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="customer" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-185">
+        <addForeignKeyConstraint baseColumnNames="organisation_id" baseTableName="app_property" constraintName="fk_ap_organisation" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="organisation" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-186">
+        <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="app_property" constraintName="fk_ap_user" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="user" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-187">
+        <addForeignKeyConstraint baseColumnNames="vendor_id" baseTableName="app_property" constraintName="fk_ap_vendor" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="vendor" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-188">
+        <addForeignKeyConstraint baseColumnNames="organisation_id" baseTableName="customer" constraintName="fk_customer_organisation" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="organisation" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-189">
+        <addForeignKeyConstraint baseColumnNames="object_id" baseTableName="download" constraintName="fk_download_object" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="object" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-190">
+        <addForeignKeyConstraint baseColumnNames="parent_object_id" baseTableName="object" constraintName="fk_object_parent_object" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="object" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-191">
+        <addForeignKeyConstraint baseColumnNames="project_id" baseTableName="object" constraintName="fk_object_project" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="project" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-192">
+        <addForeignKeyConstraint baseColumnNames="category_id" baseTableName="object_property" constraintName="fk_object_property_category" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="category" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-193">
+        <addForeignKeyConstraint baseColumnNames="object_id" baseTableName="object_property" constraintName="fk_object_property_object" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="object" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-194">
+        <addForeignKeyConstraint baseColumnNames="property_id" baseTableName="object_property" constraintName="fk_object_property_property" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="property" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-195">
+        <addForeignKeyConstraint baseColumnNames="category_id" baseTableName="project" constraintName="fk_project_category" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="category" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-196">
+        <addForeignKeyConstraint baseColumnNames="customer_id" baseTableName="project" constraintName="fk_project_customer" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="customer" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-197">
+        <addForeignKeyConstraint baseColumnNames="category_id" baseTableName="project_property" constraintName="fk_project_property_category" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="category" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-198">
+        <addForeignKeyConstraint baseColumnNames="project_id" baseTableName="project_property" constraintName="fk_project_property_object" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="project" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-199">
+        <addForeignKeyConstraint baseColumnNames="category_id" baseTableName="property" constraintName="fk_property_category" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="category" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-200">
+        <addForeignKeyConstraint baseColumnNames="customer_id" baseTableName="property" constraintName="fk_property_customer" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="customer" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-201">
+        <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="property" constraintName="fk_property_user" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="user" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-202">
+        <addForeignKeyConstraint baseColumnNames="project_id" baseTableName="qc_project_mapping" constraintName="fk_qpm_project" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="project" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-203">
+        <addForeignKeyConstraint baseColumnNames="user_customer_mapping_id" baseTableName="qc_project_mapping" constraintName="fk_qpm_ucm" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="user_customer_mapping" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-204">
+        <addForeignKeyConstraint baseColumnNames="authority_id" baseTableName="user_authority_mapping" constraintName="fk_uam_authority" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="authority" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-205">
+        <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="user_authority_mapping" constraintName="fk_uam_user" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="user" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-206">
+        <addForeignKeyConstraint baseColumnNames="customer_id" baseTableName="user_customer_mapping" constraintName="fk_ucm_customer" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="customer" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-207">
+        <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="user_customer_mapping" constraintName="fk_ucm_user" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="user" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-208">
+        <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="user_json_storage" constraintName="fk_ujs_user" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="user" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-209">
+        <addForeignKeyConstraint baseColumnNames="object_property_id" baseTableName="upload_meta_data" constraintName="fk_umd_object_property_id" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="object_property" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-210">
+        <addForeignKeyConstraint baseColumnNames="project_property_id" baseTableName="upload_meta_data" constraintName="fk_umd_project_property" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="project_property" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-211">
+        <addForeignKeyConstraint baseColumnNames="upload_id" baseTableName="upload_meta_data" constraintName="fk_umd_upload" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="upload" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-212">
+        <addForeignKeyConstraint baseColumnNames="organisation_id" baseTableName="user_organisation_mapping" constraintName="fk_uom_organisation" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="organisation" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-213">
+        <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="user_organisation_mapping" constraintName="fk_uom_user" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="user" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-214">
+        <addForeignKeyConstraint baseColumnNames="qc_done_by_id" baseTableName="upload" constraintName="fk_upload_qc_done_by" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="qc_project_mapping" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-215">
+        <addForeignKeyConstraint baseColumnNames="rework_upload_id" baseTableName="upload" constraintName="fk_upload_rework_upload" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="upload" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-216">
+        <addForeignKeyConstraint baseColumnNames="user_vendor_mapping_object_mapping_id" baseTableName="upload" constraintName="fk_upload_uvmom" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="user_vendor_mapping_object_mapping" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-217">
+        <addForeignKeyConstraint baseColumnNames="upload_id" baseTableName="upload_reject_reason_mapping" constraintName="fk_urm_upload" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="upload" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-218">
+        <addForeignKeyConstraint baseColumnNames="upload_reject_reason_id" baseTableName="upload_reject_reason_mapping" constraintName="fk_urm_urr" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="upload_reject_reason" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-219">
+        <addForeignKeyConstraint baseColumnNames="authority_id" baseTableName="user" constraintName="fk_user_authority" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="authority" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-220">
+        <addForeignKeyConstraint baseColumnNames="customer_id" baseTableName="user" constraintName="fk_user_customer" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="customer" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-221">
+        <addForeignKeyConstraint baseColumnNames="organisation_id" baseTableName="user" constraintName="fk_user_organisation" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="organisation" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-222">
+        <addForeignKeyConstraint baseColumnNames="vendor_id" baseTableName="user" constraintName="fk_user_vendor" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="vendor" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-223">
+        <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="user_vendor_mapping" constraintName="fk_uvm_user" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="user" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-224">
+        <addForeignKeyConstraint baseColumnNames="vendor_id" baseTableName="user_vendor_mapping" constraintName="fk_uvm_vendor" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="vendor" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-225">
+        <addForeignKeyConstraint baseColumnNames="object_id" baseTableName="user_vendor_mapping_object_mapping" constraintName="fk_uvmom_object" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="object" validate="true"/>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1656931187761-226">
+        <addForeignKeyConstraint baseColumnNames="user_vendor_mapping_id" baseTableName="user_vendor_mapping_object_mapping" constraintName="fk_uvmom_uvm" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="user_vendor_mapping" validate="true"/>
     </changeSet>
     <changeSet author="shiva (generated)" id="1649822751914-129">
         <loadData
@@ -1876,6 +2012,32 @@
             usePreparedStatements="true">
             <column name="id" type="numeric"/>
             <column name="authority_id" type="numeric"/>
+            <column name="user_id" type="numeric"/>
+        </loadData>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1649822751914-134">
+        <loadData
+            file="config/liquibase/fake-data/category.csv"
+            separator=";"
+            tableName="category"
+            usePreparedStatements="true">
+            <column name="id" type="numeric"/>
+            <column name="name" type="string"/>
+        </loadData>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1649822751914-135">
+        <loadData
+            file="config/liquibase/fake-data/app_properties.csv"
+            separator=";"
+            tableName="app_property"
+            usePreparedStatements="true">
+            <column name="id" type="numeric"/>
+            <column name="status" type="numeric"/>
+            <column name="name" type="string"/>
+            <column name="value" type="string"/>
+            <column name="organisation_id" type="numeric"/>
+            <column name="customer_id" type="numeric"/>
+            <column name="vendor_id" type="numeric"/>
             <column name="user_id" type="numeric"/>
         </loadData>
     </changeSet>

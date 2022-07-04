@@ -13,9 +13,15 @@ import java.io.Serializable;
  * A AidasUserAidasObjectMapping.
  */
 @Entity
-@Table(name = "upload_rej_reason")
+@Table(name = "upload_reject_reason_mapping",indexes = {
+    @Index(name="idx_urm_upload",columnList = "upload_id"),
+    @Index(name="idx_urm_reject_reason",columnList = "upload_reject_reason_id")
+},
+    uniqueConstraints={
+        @UniqueConstraint(name = "uk_urm_up_urr",columnNames={"upload_id", "upload_reject_reason_id"})
+    })
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-@org.springframework.data.elasticsearch.annotations.Document(indexName = "aidasupoadrejectmapping")
+@org.springframework.data.elasticsearch.annotations.Document(indexName = "uploadrejectmapping")
 @Audited
 public class UploadRejectMapping extends AbstractAuditingEntity  implements Serializable {
 
@@ -29,11 +35,13 @@ public class UploadRejectMapping extends AbstractAuditingEntity  implements Seri
     @ManyToOne(optional = false)
     @NotNull
     @JsonIgnoreProperties(value = { "aidasUserAidasObjectMapping", "customer", "vendor" }, allowSetters = true)
+    @JoinColumn(name = "upload_id", nullable = true, foreignKey = @ForeignKey(name="fk_urm_upload"))
     private Upload upload;
 
     @ManyToOne(optional = false)
     @NotNull
     @JsonIgnoreProperties(value = { "project" }, allowSetters = true)
+    @JoinColumn(name = "upload_reject_reason_id", nullable = true, foreignKey = @ForeignKey(name="fk_urm_urr"))
     private UploadRejectReason uploadRejectReason;
 
     public Long getId() {

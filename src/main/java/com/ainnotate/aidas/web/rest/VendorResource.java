@@ -1,10 +1,12 @@
 package com.ainnotate.aidas.web.rest;
 
+import com.ainnotate.aidas.domain.AppProperty;
 import com.ainnotate.aidas.domain.User;
 import com.ainnotate.aidas.domain.Vendor;
 import com.ainnotate.aidas.dto.IUserDTO;
 import com.ainnotate.aidas.dto.UserDTO;
 import com.ainnotate.aidas.dto.VendorUserDTO;
+import com.ainnotate.aidas.repository.AppPropertyRepository;
 import com.ainnotate.aidas.repository.UserRepository;
 import com.ainnotate.aidas.repository.VendorRepository;
 import com.ainnotate.aidas.repository.search.VendorSearchRepository;
@@ -47,6 +49,9 @@ public class VendorResource {
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
+    @Autowired
+    private AppPropertyRepository appPropertyRepository;
+
     private final VendorRepository vendorRepository;
 
     @Autowired
@@ -72,8 +77,10 @@ public class VendorResource {
         if (vendor.getId() != null) {
             throw new BadRequestAlertException("A new vendor cannot already have an ID", ENTITY_NAME, "idexists");
         }
+
         Vendor result = vendorRepository.save(vendor);
-        aidasVendorSearchRepository.save(result);
+        Set<AppProperty> appProperties = appPropertyRepository.getAppPropertyOfVendor(-1l);
+        result.setAppProperties(appProperties);
         return ResponseEntity
             .created(new URI("/api/aidas-vendors/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))

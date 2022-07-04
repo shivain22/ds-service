@@ -13,7 +13,13 @@ import java.util.Objects;
  * An authority (a security role) used by Spring Security.
  */
 @Entity
-@Table(name = "qc_project_mapping")
+@Table(name = "qc_project_mapping",indexes = {
+    @Index(name="idx_qpm_project",columnList = "project_id"),
+    @Index(name="idx_qpm_ucm",columnList = "user_customer_mapping_id")
+},
+    uniqueConstraints={
+        @UniqueConstraint(name = "uk_qpm_ucmid_pid",columnNames={"user_customer_mapping_id","project_id"})
+    })
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @Audited
 public class QcProjectMapping extends AbstractAuditingEntity implements Serializable {
@@ -28,10 +34,12 @@ public class QcProjectMapping extends AbstractAuditingEntity implements Serializ
 
     @ManyToOne
     @JsonIgnoreProperties(value = {"user","customer"})
+    @JoinColumn(name = "project_id", nullable = false, foreignKey = @ForeignKey(name="fk_qpm_project"))
     private Project project;
 
     @ManyToOne
     @JsonIgnoreProperties(value = {"user","customer"})
+    @JoinColumn(name = "user_customer_mapping_id", nullable = false, foreignKey = @ForeignKey(name="fk_qpm_ucm"))
     private UserCustomerMapping userCustomerMapping;
 
     @Column(name="qc_level")

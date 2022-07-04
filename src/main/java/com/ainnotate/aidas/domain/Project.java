@@ -1,7 +1,6 @@
 package com.ainnotate.aidas.domain;
 
 import com.ainnotate.aidas.dto.ProjectDTO;
-import com.ainnotate.aidas.dto.UserDTO;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.io.Serializable;
 import java.util.HashSet;
@@ -10,8 +9,6 @@ import javax.persistence.*;
 import javax.validation.constraints.*;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.envers.Audited;
@@ -415,10 +412,77 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
         }))
 
 
+@NamedNativeQuery(
+    name = "Project.findAllByIdGreaterThanForDropDown",
+    query="select id, name from project where id>0",
+    resultSetMapping = "Mapping.findAllByIdGreaterThanForDropDown"
+)
+@SqlResultSetMapping(name = "Mapping.findAllByIdGreaterThanForDropDown",
+    classes = @ConstructorResult(targetClass = ProjectDTO.class,
+        columns = {
+            @ColumnResult(name = "id",type = Long.class),
+            @ColumnResult(name = "name",type = String.class)
+        }))
+
+@NamedNativeQuery(
+    name = "Project.findAllByAidasCustomer_AidasOrganisationForDropDown",
+    query="select * from project p , customer c where p.customer_id=c.id and c.organisation_id=?1 and p.status=1",
+    resultSetMapping = "Mapping.findAllByAidasCustomer_AidasOrganisationForDropDown"
+)
+@SqlResultSetMapping(name = "Mapping.findAllByAidasCustomer_AidasOrganisationForDropDown",
+    classes = @ConstructorResult(targetClass = ProjectDTO.class,
+        columns = {
+            @ColumnResult(name = "id",type = Long.class),
+            @ColumnResult(name = "name",type = String.class)
+        }))
+
+@NamedNativeQuery(
+    name = "Project.findAllByAidasCustomerForDropDown",
+    query="select * from project p  where p.customer_id=?1 and p.status=1",
+    resultSetMapping = "Mapping.findAllByAidasCustomerForDropDown"
+)
+@SqlResultSetMapping(name = "Mapping.findAllByAidasCustomerForDropDown",
+    classes = @ConstructorResult(targetClass = ProjectDTO.class,
+        columns = {
+            @ColumnResult(name = "id",type = Long.class),
+            @ColumnResult(name = "name",type = String.class)
+        }))
+
+@NamedNativeQuery(
+    name = "Project.findAllProjectsByVendorAdminDropDown",
+    query="select p.* from project p, object o,  user_vendor_mapping_object_mapping uvmom,user_vendor_mapping uvm ,user u where  uvmom.object_id=o.id and o.project_id=p.id and uvmom.user_vendor_mapping_id=uvm.id and uvm.vendor_id= ?1   and p.status=1",
+    resultSetMapping = "Mapping.findAllProjectsByVendorAdminDropDown"
+)
+@SqlResultSetMapping(name = "Mapping.findAllProjectsByVendorAdminDropDown",
+    classes = @ConstructorResult(targetClass = ProjectDTO.class,
+        columns = {
+            @ColumnResult(name = "id",type = Long.class),
+            @ColumnResult(name = "name",type = String.class)
+        }))
+
+@NamedNativeQuery(
+    name = "Project.findProjectsForQC",
+    query="select p.* from project p, qc_project_mapping qpm, user_customer_mapping ucm where qpm.user_customer_mapping_id=ucm.id and ucm.user_id=? and qpm.project_id=p.id and p.status=1 and qpm.status=1 and ucm.status=1 and p.id>0 order by p.id desc",
+    resultSetMapping = "Mapping.findProjectsForQC"
+)
+@SqlResultSetMapping(name = "Mapping.findProjectsForQC",
+    classes = @ConstructorResult(targetClass = ProjectDTO.class,
+        columns = {
+            @ColumnResult(name = "id",type = Long.class),
+            @ColumnResult(name = "name",type = String.class)
+        }))
+
+
 @Entity
-@Table(name = "project")
+@Table(name = "project",indexes = {
+    @Index(name="idx_project_category",columnList = "category_id"),
+    @Index(name="idx_project_customer",columnList = "customer_id")
+},
+    uniqueConstraints={
+        @UniqueConstraint(name = "uk_project_customer_name",columnNames={"name", "customer_id"})
+    })
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-@org.springframework.data.elasticsearch.annotations.Document(indexName = "aidasproject")
+@org.springframework.data.elasticsearch.annotations.Document(indexName = "project")
 @Audited
 public class Project extends AbstractAuditingEntity  implements Serializable {
 
@@ -504,7 +568,9 @@ public class Project extends AbstractAuditingEntity  implements Serializable {
     @NotNull
     @JsonIgnoreProperties(value = { "organisation" }, allowSetters = true)
     @Field(type = FieldType.Nested,store = false,storeNullValue = false)
+    @JoinColumn(name = "customer_id", nullable = false, foreignKey = @ForeignKey(name="fk_project_customer"))
     private Customer customer;
+
     @OneToMany(mappedBy = "project",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
     @JsonIgnoreProperties(value = { "project" }, allowSetters = true)
     @Field(type=FieldType.Nested,store = false,storeNullValue = false)
@@ -513,6 +579,10 @@ public class Project extends AbstractAuditingEntity  implements Serializable {
     private Integer numOfUploadsReqd;
     @Column(name="buffer_percent")
     private Integer bufferPercent;
+
+    @ManyToOne
+    @JoinColumn(name = "category_id", nullable = true, foreignKey = @ForeignKey(name="fk_project_category"))
+    private Category category;
 
     public String getImageType() {
         return imageType;

@@ -50,9 +50,18 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 
 
 @Entity
-@Table(name = "user")
+@Table(name = "user",indexes = {
+    @Index(name="idx_user_organisation",columnList = "organisation_id"),
+    @Index(name="idx_user_customer",columnList = "customer_id"),
+    @Index(name="idx_user_vendor",columnList = "vendor_id"),
+    @Index(name="idx_user_authority",columnList = "authority_id")
+},
+    uniqueConstraints={
+        @UniqueConstraint(name = "uk_user_email",columnNames={"email"}),
+        @UniqueConstraint(name = "uk_user_login",columnNames={"login"})
+    })
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-@org.springframework.data.elasticsearch.annotations.Document(indexName = "aidasuser")
+@org.springframework.data.elasticsearch.annotations.Document(indexName = "user")
 @Audited
 public class User extends AbstractAuditingEntity implements Serializable {
 
@@ -91,13 +100,16 @@ public class User extends AbstractAuditingEntity implements Serializable {
     @Column(name = "password", length = 20, nullable = true)
     private String password;
     @ManyToOne
+    @JoinColumn(name = "organisation_id", nullable = true, foreignKey = @ForeignKey(name="fk_user_organisation"))
     private Organisation organisation;
     @ManyToOne
     @Field(type = FieldType.Nested)
     @JsonIgnoreProperties(value = { "organisation" }, allowSetters = true)
+    @JoinColumn(name = "customer_id", nullable = true, foreignKey = @ForeignKey(name="fk_user_customer"))
     private Customer customer;
     @ManyToOne
     @Field(type = FieldType.Nested)
+    @JoinColumn(name = "vendor_id", nullable = true, foreignKey = @ForeignKey(name="fk_user_vendor"))
     private Vendor vendor;
     @NotNull
     @Column(nullable = true,columnDefinition = "integer default 1")
@@ -110,6 +122,7 @@ public class User extends AbstractAuditingEntity implements Serializable {
     private String imageUrl;
     @ManyToOne(fetch = FetchType.EAGER)
     @Field(type = FieldType.Nested)
+    @JoinColumn(name = "authority_id", nullable = true, foreignKey = @ForeignKey(name="fk_user_authority"))
     private Authority authority;
 
     public void setAuthorities(Set<Authority> authorities) {

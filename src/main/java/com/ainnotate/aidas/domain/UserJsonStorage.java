@@ -11,9 +11,14 @@ import org.hibernate.envers.Audited;
  * A AidasUserJsonStorage.
  */
 @Entity
-@Table(name = "user_json_storage")
+@Table(name = "user_json_storage",indexes = {
+    @Index(name="idx_ujs_user",columnList = "user_id")
+},
+    uniqueConstraints={
+        @UniqueConstraint(name = "uk_ujs_user",columnNames={"user_id"})
+    })
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-@org.springframework.data.elasticsearch.annotations.Document(indexName = "aidasuserjsonstorage")
+@org.springframework.data.elasticsearch.annotations.Document(indexName = "userjsonstorage")
 @Audited
 public class UserJsonStorage extends AbstractAuditingEntity  implements Serializable {
 
@@ -30,6 +35,7 @@ public class UserJsonStorage extends AbstractAuditingEntity  implements Serializ
 
     @ManyToOne
     @JsonIgnoreProperties(value = { "organisation", "customer", "vendor" }, allowSetters = true)
+    @JoinColumn(name = "user_id", nullable = true, foreignKey = @ForeignKey(name="fk_ujs_user"))
     private User user;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here

@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.io.Serializable;
 import javax.persistence.*;
 import javax.persistence.Entity;
+import javax.persistence.ForeignKey;
+import javax.persistence.Index;
 import javax.persistence.Table;
 import javax.validation.constraints.*;
 
@@ -16,9 +18,16 @@ import org.hibernate.envers.Audited;
  * A AidasObjectProperty.
  */
 @Entity
-@Table(name = "object_property")
+@Table(name = "object_property",indexes = {
+    @Index(name="idx_object_property_category",columnList = "category_id"),
+    @Index(name="idx_object_property_object",columnList = "object_id"),
+    @Index(name="idx_object_property_property",columnList = "property_id")
+},
+    uniqueConstraints={
+        @UniqueConstraint(name = "uk_object_property_object_property",columnNames={"property_id", "object_id"})
+    })
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-@org.springframework.data.elasticsearch.annotations.Document(indexName = "aidasobjectproperty")
+@org.springframework.data.elasticsearch.annotations.Document(indexName = "objectproperty")
 @Audited
 @FilterDef(name="objectPropertyStatusFilter", parameters=@ParamDef(name="status",type ="java.lang.Integer"))
 public class ObjectProperty extends AbstractAuditingEntity  implements Serializable {
@@ -37,10 +46,12 @@ public class ObjectProperty extends AbstractAuditingEntity  implements Serializa
     @NotNull
     @JsonIgnoreProperties(value = { "project","objectProperties","customer" }, allowSetters = true)
     @JsonIgnore
+    @JoinColumn(name = "object_id", nullable = false, foreignKey = @ForeignKey(name="fk_object_property_object"))
     private Object object;
 
     @ManyToOne(optional = false)
     @NotNull
+    @JoinColumn(name = "property_id", nullable = false, foreignKey = @ForeignKey(name="fk_object_property_property"))
     private Property property;
 
     @Column
@@ -52,6 +63,18 @@ public class ObjectProperty extends AbstractAuditingEntity  implements Serializa
     private Integer passedFromApp;
     @Column(name="add_to_metadata")
     private Integer addToMetadata;
+
+    @ManyToOne
+    @JoinColumn(name = "category_id", nullable = true, foreignKey = @ForeignKey(name="fk_object_property_category"))
+    private Category category;
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
 
     public Integer getDefaultProp() {
         return defaultProp;

@@ -23,14 +23,17 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     @Query(value="select * from project p , customer c where p.customer_id=c.id and c.organisation_id=?1 and p.status=1",nativeQuery = true)
     Page<Project> findAllByAidasCustomer_AidasOrganisation(Pageable page, Long organisationId);
 
-    @Query(value="select * from project p , customer c where p.customer_id=c.id and c.organisation_id=?1 and p.status=1",nativeQuery = true)
-    List<Project> findAllByAidasCustomer_AidasOrganisationForDropDown(Long organisationId);
+    @Query(nativeQuery = true)
+    List<ProjectDTO> findAllByAidasCustomer_AidasOrganisationForDropDown(Long organisationId);
 
     @Query(value="select * from project p  where p.customer_id=?1 and status=1",nativeQuery = true)
     Page<Project> findAllByAidasCustomer(Pageable page, Long customerId);
 
     @Query(value="select * from project p  where p.customer_id=?1 and status=1",nativeQuery = true)
-    List<Project> findAllByAidasCustomerForDropDown(Long customerId);
+    List<Project> findAllByAidasCustomer(Long customerId);
+
+    @Query(nativeQuery = true)
+    List<ProjectDTO> findAllByAidasCustomerForDropDown(Long customerId);
 
 
     @Query(value="select p.* from project p, object o,  user_vendor_mapping_object_mapping uvmom,user_vendor_mapping uvm  where  uvmom.object_id=o.id and o.project_id=p.id and uvmom.user_vendor_mapping_id=uvm.id and uvm.user_id =?1 and p.id>-1  and p.status=1 group by p.id ",nativeQuery = true)
@@ -42,8 +45,8 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     @Query(value="select p.* from project p, object o,  user_vendor_mapping_object_mapping uvmom,user_vendor_mapping uvm ,user u where  uvmom.object_id=o.id and o.project_id=p.id and uvmom.user_vendor_mapping_id=uvm.id and uvm.vendor_id= ?1   and p.status=1 ",nativeQuery = true)
     Page<Project> findAllProjectsByVendorAdmin(Pageable page, Long vendorId);
 
-    @Query(value="select p.* from project p, object o,  user_vendor_mapping_object_mapping uvmom,user_vendor_mapping uvm ,user u where  uvmom.object_id=o.id and o.project_id=p.id and uvmom.user_vendor_mapping_id=uvm.id and uvm.vendor_id= ?1   and p.status=1 ",nativeQuery = true)
-    List<Project> findAllProjectsByVendorAdminDropDown(Long vendorId);
+    @Query(nativeQuery = true)
+    List<ProjectDTO> findAllProjectsByVendorAdminDropDown(Long vendorId);
 
     @Query(value="select p.* from project p, object o,  user_vendor_mapping_object_mapping uvmom,user_vendor_mapping uvm ,user u where  uvmom.object_id=o.id and o.project_id=p.id and uvmom.user_vendor_mapping_id=uvm.id  and uvm.user_id= ?1 and p.id=?2   and p.status=1 ",nativeQuery = true)
     Optional<Project> findAllProjectsByVendorUserProject(Long userId, Long aidasProjectId);
@@ -63,11 +66,11 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     @Query(value = "select * from project where status=1 and id>0 order by id desc",nativeQuery = true)
     Page<Project> findAllByIdGreaterThan(Long id, Pageable page);
 
-    @Query(value = "select * from project where status=1 and id>0 order by id desc",nativeQuery = true)
-    List<Project> findAllByIdGreaterThanForDropDown(Long id);
+    @Query(nativeQuery = true)
+    List<ProjectDTO> findAllByIdGreaterThanForDropDown();
 
-    @Query(value = "select p.* from project p, qc_project_mapping qpm, user_customer_mapping ucm where qpm.user_customer_mapping_id=ucm.id and ucm.user_id=? and qpm.project_id=p.id and p.status=1 and qpm.status=1 and ucm.status=1 and p.id>0 order by p.id desc",nativeQuery = true)
-    List<Project> findProjectsForQC(Long userId);
+    @Query(nativeQuery = true)
+    List<ProjectDTO> findProjectsForQC(Long userId);
 
     @Query(value = "select count(*) from project p , customer c where p.customer_id=c.id and c.organisation_id=?1 and p.status=1",nativeQuery = true)
     Long countAidasProjectByAidasCustomer_AidasOrganisation(Long organisationId);

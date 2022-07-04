@@ -14,31 +14,43 @@ import java.util.Objects;
  * An authority (a security role) used by Spring Security.
  */
 @Entity
-@Table(name = "app_property")
+@Table(name = "app_property",indexes = {
+        @Index(name="idx_ap_organisation",columnList = "organisation_id"),
+        @Index(name="idx_ap_customer",columnList = "customer_id"),
+        @Index(name="idx_ap_vendor",columnList = "vendor_id"),
+        @Index(name="idx_ap_user",columnList = "user_id")
+    },
+    uniqueConstraints={
+        @UniqueConstraint(name = "uk_ap_oid_cid_vid_uid",columnNames={"name", "organisation_id","customer_id","vendor_id","user_id"})
+})
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+@org.springframework.data.elasticsearch.annotations.Document(indexName = "app_property")
 @Audited
 public class AppProperty extends AbstractAuditingEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @ManyToOne
+    @JoinColumn(name = "organisation_id", nullable = true, foreignKey = @ForeignKey(name="fk_ap_organisation"))
     Organisation organisation;
     @ManyToOne
+    @JoinColumn(name = "customer_id", nullable = true, foreignKey = @ForeignKey(name="fk_ap_customer"))
     Customer customer;
     @ManyToOne
+    @JoinColumn(name = "vendor_id", nullable = true, foreignKey = @ForeignKey(name="fk_ap_vendor"))
     Vendor vendor;
     @ManyToOne
+    @JoinColumn(name = "user_id", nullable = true, foreignKey = @ForeignKey(name="fk_ap_user"))
     User user;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
     @NotNull
-    @Size(max = 50)
     @Column(length = 50)
     private String name;
     @NotNull
-    @Size(max = 50)
-    @Column(length = 50)
+    @Lob
+    @Column
     private String value;
 
     @Override
