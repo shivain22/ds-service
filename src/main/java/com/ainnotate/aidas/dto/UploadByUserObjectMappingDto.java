@@ -7,6 +7,15 @@ public class UploadByUserObjectMappingDto {
     private String etag;
     private String objectKey;
     private String uploadMetadata;
+    private Long userVendorMappingObjectMappingId;
+
+    public Long getUserVendorMappingObjectMappingId() {
+        return userVendorMappingObjectMappingId;
+    }
+
+    public void setUserVendorMappingObjectMappingId(Long userVendorMappingObjectMappingId) {
+        this.userVendorMappingObjectMappingId = userVendorMappingObjectMappingId;
+    }
 
     public String getUploadUrl() {
         return uploadUrl;

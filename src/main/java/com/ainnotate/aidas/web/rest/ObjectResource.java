@@ -334,14 +334,14 @@ public class ObjectResource {
         }
 
         if(user.getAuthority().getName().equals(AidasConstants.ORG_ADMIN) && user.getOrganisation()!=null ){
-            Optional<Customer> customer = customerRepository.findById(object.getProject().getCustomer().getId());
-            if(customer.isPresent()){
-                if(!object.getProject().getCustomer().equals(customer.get())){
+            Customer customer = customerRepository.getById(object.getProject().getCustomer().getId());
+            //if(customer.isPresent()){
+                if(!object.getProject().getCustomer().getId().equals(customer.getId())){
                     throw new BadRequestAlertException("Not Authorized", ENTITY_NAME, "idexists");
                 }
-            }else{
-                throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
-            }
+           // }else{
+               // throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
+            //}
         }
         if( user.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN)){
             if(user.getCustomer()!=null && !user.getCustomer().equals(object.getProject().getCustomer())){

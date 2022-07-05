@@ -57,4 +57,7 @@ public interface UserVendorMappingObjectMappingRepository extends JpaRepository<
 
     @Query(value="select * from user_vendor_mapping_object_mapping where object_id=?1",nativeQuery = true)
     List<UserVendorMappingObjectMapping> getAllUserVendorMappingObjectMappingsByObjectId(Long ObjectId);
+
+    @Query(value = "select uvm.vendor_id from user_vendor_mapping uvm, user_vendor_mapping_object_mapping uvmom,object o where uvmom.object_id=o.id and o.project_id=?1 and uvmom.user_vendor_mapping_id=uvm.id and uvmom.status=1",nativeQuery = true)
+    List<Long> getVendorsWhoseUsersAreHavingStatusOne(Long projectId);
 }

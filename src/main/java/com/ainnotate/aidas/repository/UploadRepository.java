@@ -131,7 +131,7 @@ public interface UploadRepository extends JpaRepository<Upload, Long> {
     @Query(value="select au.* from upload au, user_vendor_mapping_object_mapping auavmaom,object ao, project ap,user_vendor_mapping auavm where au.approval_status=2 and au.user_vendor_mapping_object_mapping_id=auavmaom.id and auavmaom.object_id=ao.id and ao.project_id=ap.id and ap.id=?2 and auavmaom.user_vendor_mapping_id=auavm.id and auavm.user_id=?1 and au.metadata_status=0",nativeQuery = true)
     List<Upload> findAllByUserAndProjectAllForMetadata(Long userId, Long projectId);
 
-    @Query(value="select u.* from upload u, user_vendor_mapping_object_mapping uvmom, object o where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and o.project_id=?1 and u.qc_done_by_id is null and u.qc_status=0 and u.qc_end_date is null and qc_start_date is null limit 1",nativeQuery = true)
+    @Query(value="select u.* from upload u, user_vendor_mapping_object_mapping uvmom, object o where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and o.project_id=?1 and u.qc_done_by_id is null and u.qc_status=0 and u.qc_end_date is null and qc_start_date and u.metadata_status=1 is null limit 1",nativeQuery = true)
     Upload findTopByQcNotDoneYet(Long projectId);
 
     @Query(value="select upload.* from upload where upload.qc_done_by_id is not null and qc_end_date is null and qc_start_date is not null and qc_status=0 and TIMEstampDIFF(SECOND,qc_start_date,now())>(select value from app_property where name='qc_clean_up_time')",nativeQuery = true)

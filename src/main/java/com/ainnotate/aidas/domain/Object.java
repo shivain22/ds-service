@@ -173,11 +173,11 @@ query = "(select \n" +
         "left join object o on o.id=uvmom.object_id   \n" +
         "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id \n" +
         "where    uvm.user_id=?1 and uvmom.status=1 and o.status=1 and o.is_dummy=0 and o.project_id=?2 \n" +
-        "group by o.id,u.user_vendor_mapping_object_mapping_id ) union "+
+        "group by o.id,uvmom.id ) union "+
         "(select \n" +
         "o.id," +
-        "uvmom.id as userVendorMappingObjectMappingId,"+
         "o.project_id as projectId,"+
+        "uvmom.id as userVendorMappingObjectMappingId,"+
         "o.parent_object_id parentObjectId,"+
         "o.number_of_upload_reqd as totalRequired," +
         "0 as totalUploaded, \n" +
@@ -202,9 +202,9 @@ query = "(select \n" +
         "left join object o on o.id=uvmom.object_id   \n" +
         "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id \n" +
         "where    uvm.user_id=?1 and o.status=1 and o.is_dummy=0 and o.project_id=?2 \n" +
-        "group by o.id,u.user_vendor_mapping_object_mapping_id ) "+
+        "group by o.id,uvmom.id ) "+
         ")"+
-        "group by o.id ) "
+        "group by o.id,uvmom.id ) "
 
     ,resultSetMapping = "Mapping.ObjectDTOWithProjectId")
 
@@ -231,7 +231,7 @@ query = "(select \n" +
             "left join object o on o.id=uvmom.object_id   \n" +
             "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id \n" +
             "where    uvm.user_id=?1 and uvmom.status=1 and o.status=1 and o.is_dummy=0 and o.project_id=?2  \n" +
-            "group by o.id,u.user_vendor_mapping_object_mapping_id ) union "+
+            "group by o.id ) union "+
             "(select \n" +
             "o.id," +
             "uvmom.id as userVendorMappingObjectMappingId,"+
@@ -260,7 +260,7 @@ query = "(select \n" +
             "left join object o on o.id=uvmom.object_id   \n" +
             "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id \n" +
             "where    uvm.user_id=?1 and o.project_id=?2  \n" +
-            "group by o.id,u.user_vendor_mapping_object_mapping_id ) "+
+            "group by o.id ) "+
             ")"+
             "group by o.id ))a "
 )
@@ -268,13 +268,14 @@ query = "(select \n" +
     classes = @ConstructorResult(targetClass = ObjectDTO.class,
         columns = {
             @ColumnResult(name = "id",type = Long.class),
+            @ColumnResult(name = "projectId",type = Long.class),
+            @ColumnResult(name = "userVendorMappingObjectMappingId",type = Long.class),
+            @ColumnResult(name = "parentObjectId",type = Long.class),
             @ColumnResult(name = "totalRequired",type = Integer.class),
             @ColumnResult(name = "totalUploaded",type = Integer.class),
             @ColumnResult(name = "totalApproved",type = Integer.class),
             @ColumnResult(name = "totalRejected",type = Integer.class),
             @ColumnResult(name = "totalPending",type = Integer.class),
-            @ColumnResult(name = "projectId",type = Long.class),
-            @ColumnResult(name = "parentObjectId",type = Long.class),
             @ColumnResult(name = "bufferPercent",type = Integer.class),
             @ColumnResult(name = "name",type = String.class),
             @ColumnResult(name = "description",type = String.class),

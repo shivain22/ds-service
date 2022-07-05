@@ -554,11 +554,13 @@ public class DataPopulatorBean implements Runnable {
     private void addSampleUserAuthorityMappings(List<String[]> data){
         for(User u:users ){
             UserAuthorityMapping uam = new UserAuthorityMapping();
-            uam.setUser(u);
-            uam.setAuthority(u.getAuthority());
-            uam.setStatus(1);
-            uam.setSampleData(1);
-            userAuthorityMappings.add(uam);
+            if(!u.getId().equals(-1l)) {
+                uam.setUser(u);
+                uam.setAuthority(u.getAuthority());
+                uam.setStatus(1);
+                uam.setSampleData(1);
+                userAuthorityMappings.add(uam);
+            }
         }
         userAuthorityMappingRepository.saveAll(userAuthorityMappings);
     }

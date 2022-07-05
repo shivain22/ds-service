@@ -52,13 +52,18 @@ public class ObjectAddingTask implements  Runnable{
 
     @Override
     public void run() {
+        List<Long> vendorWithUserStatusOne = userVendorMappingObjectMappingRepository.getVendorsWhoseUsersAreHavingStatusOne(object.getProject().getId());
         List<UserVendorMapping> userVendorMappings = userVendorMappingRepository.findAll();
         List<UserVendorMappingObjectMapping> uvmoms=new ArrayList<>();
         for(UserVendorMapping uvm:userVendorMappings){
             UserVendorMappingObjectMapping uvmom = new UserVendorMappingObjectMapping();
             uvmom.setUserVendorMapping(uvm);
             uvmom.setObject(object);
-            uvmom.setStatus(0);
+            if(vendorWithUserStatusOne.contains(uvm.getVendor().getId())){
+                uvmom.setStatus(1);
+            }else{
+                uvmom.setStatus(0);
+            }
             uvmoms.add(uvmom);
         }
         userVendorMappingObjectMappingRepository.saveAll(uvmoms);

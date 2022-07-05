@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class UserAddingTask implements  Runnable{
@@ -36,6 +37,16 @@ public class UserAddingTask implements  Runnable{
 
     private UserCustomerMapping userCustomerMapping;
 
+    private User user;
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
     public UserCustomerMapping getUserCustomerMapping() {
         return userCustomerMapping;
     }
@@ -49,16 +60,37 @@ public class UserAddingTask implements  Runnable{
     @Autowired
     UserCustomerMappingRepository userCustomerMappingRepository;
 
+    @Autowired
+    private AppPropertyRepository appPropertyRepository;
+
     @Override
     public void run() {
+
+        if(user!=null) {
+            Set<AppProperty> appProperties = appPropertyRepository.getAppPropertyOfUser(-1l);
+            List<AppProperty> appProperties1 = new ArrayList<>();
+            for (AppProperty ap : appProperties) {
+                AppProperty app = new AppProperty();
+                app.setName(ap.getName());
+                app.setValue(ap.getValue());
+                app.setUser(user);
+                appProperties1.add(app);
+            }
+            appPropertyRepository.saveAll(appProperties1);
+        }
         List<UserVendorMappingObjectMapping> uvmoms = new ArrayList<>();
             if(userVendorMapping!=null){
                 for(Object o:objectRepository.findAll()){
-                    UserVendorMappingObjectMapping uvmom = new UserVendorMappingObjectMapping();
-                    uvmom.setUserVendorMapping(userVendorMapping);
-                    uvmom.setObject(o);
-                    uvmom.setStatus(0);
-                    uvmoms.add(uvmom);
+                        List<Long> vendorWithUserStatusOne = userVendorMappingObjectMappingRepository.getVendorsWhoseUsersAreHavingStatusOne(o.getProject().getId());
+                        UserVendorMappingObjectMapping uvmom = new UserVendorMappingObjectMapping();
+                        uvmom.setUserVendorMapping(userVendorMapping);
+                        uvmom.setObject(o);
+                        if(vendorWithUserStatusOne.contains(userVendorMapping.getVendor().getId())){
+                            uvmom.setStatus(0);
+                        }else{
+                            uvmom.setStatus(0);
+                        }
+                        uvmoms.add(uvmom);
                 }
                 userVendorMappingObjectMappingRepository.saveAll(uvmoms);
             }

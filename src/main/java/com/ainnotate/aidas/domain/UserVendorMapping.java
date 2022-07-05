@@ -82,7 +82,7 @@ public class UserVendorMapping extends AbstractAuditingEntity implements Seriali
     // prettier-ignore
     @Override
     public String toString() {
-        return "AidasQcProjectMapping{" +
+        return "UserVendorMapping{" +
             "name='" + id + '\'' +
             "}";
     }

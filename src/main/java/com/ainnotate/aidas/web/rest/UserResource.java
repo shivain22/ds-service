@@ -253,11 +253,14 @@ public class UserResource {
         addUserToKeyCloak(user);
         user.setDeleted(0);
 
-        Set<AppProperty> appProperties = appPropertyRepository.getAppPropertyOfUser(-1l);
-        user.setAppProperties(appProperties);
+
 
         User result = userRepository.save(user);
         updateUserToKeyCloak(result);
+        if(user!=null) {
+            userVendorMappingObjectMappingTask.setUser(user);
+            userVendorMappingObjectMappingTaskExecutor.execute(userVendorMappingObjectMappingTask);
+        }
         if(user.getAuthority().getName().equals(AidasConstants.VENDOR_USER)) {
             if (userVendorMapping != null) {
                 userVendorMappingObjectMappingTask.setUserVendorMapping(userVendorMapping);
@@ -740,7 +743,6 @@ public class UserResource {
         }
 
         User result = userRepository.save(user);
-        aidasUserSearchRepository.save(result);
         updateUserToKeyCloak(result);
         return ResponseEntity
             .ok()

@@ -548,26 +548,31 @@ public class ProjectResource {
         log.debug("REST request to get a page of AidasProjects");
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         Page<Project> page = null;
-        if(user.getAuthority().getName().equals(AidasConstants.ADMIN)){
-            page = projectRepository.findAllByIdGreaterThan(0l,pageable);
-        }
-        if(user.getAuthority().getName().equals(AidasConstants.ORG_ADMIN) && user.getOrganisation()!=null ){
-            page = projectRepository.findAllByAidasCustomer_AidasOrganisation(pageable, user.getOrganisation().getId());
-        }
-        if( user.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN) && user.getCustomer()!=null ){
-            page = projectRepository.findAllByAidasCustomer(pageable, user.getCustomer().getId());
-        }
-        if(user.getAuthority().getName().equals(AidasConstants.VENDOR_ADMIN)){
-            page =  projectRepository.findAllProjectsByVendorAdmin(pageable, user.getVendor().getId());
-        }
-        if(user.getAuthority().getName().equals(AidasConstants.VENDOR_USER)){
-            throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
-        }
-        if(page!=null) {
-            HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
-            return ResponseEntity.ok().headers(headers).body(page.getContent());
-        }else{
-            throw new BadRequestAlertException("Not Authorised", ENTITY_NAME, "idexists");
+        try {
+            if (user.getAuthority().getName().equals(AidasConstants.ADMIN)) {
+                page = projectRepository.findAllByIdGreaterThan(0l, pageable);
+            }
+            if (user.getAuthority().getName().equals(AidasConstants.ORG_ADMIN) && user.getOrganisation() != null) {
+                page = projectRepository.findAllByAidasCustomer_AidasOrganisation(pageable, user.getOrganisation().getId());
+            }
+            if (user.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN) && user.getCustomer() != null) {
+                page = projectRepository.findAllByAidasCustomer(pageable, user.getCustomer().getId());
+            }
+            if (user.getAuthority().getName().equals(AidasConstants.VENDOR_ADMIN)) {
+                page = projectRepository.findAllProjectsByVendorAdmin(pageable, user.getVendor().getId());
+            }
+            if (user.getAuthority().getName().equals(AidasConstants.VENDOR_USER)) {
+                throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
+            }
+            if (page != null) {
+                HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+                return ResponseEntity.ok().headers(headers).body(page.getContent());
+            }else{
+                return ResponseEntity.ok().body(null);
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+                throw new BadRequestAlertException("Not Authorised", ENTITY_NAME, "idexists");
         }
     }
 
@@ -658,25 +663,11 @@ public class ProjectResource {
     public ResponseEntity<Project> getProject(@PathVariable Long id) {
         log.debug("REST request to get AidasProject : {}", id);
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-        Optional<Project> project =null;
-        if(user.getAuthority().getName().equals(AidasConstants.ADMIN)){
-            project = projectRepository.findById(id);
-        }
-        if(user.getAuthority().getName().equals(AidasConstants.ORG_ADMIN) && user.getOrganisation()!=null ){
-            project = projectRepository.findById(id);
-        }
-        if(user.getAuthority().getName().equals(AidasConstants.ORG_ADMIN) && user.getOrganisation()!=null ){
-            project = projectRepository.findAllProjectsByOrgAdminProject(user.getOrganisation().getId(),id);
-        }
-        if( user.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN) && user.getCustomer()!=null ){
-            project = projectRepository.findAllProjectsByCustomerAdminProject(user.getCustomer().getId(),id);
-        }
-        if(user.getAuthority().getName().equals(AidasConstants.VENDOR_ADMIN )|| user.getAuthority().getName().equals(AidasConstants.VENDOR_USER)){
-            project = projectRepository.findAllProjectsByVendorAdminProject(user.getVendor().getId(),id);
-        }
-
-        if(project.isPresent()) {
-            return ResponseUtil.wrapOrNotFound(project);
+        Project project =projectRepository.getById(id);
+        System.out.println(project.getId());
+        System.out.println(project.getName());
+        if(project!=null) {
+            return ResponseEntity.ok().body(project);
         }else{
             throw new BadRequestAlertException("Not Authorised", ENTITY_NAME, "idexists");
         }

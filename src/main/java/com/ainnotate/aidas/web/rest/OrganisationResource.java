@@ -99,6 +99,15 @@ public class OrganisationResource {
         }
             Organisation result = organisationRepository.save(organisation);
             Set<AppProperty> appProperties = appPropertyRepository.getAppPropertyOfOrganisation(-1l);
+            List<AppProperty> appProperties1 = new ArrayList<>();
+            for(AppProperty ap:appProperties){
+                AppProperty p = new AppProperty();
+                p.setName(ap.getName());
+                p.setValue(ap.getValue());
+                p.setOrganisation(result);
+                appProperties1.add(p);
+            }
+            appPropertyRepository.saveAll(appProperties1);
             result.setAppProperties(appProperties);
             return ResponseEntity
                 .created(new URI("/api/aidas-organisations/" + result.getId()))

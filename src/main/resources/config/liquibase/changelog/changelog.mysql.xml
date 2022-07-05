@@ -508,13 +508,13 @@
             <column name="optional" type="INT"/>
             <column defaultValueNumeric="0" name="passed_from_app" type="INT"/>
             <column name="value" type="VARCHAR(255)"/>
-            <column name="category_id" type="BIGINT">
-                <constraints nullable="false"/>
-            </column>
+            <column name="category_id" type="BIGINT"/>
             <column name="project_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
-            <column name="property_id" type="BIGINT"/>
+            <column name="property_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
     </changeSet>
     <changeSet author="shiva (generated)" id="1656954161062-24">

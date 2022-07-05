@@ -60,8 +60,8 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     @Query(value="select p.* from project p where  p.customer_id=?1 and p.id=?2   and p.status=1 ",nativeQuery = true)
     Optional<Project> findAllProjectsByCustomerAdminProject(Long aidasCustomerId, Long projectId);
 
-    @Query(value="select p.* from project p, object o,  user_vendor_mapping_object_mapping uvmom,user_vendor_mapping uvm ,user u where  uvmom.object_id=o.id and o.project_id=p.id and uvmom.user_vendor_mapping_id=uvm.id and uvm.vendor_id= ?1 and p.id=?2   and p.status=1 ",nativeQuery = true)
-    Optional<Project> findAllProjectsByOrgAdminProject(Long organisationId, Long aidasProjectId);
+    @Query(value="select p.* from project p, customer c where p.customer_id=c.id and c.organisation_id=?1 and p.status=1 ",nativeQuery = true)
+    Project findAllProjectsByOrgAdminProject(Long organisationId, Long aidasProjectId);
 
     @Query(value = "select * from project where status=1 and id>0 order by id desc",nativeQuery = true)
     Page<Project> findAllByIdGreaterThan(Long id, Pageable page);

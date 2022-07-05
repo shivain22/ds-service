@@ -130,7 +130,7 @@ public class UserVendorMappingObjectMapping extends AbstractAuditingEntity  impl
     // prettier-ignore
     @Override
     public String toString() {
-        return "AidasUserAidasObjectMapping{" +
+        return "UserVendorMappingObjectMapping{" +
             "id=" + getId() +
             ", dateAssigned='" + getDateAssigned() + "'" +
             ", status='" + getStatus() + "'" +
