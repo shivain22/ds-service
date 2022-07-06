@@ -92,10 +92,7 @@ public class CustomerResource {
             (user.getAuthority().getName().equals(AidasConstants.ORG_ADMIN) && user.getOrganisation()!=null && user.getOrganisation().equals(customer.getOrganisation()))){
             Customer result = customerRepository.save(customer);
             Set<AppProperty> appProperties = appPropertyRepository.getAppPropertyOfCustomer(-1l);
-            result.setAppProperties(appProperties);
             List<Property> properties = propertyRepository.findAllStandardProperties();
-            List<Property> properties1 = new ArrayList<>();
-            List<AppProperty> appProperties1 = new ArrayList<>();
             for(Property property:properties){
                 Property p = new Property();
                 p.setName(property.getName());
@@ -107,17 +104,17 @@ public class CustomerResource {
                 p.setStatus(property.getStatus());
                 p.setPropertyType(property.getPropertyType());
                 p.setCustomer(result);
-                properties1.add(p);
+                propertyRepository.save(p);
             }
-            propertyRepository.saveAll(properties1);
+
             for(AppProperty ap:appProperties){
                 AppProperty p = new AppProperty();
                 p.setName(ap.getName());
                 p.setValue(ap.getValue());
                 p.setCustomer(result);
-                appProperties1.add(p);
+                appPropertyRepository.save(p);
             }
-            appPropertyRepository.saveAll(appProperties1);
+
             return ResponseEntity
                 .created(new URI("/api/aidas-customers/" + result.getId()))
                 .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))

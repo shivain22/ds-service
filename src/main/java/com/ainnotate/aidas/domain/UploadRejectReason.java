@@ -37,7 +37,6 @@ public class UploadRejectReason extends AbstractAuditingEntity  implements Seria
     @Column(length = 500)
     private String reason;
 
-    @NotNull
     @Size(max = 500)
     @Column(length = 500)
     private String description;

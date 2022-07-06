@@ -2057,6 +2057,48 @@
             <column name="category_id" type="numeric"/>
         </loadData>
     </changeSet>
+    <changeSet author="shiva (generated)" id="1649822751914-137">
+        <createView viewName="project_upload_summary" replaceIfExists="true">
+            select a.id,
+            sum(totalRequired) as totalRequired,
+            sum(totalUploaded) as totalUploaded,
+            sum(totalApproved) as totalApproved,
+            sum(totalRejected) as totalRejected,
+            sum(totalPending) as totalPending from(
+            select
+            p.id,
+            o.number_of_upload_reqd as totalRequired,
+            count(u.id) as totalUploaded,
+            sum(CASE WHEN u.approval_status = 1 THEN 1 ELSE 0 END) AS totalApproved,
+            sum(CASE WHEN u.approval_status = 0 THEN 1 ELSE 0 END) AS totalRejected,
+            sum(CASE WHEN u.approval_status = 2 THEN 1 ELSE 0 END) AS totalPending
+            from upload u
+            left join user_vendor_mapping_object_mapping uvmom on u.user_vendor_mapping_object_mapping_id=uvmom.id
+            left join object o on o.id=uvmom.object_id
+            left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id
+            left join project p on o.project_id=p.id
+            where uvmom.status=1
+            group by o.id,u.user_vendor_mapping_object_mapping_id) a group by id
+    </createView>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1649822751914-138">
+        <createView viewName="project_summary" replaceIfExists="true">
+            select
+            p.id,
+            sum(o.number_of_upload_reqd) as totalRequired,
+            0 as totalUploaded,
+            0 AS totalApproved,
+            0 AS totalRejected,
+            0 AS totalPending
+            from  user_vendor_mapping_object_mapping uvmom
+            left join object o on o.id=uvmom.object_id
+            left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id
+            left join project p on o.project_id=p.id
+            where and uvmom.status=1
+            group by p.id order by p.id desc
+        </createView>
+    </changeSet>
+</databaseChangeLog>
     <!--<changeSet author="shiva (generated)" id="1649822751914-134">
         <loadData
             file="config/liquibase/fake-data/user_organisation_mapping.csv"

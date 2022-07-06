@@ -16,6 +16,16 @@ public class UploadDTO {
 
     private Long userId;
     private Long objectId;
+    private String name;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     private String uploadUrl;
     private String etag;
     private String objectKey;

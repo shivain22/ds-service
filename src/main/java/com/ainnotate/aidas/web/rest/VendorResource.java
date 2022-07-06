@@ -1,6 +1,7 @@
 package com.ainnotate.aidas.web.rest;
 
 import com.ainnotate.aidas.domain.AppProperty;
+import com.ainnotate.aidas.domain.Property;
 import com.ainnotate.aidas.domain.User;
 import com.ainnotate.aidas.domain.Vendor;
 import com.ainnotate.aidas.dto.IUserDTO;
@@ -80,7 +81,13 @@ public class VendorResource {
 
         Vendor result = vendorRepository.save(vendor);
         Set<AppProperty> appProperties = appPropertyRepository.getAppPropertyOfVendor(-1l);
-        result.setAppProperties(appProperties);
+        for(AppProperty ap:appProperties){
+            AppProperty p = new AppProperty();
+            p.setName(ap.getName());
+            p.setValue(ap.getValue());
+            p.setVendor(result);
+            appPropertyRepository.save(p);
+        }
         return ResponseEntity
             .created(new URI("/api/aidas-vendors/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))

@@ -112,7 +112,7 @@ public class UploadRejectReasonResource {
         }
 
         UploadRejectReason result = uploadRejectReasonRepository.save(uploadRejectReason);
-        aidasUploadRejectReasonSearchRepository.save(result);
+        //aidasUploadRejectReasonSearchRepository.save(result);
         return ResponseEntity
             .ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, uploadRejectReason.getId().toString()))

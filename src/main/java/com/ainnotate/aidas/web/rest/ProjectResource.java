@@ -205,9 +205,9 @@ public class ProjectResource {
                 if(result.getObjectSuffix()!=null){
                     objName=result.getObjectSuffix();
                 }
-                obj.setName(result.getObjectPrefix()+"_"+i+"_"+result.getObjectSuffix());
+                obj.setName(objName+"_"+i+"_"+objName);
                 obj.setNumberOfUploadReqd(result.getNumOfUploadsReqd());
-                obj.setDescription(result.getObjectPrefix()+"_"+i+"_"+result.getObjectSuffix());
+                obj.setDescription(objName+"_"+i+"_"+objName);
                 obj.setProject(result);
                 obj.setBufferPercent(result.getBufferPercent());
                 obj.setDummy(0);
@@ -629,14 +629,14 @@ public class ProjectResource {
         if(user.getAuthority().getName().equals(AidasConstants.VENDOR_USER)){
             List<ProjectDTO> projects =  projectRepository.findProjectWithUploadCountByUser(pageable,user.getId());
             for(ProjectDTO p:projects){
-                Integer totalApprovedUploads = projectRepository.countUploadsByProject(p.getId());
+                //Integer totalApprovedUploads = projectRepository.countUploadsByProject(p.getId());
                 List<ProjectProperty> projectProperties = projectPropertyRepository.findAllProjectProperty(p.getId());
                 p.setAidasProjectProperties(projectProperties);
-                if(totalApprovedUploads!=null) {
-                    p.setTotalRequired(p.getTotalRequired() - totalApprovedUploads);
-                }else{
-                    p.setTotalRequired(p.getTotalRequired());
-                }
+                //if(totalApprovedUploads!=null) {
+                    p.setTotalRequired(p.getTotalRequired() - p.getTotalApproved());
+                //}else{
+                    //p.setTotalRequired(p.getTotalRequired());
+                //}
             }
             PagedListHolder<ProjectDTO> pages = new PagedListHolder(projects);
             pages.setPage(pageable.getPageNumber()); //set current page number
@@ -669,6 +669,7 @@ public class ProjectResource {
         if(project!=null) {
             return ResponseEntity.ok().body(project);
         }else{
+
             throw new BadRequestAlertException("Not Authorised", ENTITY_NAME, "idexists");
         }
     }

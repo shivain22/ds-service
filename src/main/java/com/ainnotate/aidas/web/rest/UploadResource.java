@@ -805,6 +805,7 @@ public class UploadResource {
                 uploadsMetadataDTO = new UploadsMetadataDTO();
                 UploadDTO uploadDTO = new UploadDTO();
                 uploadDTO.setUploadId(au.getId());
+                uploadDTO.setName(au.getUserVendorMappingObjectMapping().getObject().getName());
                 uploadDTO.setObjectKey(au.getUploadUrl());
                 uploadsMetadataDTO.setUploadDTO(uploadDTO);
                 List<ProjectPropertyDTO> projectPropertyDTOS = new ArrayList<>();

@@ -6,10 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.io.Serializable;
 import java.time.Instant;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import javax.persistence.*;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -106,18 +103,29 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
     private UserVendorMappingObjectMapping userVendorMappingObjectMapping;
 
     public List<UploadMetadataDTO> getUploadMetaDatas(){
-        List<UploadMetadataDTO> uds = new ArrayList<>();
+        List<UploadMetadataDTO> uds = new LinkedList<>();
         if(this.uploadMetaDataSet!=null){
+            UploadMetadataDTO ud1  = new UploadMetadataDTO();
+            if(this.userVendorMappingObjectMapping!=null) {
+                if(this.getUserVendorMappingObjectMapping().getObject()!=null) {
+                    ud1.setValue(this.userVendorMappingObjectMapping.getObject().getName());
+                    ud1.setName("Object Name");
+                    uds.add(ud1);
+                }
+            }
             for(UploadMetaData u:uploadMetaDataSet){
-                UploadMetadataDTO ud = new UploadMetadataDTO();
-                if(u.getProjectProperty()!=null && u.getProjectProperty().getProperty()!=null && u.getProjectProperty().getProperty().getName()!=null && u.getValue()!=null ){
+                if(u.getProjectProperty()!=null && u.getProjectProperty().getProperty()!=null && u.getProjectProperty().getProperty().getName()!=null ){
+                    UploadMetadataDTO ud = new UploadMetadataDTO();
                     ud.setName(u.getProjectProperty().getProperty().getName());
-                    ud.setValue(u.getValue());
-                }else if(u.getObjectProperty()!=null && u.getObjectProperty().getProperty()!=null && u.getObjectProperty().getProperty().getName()!=null  && u.getValue()!=null){
+                    if(u.getValue()!=null) {
+                        ud.setValue(u.getValue());
+                    }
+                    uds.add(ud);
+                }/*else if(u.getObjectProperty()!=null && u.getObjectProperty().getProperty()!=null && u.getObjectProperty().getProperty().getName()!=null  && u.getValue()!=null){
                     ud.setName(u.getObjectProperty().getProperty().getName());
                     ud.setValue(u.getValue());
-                }
-                uds.add(ud);
+                }*/
+
             }
         }
         return uds;

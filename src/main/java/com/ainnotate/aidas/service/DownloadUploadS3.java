@@ -292,57 +292,80 @@ public class DownloadUploadS3  implements  Runnable{
                 uploads = this.uploadRepository.findAllById(uploadedFileIds);
             }
             if (uploads != null) {
-                for (Upload au : uploads) {
-                    Map<String,String> uploadLocProps = getObjectProperties(au);
-                    download(uploadLocProps.get("accessKey"), uploadLocProps.get("accessSecret"), uploadLocProps.get("bucketName"), uploadLocProps.get("region"), au.getObjectKey());
+                try {
+                    System.out.println("Starting to download all uploads.......");
+                    for (Upload au : uploads) {
+                        Map<String, String> uploadLocProps = getObjectProperties(au);
+                        try {
+                            System.out.println("About to download file with objectkey as ="+au.getObjectKey());
+                            download(uploadLocProps.get("accessKey"), uploadLocProps.get("accessSecret"), uploadLocProps.get("bucketName"), uploadLocProps.get("region"), au.getObjectKey());
+                        }catch(Exception e4){
+                            System.out.println("The file being tried is "+au.getObjectKey());
+                            e4.printStackTrace();
+                        }
+                    }
+                }catch(Exception e2){
+                    System.out.println("Error when tryingto download all files..... "+e2.getMessage());
+                    e2.printStackTrace();
                 }
-                zip();
-                URL url =  upload(globalDownloadAccessKey, globalDownloadAccessSecret, globalDownloadBucketName, globalDownloadRegion);
-                Download download = new Download();
-                download.setName(this.zipFile);
-                download.setAwsKey(globalDownloadAccessKey);
-                download.setUploadUrl(url.toString());
-                download.setAwsSecret(globalDownloadAccessSecret);
-                download.setBucketName(globalDownloadBucketName);
-                download.setRegion(globalDownloadRegion);
-                download.setObjectKey(this.zipFile);
-                download.setDateUploaded(Instant.now());
-                if (object != null) {
-                    download.setObject(object);
+                try {
+                    System.out.println("Start zipping the downloaded files from the local tmp dir.....");
+                    zip();
+                    System.out.println("Completed zipping the files..........");
+                }catch(Exception e3){
+                    System.out.println("Error when trying to zip the file with name "+this.zipFileKey);
+                    e3.printStackTrace();
                 }
-                if (project != null) {
-                    download.setProject(project);
+                try {
+                    System.out.println("About to upload the zipped file with name "+this.zipFileKey+" to s3");
+                    URL url=null;
+                    try {
+                        url = upload(globalDownloadAccessKey, globalDownloadAccessSecret, globalDownloadBucketName, globalDownloadRegion);
+                    }catch(Exception e5){
+                        e5.printStackTrace();
+                    }
+                    System.out.println("Finished uploading the zip file.....");
+                    Download download = new Download();
+                    download.setName(this.zipFile);
+                    download.setAwsKey(globalDownloadAccessKey);
+                    if(url!=null) {
+                        download.setUploadUrl(url.toString());
+                    }
+                    download.setAwsSecret(globalDownloadAccessSecret);
+                    download.setBucketName(globalDownloadBucketName);
+                    download.setRegion(globalDownloadRegion);
+                    download.setObjectKey(this.zipFile);
+                    download.setDateUploaded(Instant.now());
+                    if (object != null) {
+                        download.setObject(object);
+                    }
+                    if (project != null) {
+                        download.setProject(project);
+                    }
+                    if (uploadedFileIds != null) {
+                        download.setUploadedObjectIds(uploadedFileIds.toString());
+                    }
+                    downloadRepository.save(download);
+                    sendMail(user.getEmail(), user.getFirstName()+" "+user.getLastName(), url.toString(),this.zipFileKey,"Zip file created and ready for download.");
+                }catch(Exception e1){
+                    System.out.println("Unable to upload to s3 and add to download table due to "+e1.getMessage());
+                    e1.printStackTrace();
                 }
-                if (uploadedFileIds != null) {
-                    download.setUploadedObjectIds(uploadedFileIds.toString());
-                }
-                downloadRepository.save(download);
             }
         }catch(Exception e){
+            e.printStackTrace();
             try {
-                sendMail(user.getEmail(), user.getFirstName()+" "+user.getLastName(), " Unable to Download ",this.zipFileKey);
+                sendMail(user.getEmail(), user.getFirstName()+" "+user.getLastName(), " Unable to Download Exception is"+e.getMessage(),this.zipFileKey,"Error creating downloadable zip file");
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
-            /*MimeMessage msg = javaMailSender.createMimeMessage();
-            MimeMessageHelper helper = null;
-            try {
-                helper = new MimeMessageHelper(msg, true);
-                helper.setTo(user.getEmail());
-                helper.setSubject("Unable to create downloadable objects"+this.zipFileKey);
-                helper.setText("<h1>Unable to create downloadable zip.  Please try again</h1>"+e.getMessage(), true);
-                javaMailSender.send(msg);
-                e.printStackTrace();
-            } catch (MessagingException ex) {
-                ex.printStackTrace();
-            }*/
         }
     }
 
 
     private Map<String,String> getObjectProperties(Upload au){
         Map<String,String> uploadLocProps = new HashMap<>();
-        List<ObjectProperty> objectProperties = objectPropertyRepository.getAllObjectPropertyForObject(object.getId());
+        List<ObjectProperty> objectProperties = objectPropertyRepository.getAllObjectPropertyForObject(au.getUserVendorMappingObjectMapping().getObject().getId());
         for (ObjectProperty aop : objectProperties) {
             if (aop.getProperty().getName().equals("accessKey")) {
                 uploadLocProps.put("accessKey",aop.getValue());
@@ -414,16 +437,6 @@ public class DownloadUploadS3  implements  Runnable{
                 .getObjectRequest(getObjectRequest)
                 .build();
         PresignedGetObjectRequest presignedGetObjectRequest = presigner.presignGetObject(getObjectPresignRequest);
-
-        /*MimeMessage msg = javaMailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(msg, true);
-        helper.setTo(user.getEmail());
-        helper.setSubject("Download objects"+this.zipFileKey);
-        helper.setText("<h1>Check attachment for zipfiles!</h1>"+presignedGetObjectRequest.url(), true);
-        FileSystemResource res = new FileSystemResource(new File(this.zipFile));
-        helper.addAttachment(this.zipFileKey, res);
-        javaMailSender.send(msg);*/
-        sendMail(user.getEmail(), user.getFirstName()+" "+user.getLastName(), presignedGetObjectRequest.url().toString(),this.zipFileKey);
         File f = new File(this.tempFolder);
         if(f.exists()){
             if(f.isDirectory()){
@@ -459,7 +472,7 @@ public class DownloadUploadS3  implements  Runnable{
         return bytesArray;
     }
 
-    private void sendMail(String email, String  name, String downloadUrl,String fileName) throws IOException {
+    private void sendMail(String email, String  name, String downloadUrl,String fileName,String subject) throws IOException {
         String postUrl = "https://api.zeptomail.in/v1.1/email";
         BufferedReader br = null;
         HttpURLConnection conn = null;
@@ -478,7 +491,7 @@ public class DownloadUploadS3  implements  Runnable{
                 "  \"bounce_address\":\"aidas@bounce.ainnotate.com\",\n" +
                 "  \"from\": { \"address\": \""+fromEmail+"\"},\n" +
                 "  \"to\": [{\"email_address\": {\"address\": \""+email+"\",\"name\": \""+name+"\"}}],\n" +
-                "  \"subject\":\"Your Download is ready.\",\n" +
+                "  \"subject\":\""+subject+"\",\n" +
                 "  \"htmlbody\":\"<div><b>"+downloadUrl+"</b></div>\"\n" +
                 "}");
             OutputStream os = conn.getOutputStream();
