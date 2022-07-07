@@ -2094,11 +2094,20 @@
             left join object o on o.id=uvmom.object_id
             left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id
             left join project p on o.project_id=p.id
-            where and uvmom.status=1
+            where uvmom.status=1
             group by p.id order by p.id desc
         </createView>
     </changeSet>
-</databaseChangeLog>
+    <changeSet author="shiva (generated)" id="1649822751914-139">
+        <createView viewName="user_project_mapping_view" replaceIfExists="true">
+            select p.id as projectId, o.id as objectId, uvm.user_id as userId,uvm.id as userVendorMappingId, uvmom.id as userVendorMappingObjectMappingId,uvmom.status as status from project p, object o, user_vendor_mapping uvm, user_vendor_mapping_object_mapping uvmom where uvmom.user_vendor_mapping_id=uvm.id and uvmom.object_id=o.id and o.project_id=p.id
+        </createView>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1649822751914-140">
+        <createView viewName="user_project_only_mapping_view" replaceIfExists="true">
+            select projectId, userId, status from user_project_mapping_view a group by projectId, userId,status
+        </createView>
+    </changeSet>
     <!--<changeSet author="shiva (generated)" id="1649822751914-134">
         <loadData
             file="config/liquibase/fake-data/user_organisation_mapping.csv"

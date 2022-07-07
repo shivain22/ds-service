@@ -59,12 +59,14 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
     private Upload reworkUpload;
     @Column(name = "status_modified_date")
     private ZonedDateTime statusModifiedDate;
+
     @OneToMany(mappedBy = "upload",fetch = FetchType.EAGER,cascade = CascadeType.ALL)
     @Fetch(FetchMode.SUBSELECT)
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     @JsonIgnoreProperties(value = { "upload" }, allowSetters = true)
     @JsonIgnore
     private Set<UploadRejectMapping> uploadRejectMappings = new HashSet<>();
+
     @Column(name = "object_key",  nullable = true)
     private String objectKey;
     @OneToMany(mappedBy = "upload",fetch = FetchType.EAGER)

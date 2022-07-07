@@ -28,26 +28,27 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
         "case when pus.totalApproved is null then 0 else pus.totalApproved end as totalApproved, \n" +
         "case when pus.totalRejected is null then 0 else pus.totalRejected end as totalRejected, \n" +
         "case when pus.totalPending is null then 0 else pus.totalPending end as totalPending,\n" +
-        "a.status ,\n" +
-        "a.audio_type ,\n" +
-        "a.auto_create_objects ,\n" +
-        "a.buffer_percent ,\n" +
-        "a.description ,\n" +
-        "a.external_dataset_status ,\n" +
-        "a.image_type ,\n" +
-        "a.name ,\n" +
-        "a.num_of_objects ,\n" +
-        "a.num_of_uploads_reqd ,\n" +
-        "a.object_prefix ,\n" +
-        "a.object_suffix ,\n" +
-        "a.project_type ,\n" +
-        "a.qc_levels ,\n" +
-        "a.rework_status ,\n" +
-        "a.video_type\n" +
+        "p.status ,\n" +
+        "p.audio_type ,\n" +
+        "p.auto_create_objects ,\n" +
+        "p.buffer_percent ,\n" +
+        "p.description ,\n" +
+        "p.external_dataset_status ,\n" +
+        "p.image_type ,\n" +
+        "p.name ,\n" +
+        "p.num_of_objects ,\n" +
+        "p.num_of_uploads_reqd ,\n" +
+        "p.object_prefix ,\n" +
+        "p.object_suffix ,\n" +
+        "p.project_type ,\n" +
+        "p.qc_levels ,\n" +
+        "p.rework_status ,\n" +
+        "p.video_type\n" +
         "from \n" +
         "project_summary ps\n" +
         "left join project_upload_summary pus on ps.id=pus.id\n" +
-        "left join project a on a.id=ps.id ",
+        "left join user_project_only_mapping_view upmomv pus on upmomv.projectId=pus.id\n" +
+        "left join project p on p.id=ps.id where upmomv.userId=?1 and upmomv.status=1",
     resultSetMapping = "Mapping.ProjectDTO")
 
 @NamedNativeQuery(name = "Project.findProjectWithUploadCountByUser.count",
@@ -56,6 +57,8 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
         "from \n" +
         "project_summary ps\n" +
         "left join project_upload_summary pus on ps.id=pus.id\n" +
+        "left join user_project_only_mapping_view upmomv pus on upmomv.projectId=pus.id\n" +
+        " where upmomv.userId=?1 and upmomv.status=1"+
         ")a  ")
 
 
