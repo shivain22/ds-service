@@ -1312,7 +1312,7 @@
         <addUniqueConstraint columnNames="name, customer_id, user_id" constraintName="uk_property_cid_uid" tableName="property"/>
     </changeSet>
     <changeSet author="shiva (generated)" id="1656954161062-70">
-        <addUniqueConstraint columnNames="user_customer_mapping_id, project_id" constraintName="uk_qpm_ucmid_pid" tableName="qc_project_mapping"/>
+        <addUniqueConstraint columnNames="user_customer_mapping_id, project_id,qc_level" constraintName="uk_qpm_ucmid_pid_qclevel" tableName="qc_project_mapping"/>
     </changeSet>
     <changeSet author="shiva (generated)" id="1656954161062-71">
         <addUniqueConstraint columnNames="value, category_id" constraintName="uk_subcategory_category" tableName="sub_category"/>
@@ -2058,7 +2058,7 @@
         </loadData>
     </changeSet>
     <changeSet author="shiva (generated)" id="1649822751914-137">
-        <createView viewName="project_upload_summary" replaceIfExists="true">
+        <createView viewName="project_upload_summary_view" replaceIfExists="true">
             select a.id,
             sum(totalRequired) as totalRequired,
             sum(totalUploaded) as totalUploaded,
@@ -2082,7 +2082,7 @@
     </createView>
     </changeSet>
     <changeSet author="shiva (generated)" id="1649822751914-138">
-        <createView viewName="project_summary" replaceIfExists="true">
+        <createView viewName="project_summary_view" replaceIfExists="true">
             select
             p.id,
             sum(o.number_of_upload_reqd) as totalRequired,
@@ -2099,13 +2099,64 @@
         </createView>
     </changeSet>
     <changeSet author="shiva (generated)" id="1649822751914-139">
-        <createView viewName="user_project_mapping_view" replaceIfExists="true">
+        <createView viewName="user_object_mapping_view" replaceIfExists="true">
             select p.id as projectId, o.id as objectId, uvm.user_id as userId,uvm.id as userVendorMappingId, uvmom.id as userVendorMappingObjectMappingId,uvmom.status as status from project p, object o, user_vendor_mapping uvm, user_vendor_mapping_object_mapping uvmom where uvmom.user_vendor_mapping_id=uvm.id and uvmom.object_id=o.id and o.project_id=p.id
         </createView>
     </changeSet>
     <changeSet author="shiva (generated)" id="1649822751914-140">
-        <createView viewName="user_project_only_mapping_view" replaceIfExists="true">
-            select projectId, userId, status from user_project_mapping_view a group by projectId, userId,status
+        <createView viewName="user_project_mapping_view" replaceIfExists="true">
+            select projectId, userId, status from user_object_mapping_view a group by projectId, userId,status
+        </createView>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1649822751914-141">
+        <createView viewName="object_upload_summary_view" replaceIfExists="true">
+            select
+            o.id,
+            o.project_id as projectId,
+            uvmom.id as userVendorMappingObjectMappingId,
+            o.parent_object_id parentObjectId,
+            o.number_of_upload_reqd as totalRequired,
+            count(u.id) as totalUploaded,
+            sum(CASE WHEN u.approval_status = 1 THEN 1 ELSE 0 END) AS totalApproved,
+            sum(CASE WHEN u.approval_status = 0 THEN 1 ELSE 0 END) AS totalRejected,
+            sum(CASE WHEN u.approval_status = 2 THEN 1 ELSE 0 END) AS totalPending,
+            o.buffer_percent as bufferPercent,
+            o.name as name,
+            o.description as description,
+            o.image_type as imageType,
+            o.audio_type as audioType,
+            o.video_type as videoType
+            from upload u
+            left join user_vendor_mapping_object_mapping uvmom on u.user_vendor_mapping_object_mapping_id=uvmom.id
+            left join object o on o.id=uvmom.object_id
+            left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id
+            where    uvmom.status=1 and o.status=1 and o.is_dummy=0
+            group by o.id,uvmom.id
+        </createView>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1649822751914-142">
+        <createView viewName="object_summary_view" replaceIfExists="true">
+            select
+            o.id,
+            o.project_id as projectId,
+            uvmom.id as userVendorMappingObjectMappingId,
+            o.parent_object_id parentObjectId,
+            o.number_of_upload_reqd as totalRequired,
+            0 as totalUploaded,
+            0 AS totalApproved,
+            0 AS totalRejected,
+            0 AS totalPending,
+            o.buffer_percent as bufferPercent,
+            o.name as name,
+            o.description as description,
+            o.image_type as imageType,
+            o.audio_type as audioType,
+            o.video_type as videoType
+            from user_vendor_mapping_object_mapping uvmom
+            left join object o on o.id=uvmom.object_id
+            left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id
+            where     o.status=1 and o.is_dummy=0 and uvmom.id not in (select userVendorMappingObjectMappingId from object_upload_summary_view group by o.id,uvmom.id)
+            group by o.id,uvmom.id
         </createView>
     </changeSet>
     <!--<changeSet author="shiva (generated)" id="1649822751914-134">

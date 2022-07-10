@@ -139,7 +139,7 @@ spring:
       hibernate.cache.hazelcast.instance_name: ainnotateservice
       hibernate.cache.hazelcast.use_lite_member: true
     hibernate:
-      ddl-auto: none
+      ddl-auto: create
       show_sql: true
       format_sql: true
       naming:

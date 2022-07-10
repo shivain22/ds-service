@@ -476,12 +476,66 @@ public class Object extends AbstractAuditingEntity  implements Serializable {
 
     @Column(name="is_dummy")
     private Integer dummy;
+    @ManyToOne(optional = true)
+    @JsonIgnoreProperties(value = { "project","customer" }, allowSetters = true)
+    @JoinColumn(name = "parent_object_id", nullable = true, foreignKey = @ForeignKey(name="fk_object_parent_object"))
+    private Object parentObject;
+    @Transient
+    @JsonProperty
+    private Integer uploadsCompleted;
+    @Transient
+    @JsonProperty
+    private Integer uploadsRemaining;
+
+    @Column(name ="total_uploaded",columnDefinition = "integer default 0")
+    @JsonProperty
+    private Integer totalUploaded;
+
+    @Column(name ="total_approved",columnDefinition = "integer default 0")
+    @JsonProperty
+    private Integer totalApproved;
+
+    @Column(name ="total_rejected",columnDefinition = "integer default 0")
+    @JsonProperty
+    private Integer totalRejected;
+
+    @Column(name ="total_pending",columnDefinition = "integer default 0")
+    @JsonProperty
+    private Integer totalPending;
+
+    @Column(name ="total_required",columnDefinition = "integer default 0")
+    @JsonProperty
+    private Integer totalRequired;
+
+    @Column(name="image_type")
+    @JsonProperty
+    private String imageType;
+    @Column(name="video_type")
+    @JsonProperty
+    private String videoType;
+    @Column(name="audio_type")
+    @JsonProperty
+    private String audioType;
+    @OneToMany(mappedBy = "object",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+    @Filter(name = "objectPropertyStatusFilter",condition="status = 1")
+    @JsonIgnoreProperties(value = { "object" }, allowSetters = true)
+    private Set<ObjectProperty> objectProperties = new HashSet<>();
+
+    public Integer getTotalRequired() {
+        return totalRequired;
+    }
+
+    public void setTotalRequired(Integer totalRequired) {
+        this.totalRequired = totalRequired;
+    }
 
     public Integer getDummy() {
         return dummy;
     }
 
-
+    public void setDummy(Integer dummy) {
+        this.dummy = dummy;
+    }
 
     public Object getParentObject() {
         return parentObject;
@@ -491,15 +545,6 @@ public class Object extends AbstractAuditingEntity  implements Serializable {
         this.parentObject = parentObject;
     }
 
-    public void setDummy(Integer dummy) {
-        this.dummy = dummy;
-    }
-
-    @ManyToOne(optional = true)
-    @JsonIgnoreProperties(value = { "project","customer" }, allowSetters = true)
-    @JoinColumn(name = "parent_object_id", nullable = true, foreignKey = @ForeignKey(name="fk_object_parent_object"))
-    private Object parentObject;
-
     public Object getParentAidasObject() {
         return parentObject;
     }
@@ -507,43 +552,6 @@ public class Object extends AbstractAuditingEntity  implements Serializable {
     public void setParentAidasObject(Object parentObject) {
         this.parentObject = parentObject;
     }
-
-    @Transient
-    @JsonProperty
-    private Integer uploadsCompleted;
-
-    @Transient
-    @JsonProperty
-    private Integer uploadsRemaining;
-
-
-    @Transient
-    @JsonProperty
-    private Integer totalUploaded;
-
-    @Transient
-    @JsonProperty
-    private Integer totalApproved;
-
-    @Transient
-    @JsonProperty
-    private Integer totalRejected;
-
-    @Transient
-    @JsonProperty
-    private Integer totalPending;
-
-    @Column(name="image_type")
-    @JsonProperty
-    private String imageType;
-
-    @Column(name="video_type")
-    @JsonProperty
-    private String videoType;
-
-    @Column(name="audio_type")
-    @JsonProperty
-    private String audioType;
 
     public String getImageType() {
         return imageType;
@@ -617,11 +625,6 @@ public class Object extends AbstractAuditingEntity  implements Serializable {
         this.uploadsRemaining = uploadsRemaining;
     }
 
-    @OneToMany(mappedBy = "object",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
-    @Filter(name = "objectPropertyStatusFilter",condition="status = 1")
-    @JsonIgnoreProperties(value = { "object" }, allowSetters = true)
-    private Set<ObjectProperty> objectProperties = new HashSet<>();
-
     public Integer getBufferPercent() {
         return bufferPercent;
     }
@@ -651,17 +654,21 @@ public class Object extends AbstractAuditingEntity  implements Serializable {
         return this.id;
     }
 
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public Object id(Long id) {
         this.setId(id);
         return this;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     public String getName() {
         return this.name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public Object name(String name) {
@@ -669,12 +676,12 @@ public class Object extends AbstractAuditingEntity  implements Serializable {
         return this;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public String getDescription() {
         return this.description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public Object description(String description) {
@@ -682,21 +689,17 @@ public class Object extends AbstractAuditingEntity  implements Serializable {
         return this;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
     public Integer getNumberOfUploadReqd() {
         return this.numberOfUploadReqd;
+    }
+
+    public void setNumberOfUploadReqd(Integer numberOfUploadReqd) {
+        this.numberOfUploadReqd = numberOfUploadReqd;
     }
 
     public Object numberOfUploadReqd(Integer numberOfUploadReqd) {
         this.setNumberOfUploadReqd(numberOfUploadReqd);
         return this;
-    }
-
-    public void setNumberOfUploadReqd(Integer numberOfUploadReqd) {
-        this.numberOfUploadReqd = numberOfUploadReqd;
     }
 
     public Project getProject() {

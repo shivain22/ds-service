@@ -170,105 +170,45 @@ public class DataPopulatorBean implements Runnable {
         dummyOptions.add("dummy-uvm");
         dummyOptions.add("dummy-project");
         dummyOptions.add("dummy-object");
-        dummyOptions.add("dummy-uvmom");
-        dummyOptions.add("dummy-upload");
-        System.out.println("Starting to load dummy data");
-        Long totalTime = 0l;
         for(String dataFileName:dummyOptions){
             File file = ResourceUtils.getFile("classpath:"+dataFileName+".csv");
             if(file.exists()) {
                 List<String[]> data = CSVHelper.getData(file);
                 StopWatch watch = new StopWatch();
                 if(dataFileName.equals("dummy-org")){
-                    System.out.println("org started");
-                    watch.start();
                     addSampleOrganisations(data);
-                    watch.stop();
-                    totalTime+=watch.getTime();
-                    System.out.println("org-done in "+watch.getTime(TimeUnit.MINUTES));
                 }
                 if(dataFileName.equals("dummy-cust")){
-                    System.out.println("cust started");
-                    watch.start();
                     addSampleCustomers(data);
-                    watch.stop();
-                    totalTime+=watch.getTime();
-                    System.out.println("cust done in "+watch.getTime(TimeUnit.MINUTES));
                 }
                 if(dataFileName.equals("dummy-vendor")){
-                    System.out.println("vendor started");
-                    watch.start();
                     addSampleVendors(data);
-                    watch.stop();
-                    totalTime+=watch.getTime();
-                    System.out.println("vendor-done in "+watch.getTime(TimeUnit.MINUTES));
                 }
                 if(dataFileName.equals("dummy-user")){
-                    System.out.println("user started");
-                    watch.start();
                     addSampleUsers(data);
-                    watch.stop();
-                    totalTime+=watch.getTime();
-                    System.out.println("user-done in "+watch.getTime(TimeUnit.MINUTES));
                 }
                 if(dataFileName.equals("dummy-uom")){
-                    System.out.println("uom started");
-                    watch.start();
                     addSampleUserOrganisationMappings(data);
-                    watch.stop();
-                    totalTime+=watch.getTime();
-                    System.out.println("uom-done in "+watch.getTime(TimeUnit.MINUTES));
                 }
                 if(dataFileName.equals("dummy-uam")){
-                    System.out.println("uam started");
-                    watch.start();
                     addSampleUserAuthorityMappings(data);
-                    watch.stop();
-                    totalTime+=watch.getTime();
-                    System.out.println("uam-done in "+watch.getTime(TimeUnit.MINUTES));
                 }
                 if(dataFileName.equals("dummy-project")){
-                    System.out.println("project started");
-                    watch.start();
                     addSampleProjects(data);
-                    System.out.println("Project properties started");
                     addSampleProjectProperties();
-                    System.out.println("Project properteis done");
-                    watch.stop();
-                    totalTime+=watch.getTime();
-                    System.out.println("projects-done in "+watch.getTime(TimeUnit.MINUTES));
                 }
                 if(dataFileName.equals("dummy-object")){
-                    System.out.println("object started");
-                    watch.start();
                     addSampleObjects(data);
-                    System.out.println("Object properties started");
                     addSampleObjectProperties();
-                    System.out.println("Object properteis done");
-                    watch.stop();
-                    totalTime+=watch.getTime();
-                    System.out.println("objects-done in "+watch.getTime(TimeUnit.MINUTES));
                 }
                 if(dataFileName.equals("dummy-uvmom")){
-                    System.out.println("uvmom started");
-                    watch.start();
                     addSampleUserVendorMappingObjectMappings(data);
-                    watch.stop();
-                    totalTime+=watch.getTime();
-                    System.out.println("uvmom-done in "+watch.getTime(TimeUnit.MINUTES));
                 }
                 if(dataFileName.equals("dummy-upload")){
-                    System.out.println("upload started");
-                    watch.start();
                     addSampleUploads(data);
-                    watch.stop();
-                    totalTime+=watch.getTime();
-                    System.out.println("upload-done in "+watch.getTime(TimeUnit.MINUTES));
                 }
             }
         }
-        System.out.println((totalTime/1000)/60 +" minutes");
-        System.out.println("Completed loading dummy data");
     }
 
 
@@ -374,7 +314,7 @@ public class DataPopulatorBean implements Runnable {
          userCustomerMappings = new LinkedList<>();
          userVendorMappings = new LinkedList<>();
          userVendorMappingObjectMappings = new LinkedList<>();
-        properties = new LinkedList<>();
+         properties = new LinkedList<>();
     }
     public void addSampleOrganisations(List<String[]> data){
         String query="insert into organisation(name,description,status,is_sample_data) values ";

@@ -96,11 +96,11 @@ public class UserAddingTask implements  Runnable{
             }
             if(userCustomerMapping!=null){
                 List<Project> projects = projectRepository.findAllByAidasCustomer(userCustomerMapping.getCustomer().getId());
-                List<QcProjectMapping> qpms = new ArrayList<>();
+                List<CustomerQcProjectMapping> qpms = new ArrayList<>();
                 for(Project p : projects){
                     if(p.getQcLevels()!=null) {
                         for( int i=0;i<p.getQcLevels();i++) {
-                            QcProjectMapping qpm = new QcProjectMapping();
+                            CustomerQcProjectMapping qpm = new CustomerQcProjectMapping();
                             qpm.setUserCustomerMapping(userCustomerMapping);
                             qpm.setProject(p);
                             qpm.setStatus(0);

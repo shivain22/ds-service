@@ -1,34 +1,31 @@
 package com.ainnotate.aidas.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import java.io.Serializable;
-import java.time.ZonedDateTime;
-import java.util.HashSet;
-import java.util.Set;
-import javax.persistence.*;
-import javax.validation.constraints.*;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.envers.Audited;
+
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import java.io.Serializable;
+import java.time.ZonedDateTime;
 
 /**
  * A AidasUserAidasObjectMapping.
  */
 @Entity
-@Table(name = "user_vendor_mapping_object_mapping",indexes = {
-    @Index(name="idx_uvmom_object",columnList = "object_id"),
-    @Index(name="idx_uvmom_uvm",columnList = "user_vendor_mapping_id")
+@Table(name = "user_vendor_mapping_project_mapping",indexes = {
+    @Index(name="idx_uvmpm_project",columnList = "project_id"),
+    @Index(name="idx_uvmpm_uvm",columnList = "user_vendor_mapping_id")
 },
     uniqueConstraints={
-        @UniqueConstraint(name = "uk_uvmid_oid",columnNames={"user_vendor_mapping_id", "object_id"})
+        @UniqueConstraint(name = "uk_uvmid_pid",columnNames={"user_vendor_mapping_id", "project_id"})
     })
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-@org.springframework.data.elasticsearch.annotations.Document(indexName = "uservendorobjectmapping")
+@org.springframework.data.elasticsearch.annotations.Document(indexName = "uservendormappingprojectmapping")
 @Audited
-public class UserVendorMappingObjectMapping extends AbstractAuditingEntity  implements Serializable {
+public class UserVendorMappingProjectMapping extends AbstractAuditingEntity  implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -43,14 +40,14 @@ public class UserVendorMappingObjectMapping extends AbstractAuditingEntity  impl
     @ManyToOne(optional = false,fetch = FetchType.LAZY)
     @NotNull
     @JsonIgnoreProperties(value = { "organisation", "customer", "vendor" }, allowSetters = true)
-    @JoinColumn(name = "user_vendor_mapping_id", nullable = true, foreignKey = @ForeignKey(name="fk_uvmom_uvm"))
+    @JoinColumn(name = "user_vendor_mapping_id", nullable = true, foreignKey = @ForeignKey(name="fk_uvmpm_uvm"))
     private UserVendorMapping userVendorMapping;
 
     @ManyToOne(optional = false,fetch = FetchType.LAZY)
     @NotNull
     @JsonIgnoreProperties(value = { "project" }, allowSetters = true)
-    @JoinColumn(name = "object_id", nullable = true, foreignKey = @ForeignKey(name="fk_uvmom_object"))
-    private Object object;
+    @JoinColumn(name = "project_id", nullable = true, foreignKey = @ForeignKey(name="fk_uvmpm_project"))
+    private Project project;
 
     @Column(name ="total_uploaded",columnDefinition = "integer default 0")
     @JsonProperty
@@ -120,7 +117,7 @@ public class UserVendorMappingObjectMapping extends AbstractAuditingEntity  impl
         this.id = id;
     }
 
-    public UserVendorMappingObjectMapping id(Long id) {
+    public UserVendorMappingProjectMapping id(Long id) {
         this.setId(id);
         return this;
     }
@@ -133,12 +130,12 @@ public class UserVendorMappingObjectMapping extends AbstractAuditingEntity  impl
         this.dateAssigned = dateAssigned;
     }
 
-    public UserVendorMappingObjectMapping dateAssigned(ZonedDateTime dateAssigned) {
+    public UserVendorMappingProjectMapping dateAssigned(ZonedDateTime dateAssigned) {
         this.setDateAssigned(dateAssigned);
         return this;
     }
 
-    public UserVendorMappingObjectMapping status(Integer status) {
+    public UserVendorMappingProjectMapping status(Integer status) {
         this.setStatus(status);
         return this;
     }
@@ -152,34 +149,28 @@ public class UserVendorMappingObjectMapping extends AbstractAuditingEntity  impl
         this.userVendorMapping = userVendorMapping;
     }
 
-    public UserVendorMappingObjectMapping user(UserVendorMapping userVendorMapping) {
+    public UserVendorMappingProjectMapping user(UserVendorMapping userVendorMapping) {
         this.setUserVendorMapping(userVendorMapping);
         return this;
     }
 
-    public Object getObject() {
-        return this.object;
+    public Project getProject() {
+        return project;
     }
 
-    public void setObject(Object object) {
-        this.object = object;
+    public void setProject(Project project) {
+        this.project = project;
     }
-
-    public UserVendorMappingObjectMapping object(Object object) {
-        this.setObject(object);
-        return this;
-    }
-
 
     @Override
     public boolean equals(java.lang.Object o) {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof UserVendorMappingObjectMapping)) {
+        if (!(o instanceof UserVendorMappingProjectMapping)) {
             return false;
         }
-        return id != null && id.equals(((UserVendorMappingObjectMapping) o).id);
+        return id != null && id.equals(((UserVendorMappingProjectMapping) o).id);
     }
 
     @Override

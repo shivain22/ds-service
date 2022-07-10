@@ -22,12 +22,12 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 
 @NamedNativeQuery(name = "Project.findProjectWithUploadCountByUser",
     query = "select  \n" +
-        "ps.id as id,  \n" +
-        "case when ps.totalRequired is null then 0 else ps.totalRequired end as totalRequired, \n" +
-        "case when pus.totalUploaded is null then 0 else pus.totalUploaded end as totalUploaded, \n" +
-        "case when pus.totalApproved is null then 0 else pus.totalApproved end as totalApproved, \n" +
-        "case when pus.totalRejected is null then 0 else pus.totalRejected end as totalRejected, \n" +
-        "case when pus.totalPending is null then 0 else pus.totalPending end as totalPending,\n" +
+        "p.id as id,  \n" +
+        "p.total_required as totalRequired, \n" +
+        "uvmpm.total_uploaded as totalUploaded, \n" +
+        "uvmpm.total_approved as totalApproved, \n" +
+        "uvmpm.total_rejected as totalRejected, \n" +
+        "uvmpm.total_pending as totalPending,\n" +
         "p.status ,\n" +
         "p.audio_type ,\n" +
         "p.auto_create_objects ,\n" +
@@ -45,20 +45,21 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
         "p.rework_status ,\n" +
         "p.video_type\n" +
         "from \n" +
-        "project_summary ps\n" +
-        "left join project_upload_summary pus on ps.id=pus.id\n" +
-        "left join user_project_only_mapping_view upmomv pus on upmomv.projectId=pus.id\n" +
-        "left join project p on p.id=ps.id where upmomv.userId=?1 and upmomv.status=1",
+        "project p\n" +
+        "left join user_vendor_mapping_project_mapping uvmpm on p.id=uvmpm.project_id\n" +
+        "left join user_vendor_mapping uvm on uvm.id=uvmpm.user_vendor_mapping_id \n" +
+        "where uvm.user_id=?1 and uvm.status=1",
     resultSetMapping = "Mapping.ProjectDTO")
 
 @NamedNativeQuery(name = "Project.findProjectWithUploadCountByUser.count",
-    query = "select count(*) from (select  \n" +
-        "ps.id as id  \n" +
+    query = "select count(*) from (" +
+        "select  \n" +
+        "p.id as id,  \n" +
         "from \n" +
-        "project_summary ps\n" +
-        "left join project_upload_summary pus on ps.id=pus.id\n" +
-        "left join user_project_only_mapping_view upmomv pus on upmomv.projectId=pus.id\n" +
-        " where upmomv.userId=?1 and upmomv.status=1"+
+        "project p\n" +
+        "left join user_vendor_mapping_project_mapping uvmpm on p.id=uvmpm.project_id\n" +
+        "left join user_vendor_mapping uvm on uvm.id=uvmpm.user_vendor_mapping_id \n" +
+        "where uvm.user_id=?1 and uvm.status=1"+
         ")a  ")
 
 
@@ -386,44 +387,47 @@ public class Project extends AbstractAuditingEntity  implements Serializable {
     @Column(name = "qc_levels")
     private Integer qcLevels;
 
-    @Transient
-    @Column (name = "total_uploaded")
+
+    @Column (name = "total_uploaded",columnDefinition = "integer default 0")
     @JsonProperty
     private Integer totalUploaded;
 
-    @Transient
-    @Column(name = "total_approved")
+
+    @Column(name = "total_approved",columnDefinition = "integer default 0")
     @JsonProperty
     private Integer totalApproved;
 
-    @Transient
-    @Column(name = "total_rejected")
+
+    @Column(name = "total_rejected",columnDefinition = "integer default 0")
     @JsonProperty
     private Integer totalRejected;
 
-    @Transient
-    @Column(name = "total_pending")
+
+    @Column(name = "total_pending",columnDefinition = "integer default 0")
     @JsonProperty
     private Integer totalPending;
 
+    @Column(name = "total_required",columnDefinition = "integer default 0")
+    @JsonProperty
+    private Integer totalRequired;
 
-    @Column(name="auto_create_objects")
+    @Column(name="auto_create_objects",columnDefinition = "integer default 0")
     @JsonProperty
     private Integer autoCreateObjects=0;
 
-    @Column(name="num_of_objects")
+    @Column(name="num_of_objects",columnDefinition = "integer default 0")
     @JsonProperty
     private Integer numOfObjects;
 
-    @Column(name="object_prefix")
+    @Column(name="object_prefix",columnDefinition = "varchar(50) default ' '")
     @JsonProperty
     private String objectPrefix;
 
-    @Column(name="object_suffix")
+    @Column(name="object_suffix",columnDefinition = "varchar(50) default ' '")
     @JsonProperty
     private String objectSuffix;
 
-    @Column(name="external_dataset_status")
+    @Column(name="external_dataset_status",columnDefinition = "integer default 0")
     @JsonProperty
     private Integer externalDatasetStatus;
 
@@ -457,6 +461,14 @@ public class Project extends AbstractAuditingEntity  implements Serializable {
     @ManyToOne(optional = true)
     @JoinColumn(name = "category_id", nullable = true, foreignKey = @ForeignKey(name="fk_project_category"))
     private Category category;
+
+    public Integer getTotalRequired() {
+        return totalRequired;
+    }
+
+    public void setTotalRequired(Integer totalRequired) {
+        this.totalRequired = totalRequired;
+    }
 
     public Category getCategory() {
         return category;

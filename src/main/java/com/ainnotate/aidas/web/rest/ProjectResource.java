@@ -14,11 +14,9 @@ import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import org.apache.commons.lang3.time.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -251,7 +249,7 @@ public class ProjectResource {
         log.debug("REST request to add AidasQcUsers : {}", projectQcDTO);
         for(UserDTO userDTO: projectQcDTO.getQcUsers()){
             //the uservendormappingid coming from the frontend is actually qpc.id -- check the method which fetch list of qc users for project.
-            QcProjectMapping qpc = qcProjectMappingRepository.getById(userDTO.getUserCustomerMappingId());
+            CustomerQcProjectMapping qpc = qcProjectMappingRepository.getById(userDTO.getUserCustomerMappingId());
             qpc.setStatus(userDTO.getStatus());
             qpc.setQcLevel(userDTO.getQcLevel());
             qcProjectMappingRepository.save(qpc);
@@ -629,14 +627,9 @@ public class ProjectResource {
         if(user.getAuthority().getName().equals(AidasConstants.VENDOR_USER)){
             List<ProjectDTO> projects =  projectRepository.findProjectWithUploadCountByUser(pageable,user.getId());
             for(ProjectDTO p:projects){
-                //Integer totalApprovedUploads = projectRepository.countUploadsByProject(p.getId());
                 List<ProjectProperty> projectProperties = projectPropertyRepository.findAllProjectProperty(p.getId());
                 p.setAidasProjectProperties(projectProperties);
-                //if(totalApprovedUploads!=null) {
-                    p.setTotalRequired(p.getTotalRequired() - p.getTotalApproved());
-                //}else{
-                    //p.setTotalRequired(p.getTotalRequired());
-                //}
+                p.setTotalRequired(p.getTotalRequired() - p.getTotalApproved());
             }
             PagedListHolder<ProjectDTO> pages = new PagedListHolder(projects);
             pages.setPage(pageable.getPageNumber()); //set current page number

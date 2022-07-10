@@ -517,7 +517,7 @@ public class UploadResource {
         Upload upload = uploadRepository.getById(id);
         Customer customer = upload.getUserVendorMappingObjectMapping().getObject().getProject().getCustomer();
         Project project = upload.getUserVendorMappingObjectMapping().getObject().getProject();
-        List<QcProjectMapping> qpms = qcProjectMappingRepository.getQcProjectMappingByProjectAndCustomerAndUser(project.getId(),customer.getId(),user.getId());
+        List<CustomerQcProjectMapping> qpms = qcProjectMappingRepository.getQcProjectMappingByProjectAndCustomerAndUser(project.getId(),customer.getId(),user.getId());
         upload.setStatus(AidasConstants.AIDAS_UPLOAD_APPROVED);
         upload.setApprovalStatus(AidasConstants.AIDAS_UPLOAD_APPROVED);
         upload.setQcEndDate(Instant.now());
@@ -571,7 +571,7 @@ public class UploadResource {
         Upload upload = uploadRepository.getById(id);
         Customer customer = upload.getUserVendorMappingObjectMapping().getObject().getProject().getCustomer();
         Project project = upload.getUserVendorMappingObjectMapping().getObject().getProject();
-        List<QcProjectMapping> qpms = qcProjectMappingRepository.getQcProjectMappingByProjectAndCustomerAndUser(project.getId(),customer.getId(),user.getId());
+        List<CustomerQcProjectMapping> qpms = qcProjectMappingRepository.getQcProjectMappingByProjectAndCustomerAndUser(project.getId(),customer.getId(),user.getId());
         upload.setStatus(AidasConstants.AIDAS_UPLOAD_REJECTED);
         Upload result = uploadRepository.save(upload);
         for(UploadRejectReason uploadRejectReason : uploadRejectReasons){
@@ -720,64 +720,70 @@ public class UploadResource {
     public ResponseEntity<List<Upload>> getAllAidasUploads(Pageable pageable, @PathVariable Long id, @PathVariable String type, @PathVariable String status) {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to get a page of AidasUploads");
-        Page<Upload> page = uploadRepository.findAll(pageable);
-        Authority authority = user.getAuthority();
-        if(authority.getName().equals(AidasConstants.ADMIN)){
-            page = uploadRepository.findAll(pageable);
-        }
-        if(authority.getName().equals(AidasConstants.ORG_ADMIN)){
-            page = uploadRepository.findAidasUploadByAidasOrganisation(user.getOrganisation().getId(),pageable);
-        }
-        if(authority.getName().equals(AidasConstants.CUSTOMER_ADMIN)){
-            page = uploadRepository.findAidasUploadByAidasCustomer(user.getCustomer().getId(),pageable);
-        }
-        if(authority.getName().equals(AidasConstants.VENDOR_ADMIN)){
-            page = uploadRepository.findAidasUploadByAidasVendor(user.getVendor().getId(),pageable);
-        }
-        if(authority.getName().equals(AidasConstants.VENDOR_USER)){
-            if(id!=null && type!=null && status!=null){
-                if(id!=null && type.equalsIgnoreCase("o") && status.equalsIgnoreCase("a") ){
-                    page= uploadRepository.findAllByUserAndObject(user.getId(),id,AidasConstants.AIDAS_UPLOAD_APPROVED,pageable);
+        System.out.println("get upload starts");
+        try {
+            Page<Upload> page = uploadRepository.findAll(pageable);
+            Authority authority = user.getAuthority();
+            if (authority.getName().equals(AidasConstants.ADMIN)) {
+                page = uploadRepository.findAll(pageable);
+            }
+            if (authority.getName().equals(AidasConstants.ORG_ADMIN)) {
+                page = uploadRepository.findAidasUploadByAidasOrganisation(user.getOrganisation().getId(), pageable);
+            }
+            if (authority.getName().equals(AidasConstants.CUSTOMER_ADMIN)) {
+                page = uploadRepository.findAidasUploadByAidasCustomer(user.getCustomer().getId(), pageable);
+            }
+            if (authority.getName().equals(AidasConstants.VENDOR_ADMIN)) {
+                page = uploadRepository.findAidasUploadByAidasVendor(user.getVendor().getId(), pageable);
+            }
+            if (authority.getName().equals(AidasConstants.VENDOR_USER)) {
+                if (id != null && type != null && status != null) {
+                    if (id != null && type.equalsIgnoreCase("o") && status.equalsIgnoreCase("a")) {
+                        page = uploadRepository.findAllByUserAndObject(user.getId(), id, AidasConstants.AIDAS_UPLOAD_APPROVED, pageable);
+                    }
+                    if (id != null && type.equalsIgnoreCase("o") && status.equalsIgnoreCase("r")) {
+                        page = uploadRepository.findAllByUserAndObject(user.getId(), id, AidasConstants.AIDAS_UPLOAD_REJECTED, pageable);
+                    }
+                    if (id != null && type.equalsIgnoreCase("o") && status.equalsIgnoreCase("p")) {
+                        page = uploadRepository.findAllByUserAndObject(user.getId(), id, AidasConstants.AIDAS_UPLOAD_PENDING, pageable);
+                    }
+                    if (id != null && type.equalsIgnoreCase("o") && status.equalsIgnoreCase("all")) {
+                        page = uploadRepository.findAllByUserAndObject(user.getId(), id, pageable);
+                    }
+                    if (id != null && type.equalsIgnoreCase("p") && status.equalsIgnoreCase("a")) {
+                        page = uploadRepository.findAllByUserAndProject(user.getId(), id, AidasConstants.AIDAS_UPLOAD_APPROVED, pageable);
+                    }
+                    if (id != null && type.equalsIgnoreCase("p") && status.equalsIgnoreCase("r")) {
+                        page = uploadRepository.findAllByUserAndProject(user.getId(), id, AidasConstants.AIDAS_UPLOAD_REJECTED, pageable);
+                    }
+                    if (id != null && type.equalsIgnoreCase("p") && status.equalsIgnoreCase("p")) {
+                        page = uploadRepository.findAllByUserAndProject(user.getId(), id, AidasConstants.AIDAS_UPLOAD_PENDING, pageable);
+                    }
+                    if (id != null && type.equalsIgnoreCase("p") && status.equalsIgnoreCase("all")) {
+                        page = uploadRepository.findAllByUserAndProject(user.getId(), id, pageable);
+                    }
                 }
-                if(id!=null && type.equalsIgnoreCase("o") && status.equalsIgnoreCase("r") ){
-                    page= uploadRepository.findAllByUserAndObject(user.getId(),id,AidasConstants.AIDAS_UPLOAD_REJECTED,pageable);
-                }
-                if(id!=null && type.equalsIgnoreCase("o") && status.equalsIgnoreCase("p") ){
-                    page= uploadRepository.findAllByUserAndObject(user.getId(),id,AidasConstants.AIDAS_UPLOAD_PENDING,pageable);
-                }
-                if(id!=null && type.equalsIgnoreCase("o") && status.equalsIgnoreCase("all") ){
-                    page= uploadRepository.findAllByUserAndObject(user.getId(),id,pageable);
-                }
-                if(id!=null && type.equalsIgnoreCase("p") && status.equalsIgnoreCase("a") ){
-                    page= uploadRepository.findAllByUserAndProject(user.getId(),id,AidasConstants.AIDAS_UPLOAD_APPROVED,pageable);
-                }
-                if(id!=null && type.equalsIgnoreCase("p") && status.equalsIgnoreCase("r") ){
-                    page= uploadRepository.findAllByUserAndProject(user.getId(),id,AidasConstants.AIDAS_UPLOAD_REJECTED,pageable);
-                }
-                if(id!=null && type.equalsIgnoreCase("p") && status.equalsIgnoreCase("p") ){
-                    page= uploadRepository.findAllByUserAndProject(user.getId(),id,AidasConstants.AIDAS_UPLOAD_PENDING,pageable);
-                }
-                if(id!=null && type.equalsIgnoreCase("p") && status.equalsIgnoreCase("all") ) {
-                    page= uploadRepository.findAllByUserAndProject(user.getId(),id,pageable);
+                if (id == null && type == null && status != null) {
+                    if (status.equalsIgnoreCase("a")) {
+                        page = uploadRepository.findAllByUser(user.getId(), AidasConstants.AIDAS_UPLOAD_APPROVED, pageable);
+                    }
+                    if (status.equalsIgnoreCase("r")) {
+                        page = uploadRepository.findAllByUser(user.getId(), AidasConstants.AIDAS_UPLOAD_REJECTED, pageable);
+                    }
+                    if (status.equalsIgnoreCase("p")) {
+                        page = uploadRepository.findAllByUser(user.getId(), AidasConstants.AIDAS_UPLOAD_PENDING, pageable);
+                    }
+                    if (status.equalsIgnoreCase("all")) {
+                        page = uploadRepository.findAllByUser(user.getId(), pageable);
+                    }
                 }
             }
-            if(id==null && type==null && status!=null){
-                if(status.equalsIgnoreCase("a")){
-                    page= uploadRepository.findAllByUser(user.getId(),AidasConstants.AIDAS_UPLOAD_APPROVED,pageable);
-                }
-                if(status.equalsIgnoreCase("r")){
-                    page= uploadRepository.findAllByUser(user.getId(),AidasConstants.AIDAS_UPLOAD_REJECTED,pageable);
-                }
-                if(status.equalsIgnoreCase("p")){
-                    page= uploadRepository.findAllByUser(user.getId(),AidasConstants.AIDAS_UPLOAD_PENDING,pageable);
-                }
-                if(status.equalsIgnoreCase("all")){
-                    page= uploadRepository.findAllByUser(user.getId(),pageable);
-                }
-            }
+            HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+            return ResponseEntity.ok().headers(headers).body(page.getContent());
+        }catch(Exception e){
+            e.printStackTrace();
+            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
-        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
-        return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
 
@@ -900,7 +906,7 @@ public class UploadResource {
         if(upload !=null) {
             Customer customer = upload.getUserVendorMappingObjectMapping().getObject().getProject().getCustomer();
             Project project = upload.getUserVendorMappingObjectMapping().getObject().getProject();
-            List<QcProjectMapping> qpms = qcProjectMappingRepository.getQcProjectMappingByProjectAndCustomerAndUser(project.getId(),customer.getId(),user.getId());
+            List<CustomerQcProjectMapping> qpms = qcProjectMappingRepository.getQcProjectMappingByProjectAndCustomerAndUser(project.getId(),customer.getId(),user.getId());
             if(qpms!=null && qpms.size()>0) {
                 upload.setQcDoneBy(qpms.get(0));
                 upload.setQcStartDate(Instant.now());

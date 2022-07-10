@@ -86,7 +86,7 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
     @JsonIgnoreProperties(value={"user","project"})
     @JsonIgnore
     @JoinColumn(name = "qc_done_by_id", nullable = true, foreignKey = @ForeignKey(name="fk_upload_qc_done_by"))
-    private QcProjectMapping qcDoneBy;
+    private CustomerQcProjectMapping qcDoneBy;
     @Column(name="qc_start_date", nullable=true)
     private Instant qcStartDate;
     @Column(name="qc_end_date", nullable=true)
@@ -239,11 +239,11 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
         this.qcStatus = qcStatus;
     }
 
-    public QcProjectMapping getQcDoneBy() {
+    public CustomerQcProjectMapping getQcDoneBy() {
         return qcDoneBy;
     }
 
-    public void setQcDoneBy(QcProjectMapping qcDoneBy) {
+    public void setQcDoneBy(CustomerQcProjectMapping qcDoneBy) {
         this.qcDoneBy = qcDoneBy;
     }
 

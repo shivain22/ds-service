@@ -3,7 +3,6 @@ package com.ainnotate.aidas.service;
 import com.ainnotate.aidas.domain.*;
 import com.ainnotate.aidas.domain.Object;
 import com.ainnotate.aidas.repository.*;
-import liquibase.pro.packaged.Q;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -69,11 +68,11 @@ public class ObjectAddingTask implements  Runnable{
         userVendorMappingObjectMappingRepository.saveAll(uvmoms);
         if(getDummy()) {
             List<UserCustomerMapping> qcUserCustomerMapping = userCustomerMappingRepository.getAllQcUserCustomerMapping(object.getProject().getCustomer().getId());
-            List<QcProjectMapping> qpms = new ArrayList<>();
+            List<CustomerQcProjectMapping> qpms = new ArrayList<>();
             for (UserCustomerMapping ucm : qcUserCustomerMapping) {
                 if (object.getProject().getQcLevels() != null) {
                     for (int i = 0; i < object.getProject().getQcLevels(); i++) {
-                        QcProjectMapping qpm = new QcProjectMapping();
+                        CustomerQcProjectMapping qpm = new CustomerQcProjectMapping();
                         qpm.setUserCustomerMapping(ucm);
                         qpm.setProject(object.getProject());
                         qpm.setStatus(0);
