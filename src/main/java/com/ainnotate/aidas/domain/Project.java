@@ -36,8 +36,8 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
         "p.external_dataset_status ,\n" +
         "p.image_type ,\n" +
         "p.name ,\n" +
-        "p.num_of_objects ,\n" +
-        "p.num_of_uploads_reqd ,\n" +
+        "p.number_of_objects ,\n" +
+        "p.number_of_uploads_required ,\n" +
         "p.object_prefix ,\n" +
         "p.object_suffix ,\n" +
         "p.project_type ,\n" +
@@ -54,7 +54,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 @NamedNativeQuery(name = "Project.findProjectWithUploadCountByUser.count",
     query = "select count(*) from (" +
         "select  \n" +
-        "p.id as id,  \n" +
+        "p.id as id  \n" +
         "from \n" +
         "project p\n" +
         "left join user_vendor_mapping_project_mapping uvmpm on p.id=uvmpm.project_id\n" +
@@ -80,8 +80,8 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
             @ColumnResult(name = "external_dataset_status",type = Integer.class),
             @ColumnResult(name = "image_type",type = String.class),
             @ColumnResult(name = "name",type = String.class),
-            @ColumnResult(name = "num_of_objects",type = Integer.class),
-            @ColumnResult(name = "num_of_uploads_reqd",type = Integer.class),
+            @ColumnResult(name = "number_of_objects",type = Integer.class),
+            @ColumnResult(name = "number_of_uploads_required",type = Integer.class),
             @ColumnResult(name = "object_prefix",type = String.class),
             @ColumnResult(name = "object_suffix",type = String.class),
             @ColumnResult(name = "project_type",type = String.class),
@@ -107,7 +107,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
         "a.external_dataset_status , \n" +
         "a.image_type , \n" +
         "a.name , \n" +
-        "a.num_of_objects , \n" +
+        "a.number_of_objects , \n" +
         "a.num_of_uploads_reqd , \n" +
         "a.object_prefix , \n" +
         "a.object_suffix , \n" +
@@ -119,7 +119,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
         "select \n" +
         "p.id as projectId,\n" +
         "o.id as objectId,\n" +
-        "o.number_of_upload_reqd as totalRequired, \n" +
+        "o.number_of_uploads_required as totalRequired, \n" +
         "count(u.id) as totalUploaded, \n" +
         "sum(CASE WHEN u.approval_status = 1 THEN 1 ELSE 0 END) AS totalApproved,  \n" +
         "sum(CASE WHEN u.approval_status = 0 THEN 1 ELSE 0 END) AS totalRejected,   \n" +
@@ -132,7 +132,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
         "p.external_dataset_status , \n" +
         "p.image_type , \n" +
         "p.name , \n" +
-        "p.num_of_objects , \n" +
+        "p.number_of_objects , \n" +
         "p.num_of_uploads_reqd , \n" +
         "p.object_prefix , \n" +
         "p.object_suffix , \n" +
@@ -150,7 +150,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
         ") a group by projectId union "+
         " (select " +
         "        p.id," +
-        "        sum(o.number_of_upload_reqd) as totalRequired, " +
+        "        sum(o.number_of_uploads_required) as totalRequired, " +
         "        0 as totalUploaded, " +
         "        0 AS totalApproved,  " +
         "        0 AS totalRejected,   " +
@@ -163,8 +163,8 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
         "        p.external_dataset_status ," +
         "        p.image_type ," +
         "        p.name ," +
-        "        p.num_of_objects ," +
-        "        p.num_of_uploads_reqd ," +
+        "        p.number_of_objects ," +
+        "        p.number_of_uploads_required ," +
         "        p.object_prefix ," +
         "        p.object_suffix ," +
         "        p.project_type ," +
@@ -204,8 +204,8 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
         "        p.external_dataset_status ," +
         "        p.image_type ," +
         "        p.name ," +
-        "        p.num_of_objects ," +
-        "        p.num_of_uploads_reqd ," +
+        "        p.number_of_objects ," +
+        "        p.number_of_uploads_required ," +
         "        p.object_prefix ," +
         "        p.object_suffix ," +
         "        p.project_type ," +
@@ -233,8 +233,8 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
         "        p.external_dataset_status ," +
         "        p.image_type ," +
         "        p.name ," +
-        "        p.num_of_objects ," +
-        "        p.num_of_uploads_reqd ," +
+        "        p.number_of_objects ," +
+        "        p.number_of_uploads_required ," +
         "        p.object_prefix ," +
         "        p.object_suffix ," +
         "        p.project_type ," +
@@ -276,8 +276,8 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
             @ColumnResult(name = "external_dataset_status",type = Integer.class),
             @ColumnResult(name = "image_type",type = String.class),
             @ColumnResult(name = "name",type = String.class),
-            @ColumnResult(name = "num_of_objects",type = Integer.class),
-            @ColumnResult(name = "num_of_uploads_reqd",type = Integer.class),
+            @ColumnResult(name = "number_of_objects",type = Integer.class),
+            @ColumnResult(name = "number_of_uploads_required",type = Integer.class),
             @ColumnResult(name = "object_prefix",type = String.class),
             @ColumnResult(name = "object_suffix",type = String.class),
             @ColumnResult(name = "project_type",type = String.class),
@@ -336,11 +336,23 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
         }))
 
 @NamedNativeQuery(
-    name = "Project.findProjectsForQC",
-    query="select p.* from project p, qc_project_mapping qpm, user_customer_mapping ucm where qpm.user_customer_mapping_id=ucm.id and ucm.user_id=? and qpm.project_id=p.id and p.status=1 and qpm.status=1 and ucm.status=1 and p.id>0 order by p.id desc",
-    resultSetMapping = "Mapping.findProjectsForQC"
+    name = "Project.findProjectsForCustomerQC",
+    query="select p.* from project p, customer_qc_project_mapping cqpm, user_customer_mapping ucm where cqpm.user_customer_mapping_id=ucm.id and ucm.user_id=? and cqpm.project_id=p.id and p.status=1 and cqpm.status=1 and ucm.status=1 and p.id>0 order by p.id desc",
+    resultSetMapping = "Mapping.findProjectsForCustomerQC"
 )
-@SqlResultSetMapping(name = "Mapping.findProjectsForQC",
+@SqlResultSetMapping(name = "Mapping.findProjectsForCustomerQC",
+    classes = @ConstructorResult(targetClass = ProjectDTO.class,
+        columns = {
+            @ColumnResult(name = "id",type = Long.class),
+            @ColumnResult(name = "name",type = String.class)
+        }))
+
+@NamedNativeQuery(
+    name = "Project.findProjectsForOrganisationQC",
+    query="select p.* from project p, organisation_qc_project_mapping oqpm, user_customer_mapping ucm where oqpm.user_organisation_mapping_id=ucm.id and ucm.user_id=? and oqpm.project_id=p.id and p.status=1 and oqpm.status=1 and ucm.status=1 and p.id>0 order by p.id desc",
+    resultSetMapping = "Mapping.findProjectsForOrganisationQC"
+)
+@SqlResultSetMapping(name = "Mapping.findProjectsForOrganisationQC",
     classes = @ConstructorResult(targetClass = ProjectDTO.class,
         columns = {
             @ColumnResult(name = "id",type = Long.class),
@@ -379,53 +391,53 @@ public class Project extends AbstractAuditingEntity  implements Serializable {
     private String description;
 
     @Column(name = "project_type")
-    private String projectType;
+    private String projectType="";
 
     @Column(name = "rework_status")
     private Integer reworkStatus=0;
 
     @Column(name = "qc_levels")
-    private Integer qcLevels;
+    private Integer qcLevels=1;
 
 
     @Column (name = "total_uploaded",columnDefinition = "integer default 0")
     @JsonProperty
-    private Integer totalUploaded;
+    private Integer totalUploaded=0;
 
 
     @Column(name = "total_approved",columnDefinition = "integer default 0")
     @JsonProperty
-    private Integer totalApproved;
+    private Integer totalApproved=0;
 
 
     @Column(name = "total_rejected",columnDefinition = "integer default 0")
     @JsonProperty
-    private Integer totalRejected;
+    private Integer totalRejected=0;
 
 
     @Column(name = "total_pending",columnDefinition = "integer default 0")
     @JsonProperty
-    private Integer totalPending;
+    private Integer totalPending=0;
 
     @Column(name = "total_required",columnDefinition = "integer default 0")
     @JsonProperty
-    private Integer totalRequired;
+    private Integer totalRequired=0;
 
     @Column(name="auto_create_objects",columnDefinition = "integer default 0")
     @JsonProperty
     private Integer autoCreateObjects=0;
 
-    @Column(name="num_of_objects",columnDefinition = "integer default 0")
+    @Column(name="number_of_objects",columnDefinition = "integer default 0")
     @JsonProperty
-    private Integer numOfObjects;
+    private Integer numberOfObjects=0;
 
     @Column(name="object_prefix",columnDefinition = "varchar(50) default ' '")
     @JsonProperty
-    private String objectPrefix;
+    private String objectPrefix="";
 
     @Column(name="object_suffix",columnDefinition = "varchar(50) default ' '")
     @JsonProperty
-    private String objectSuffix;
+    private String objectSuffix="";
 
     @Column(name="external_dataset_status",columnDefinition = "integer default 0")
     @JsonProperty
@@ -433,15 +445,15 @@ public class Project extends AbstractAuditingEntity  implements Serializable {
 
     @Column(name="image_type")
     @JsonProperty
-    private String imageType;
+    private String imageType="";
 
     @Column(name="video_type")
     @JsonProperty
-    private String videoType;
+    private String videoType="";
 
     @Column(name="audio_type")
     @JsonProperty
-    private String audioType;
+    private String audioType="";
     @ManyToOne(optional = false)
     @NotNull
     @JsonIgnoreProperties(value = { "organisation" }, allowSetters = true)
@@ -453,14 +465,39 @@ public class Project extends AbstractAuditingEntity  implements Serializable {
     @JsonIgnoreProperties(value = { "project" }, allowSetters = true)
     @Field(type=FieldType.Nested,store = false,storeNullValue = false)
     private Set<ProjectProperty> projectProperties=new HashSet<>();
-    @Column
-    private Integer numOfUploadsReqd;
+    @Column(name="number_of_uploads_required")
+    private Integer numberOfUploadsRequired;
     @Column(name="buffer_percent")
-    private Integer bufferPercent;
+    private Integer bufferPercent=0;
 
     @ManyToOne(optional = true)
     @JoinColumn(name = "category_id", nullable = true, foreignKey = @ForeignKey(name="fk_project_category"))
     private Category category;
+
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "sub_category_id", nullable = true, foreignKey = @ForeignKey(name="fk_project_sub_category"))
+    private SubCategory subCategory;
+
+    @Column(name="user_added_status",columnDefinition = "integer default 0")
+    private Integer userAddedStatus=0;
+    @Column(name ="number_of_buffered_uploads_required",columnDefinition = "integer default 0")
+    private Integer numberOfBufferedUploadsdRequired=0;
+
+    public SubCategory getSubCategory() {
+        return subCategory;
+    }
+
+    public void setSubCategory(SubCategory subCategory) {
+        this.subCategory = subCategory;
+    }
+
+    public Integer getUserAddedStatus() {
+        return userAddedStatus;
+    }
+
+    public void setUserAddedStatus(Integer userAddedStatus) {
+        this.userAddedStatus = userAddedStatus;
+    }
 
     public Integer getTotalRequired() {
         return totalRequired;
@@ -510,16 +547,6 @@ public class Project extends AbstractAuditingEntity  implements Serializable {
         this.externalDatasetStatus = externalDatasetStatus;
     }
 
-    public Integer getNumOfUploadsReqd() {
-        return numOfUploadsReqd;
-    }
-
-    public void setNumOfUploadsReqd(Integer numOfUploadsReqd) {
-        this.numOfUploadsReqd = numOfUploadsReqd;
-    }
-
-
-
     public Integer getAutoCreateObjects() {
         return autoCreateObjects;
     }
@@ -528,12 +555,12 @@ public class Project extends AbstractAuditingEntity  implements Serializable {
         this.autoCreateObjects = autoCreateObjects;
     }
 
-    public Integer getNumOfObjects() {
-        return numOfObjects;
+    public Integer getNumberOfObjects() {
+        return numberOfObjects;
     }
 
-    public void setNumOfObjects(Integer numOfObjects) {
-        this.numOfObjects = numOfObjects;
+    public void setNumberOfObjects(Integer numberOfObjects) {
+        this.numberOfObjects = numberOfObjects;
     }
 
     public String getObjectPrefix() {
@@ -703,6 +730,22 @@ public class Project extends AbstractAuditingEntity  implements Serializable {
         return id != null && id.equals(((Project) o).id);
     }
 
+    public Integer getNumberOfUploadsRequired() {
+        return numberOfUploadsRequired;
+    }
+
+    public void setNumberOfUploadsRequired(Integer numberOfUploadsRequired) {
+        this.numberOfUploadsRequired = numberOfUploadsRequired;
+    }
+
+    public Integer getNumberOfBufferedUploadsdRequired() {
+        return numberOfBufferedUploadsdRequired;
+    }
+
+    public void setNumberOfBufferedUploadsdRequired(Integer numberOfBufferedUploadsdRequired) {
+        this.numberOfBufferedUploadsdRequired = numberOfBufferedUploadsdRequired;
+    }
+
     @Override
     public int hashCode() {
         // see https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
@@ -712,11 +755,6 @@ public class Project extends AbstractAuditingEntity  implements Serializable {
     // prettier-ignore
     @Override
     public String toString() {
-        return "AidasProject{" +
-            "id=" + getId() +
-            ", name='" + getName() + "'" +
-            ", description='" + getDescription() + "'" +
-            ", projectType='" + getProjectType() + "'" +
-            "}";
+        return "Project{id=" + getId() +", name='" + getName() + "'" +", description='" + getDescription() + "'" +", projectType='" + getProjectType() + "'" +"}";
     }
 }

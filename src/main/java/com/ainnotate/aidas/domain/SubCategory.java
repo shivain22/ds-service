@@ -60,4 +60,9 @@ public class SubCategory extends AbstractAuditingEntity  implements Serializable
     public void setValue(String value) {
         this.value = value;
     }
+
+    @Override
+    public String toString() {
+        return "SubCategory{id="+id+",category_id="+this.category.getId()+",sub_category_value"+this.getValue()+"}";
+    }
 }

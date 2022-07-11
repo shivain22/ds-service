@@ -101,7 +101,7 @@ public class UserJsonStorage extends AbstractAuditingEntity  implements Serializ
     // prettier-ignore
     @Override
     public String toString() {
-        return "AidasUserJsonStorage{" +
+        return "UserJsonStorage{" +
             "id=" + getId() +
             ", jsonPayLoad='" + getJsonPayLoad() + "'" +
             "}";

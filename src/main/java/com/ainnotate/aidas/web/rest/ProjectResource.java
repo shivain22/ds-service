@@ -56,7 +56,7 @@ public class ProjectResource {
     private ProjectPropertyRepository projectPropertyRepository;
 
     @Autowired
-    private QcProjectMappingRepository qcProjectMappingRepository;
+    private CustomerQcProjectMappingRepository customerQcProjectMappingRepository;
 
     private final ProjectSearchRepository aidasProjectSearchRepository;
 
@@ -162,14 +162,15 @@ public class ProjectResource {
             project.setProjectType(c.getName());
             project.setCategory(c);
         }
+
         Project result = projectRepository.save(project);
         {
             Object obj = new Object();
             obj.setName(result.getName()+" - Dummy Object");
-            if(result.getNumOfUploadsReqd()!=null){
-                obj.setNumberOfUploadReqd(result.getNumOfUploadsReqd());
+            if(result.getNumberOfUploadsRequired()!=null){
+                obj.setNumberOfUploadsRequired(result.getNumberOfUploadsRequired());
             }else{
-                obj.setNumberOfUploadReqd(0);
+                obj.setNumberOfUploadsRequired(0);
             }
             obj.setDescription("Dummy object for project "+result.getName());
             obj.setProject(result);
@@ -193,7 +194,7 @@ public class ProjectResource {
             objectMappingTaskExecutor.execute(objectAddingTask);
         }
         if(result.getAutoCreateObjects()!=null && result.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)){
-            for(int i=0;i<result.getNumOfObjects();i++){
+            for(int i=0;i<result.getNumberOfObjects();i++){
                 Object obj = new Object();
                 String objName ="";
                 if(result.getObjectPrefix()!=null){
@@ -204,12 +205,13 @@ public class ProjectResource {
                     objName=result.getObjectSuffix();
                 }
                 obj.setName(objName+"_"+i+"_"+objName);
-                obj.setNumberOfUploadReqd(result.getNumOfUploadsReqd());
+                obj.setNumberOfUploadsRequired(result.getNumberOfUploadsRequired());
                 obj.setDescription(objName+"_"+i+"_"+objName);
                 obj.setProject(result);
                 obj.setBufferPercent(result.getBufferPercent());
                 obj.setDummy(0);
                 obj.setStatus(1);
+                obj.setNumberOfBufferedUploadsRequired(obj.getNumberOfUploadsRequired()+(obj.getNumberOfUploadsRequired()*(obj.getBufferPercent()/100)));
                 for(Property ap:aidasProperties){
                     ObjectProperty opp = new ObjectProperty();
                     opp.setObject(obj);
@@ -249,10 +251,10 @@ public class ProjectResource {
         log.debug("REST request to add AidasQcUsers : {}", projectQcDTO);
         for(UserDTO userDTO: projectQcDTO.getQcUsers()){
             //the uservendormappingid coming from the frontend is actually qpc.id -- check the method which fetch list of qc users for project.
-            CustomerQcProjectMapping qpc = qcProjectMappingRepository.getById(userDTO.getUserCustomerMappingId());
+            CustomerQcProjectMapping qpc = customerQcProjectMappingRepository.getById(userDTO.getUserCustomerMappingId());
             qpc.setStatus(userDTO.getStatus());
             qpc.setQcLevel(userDTO.getQcLevel());
-            qcProjectMappingRepository.save(qpc);
+            customerQcProjectMappingRepository.save(qpc);
         }
         return ResponseEntity.ok().body("Successfully added project qc level");
     }
@@ -601,7 +603,7 @@ public class ProjectResource {
             page =  projectRepository.findProjectWithUploadCountByUserForDropDown(user.getId());
         }
         if(user.getAuthority().getName().equals(AidasConstants.QC_USER)){
-            page = projectRepository.findProjectsForQC(user.getId());
+            page = projectRepository.findProjectsForCustomerQC(user.getId());
         }
         if(page!=null) {
             return ResponseEntity.ok().body(page);

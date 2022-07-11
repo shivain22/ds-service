@@ -60,4 +60,9 @@ public class Category extends AbstractAuditingEntity  implements Serializable {
     public void setValue(String value) {
         this.value = value;
     }
+
+    @Override
+    public String toString() {
+        return "Category{id="+id+",category_name"+this.getName()+",category_value="+this.getValue()+"}";
+    }
 }

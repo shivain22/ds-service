@@ -183,14 +183,8 @@ public class ObjectProperty extends AbstractAuditingEntity  implements Serializa
         return getClass().hashCode();
     }
 
-    // prettier-ignore
     @Override
     public String toString() {
-        return "AidasObjectProperty{" +
-            "id=" + getId() +
-            ", name='" + this.property.getName() + "'" +
-            ", description='" + this.property.getDescription() + "'" +
-            ", value='" + getValue() + "'" +
-            "}";
+        return "ObjectProperty{id=" + getId() +", property_name='" + this.property.getName() + "'" +", description='" + this.property.getDescription() + "'" +", value='" + getValue() + "'" +"}";
     }
 }

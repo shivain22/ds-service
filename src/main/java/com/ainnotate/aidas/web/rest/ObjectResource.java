@@ -149,7 +149,11 @@ public class ObjectResource {
         if(object.getBufferPercent()==null){
             object.setBufferPercent(20);
         }
+        object.setNumberOfUploadsRequired(object.getNumberOfUploadsRequired()+(object.getNumberOfUploadsRequired()*(object.getBufferPercent()/100)));
         Object result = objectRepository.save(object);
+        Project p = result.getProject();
+        p.setNumberOfBufferedUploadsdRequired(result.getNumberOfBufferedUploadsRequired());
+        p.setTotalRequired(p.getTotalRequired()+result.getNumberOfUploadsRequired());
         objectAddingTask.setObject(result);
         objectAddingTask.setDummy(false);
         objectMappingTaskExecutor.execute(objectAddingTask);
@@ -355,7 +359,7 @@ public class ObjectResource {
         existingObject.setDescription(object.getDescription());
         existingObject.setProject(object.getProject());
         existingObject.setBufferPercent(object.getBufferPercent());
-        existingObject.setNumberOfUploadReqd(object.getNumberOfUploadReqd());
+        existingObject.setNumberOfUploadsRequired(object.getNumberOfUploadsRequired());
         existingObject.setAudioType(object.getAudioType());
         existingObject.setVideoType(object.getVideoType());
         existingObject.setImageType(object.getImageType());
@@ -420,8 +424,8 @@ public class ObjectResource {
                 if (object.getDescription() != null) {
                     existingAidasObject.setDescription(object.getDescription());
                 }
-                if (object.getNumberOfUploadReqd() != null) {
-                    existingAidasObject.setNumberOfUploadReqd(object.getNumberOfUploadReqd());
+                if (object.getNumberOfUploadsRequired() != null) {
+                    existingAidasObject.setNumberOfUploadsRequired(object.getNumberOfUploadsRequired());
                 }
 
                 return existingAidasObject;
@@ -488,10 +492,6 @@ public class ObjectResource {
             objects = objectRepository.getAllObjectsOfProject(projectId);
             if(objects!=null && objects.size()>0){
                 for(Object object : objects){
-                    Integer uploadsCompleted = uploadRepository.countAidasUploadByAidasUserAidasObjectMapping_AidasObject(object.getId());
-                    object.setUploadsCompleted(uploadsCompleted);
-                    Integer uploadsRemaining = (object.getNumberOfUploadReqd()+((object.getNumberOfUploadReqd()*(object.getBufferPercent())/100))-uploadsCompleted);
-                    object.setUploadsRemaining(uploadsRemaining);
                     IUploadDetail ud = objectRepository.countUploadsByObject(object.getId());
                     object.setTotalUploaded(ud.getTotalUploaded());
                     object.setTotalApproved(ud.getTotalApproved());
@@ -504,10 +504,6 @@ public class ObjectResource {
             objects = objectRepository.getAllObjectsOfProject(projectId);
             if(objects!=null && objects.size()>0){
                 for(Object object : objects){
-                    Integer uploadsCompleted = uploadRepository.countAidasUploadByAidasUserAidasObjectMapping_AidasObject(object.getId());
-                    object.setUploadsCompleted(uploadsCompleted);
-                    Integer uploadsRemaining = (object.getNumberOfUploadReqd()+((object.getNumberOfUploadReqd()*(object.getBufferPercent())/100))-uploadsCompleted);
-                    object.setUploadsRemaining(uploadsRemaining);
                     IUploadDetail ud = objectRepository.countUploadsByObject(object.getId());
                     if(ud.getTotalUploaded()!=null)
                         object.setTotalUploaded(ud.getTotalUploaded());
@@ -524,10 +520,6 @@ public class ObjectResource {
             objects = objectRepository.getAllByAidasProject_AidasCustomerAndAidasProject_Id(user.getCustomer().getId(),projectId);
             if(objects!=null && objects.size()>0){
                 for(Object object : objects){
-                    Integer uploadsCompleted = uploadRepository.countAidasUploadByAidasUserAidasObjectMapping_AidasObject(object.getId());
-                    object.setUploadsCompleted(uploadsCompleted);
-                    Integer uploadsRemaining = (object.getNumberOfUploadReqd()+((object.getNumberOfUploadReqd()*(object.getBufferPercent())/100))-uploadsCompleted);
-                    object.setUploadsRemaining(uploadsRemaining);
                     IUploadDetail ud = objectRepository.countUploadsByObject(object.getId());
                     object.setTotalUploaded(ud.getTotalUploaded());
                     object.setTotalApproved(ud.getTotalApproved());
@@ -540,10 +532,6 @@ public class ObjectResource {
             objects = objectRepository.getAllObjectsByVendorAdminProject(user.getVendor().getId());
             if(objects!=null && objects.size()>0){
                 for(Object object : objects){
-                    Integer uploadsCompleted = uploadRepository.countAidasUploadByAidasUserAidasObjectMapping_AidasObject(object.getId());
-                    object.setUploadsCompleted(uploadsCompleted);
-                    Integer uploadsRemaining = (object.getNumberOfUploadReqd()+((object.getNumberOfUploadReqd()*(object.getBufferPercent())/100))-uploadsCompleted);
-                    object.setUploadsRemaining(uploadsRemaining);
                     IUploadDetail ud = objectRepository.countUploadsByObject( object.getId());
                     object.setTotalUploaded(ud.getTotalUploaded());
                     object.setTotalApproved(ud.getTotalApproved());

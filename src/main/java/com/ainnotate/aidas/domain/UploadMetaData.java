@@ -145,10 +145,13 @@ public class UploadMetaData extends AbstractAuditingEntity  implements Serializa
     // prettier-ignore
     @Override
     public String toString() {
-        return "AidasUploadMetaData{" +
-            "id=" + getId() +
-            ", name='" + getName() + "'" +
-            ", value='" + getValue() + "'" +
-            "}";
+        if(this.projectProperty!=null && this.projectProperty.getProperty()!=null){
+            return "UploadMetaData{id="+id+",upload_id="+this.upload.getId()+",project_property_id="+this.projectProperty.getId()+",property_id="+this.projectProperty.getProperty().getId()+"}";
+        }
+        if(this.objectProperty!=null && this.objectProperty.getProperty()!=null){
+            return "UploadMetaData{id="+id+",upload_id="+this.upload.getId()+",object_property_id"+this.objectProperty.getId()+",property_id="+this.objectProperty.getProperty().getId()+"}";
+        }else{
+            return "UploadMetaData{id="+id+",upload_id="+this.upload.getId()+"}";
+        }
     }
 }

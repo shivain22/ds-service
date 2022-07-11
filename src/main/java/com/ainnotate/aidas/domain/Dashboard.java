@@ -131,4 +131,9 @@ public class Dashboard {
     public void setRejectedUploadCount(Long rejectedUploadCount) {
         this.rejectedUploadCount = rejectedUploadCount;
     }
+
+    @Override
+    public String toString() {
+        return "Dashboard{}";
+    }
 }

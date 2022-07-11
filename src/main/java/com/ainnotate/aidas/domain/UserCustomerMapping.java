@@ -80,8 +80,6 @@ public class UserCustomerMapping extends AbstractAuditingEntity implements Seria
     // prettier-ignore
     @Override
     public String toString() {
-        return "AidasQcProjectMapping{" +
-            "name='" + id + '\'' +
-            "}";
+        return "UserCustomerMapping{user_id="+id+",customer_id="+this.customer.getId()+"}";
     }
 }

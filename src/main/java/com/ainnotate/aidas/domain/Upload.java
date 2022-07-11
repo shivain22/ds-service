@@ -65,7 +65,7 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     @JsonIgnoreProperties(value = { "upload" }, allowSetters = true)
     @JsonIgnore
-    private Set<UploadRejectMapping> uploadRejectMappings = new HashSet<>();
+    private Set<UploadRejectReasonMapping> uploadRejectReasonMappings = new HashSet<>();
 
     @Column(name = "object_key",  nullable = true)
     private String objectKey;
@@ -141,12 +141,12 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
         this.reworkUpload = reworkUpload;
     }
 
-    public Set<UploadRejectMapping> getAidasUploadRejectMappings() {
-        return uploadRejectMappings;
+    public Set<UploadRejectReasonMapping> getAidasUploadRejectMappings() {
+        return uploadRejectReasonMappings;
     }
 
-    public void setAidasUploadRejectMappings(Set<UploadRejectMapping> uploadRejectMappings) {
-        this.uploadRejectMappings = uploadRejectMappings;
+    public void setAidasUploadRejectMappings(Set<UploadRejectReasonMapping> uploadRejectReasonMappings) {
+        this.uploadRejectReasonMappings = uploadRejectReasonMappings;
     }
 
     public Integer getApprovalStatus() {
@@ -181,12 +181,12 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
         this.reworkUpload = reworkUpload;
     }
 
-    public Set<UploadRejectMapping> getUploadRejectMappings() {
-        return uploadRejectMappings;
+    public Set<UploadRejectReasonMapping> getUploadRejectMappings() {
+        return uploadRejectReasonMappings;
     }
 
-    public void setUploadRejectMappings(Set<UploadRejectMapping> uploadRejectMappings) {
-        this.uploadRejectMappings = uploadRejectMappings;
+    public void setUploadRejectMappings(Set<UploadRejectReasonMapping> uploadRejectReasonMappings) {
+        this.uploadRejectReasonMappings = uploadRejectReasonMappings;
     }
 
     public Set<UploadMetaData> getUploadMetaDataSet() {
@@ -378,9 +378,10 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
     // prettier-ignore
     @Override
     public String toString() {
-        return "AidasUpload{" +
+        return "Upload{" +
             "id=" + getId() +
             ", name='" + getName() + "'" +
+            ", object_key='" + getObjectKey() + "'" +
             ", dateUploaded='" + getDateUploaded() + "'" +
             ", status='" + getStatus() + "'" +
             ", statusModifiedDate='" + getStatusModifiedDate() + "'" +

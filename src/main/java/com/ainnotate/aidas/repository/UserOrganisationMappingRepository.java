@@ -1,9 +1,6 @@
 package com.ainnotate.aidas.repository;
 
-import com.ainnotate.aidas.domain.AppProperty;
-import com.ainnotate.aidas.domain.Organisation;
-import com.ainnotate.aidas.domain.UserOrganisationMapping;
-import com.ainnotate.aidas.domain.UserVendorMapping;
+import com.ainnotate.aidas.domain.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -27,4 +24,7 @@ public interface UserOrganisationMappingRepository extends JpaRepository<UserOrg
     @Modifying
     @Query(value = "delete from user_organisation_mapping where is_sample_data=1 order by id desc",nativeQuery = true)
     void deleteAllSampleUserOrganisationMappings();
+
+    @Query(value = "select * from user_organisation_mapping uom, user_authority_mapping uam where uom.user_id=uam.user_id and uam.authority_id=6 and uom.is_sample_data=1 ",nativeQuery = true)
+    List<UserOrganisationMapping> getAllSampleUserOrganisationMappingsForQc();
 }

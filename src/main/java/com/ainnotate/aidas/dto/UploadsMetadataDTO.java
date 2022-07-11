@@ -9,7 +9,7 @@ import java.util.List;
 
 public class UploadsMetadataDTO {
 
-    @JsonIgnoreProperties(value = {"userVendorMappingObjecMapping","uploadRejectMappings","uploadMetaDataSet"})
+    @JsonIgnoreProperties(value = {"userVendorMappingObjecMapping","uploadRejectReasonMappings","uploadMetaDataSet"})
     UploadDTO uploadDTO;
     @JsonIgnoreProperties(value = {"project","customer"})
     List<ProjectPropertyDTO> projectProperties;

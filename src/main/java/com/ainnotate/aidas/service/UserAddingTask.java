@@ -56,7 +56,7 @@ public class UserAddingTask implements  Runnable{
     }
 
     @Autowired
-    QcProjectMappingRepository qcProjectMappingRepository;
+    CustomerQcProjectMappingRepository customerQcProjectMappingRepository;
     @Autowired
     UserCustomerMappingRepository userCustomerMappingRepository;
 
@@ -109,7 +109,7 @@ public class UserAddingTask implements  Runnable{
                         }
                     }
                 }
-                qcProjectMappingRepository.saveAll(qpms);
+                customerQcProjectMappingRepository.saveAll(qpms);
             }
         }
 }

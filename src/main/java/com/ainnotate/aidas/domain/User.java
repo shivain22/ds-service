@@ -518,7 +518,7 @@ public class User extends AbstractAuditingEntity implements Serializable {
     // prettier-ignore
     @Override
     public String toString() {
-        return "AidasUser{" +
+        return "User{" +
             "id=" + getId() +
             ", firstName='" + getFirstName() + "'" +
             ", lastName='" + getLastName() + "'" +

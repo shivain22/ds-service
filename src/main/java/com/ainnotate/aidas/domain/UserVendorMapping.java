@@ -82,8 +82,6 @@ public class UserVendorMapping extends AbstractAuditingEntity implements Seriali
     // prettier-ignore
     @Override
     public String toString() {
-        return "UserVendorMapping{" +
-            "name='" + id + '\'' +
-            "}";
+        return "UserVendorMapping{user_id="+id+",vendor_id="+this.vendor.getId()+"}";
     }
 }

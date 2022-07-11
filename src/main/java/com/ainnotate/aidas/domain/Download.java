@@ -208,10 +208,9 @@ public class Download extends AbstractAuditingEntity  implements Serializable {
         return getClass().hashCode();
     }
 
-    // prettier-ignore
     @Override
     public String toString() {
-        return "AidasUpload{" +
+        return "Download{" +
             "id=" + getId() +
             ", name='" + getName() + "'" +
             ", dateUploaded='" + getDateUploaded() + "'" +

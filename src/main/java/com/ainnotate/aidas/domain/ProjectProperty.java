@@ -194,14 +194,8 @@ public class ProjectProperty extends AbstractAuditingEntity  implements Serializ
         return getClass().hashCode();
     }
 
-    // prettier-ignore
     @Override
     public String toString() {
-        return "AidasProjectProperty{" +
-            "id=" + getId() +
-            ", name='" + this.property.getName() + "'" +
-            ", description='" + this.property.getDescription() + "'" +
-            ", value='" + getValue() + "'" +
-            "}";
+        return "ProjectProperty{id=" + getId() +", property_name='" + this.property.getName() + "'" +", description='" + this.property.getDescription() + "'" +", value='" + getValue() + "'" +"}";
     }
 }

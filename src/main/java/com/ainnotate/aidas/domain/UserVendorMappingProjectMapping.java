@@ -51,23 +51,23 @@ public class UserVendorMappingProjectMapping extends AbstractAuditingEntity  imp
 
     @Column(name ="total_uploaded",columnDefinition = "integer default 0")
     @JsonProperty
-    private Integer totalUploaded;
+    private Integer totalUploaded=0;
 
     @Column(name ="total_approved",columnDefinition = "integer default 0")
     @JsonProperty
-    private Integer totalApproved;
+    private Integer totalApproved=0;
 
     @Column(name ="total_rejected",columnDefinition = "integer default 0")
     @JsonProperty
-    private Integer totalRejected;
+    private Integer totalRejected=0;
 
     @Column(name ="total_pending",columnDefinition = "integer default 0")
     @JsonProperty
-    private Integer totalPending;
+    private Integer totalPending=0;
 
     @Column(name ="total_required",columnDefinition = "integer default 0")
     @JsonProperty
-    private Integer totalRequired;
+    private Integer totalRequired=0;
 
     public Integer getTotalUploaded() {
         return totalUploaded;
@@ -182,10 +182,6 @@ public class UserVendorMappingProjectMapping extends AbstractAuditingEntity  imp
     // prettier-ignore
     @Override
     public String toString() {
-        return "UserVendorMappingObjectMapping{" +
-            "id=" + getId() +
-            ", dateAssigned='" + getDateAssigned() + "'" +
-            ", status='" + getStatus() + "'" +
-            "}";
+        return "UserVendorMappingProjectMapping{user_vendor_mapping_id="+id+",project_id="+this.project.getId()+"}";
     }
 }

@@ -217,7 +217,7 @@ public class Property extends AbstractAuditingEntity  implements Serializable {
     // prettier-ignore
     @Override
     public String toString() {
-        return "AidasProperties{" +
+        return "Property{" +
             "id=" + getId() +
             ", name='" + getName() + "'" +
             ", value='" + getValue() + "'" +

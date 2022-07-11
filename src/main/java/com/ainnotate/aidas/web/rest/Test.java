@@ -191,7 +191,7 @@ public class Test {
         }
          try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3308/ainnotateservice", "root", "")) {
                 if (conn != null) {
-                   String q = "insert into qc_project_mapping(status,project_id,user_customer_mapping_id) values "+val.substring(0,val.length()-1);
+                   String q = "insert into customer_qc_project_mapping(status,project_id,user_customer_mapping_id) values "+val.substring(0,val.length()-1);
                    PreparedStatement ps = conn.prepareStatement(q);
                    ps.executeUpdate();
                 }

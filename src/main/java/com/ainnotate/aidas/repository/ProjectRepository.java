@@ -70,7 +70,7 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     List<ProjectDTO> findAllByIdGreaterThanForDropDown();
 
     @Query(nativeQuery = true)
-    List<ProjectDTO> findProjectsForQC(Long userId);
+    List<ProjectDTO> findProjectsForCustomerQC(Long userId);
 
     @Query(value = "select count(*) from project p , customer c where p.customer_id=c.id and c.organisation_id=?1 and p.status=1",nativeQuery = true)
     Long countAidasProjectByAidasCustomer_AidasOrganisation(Long organisationId);

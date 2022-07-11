@@ -130,7 +130,7 @@ public class Customer extends AbstractAuditingEntity  implements Serializable {
     // prettier-ignore
     @Override
     public String toString() {
-        return "AidasCustomer{" +
+        return "Customer{" +
             "id=" + getId() +
             ", name='" + getName() + "'" +
             ", description='" + getDescription() + "'" +

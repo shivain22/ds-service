@@ -83,8 +83,7 @@ class ObjectResourceIT {
     public static Object createEntity(EntityManager em) {
         Object object = new Object()
             .name(DEFAULT_NAME)
-            .description(DEFAULT_DESCRIPTION)
-            .numberOfUploadReqd(DEFAULT_NUMBER_OF_UPLOAD_REQD);
+            .description(DEFAULT_DESCRIPTION);
         // Add required entity
         Project project;
         if (TestUtil.findAll(em, Project.class).isEmpty()) {
@@ -107,8 +106,7 @@ class ObjectResourceIT {
     public static Object createUpdatedEntity(EntityManager em) {
         Object object = new Object()
             .name(UPDATED_NAME)
-            .description(UPDATED_DESCRIPTION)
-            .numberOfUploadReqd(UPDATED_NUMBER_OF_UPLOAD_REQD);
+            .description(UPDATED_DESCRIPTION);
         // Add required entity
         Project project;
         if (TestUtil.findAll(em, Project.class).isEmpty()) {
@@ -147,7 +145,7 @@ class ObjectResourceIT {
         Object testObject = objectList.get(objectList.size() - 1);
         assertThat(testObject.getName()).isEqualTo(DEFAULT_NAME);
         assertThat(testObject.getDescription()).isEqualTo(DEFAULT_DESCRIPTION);
-        assertThat(testObject.getNumberOfUploadReqd()).isEqualTo(DEFAULT_NUMBER_OF_UPLOAD_REQD);
+        assertThat(testObject.getNumberOfUploadsRequired()).isEqualTo(DEFAULT_NUMBER_OF_UPLOAD_REQD);
 
         // Validate the AidasObject in Elasticsearch
         verify(mockObjectSearchRepository, times(1)).save(testObject);
@@ -206,7 +204,7 @@ class ObjectResourceIT {
     void checkNumberOfUploadReqdIsRequired() throws Exception {
         int databaseSizeBeforeTest = objectRepository.findAll().size();
         // set the field null
-        object.setNumberOfUploadReqd(null);
+        object.setNumberOfUploadsRequired(null);
 
         // Create the AidasObject, which fails.
 
@@ -276,7 +274,7 @@ class ObjectResourceIT {
         Object updatedObject = objectRepository.findById(object.getId()).get();
         // Disconnect from session so that the updates on updatedAidasObject are not directly saved in db
         em.detach(updatedObject);
-        updatedObject.name(UPDATED_NAME).description(UPDATED_DESCRIPTION).numberOfUploadReqd(UPDATED_NUMBER_OF_UPLOAD_REQD);
+        //updatedObject.name(UPDATED_NAME).description(UPDATED_DESCRIPTION).numberOfUploadReq(UPDATED_NUMBER_OF_UPLOAD_REQD);
 
         restAidasObjectMockMvc
             .perform(
@@ -293,7 +291,7 @@ class ObjectResourceIT {
         Object testObject = objectList.get(objectList.size() - 1);
         assertThat(testObject.getName()).isEqualTo(UPDATED_NAME);
         assertThat(testObject.getDescription()).isEqualTo(UPDATED_DESCRIPTION);
-        assertThat(testObject.getNumberOfUploadReqd()).isEqualTo(UPDATED_NUMBER_OF_UPLOAD_REQD);
+        //assertThat(testObject.getNumberOfUploadReqd()).isEqualTo(UPDATED_NUMBER_OF_UPLOAD_REQD);
 
         // Validate the AidasObject in Elasticsearch
         verify(mockObjectSearchRepository).save(testObject);
@@ -400,7 +398,7 @@ class ObjectResourceIT {
         Object testObject = objectList.get(objectList.size() - 1);
         assertThat(testObject.getName()).isEqualTo(DEFAULT_NAME);
         assertThat(testObject.getDescription()).isEqualTo(UPDATED_DESCRIPTION);
-        assertThat(testObject.getNumberOfUploadReqd()).isEqualTo(DEFAULT_NUMBER_OF_UPLOAD_REQD);
+        //assertThat(testObject.getNumberOfUploadReqd()).isEqualTo(DEFAULT_NUMBER_OF_UPLOAD_REQD);
     }
 
     @Test
@@ -415,7 +413,7 @@ class ObjectResourceIT {
         Object partialUpdatedObject = new Object();
         partialUpdatedObject.setId(object.getId());
 
-        partialUpdatedObject.name(UPDATED_NAME).description(UPDATED_DESCRIPTION).numberOfUploadReqd(UPDATED_NUMBER_OF_UPLOAD_REQD);
+       // partialUpdatedObject.name(UPDATED_NAME).description(UPDATED_DESCRIPTION).numberOfUploadReqd(UPDATED_NUMBER_OF_UPLOAD_REQD);
 
         restAidasObjectMockMvc
             .perform(
@@ -432,7 +430,7 @@ class ObjectResourceIT {
         Object testObject = objectList.get(objectList.size() - 1);
         assertThat(testObject.getName()).isEqualTo(UPDATED_NAME);
         assertThat(testObject.getDescription()).isEqualTo(UPDATED_DESCRIPTION);
-        assertThat(testObject.getNumberOfUploadReqd()).isEqualTo(UPDATED_NUMBER_OF_UPLOAD_REQD);
+        //assertThat(testObject.getNumberOfUploadReqd()).isEqualTo(UPDATED_NUMBER_OF_UPLOAD_REQD);
     }
 
     @Test

@@ -23,7 +23,7 @@ import java.io.Serializable;
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @org.springframework.data.elasticsearch.annotations.Document(indexName = "uploadrejectmapping")
 @Audited
-public class UploadRejectMapping extends AbstractAuditingEntity  implements Serializable {
+public class UploadRejectReasonMapping extends AbstractAuditingEntity  implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -77,8 +77,6 @@ public class UploadRejectMapping extends AbstractAuditingEntity  implements Seri
     // prettier-ignore
     @Override
     public String toString() {
-        return "AidasUserAidasObjectMapping{" +
-            "id=" + getId() +
-            "}";
+        return "UploadRejectReasonMapping{upload_id="+id+",upload_reject_reason_id="+this.uploadRejectReason.getId()+"}";
     }
 }

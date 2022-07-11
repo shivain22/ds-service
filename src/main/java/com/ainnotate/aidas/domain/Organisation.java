@@ -108,7 +108,7 @@ public class Organisation extends AbstractAuditingEntity  implements Serializabl
     // prettier-ignore
     @Override
     public String toString() {
-        return "AidasOrganisation{" +
+        return "Organisation{" +
             "id=" + getId() +
             ", name='" + getName() + "'" +
             ", description='" + getDescription() + "'" +

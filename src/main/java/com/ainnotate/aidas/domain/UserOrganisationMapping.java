@@ -81,8 +81,6 @@ public class UserOrganisationMapping extends AbstractAuditingEntity implements S
     // prettier-ignore
     @Override
     public String toString() {
-        return "AidasQcProjectMapping{" +
-            "name='" + id + '\'' +
-            "}";
+        return "UserOrganisationMapping{user_id="+id+",organisation_id="+this.organisation.getId()+"}";
     }
 }

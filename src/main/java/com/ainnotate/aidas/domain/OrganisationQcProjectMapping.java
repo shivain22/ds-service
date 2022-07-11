@@ -93,11 +93,8 @@ public class OrganisationQcProjectMapping extends AbstractAuditingEntity impleme
         return Objects.hashCode(id);
     }
 
-    // prettier-ignore
     @Override
     public String toString() {
-        return "AidasQcProjectMapping{" +
-            "name='" + id + '\'' +
-            "}";
+        return "OrganisationQcProjectMapping{" +"id="+id+",user_id="+this.userOrganisationMapping.getUser().getId()+",organisation_id="+this.userOrganisationMapping.getOrganisation().getId()+"}";
     }
 }

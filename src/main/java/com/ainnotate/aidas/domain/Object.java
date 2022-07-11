@@ -19,113 +19,35 @@ import org.hibernate.envers.Audited;
  * A AidasObject.
  */
 @NamedNativeQuery(name="Object.getAllObjectsByVendorUserProject",
-query = "(select \n" +
+query = "select \n" +
     "o.id," +
     "o.project_id as projectId,"+
     "o.parent_object_id parentObjectId,"+
-    "o.number_of_upload_reqd as totalRequired," +
-    "count(u.id) as totalUploaded, \n" +
-    "sum(CASE WHEN u.approval_status = 1 THEN 1 ELSE 0 END) AS totalApproved,  \n" +
-    "sum(CASE WHEN u.approval_status = 0 THEN 1 ELSE 0 END) AS totalRejected,   \n" +
-    "sum(CASE WHEN u.approval_status = 2 THEN 1 ELSE 0 END) AS totalPending, \n" +
+    "o.number_of_buffered_uploads_required as totalRequired," +
+    "uvmom.total_uploaded as totalUploaded, \n" +
+    "uvmom.total_approved as totalApproved, \n" +
+    "uvmom.total_rejected as totalRejected, \n" +
+    "uvmom.total_pending as totalPending,\n" +
     "o.buffer_percent as bufferPercent," +
     "o.name as name," +
     "o.description as description," +
     "o.image_type as imageType," +
     "o.audio_type as audioType," +
     "o.video_type as videoType " +
-    "from upload u    \n" +
-    "left join user_vendor_mapping_object_mapping uvmom on u.user_vendor_mapping_object_mapping_id=uvmom.id   \n" +
+    "from user_vendor_mapping_object_mapping uvmom  \n" +
     "left join object o on o.id=uvmom.object_id   \n" +
     "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id \n" +
-    "where    uvm.user_id=?1 and uvmom.status=1 and o.status=1 and o.is_dummy=0 \n" +
-    "group by o.id,u.user_vendor_mapping_object_mapping_id ) union "+
-    "(select \n" +
-    "o.id," +
-    "o.project_id as projectId,"+
-    "o.parent_object_id parentObjectId,"+
-    "o.number_of_upload_reqd as totalRequired," +
-    "0 as totalUploaded, \n" +
-    "0 AS totalApproved,  \n" +
-    "0 AS totalRejected,   \n" +
-    "0 AS totalPending, \n" +
-    "o.buffer_percent as bufferPercent," +
-    "o.name as name," +
-    "o.description as description," +
-    "o.image_type as imageType," +
-    "o.audio_type as audioType," +
-    "o.video_type as videoType " +
-    "from user_vendor_mapping_object_mapping uvmom    \n" +
-    "left join object o on o.id=uvmom.object_id   \n" +
-    "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id \n" +
-    "where    uvm.user_id=?1  and o.status=1 and o.is_dummy=0 \n" +
-    " and uvmom.id not in (" +
-    "(select \n" +
-    "uvmom.id " +
-    "from upload u    \n" +
-    "left join user_vendor_mapping_object_mapping uvmom on u.user_vendor_mapping_object_mapping_id=uvmom.id   \n" +
-    "left join object o on o.id=uvmom.object_id   \n" +
-    "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id \n" +
-    "where    uvm.user_id=?1 and o.status=1 and o.is_dummy=0 \n" +
-    "group by o.id,u.user_vendor_mapping_object_mapping_id ) "+
-    ")"+
-    "group by o.id ) "
-
+    "where    uvm.user_id=?1 and uvmom.status=1 and o.status=1 and o.is_dummy=0"
     ,resultSetMapping = "Mapping.ObjectDTO")
 
 @NamedNativeQuery(name="Object.getAllObjectsByVendorUserProject.count",
     query =
-        "select count(*) from ((select \n" +
-            "o.id," +
-            "o.project_id as projectId,"+
-            "o.parent_object_id parentObjectId,"+
-            "o.number_of_upload_reqd as totalRequired," +
-            "count(u.id) as totalUploaded, \n" +
-            "sum(CASE WHEN u.approval_status = 1 THEN 1 ELSE 0 END) AS totalApproved,  \n" +
-            "sum(CASE WHEN u.approval_status = 0 THEN 1 ELSE 0 END) AS totalRejected,   \n" +
-            "sum(CASE WHEN u.approval_status = 2 THEN 1 ELSE 0 END) AS totalPending, \n" +
-            "o.buffer_percent as bufferPercent," +
-            "o.name as name," +
-            "o.description as description," +
-            "o.image_type as imageType," +
-            "o.audio_type as audioType," +
-            "o.video_type as videoType " +
-            "from upload u    \n" +
-            "left join user_vendor_mapping_object_mapping uvmom on u.user_vendor_mapping_object_mapping_id=uvmom.id   \n" +
+        "select count(*) from (" +
+            "select o.id  \n" +
+            "from user_vendor_mapping_object_mapping uvmom  \n" +
             "left join object o on o.id=uvmom.object_id   \n" +
             "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id \n" +
-            "where    uvm.user_id=?1 and uvmom.status=1 and o.status=1 and o.is_dummy=0 \n" +
-            "group by o.id,u.user_vendor_mapping_object_mapping_id ) union "+
-            "(select \n" +
-            "o.id," +
-            "o.project_id as projectId,"+
-            "o.parent_object_id parentObjectId,"+
-            "o.number_of_upload_reqd as totalRequired," +
-            "0 as totalUploaded, \n" +
-            "0 AS totalApproved,  \n" +
-            "0 AS totalRejected,   \n" +
-            "0 AS totalPending, \n" +
-            "o.buffer_percent as bufferPercent," +
-            "o.name as name," +
-            "o.description as description," +
-            "o.image_type as imageType," +
-            "o.audio_type as audioType," +
-            "o.video_type as videoType " +
-            "from user_vendor_mapping_object_mapping uvmom    \n" +
-            "left join object o on o.id=uvmom.object_id   \n" +
-            "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id \n" +
-            "where    uvm.user_id=?1 and o.status=1 and o.is_dummy=0 \n" +
-            " and uvmom.id not in (" +
-            "(select \n" +
-            "uvmom.id " +
-            "from upload u    \n" +
-            "left join user_vendor_mapping_object_mapping uvmom on u.user_vendor_mapping_object_mapping_id=uvmom.id   \n" +
-            "left join object o on o.id=uvmom.object_id   \n" +
-            "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id \n" +
-            "where    uvm.user_id=?1  \n" +
-            "group by o.id,u.user_vendor_mapping_object_mapping_id ) "+
-            ")"+
-            "group by o.id ))a "
+            "where    uvm.user_id=?1 and uvmom.status=1 and o.status=1 and o.is_dummy=0)"
 )
 @SqlResultSetMapping(name = "Mapping.ObjectDTO",
     classes = @ConstructorResult(targetClass = ObjectDTO.class,
@@ -157,7 +79,7 @@ query = "(select \n" +
         "o.project_id as projectId,"+
         "uvmom.id as userVendorMappingObjectMappingId,"+
         "o.parent_object_id parentObjectId,"+
-        "o.number_of_upload_reqd as totalRequired," +
+        "o.number_of_uploads_required as totalRequired," +
         "count(u.id) as totalUploaded, \n" +
         "sum(CASE WHEN u.approval_status = 1 THEN 1 ELSE 0 END) AS totalApproved,  \n" +
         "sum(CASE WHEN u.approval_status = 0 THEN 1 ELSE 0 END) AS totalRejected,   \n" +
@@ -179,7 +101,7 @@ query = "(select \n" +
         "o.project_id as projectId,"+
         "uvmom.id as userVendorMappingObjectMappingId,"+
         "o.parent_object_id parentObjectId,"+
-        "o.number_of_upload_reqd as totalRequired," +
+        "o.number_of_uploads_required as totalRequired," +
         "0 as totalUploaded, \n" +
         "0 AS totalApproved,  \n" +
         "0 AS totalRejected,   \n" +
@@ -215,7 +137,7 @@ query = "(select \n" +
             "uvmom.id as userVendorMappingObjectMappingId,"+
             "o.project_id as projectId,"+
             "o.parent_object_id parentObjectId,"+
-            "o.number_of_upload_reqd as totalRequired," +
+            "o.number_of_uploads_required as totalRequired," +
             "count(u.id) as totalUploaded, \n" +
             "sum(CASE WHEN u.approval_status = 1 THEN 1 ELSE 0 END) AS totalApproved,  \n" +
             "sum(CASE WHEN u.approval_status = 0 THEN 1 ELSE 0 END) AS totalRejected,   \n" +
@@ -237,7 +159,7 @@ query = "(select \n" +
             "uvmom.id as userVendorMappingObjectMappingId,"+
             "o.project_id as projectId,"+
             "o.parent_object_id parentObjectId,"+
-            "o.number_of_upload_reqd as totalRequired," +
+            "o.number_of_uploads_required as totalRequired," +
             "0 as totalUploaded, \n" +
             "0 AS totalApproved,  \n" +
             "0 AS totalRejected,   \n" +
@@ -295,7 +217,7 @@ query = "(select \n" +
         "o.id," +
         "o.project_id as projectId,"+
         "o.parent_object_id parentObjectId,"+
-        "o.number_of_upload_reqd as totalRequired," +
+        "o.number_of_uploads_required as totalRequired," +
         "count(u.id) as totalUploaded, \n" +
         "sum(CASE WHEN u.approval_status = 1 THEN 1 ELSE 0 END) AS totalApproved,  \n" +
         "sum(CASE WHEN u.approval_status = 0 THEN 1 ELSE 0 END) AS totalRejected,   \n" +
@@ -316,7 +238,7 @@ query = "(select \n" +
         "o.id," +
         "o.project_id as projectId,"+
         "o.parent_object_id parentObjectId,"+
-        "o.number_of_upload_reqd as totalRequired," +
+        "o.number_of_uploads_required as totalRequired," +
         "0 as totalUploaded, \n" +
         "0 AS totalApproved,  \n" +
         "0 AS totalRejected,   \n" +
@@ -351,7 +273,7 @@ query = "(select \n" +
             "o.id," +
             "o.project_id as projectId,"+
             "o.parent_object_id parentObjectId,"+
-            "o.number_of_upload_reqd as totalRequired," +
+            "o.number_of_uploads_required as totalRequired," +
             "count(u.id) as totalUploaded, \n" +
             "sum(CASE WHEN u.approval_status = 1 THEN 1 ELSE 0 END) AS totalApproved,  \n" +
             "sum(CASE WHEN u.approval_status = 0 THEN 1 ELSE 0 END) AS totalRejected,   \n" +
@@ -372,7 +294,7 @@ query = "(select \n" +
             "o.id," +
             "o.project_id as projectId,"+
             "o.parent_object_id parentObjectId,"+
-            "o.number_of_upload_reqd as totalRequired," +
+            "o.number_of_uploads_required as totalRequired," +
             "0 as totalUploaded, \n" +
             "0 AS totalApproved,  \n" +
             "0 AS totalRejected,   \n" +
@@ -459,14 +381,14 @@ public class Object extends AbstractAuditingEntity  implements Serializable {
     private String name;
 
     @Column(name="buffer_percent")
-    private Integer bufferPercent;
+    private Integer bufferPercent=20;
 
     @Column(name = "description")
     private String description;
 
     @NotNull
-    @Column(name = "number_of_upload_reqd", nullable = true)
-    private Integer numberOfUploadReqd;
+    @Column(name = "number_of_uploads_required", nullable = true)
+    private Integer numberOfUploadsRequired=0;
 
     @ManyToOne(optional = false)
     @NotNull
@@ -475,47 +397,44 @@ public class Object extends AbstractAuditingEntity  implements Serializable {
     private Project project;
 
     @Column(name="is_dummy")
-    private Integer dummy;
+    private Integer dummy=0;
     @ManyToOne(optional = true)
     @JsonIgnoreProperties(value = { "project","customer" }, allowSetters = true)
     @JoinColumn(name = "parent_object_id", nullable = true, foreignKey = @ForeignKey(name="fk_object_parent_object"))
     private Object parentObject;
-    @Transient
-    @JsonProperty
-    private Integer uploadsCompleted;
-    @Transient
-    @JsonProperty
-    private Integer uploadsRemaining;
 
     @Column(name ="total_uploaded",columnDefinition = "integer default 0")
     @JsonProperty
-    private Integer totalUploaded;
+    private Integer totalUploaded=0;
 
     @Column(name ="total_approved",columnDefinition = "integer default 0")
     @JsonProperty
-    private Integer totalApproved;
+    private Integer totalApproved=0;
 
     @Column(name ="total_rejected",columnDefinition = "integer default 0")
     @JsonProperty
-    private Integer totalRejected;
+    private Integer totalRejected=0;
 
     @Column(name ="total_pending",columnDefinition = "integer default 0")
     @JsonProperty
-    private Integer totalPending;
+    private Integer totalPending=0;
 
     @Column(name ="total_required",columnDefinition = "integer default 0")
     @JsonProperty
-    private Integer totalRequired;
+    private Integer totalRequired=0;
+
+    @Column(name ="number_of_buffered_uploads_required",columnDefinition = "integer default 0")
+    private Integer numberOfBufferedUploadsRequired=0;
 
     @Column(name="image_type")
     @JsonProperty
-    private String imageType;
+    private String imageType="";
     @Column(name="video_type")
     @JsonProperty
-    private String videoType;
+    private String videoType="";
     @Column(name="audio_type")
     @JsonProperty
-    private String audioType;
+    private String audioType="";
     @OneToMany(mappedBy = "object",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
     @Filter(name = "objectPropertyStatusFilter",condition="status = 1")
     @JsonIgnoreProperties(value = { "object" }, allowSetters = true)
@@ -609,22 +528,6 @@ public class Object extends AbstractAuditingEntity  implements Serializable {
         this.totalPending = totalPending;
     }
 
-    public Integer getUploadsCompleted() {
-        return uploadsCompleted;
-    }
-
-    public void setUploadsCompleted(Integer uploadsCompleted) {
-        this.uploadsCompleted = uploadsCompleted;
-    }
-
-    public Integer getUploadsRemaining() {
-        return uploadsRemaining;
-    }
-
-    public void setUploadsRemaining(Integer uploadsRemaining) {
-        this.uploadsRemaining = uploadsRemaining;
-    }
-
     public Integer getBufferPercent() {
         return bufferPercent;
     }
@@ -689,17 +592,12 @@ public class Object extends AbstractAuditingEntity  implements Serializable {
         return this;
     }
 
-    public Integer getNumberOfUploadReqd() {
-        return this.numberOfUploadReqd;
+    public Integer getNumberOfUploadsRequired() {
+        return numberOfUploadsRequired;
     }
 
-    public void setNumberOfUploadReqd(Integer numberOfUploadReqd) {
-        this.numberOfUploadReqd = numberOfUploadReqd;
-    }
-
-    public Object numberOfUploadReqd(Integer numberOfUploadReqd) {
-        this.setNumberOfUploadReqd(numberOfUploadReqd);
-        return this;
+    public void setNumberOfUploadsRequired(Integer numberOfUploadsRequired) {
+        this.numberOfUploadsRequired = numberOfUploadsRequired;
     }
 
     public Project getProject() {
@@ -715,7 +613,13 @@ public class Object extends AbstractAuditingEntity  implements Serializable {
         return this;
     }
 
-    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
+    public Integer getNumberOfBufferedUploadsRequired() {
+        return numberOfBufferedUploadsRequired;
+    }
+
+    public void setNumberOfBufferedUploadsRequired(Integer numberOfBufferedUploadsRequired) {
+        this.numberOfBufferedUploadsRequired = numberOfBufferedUploadsRequired;
+    }
 
     @Override
     public boolean equals(java.lang.Object o) {
@@ -730,18 +634,16 @@ public class Object extends AbstractAuditingEntity  implements Serializable {
 
     @Override
     public int hashCode() {
-        // see https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
         return getClass().hashCode();
     }
 
-    // prettier-ignore
     @Override
     public String toString() {
         return "AidasObject{" +
             "id=" + getId() +
             ", name='" + getName() + "'" +
             ", description='" + getDescription() + "'" +
-            ", numberOfUploadReqd=" + getNumberOfUploadReqd() +
+            ", numberOfUploadReqd=" + getNumberOfUploadsRequired() +
             "}";
     }
 }

@@ -64,7 +64,7 @@ public interface UserVendorMappingRepository extends JpaRepository<UserVendorMap
     UserVendorMapping findByVendorIdAndUserId(Long vendorId, Long userId);
 
     @Query(value = "select * from user_vendor_mapping uvm, user_authority_mapping uam where uvm.user_id=uam.user_id and uam.authority_id=5 and uvm.is_sample_data=1 ",nativeQuery = true)
-    List<UserVendorMapping> getAllSampleUserVendorMappings();
+    List<UserVendorMapping> getAllSampleUserVendorMappingsOfVendorUsers();
 
     @Modifying
     @Query(value = "delete from user_vendor_mapping where is_sample_data=1 order by id desc",nativeQuery = true)

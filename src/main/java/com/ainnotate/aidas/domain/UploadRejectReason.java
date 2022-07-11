@@ -76,8 +76,6 @@ public class UploadRejectReason extends AbstractAuditingEntity  implements Seria
     // prettier-ignore
     @Override
     public String toString() {
-        return "Authority{" +
-            "name='" + reason + '\'' +
-            "}";
+        return "UploadRejectReason{id="+id+",reason="+this.reason+"}";
     }
 }

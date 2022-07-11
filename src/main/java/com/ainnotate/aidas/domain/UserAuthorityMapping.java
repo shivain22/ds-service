@@ -82,11 +82,8 @@ public class UserAuthorityMapping extends AbstractAuditingEntity implements Seri
         this.id = id;
     }
 
-    // prettier-ignore
     @Override
     public String toString() {
-        return "AidasQcProjectMapping{" +
-            "name='" + id + '\'' +
-            "}";
+        return "UserAuthorityMapping{user_id="+id+",authority_id="+this.authority.getId()+"}";
     }
 }

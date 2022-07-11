@@ -1,2 +1,2 @@
-id;name;description;status;auto_create_objects;buffer_percent;external_dataset_status;num_of_objects;num_of_uploads_reqd;object_prefix;object_suffix;project_type;qc_levels;rework_status;customer_id
+id;name;description;status;auto_create_objects;buffer_percent;external_dataset_status;number_of_objects;number_of_uploads_required;object_prefix;object_suffix;project_type;qc_levels;rework_status;customer_id
 -1;Default Project;Default Project;1;0;10;0;10;10;pre;suf;image;1;1;-1

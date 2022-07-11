@@ -59,6 +59,11 @@ public class DataPopulatorBean implements Runnable {
     private CustomerRepository customerRepository;
 
     @Autowired
+    private CategoryRepository categoryRepository;
+
+    @Autowired
+    private SubCategoryRepository subCategoryRepository;
+    @Autowired
     private ProjectSearchRepository projectSearchRepository;
     @Autowired
     private ProjectRepository projectRepository;
@@ -89,6 +94,13 @@ public class DataPopulatorBean implements Runnable {
 
     @Autowired
     private UserOrganisationMappingRepository userOrganisationMappingRepository;
+
+    @Autowired
+    OrganisationQcProjectMappingRepository organisationQcProjectMappingRepository;
+
+    @Autowired
+    CustomerQcProjectMappingRepository customerQcProjectMappingRepository;
+
     @Autowired
     private UserCustomerMappingRepository userCustomerMappingRepository;
     @Autowired
@@ -99,6 +111,8 @@ public class DataPopulatorBean implements Runnable {
     @Autowired
     private UserVendorMappingObjectMappingRepository userVendorMappingObjectMappingRepository;
 
+    @Autowired
+    private UserVendorMappingProjectMappingRepository userVendorMappingProjectMappingRepository;
     @Autowired
     private PropertyRepository propertyRepository;
 
@@ -157,64 +171,50 @@ public class DataPopulatorBean implements Runnable {
     }
 
     private void loadAllSampleData() throws IOException, URISyntaxException, CsvException {
+        System.out.println("Cleaning up");
         deleteAllSampleData();
+        System.out.println("Done cleaning up");
+
+        System.out.println("Inserting sample data");
         initialize();
-        List<String> dummyOptions = new LinkedList<>();
-        dummyOptions.add("dummy-org");
-        dummyOptions.add("dummy-cust");
-        dummyOptions.add("dummy-vendor");
-        dummyOptions.add("dummy-user");
-        dummyOptions.add("dummy-uam");
-        dummyOptions.add("dummy-uom");
-        dummyOptions.add("dummy-ucm");
-        dummyOptions.add("dummy-uvm");
-        dummyOptions.add("dummy-project");
-        dummyOptions.add("dummy-object");
-        for(String dataFileName:dummyOptions){
-            File file = ResourceUtils.getFile("classpath:"+dataFileName+".csv");
-            if(file.exists()) {
-                List<String[]> data = CSVHelper.getData(file);
-                StopWatch watch = new StopWatch();
-                if(dataFileName.equals("dummy-org")){
-                    addSampleOrganisations(data);
-                }
-                if(dataFileName.equals("dummy-cust")){
-                    addSampleCustomers(data);
-                }
-                if(dataFileName.equals("dummy-vendor")){
-                    addSampleVendors(data);
-                }
-                if(dataFileName.equals("dummy-user")){
-                    addSampleUsers(data);
-                }
-                if(dataFileName.equals("dummy-uom")){
-                    addSampleUserOrganisationMappings(data);
-                }
-                if(dataFileName.equals("dummy-uam")){
-                    addSampleUserAuthorityMappings(data);
-                }
-                if(dataFileName.equals("dummy-project")){
-                    addSampleProjects(data);
-                    addSampleProjectProperties();
-                }
-                if(dataFileName.equals("dummy-object")){
-                    addSampleObjects(data);
-                    addSampleObjectProperties();
-                }
-                if(dataFileName.equals("dummy-uvmom")){
-                    addSampleUserVendorMappingObjectMappings(data);
-                }
-                if(dataFileName.equals("dummy-upload")){
-                    addSampleUploads(data);
-                }
-            }
-        }
+
+        File file = ResourceUtils.getFile("classpath:dummy-org.csv");
+        List<String[]> data = CSVHelper.getData(file);
+        addSampleOrganisations(data);
+
+        file = ResourceUtils.getFile("classpath:dummy-cust.csv");
+        data = CSVHelper.getData(file);
+        addSampleCustomers(data);
+
+        file = ResourceUtils.getFile("classpath:dummy-vendor.csv");
+        data = CSVHelper.getData(file);
+        addSampleVendors(data);
+
+        file = ResourceUtils.getFile("classpath:dummy-user.csv");
+        data = CSVHelper.getData(file);
+        addSampleUsers(data);
+
+        file = ResourceUtils.getFile("classpath:dummy-project.csv");
+        data = CSVHelper.getData(file);
+        addSampleProjects(data);
+        addSampleProjectProperties();
+
+        addSampleObjects();
+        addSampleObjectProperties();
+        addSampleUAMUOMUCMUVM();
+        addSampleUserVendorMappingObjectMappings();
+        addSampleOrgnisationQcMappings();
+        addSampleCustomerQcMappings();
+
+        addSampleUploads();
+
+        System.out.println("compleded sample data inserts");
+
     }
 
 
 
     private void deleteAllSampleData() throws IOException, URISyntaxException, CsvException {
-        System.out.println("Cleaning up all sample data");
         deleteAllSampleMetaDataUploads();
         deleteAllSampleUploads();
         deleteAllSampleUserVendorMappingObjectMapping();
@@ -232,7 +232,6 @@ public class DataPopulatorBean implements Runnable {
         deleteAllSampleCustomers();
         deleteAllSampleVendors();
         deleteAllSampleOrganisations();
-        System.out.println("Cleaned up all sample data");
     }
 
     private void deleteAllSampleMetaDataUploads(){
@@ -328,15 +327,9 @@ public class DataPopulatorBean implements Runnable {
     private void addSampleCustomers(List<String[]>data){
         String query="insert into customer(name,description,organisation_id,status,is_sample_data) values ";
         String values = "";
-        int i=0;
-        int oid=0;
         for(String[] d:data ){
-            if(i%10==0){
-                if(i>0)
-                    oid++;
-            }
-            values+="('"+d[0]+"','"+d[1]+"',"+organisations.get(oid).getId()+",1,1),";
-            i++;
+            Organisation o = organisationRepository.findSampleOrganisationByName(d[2]);
+            values+="('"+d[0]+"','"+d[1]+"',"+o.getId()+",1,1),";
         }
         batchInsert(query+values.substring(0,values.length()-1));
         customers = customerRepository.getAllSampleCustomers();
@@ -359,50 +352,32 @@ public class DataPopulatorBean implements Runnable {
         vendors = vendorRepository.getAllSampleVendors();
     }
     private void addSampleUsers(List<String[]> data){
-        System.out.println("start batch insert users");
         String query="insert into user(first_name,last_name,email,login,password,organisation_id,customer_id,vendor_id,authority_id,status,is_sample_data,deleted,locked,alt_email,cc_email) values \n";
         String values = "";
-        int i=0;
-        int j=0;
-        int k=0;
-        int l=0;
-        int m=0;
-        int n=0;
         for(String[] d:data ){
             values+="('"+d[0]+"','"+d[1]+"','"+d[2]+"','"+d[4]+"','"+d[3]+"',";
-            if(i<20)
-                values+=organisations.get(i).getId()+",null,null,2,1,1,0,0,'shivain22@gmail.com','shivain22@gmail.com'),";
-            if(i>=20 && i<220)
-                values+="null,"+customers.get(i-20).getId()+",null,3,1,1,0,0,'shivain22@gmail.com','shivain22@gmail.com'),";
-            if(i>=220 && i<270)
-                values+="null,null,"+vendors.get(i-220).getId()+",4,1,1,0,0,'shivain22@gmail.com','shivain22@gmail.com'),";
-            if(i>=270 && i<1270){
-                if(i%10==0){{
-                    n++;
-                    if(n==2){
-                        if(i>290)
-                            j++;
-                    }
-                    if(n>1){
-                        n=0;
-                    }
-                }
-                }
-                values+="null,null,"+vendors.get(j).getId()+",5,1,1,0,0,'shivain22@gmail.com','shivain22@gmail.com'),";
+            if(d[5].equals("oa")){
+                Organisation o = organisationRepository.findSampleOrganisationByName(d[6]);
+                values+=o.getId()+",null,null,2,1,1,0,0,'shivain22@gmail.com','shivain22@gmail.com'),";
+            }else if(d[5].equals("ca")){
+                Customer c = customerRepository.findSampleCustomerByNameAndOrgName(d[6],d[7]);
+                values+="null,"+c.getId()+",null,3,1,1,0,0,'shivain22@gmail.com','shivain22@gmail.com'),";
+            }else if(d[5].equals("va")){
+                Vendor v = vendorRepository.findSampleVendorByName(d[6]);
+                values+="null,null,"+v.getId()+",4,1,1,0,0,'shivain22@gmail.com','shivain22@gmail.com'),";
+            }else if(d[5].equals("vu")){
+                Vendor v = vendorRepository.findSampleVendorByName(d[6]);
+                values+="null,null,"+v.getId()+",5,1,1,0,0,'shivain22@gmail.com','shivain22@gmail.com'),";
+            }else if(d[5].equals("cq")){
+                Customer c = customerRepository.findSampleCustomerByNameAndOrgName(d[6],d[7]);
+                values+="null,"+c.getId()+",null,6,1,1,0,0,'shivain22@gmail.com','shivain22@gmail.com'),";
+            }else if(d[5].equals("oq")){
+                Organisation o = organisationRepository.findSampleOrganisationByName(d[6]);
+                values+=o.getId()+",null,null,6,1,1,0,0,'shivain22@gmail.com','shivain22@gmail.com'),";
             }
-            if(i>=1270){
-                if(i%5==0){
-                    if(i>1271)
-                        k++;
-                }
-                values+="null,"+customers.get(k).getId()+",null,6,1,1,0,0,'shivain22@gmail.com','shivain22@gmail.com'),";
-            }
-            i++;
         }
         batchInsert(query+values.substring(0,values.length()-1));
         users = userRepository.getAllSampleUsers();
-        System.out.println("Sync with keycloak");
-        users = userRepository.findAll();
         for(User u:users){
             if(u.getId()>0){
                 try {
@@ -413,30 +388,34 @@ public class DataPopulatorBean implements Runnable {
                 }
             }
         }
-        System.out.println("Sync with keycloak completed");
-
+        users = userRepository.getAllSampleUsers();
     }
+
     private void addSampleProjects(List<String[]> data){
-        int i=0;
-        int j=0;
-        String query="insert into project(name,description,status,is_sample_data,customer_id,project_type) values ";
+        String query="insert into project(name,description,status,is_sample_data,customer_id,project_type,image_type,video_type,audio_type,category_id,sub_category_id,qc_levels,rework_status,number_of_uploads_required,number_of_buffered_uploads_required,user_added_status) values ";
         String values = "";
         for(String[] d:data ){
-            if(i%5==0){
-                if(i>0){
-                    j++;
-                }
+            Customer c = customerRepository.findSampleCustomerByNameAndOrgName(d[2],d[3]);
+            Category cc = categoryRepository.findByName(d[4]);
+            SubCategory sc = subCategoryRepository.findByValue(d[5]);
+            if(d[4].equals("image")){
+                values += "('"+d[0]+"','"+d[1]+"',1,1,"+c.getId()+",'"+d[4]+"','"+d[5]+"',null,null,"+cc.getId()+","+sc.getId()+",1,0,0,0,1),";
             }
-            values += "('"+d[0]+"','"+d[1]+"',1,1,"+customers.get(j).getId()+",'image'),";
-            i++;
+            else if(d[4].equals("video")){
+                values += "('"+d[0]+"','"+d[1]+"',1,1,"+c.getId()+",'"+d[4]+"',null,"+d[5]+",null,"+cc.getId()+","+sc.getId()+",1,0,0,0,1),";
+            }
+            else if(d[4].equals("both")){
+                values += "('"+d[0]+"','"+d[1]+"',1,1,"+c.getId()+",'"+d[4]+"',"+d[5]+","+d[6]+",null,"+cc.getId()+","+sc.getId()+",1,0,0,0,1),";
+            }
+            else if(d[4].equals("audio")){
+                values += "('"+d[0]+"','"+d[1]+"',1,1,"+c.getId()+",'"+d[4]+"',null,null,"+d[5]+","+cc.getId()+","+sc.getId()+",1,0,0,0,1),";
+            }
         }
         batchInsert(query+values.substring(0,values.length()-1));
         projects = projectRepository.getAllSampleProjects();
-
     }
 
     private void addSamplePropertiesForCustomer(){
-        System.out.println("Properties for customer started");
         String query="insert into property(name,value,status,is_sample_data,customer_id,optional,property_type) values ";
         String values = "";
         for(Customer c: customers){
@@ -446,11 +425,10 @@ public class DataPopulatorBean implements Runnable {
             }
             batchInsert(query+values.substring(0,values.length()-1));
         }
-        System.out.println("Properties for customer done");
     }
 
-    private void addSampleObjects(List<String[]> data){
-        String query="insert into object(name,description,status,is_sample_data,project_id,number_of_upload_reqd,buffer_percent,is_dummy) values ";
+    private void addSampleObjects(){
+        String query="insert into object(name,description,status,is_sample_data,project_id,number_of_uploads_required,buffer_percent,is_dummy) values ";
         String values = "";
         for(Project p:projects){
             values="";
@@ -463,7 +441,6 @@ public class DataPopulatorBean implements Runnable {
     }
 
     private void addSampleProjectProperties(){
-        System.out.println("Adding sample project properties");
         String query="insert into project_property(value,status,is_sample_data,property_id,project_id) values ";
         String values = "";
         for(Project p:projects){
@@ -474,10 +451,8 @@ public class DataPopulatorBean implements Runnable {
             }
             batchInsert(query+values.substring(0,values.length()-1));
         }
-        System.out.println("Added sample project properties");
     }
     private void addSampleObjectProperties(){
-        System.out.println("Adding sample object properties");
         String query="insert into object_property(value,status,is_sample_data,property_id,object_id) values ";
         String values = "";
         for(Object o:objects){
@@ -488,70 +463,118 @@ public class DataPopulatorBean implements Runnable {
             }
             batchInsert(query+values.substring(0,values.length()-1));
         }
-        System.out.println("Added sample object properties");
     }
 
-    private void addSampleUserAuthorityMappings(List<String[]> data){
-        for(User u:users ){
-            UserAuthorityMapping uam = new UserAuthorityMapping();
+    private void addSampleUAMUOMUCMUVM(){
+        for(User u:users){
             if(!u.getId().equals(-1l)) {
+                UserOrganisationMapping uom = new UserOrganisationMapping();
+                UserCustomerMapping ucm = new UserCustomerMapping();
+                UserVendorMapping uvm = new UserVendorMapping();
+                UserAuthorityMapping uam = new UserAuthorityMapping();
                 uam.setUser(u);
                 uam.setAuthority(u.getAuthority());
                 uam.setStatus(1);
                 uam.setSampleData(1);
-                userAuthorityMappings.add(uam);
-            }
-        }
-        userAuthorityMappingRepository.saveAll(userAuthorityMappings);
-    }
-    private void addSampleUserOrganisationMappings(List<String[]> data){
-        for(User u:users){
-            UserOrganisationMapping uom = new UserOrganisationMapping();
-            UserCustomerMapping ucm = new UserCustomerMapping();
-            UserVendorMapping uvm = new UserVendorMapping();
-            if(u.getOrganisation()!=null) {
-                uom.setUser(u);
-                uom.setOrganisation(u.getOrganisation());
-                uom.setStatus(1);
-                uom.setSampleData(1);
-                userOrganisationMappings.add(uom);
-            }
-            if(u.getCustomer()!=null) {
-                ucm.setUser(u);
-                ucm.setCustomer(u.getCustomer());
-                ucm.setStatus(1);
-                ucm.setSampleData(1);
-                userCustomerMappings.add(ucm);
-            }
-            if(u.getVendor()!=null) {
-                uvm.setUser(u);
-                uvm.setVendor(u.getVendor());
-                uvm.setStatus(1);
-                uvm.setSampleData(1);
-                userVendorMappings.add(uvm);
-            }
-
-        }
-        userOrganisationMappingRepository.saveAll(userOrganisationMappings);
-        userCustomerMappingRepository.saveAll(userCustomerMappings);
-        userVendorMappingRepository.saveAll(userVendorMappings);
-    }
-
-    private void addSampleUserVendorMappingObjectMappings(List<String[]> data){
-            List<Object> objects = objectRepository.getAllSampleObjects();
-            List<UserVendorMapping> userVendorMappings = userVendorMappingRepository.getAllSampleUserVendorMappings();
-            for(Object o: objects){
-                String values ="";
-                for(UserVendorMapping userVendorMapping: userVendorMappings){
-                    values+="("+userVendorMapping.getId()+","+o.getId()+",1,1),";
+                userAuthorityMappingRepository.save(uam);
+                if (u.getOrganisation() != null) {
+                    uom.setUser(u);
+                    uom.setOrganisation(u.getOrganisation());
+                    uom.setStatus(1);
+                    uom.setSampleData(1);
+                    userOrganisationMappingRepository.save(uom);
                 }
-                batchInsert("insert into user_vendor_mapping_object_mapping (user_vendor_mapping_id,object_id,status,is_sample_data) values  "+values.substring(0,values.length()-1));
+                if (u.getCustomer() != null) {
+                    ucm.setUser(u);
+                    ucm.setCustomer(u.getCustomer());
+                    ucm.setStatus(1);
+                    ucm.setSampleData(1);
+                    userCustomerMappingRepository.save(ucm);
+                }
+                if (u.getVendor() != null) {
+                    uvm.setUser(u);
+                    uvm.setVendor(u.getVendor());
+                    uvm.setStatus(1);
+                    uvm.setSampleData(1);
+                    userVendorMappingRepository.save(uvm);
+                }
             }
-            System.out.println("completed storing user vendor mapping object mappings");
+        }
+    }
+
+    private void addSampleUserVendorMappingObjectMappings(){
+            List<Object> objects = objectRepository.getAllSampleObjects();
+            List<UserVendorMapping> uvms = userVendorMappingRepository.getAllSampleUserVendorMappingsOfVendorUsers();
+            List<UserVendorMappingObjectMapping> uvmoms = new ArrayList<>();
+            List<UserVendorMappingProjectMapping> uvmpms = new ArrayList<>();
+            for(Object o: objects){
+                for(UserVendorMapping uvm: uvms){
+                    UserVendorMappingObjectMapping uvmom = new UserVendorMappingObjectMapping();
+                    uvmom.setUserVendorMapping(uvm);
+                    uvmom.setObject(o);
+                    uvmom.setSampleData(1);
+                    uvmoms.add(uvmom);
+                }
+            }
+            for(Project p: projects){
+                for(UserVendorMapping uvm: uvms){
+                    UserVendorMappingProjectMapping uvmpm = new UserVendorMappingProjectMapping();
+                    uvmpm.setUserVendorMapping(uvm);
+                    uvmpm.setProject(p);
+                    uvmpm.setSampleData(1);
+                    uvmpms.add(uvmpm);
+                }
+            }
+            userVendorMappingObjectMappingRepository.saveAll(uvmoms);
+            userVendorMappingProjectMappingRepository.saveAll(uvmpms);
+    }
+
+    private void addSampleUploads(){
+        List<Long> uvmomids = userVendorMappingObjectMappingRepository.getAllSampleUserVendorMappingObjectMappingsIds();
+        int batchSize=0;
+        String values="";
+        for(Long uvmomid:uvmomids) {
+            for(int i=0;i<100;i++){
+                values +="(1,1,2,'"+i+"-"+uvmomid+".png',"+uvmomid+",'"+i+"-"+uvmomid+".png'),";
+                batchSize++;
+            }
+            if(batchSize%100==0){
+                batchInsert("insert into upload (status,is_sample_data,approval_status,object_key,user_vendor_mapping_object_mapping_id,name) values  "+values.substring(0,values.length()-1));
+                batchSize=0;
+                values="";
+            }
+        }
+    }
+
+    private void addSampleOrgnisationQcMappings(){
+        List<UserCustomerMapping> ucms = userCustomerMappingRepository.getAllSampleUserCustomerMappingsForQc();
+        List<CustomerQcProjectMapping> oqpms = new ArrayList<>();
+        for(Project p: projects){
+            for(UserCustomerMapping ucm: ucms) {
+                CustomerQcProjectMapping cqpm = new CustomerQcProjectMapping();
+                cqpm.setUserCustomerMapping(ucm);
+                cqpm.setProject(p);
+                oqpms.add(cqpm);
+            }
+        }
+        customerQcProjectMappingRepository.saveAll(oqpms);
+    }
+    private void addSampleCustomerQcMappings(){
+        List<UserOrganisationMapping> uoms = userOrganisationMappingRepository.getAllSampleUserOrganisationMappingsForQc();
+        List<OrganisationQcProjectMapping> oqpms = new ArrayList<>();
+        for(Project p: projects){
+            for(UserOrganisationMapping uom: uoms) {
+                OrganisationQcProjectMapping oqpm = new OrganisationQcProjectMapping();
+                oqpm.setUserOrganisationMapping(uom);
+                oqpm.setProject(p);
+                oqpms.add(oqpm);
+            }
+        }
+        organisationQcProjectMappingRepository.saveAll(oqpms);
     }
 
     private void batchInsert(String query){
-        try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3308/ainnotateservice", "root", "")) {
+        try (Connection conn = DriverManager.getConnection("jdbc:mysql://ainnotateservice-mysql:3306/ainnotateservice", "root", "")) {
             if (conn != null) {
                 PreparedStatement ps = conn.prepareStatement(query);
                 ps.executeUpdate();
@@ -560,28 +583,8 @@ public class DataPopulatorBean implements Runnable {
             e.printStackTrace();
         }
     }
-    private void addSampleUploads(List<String[]> data){
-        System.out.println("Started inserting uploads data");
-        List<Long> uvmomids = userVendorMappingObjectMappingRepository.getAllSampleUserVendorMappingObjectMappingsIds();
-        int batchSize=0;
-        String values="";
 
-        for(Long uvmomid:uvmomids) {
-            for(int i=0;i<2;i++){
-                values +="(1,1,2,'"+i+"-"+uvmomid+".png',"+uvmomid+",'"+i+"-"+uvmomid+".png'),";
-            }
-            batchSize++;
-            if(batchSize==10000){
-                batchInsert("insert into upload (status,is_sample_data,approval_status,object_key,user_vendor_mapping_object_mapping_id,name) values  "+values.substring(0,values.length()-1));
-                batchSize=0;
-                values="";
-            }
-
-        }
-        System.out.println("Completed inserting uploads");
-    }
     private void cleanUpKeyCloakAndDBUsers(){
-        System.out.println("Clean up all user data from keycloak");
         List<User> users = userRepository.findAll();
         for(User u:users){
             if(u.getKeycloakId()!=null){
@@ -590,7 +593,6 @@ public class DataPopulatorBean implements Runnable {
                 }
             }
         }
-        System.out.println("Cleaned up all user data from keycloak");
     }
 
     public void addUserToKeyCloak(User myUser) {

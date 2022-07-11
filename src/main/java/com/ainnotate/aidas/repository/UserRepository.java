@@ -85,18 +85,18 @@ public interface UserRepository extends JpaRepository<User, Long> {
         "u.first_name as firstName, \n" +
         "u.last_name lastName, \n" +
         "0 as userVendorMappingId,\n" +
-        "qpc.id as userCustomerMappingId,\n" +
+        "cqpm.id as userCustomerMappingId,\n" +
         "ucm.id as qcProjectMappingId, \n" + //changed this to get qpc.id instead of customer mapping id so that the add function can directly work on qpc
-        "qpc.status as status,   \n" +
-        "qpc.qc_level as qcLevel "+
+        "cqpm.status as status,   \n" +
+        "cqpm.qc_level as qcLevel "+
         "from \n" +
-        "qc_project_mapping qpc, \n" +
+        "customer_qc_project_mapping cqpm, \n" +
         "user u,\n" +
         "user_customer_mapping ucm \n" +
         "where \n" +
-        "qpc.user_customer_mapping_id=ucm.id and\n" +
+        "cqpm.user_customer_mapping_id=ucm.id and\n" +
         "ucm.user_id=u.id and\n" +
-        "qpc.project_id=?1 \n"
+        "cqpm.project_id=?1 \n"
         , nativeQuery = true)
     List<IUserDTO>findAllByQcUsersByCustomerAndProject(Long projectId);
 

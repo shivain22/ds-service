@@ -68,7 +68,6 @@ public class Authority extends AbstractAuditingEntity implements Serializable {
         return Objects.hashCode(name);
     }
 
-    // prettier-ignore
     @Override
     public String toString() {
         return "Authority{" +

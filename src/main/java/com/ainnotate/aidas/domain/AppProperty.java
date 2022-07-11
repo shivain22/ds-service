@@ -122,6 +122,11 @@ public class AppProperty extends AbstractAuditingEntity implements Serializable 
         this.id = id;
     }
 
-
+    @Override
+    public String toString() {
+        return "AppProperty{" +
+            "name='" + name + '\'' +
+            "}";
+    }
 
 }

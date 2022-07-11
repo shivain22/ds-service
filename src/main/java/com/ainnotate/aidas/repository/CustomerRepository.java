@@ -19,6 +19,9 @@ import java.util.List;
 public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
 
+    @Query(value = "select c.* from customer c, organisation o where c.organisation_id=o.id and c.name=? and o.name=? and c.is_sample_data=1 and o.is_sample_data=1",nativeQuery = true)
+    Customer findSampleCustomerByNameAndOrgName(String customerName,String orgName);
+
     @Query(value="select * from customer ac where ac.organisation_id=?1 and status=1",nativeQuery = true)
     Page<Customer> findAllByAidasOrganisation(Pageable page, Organisation organisation);
 

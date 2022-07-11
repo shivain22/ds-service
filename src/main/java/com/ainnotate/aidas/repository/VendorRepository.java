@@ -18,6 +18,9 @@ import java.util.List;
 @Transactional
 public interface VendorRepository extends JpaRepository<Vendor, Long> {
 
+    @Query(value = "select * from vendor where name=?1 and is_sample_data=1",nativeQuery = true)
+    Vendor findSampleVendorByName(String name);
+
     @Query(value = "select * from vendor where id>0 and status=1",countQuery = "select count(*) from vendor where id>0 and status=1", nativeQuery = true)
     Page<Vendor> findAllByIdGreaterThan(Long id, Pageable page);
 

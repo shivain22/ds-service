@@ -15,4 +15,5 @@ import org.springframework.transaction.annotation.Transactional;
 public interface SubCategoryRepository extends JpaRepository<SubCategory, Long> {
 
 
+    SubCategory findByValue(String value);
 }

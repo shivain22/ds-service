@@ -62,6 +62,8 @@ public class UploadResource {
     private ProjectPropertyRepository projectPropertyRepository;
 
     @Autowired
+    UserVendorMappingProjectMappingRepository userVendorMappingProjectMappingRepository;
+    @Autowired
     private PropertyRepository propertyRepository;
     @Autowired
     private ObjectPropertyRepository objectPropertyRepository;
@@ -71,7 +73,7 @@ public class UploadResource {
     @Autowired
     private CustomerRepository customerRepository;
     @Autowired
-    private QcProjectMappingRepository qcProjectMappingRepository;
+    private CustomerQcProjectMappingRepository customerQcProjectMappingRepository;
 
     private final UploadSearchRepository aidasUploadSearchRepository;
 
@@ -315,8 +317,20 @@ public class UploadResource {
             upload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
             try {
                 Upload result = uploadRepository.save(upload);
-                System.out.println("My Test::"+uploadDto.getUploadMetadata());
-
+                Object o = result.getUserVendorMappingObjectMapping().getObject();
+                Project p = o.getProject();
+                o.setTotalUploaded(o.getTotalUploaded()+1);
+                o.setTotalPending(o.getTotalPending()+1);
+                o.setTotalRequired(o.getTotalRequired()-1);
+                p.setTotalUploaded(p.getTotalUploaded()+1);
+                p.setTotalPending(p.getTotalPending()+1);
+                p.setTotalRequired(p.getTotalRequired()-1);
+                UserVendorMappingProjectMapping uvmpm = userVendorMappingProjectMappingRepository.findByUserVendorMappingIdProjectId(upload.getUserVendorMappingObjectMapping().getUserVendorMapping().getId(),p.getId());
+                uvmpm.setTotalUploaded(uvmpm.getTotalUploaded()+1);
+                uvmpm.setTotalPending(uvmpm.getTotalPending()+1);
+                objectRepository.save(o);
+                projectRepository.save(p);
+                userVendorMappingProjectMappingRepository.save(uvmpm);
                 for (Map.Entry < String, String> entry:uploadDto.getUploadMetadata().entrySet() ) {
                     Property property = propertyRepository.getByNameAndUserId(entry.getKey().trim(),customer.getId());
                     if(property!=null) {
@@ -517,7 +531,7 @@ public class UploadResource {
         Upload upload = uploadRepository.getById(id);
         Customer customer = upload.getUserVendorMappingObjectMapping().getObject().getProject().getCustomer();
         Project project = upload.getUserVendorMappingObjectMapping().getObject().getProject();
-        List<CustomerQcProjectMapping> qpms = qcProjectMappingRepository.getQcProjectMappingByProjectAndCustomerAndUser(project.getId(),customer.getId(),user.getId());
+        List<CustomerQcProjectMapping> qpms = customerQcProjectMappingRepository.getQcProjectMappingByProjectAndCustomerAndUser(project.getId(),customer.getId(),user.getId());
         upload.setStatus(AidasConstants.AIDAS_UPLOAD_APPROVED);
         upload.setApprovalStatus(AidasConstants.AIDAS_UPLOAD_APPROVED);
         upload.setQcEndDate(Instant.now());
@@ -526,6 +540,18 @@ public class UploadResource {
             upload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_COMPLETED);
         }
         Upload result = uploadRepository.save(upload);
+        Object o = result.getUserVendorMappingObjectMapping().getObject();
+        Project p = o.getProject();
+        o.setTotalApproved(o.getTotalApproved()+1);
+        o.setTotalPending(o.getTotalPending()-1);
+        p.setTotalApproved(p.getTotalApproved()+1);
+        p.setTotalPending(p.getTotalPending()-1);
+        UserVendorMappingProjectMapping uvmpm = userVendorMappingProjectMappingRepository.findByUserVendorMappingIdProjectId(upload.getUserVendorMappingObjectMapping().getUserVendorMapping().getId(),p.getId());
+        uvmpm.setTotalApproved(uvmpm.getTotalApproved()+1);
+        uvmpm.setTotalPending(uvmpm.getTotalPending()-1);
+        objectRepository.save(o);
+        projectRepository.save(p);
+        userVendorMappingProjectMappingRepository.save(uvmpm);
         //aidasUploadSearchRepository.save(result);
         return ResponseEntity
             .ok()
@@ -571,21 +597,21 @@ public class UploadResource {
         Upload upload = uploadRepository.getById(id);
         Customer customer = upload.getUserVendorMappingObjectMapping().getObject().getProject().getCustomer();
         Project project = upload.getUserVendorMappingObjectMapping().getObject().getProject();
-        List<CustomerQcProjectMapping> qpms = qcProjectMappingRepository.getQcProjectMappingByProjectAndCustomerAndUser(project.getId(),customer.getId(),user.getId());
+        List<CustomerQcProjectMapping> qpms = customerQcProjectMappingRepository.getQcProjectMappingByProjectAndCustomerAndUser(project.getId(),customer.getId(),user.getId());
         upload.setStatus(AidasConstants.AIDAS_UPLOAD_REJECTED);
         Upload result = uploadRepository.save(upload);
         for(UploadRejectReason uploadRejectReason : uploadRejectReasons){
-            UploadRejectMapping uploadRejectMapping = new UploadRejectMapping();
+            UploadRejectReasonMapping uploadRejectReasonMapping = new UploadRejectReasonMapping();
             if(uploadRejectReason.getId()!=null){
                 uploadRejectReason = uploadRejectReasonRepository.getById(uploadRejectReason.getId());
-                uploadRejectMapping.setUpload(upload);
-                uploadRejectMapping.setAidasUploadRejectReason(uploadRejectReason);
-                upload.getAidasUploadRejectMappings().add(uploadRejectMapping);
+                uploadRejectReasonMapping.setUpload(upload);
+                uploadRejectReasonMapping.setAidasUploadRejectReason(uploadRejectReason);
+                upload.getAidasUploadRejectMappings().add(uploadRejectReasonMapping);
             }else{
                 uploadRejectReason = uploadRejectReasonRepository.save(uploadRejectReason);
-                uploadRejectMapping.setUpload(upload);
-                uploadRejectMapping.setAidasUploadRejectReason(uploadRejectReason);
-                upload.getAidasUploadRejectMappings().add(uploadRejectMapping);
+                uploadRejectReasonMapping.setUpload(upload);
+                uploadRejectReasonMapping.setAidasUploadRejectReason(uploadRejectReason);
+                upload.getAidasUploadRejectMappings().add(uploadRejectReasonMapping);
             }
         }
         upload.setQcEndDate(Instant.now());
@@ -595,6 +621,20 @@ public class UploadResource {
             upload.setApprovalStatus(AidasConstants.AIDAS_UPLOAD_REJECTED);
         }
         uploadRepository.save(upload);
+        Object o = result.getUserVendorMappingObjectMapping().getObject();
+        Project p = o.getProject();
+        o.setTotalRejected(o.getTotalRejected()+1);
+        o.setTotalPending(o.getTotalPending()-1);
+        o.setTotalRequired(o.getTotalRequired()+1);
+        p.setTotalRejected(p.getTotalRejected()+1);
+        p.setTotalPending(p.getTotalPending()-1);
+        p.setTotalRequired(p.getTotalRequired()+1);
+        UserVendorMappingProjectMapping uvmpm = userVendorMappingProjectMappingRepository.findByUserVendorMappingIdProjectId(upload.getUserVendorMappingObjectMapping().getUserVendorMapping().getId(),p.getId());
+        uvmpm.setTotalRejected(uvmpm.getTotalRejected()+1);
+        uvmpm.setTotalPending(uvmpm.getTotalPending()-1);
+        objectRepository.save(o);
+        projectRepository.save(p);
+        userVendorMappingProjectMappingRepository.save(uvmpm);
         //aidasUploadSearchRepository.save(result);
         return ResponseEntity
             .ok()
@@ -906,7 +946,7 @@ public class UploadResource {
         if(upload !=null) {
             Customer customer = upload.getUserVendorMappingObjectMapping().getObject().getProject().getCustomer();
             Project project = upload.getUserVendorMappingObjectMapping().getObject().getProject();
-            List<CustomerQcProjectMapping> qpms = qcProjectMappingRepository.getQcProjectMappingByProjectAndCustomerAndUser(project.getId(),customer.getId(),user.getId());
+            List<CustomerQcProjectMapping> qpms = customerQcProjectMappingRepository.getQcProjectMappingByProjectAndCustomerAndUser(project.getId(),customer.getId(),user.getId());
             if(qpms!=null && qpms.size()>0) {
                 upload.setQcDoneBy(qpms.get(0));
                 upload.setQcStartDate(Instant.now());
