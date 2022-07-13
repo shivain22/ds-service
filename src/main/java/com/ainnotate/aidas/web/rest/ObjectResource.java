@@ -53,6 +53,8 @@ public class ObjectResource {
     private final ObjectRepository objectRepository;
 
     @Autowired
+    private ProjectRepository projectRepository;
+    @Autowired
     private VendorRepository vendorRepository;
 
     @Autowired
@@ -79,7 +81,7 @@ public class ObjectResource {
     private UserVendorMappingRepository userVendorMappingRepository;
 
     @Autowired
-    private TaskExecutor objectMappingTaskExecutor;
+    private TaskExecutor taskExecutor;
 
     @Autowired
     private ObjectAddingTask objectAddingTask;
@@ -149,14 +151,17 @@ public class ObjectResource {
         if(object.getBufferPercent()==null){
             object.setBufferPercent(20);
         }
-        object.setNumberOfUploadsRequired(object.getNumberOfUploadsRequired()+(object.getNumberOfUploadsRequired()*(object.getBufferPercent()/100)));
+        object.setNumberOfBufferedUploadsRequired(object.getNumberOfUploadsRequired()+(object.getNumberOfUploadsRequired()*(object.getBufferPercent()/100)));
+        object.setTotalRequired(object.getNumberOfBufferedUploadsRequired());
         Object result = objectRepository.save(object);
-        Project p = result.getProject();
+        Project p = projectRepository.getById(result.getProject().getId());
         p.setNumberOfBufferedUploadsdRequired(result.getNumberOfBufferedUploadsRequired());
+        p.setNumberOfUploadsRequired(p.getNumberOfUploadsRequired()+result.getNumberOfUploadsRequired());
         p.setTotalRequired(p.getTotalRequired()+result.getNumberOfUploadsRequired());
+        projectRepository.save(p);
         objectAddingTask.setObject(result);
         objectAddingTask.setDummy(false);
-        objectMappingTaskExecutor.execute(objectAddingTask);
+        objectAddingTask.run();
         return ResponseEntity
             .created(new URI("/api/aidas-objects/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
@@ -565,24 +570,18 @@ public class ObjectResource {
     public ResponseEntity<List<ObjectDTO>> getAllAidasObjectsOfProjectForVendorUser(Pageable pageable, @PathVariable(value = "id", required = false) final Long projectId) {
         log.debug("REST request to get a page of AidasObjects");
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-        List<ObjectDTO> objects = null;
-        if( user.getAuthority().getName().equals(AidasConstants.VENDOR_USER)){
-            objects = objectRepository.getAllObjectsByVendorUserProjectWithProjectId(pageable,user.getId(),projectId);
-            if(objects!=null && objects.size()>0){
-                for(ObjectDTO object : objects){
+        Page<ObjectDTO> page = null;
+
+            page = objectRepository.getAllObjectsByVendorUserProjectWithProjectId(pageable,user.getId(),projectId);
+
+                for(ObjectDTO object : page.getContent()){
                     List<ObjectProperty>objectProperties = objectPropertyRepository.getAllObjectPropertyForObject(object.getId());
                     object.setObjectProperties(objectProperties);
                 }
-            }
-        }
-        PagedListHolder<ObjectDTO> pages = new PagedListHolder(objects);
-        pages.setPage(pageable.getPageNumber()); //set current page number
-        pages.setPageSize(pageable.getPageSize()); // set the size of page
-        if(pages.getPageList()!=null) {
-            return ResponseEntity.ok().body(pages.getPageList());
-        }else{
-            throw new BadRequestAlertException("Not Authorised", ENTITY_NAME, "idexists");
-        }
+            HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+            return ResponseEntity.ok().headers(headers).body(page.getContent());
+
+
     }
 
 
@@ -747,8 +746,7 @@ public class ObjectResource {
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
-    @Autowired
-    TaskExecutor uploadDownloadTaskExecutor;
+
 
     @Autowired
     DownloadUploadS3 downloadUploadS3;
@@ -765,6 +763,6 @@ public class ObjectResource {
         downloadUploadS3.setUser(user);
         Object object = objectRepository.getById(id);
         downloadUploadS3.setUp(object,status);
-        uploadDownloadTaskExecutor.execute(downloadUploadS3);
+        taskExecutor.execute(downloadUploadS3);
     }
 }

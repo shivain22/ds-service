@@ -87,7 +87,7 @@ public class ProjectResource {
     private UploadRepository uploadRepository;
 
     @Autowired
-    private TaskExecutor objectMappingTaskExecutor;
+    private TaskExecutor taskExecutor;
 
     @Autowired
     private ObjectAddingTask objectAddingTask;
@@ -167,11 +167,7 @@ public class ProjectResource {
         {
             Object obj = new Object();
             obj.setName(result.getName()+" - Dummy Object");
-            if(result.getNumberOfUploadsRequired()!=null){
-                obj.setNumberOfUploadsRequired(result.getNumberOfUploadsRequired());
-            }else{
-                obj.setNumberOfUploadsRequired(0);
-            }
+            obj.setNumberOfUploadsRequired(0);
             obj.setDescription("Dummy object for project "+result.getName());
             obj.setProject(result);
             obj.setBufferPercent(0);
@@ -191,7 +187,7 @@ public class ProjectResource {
             objectRepository.save(obj);
             objectAddingTask.setDummy(true);
             objectAddingTask.setObject(obj);
-            objectMappingTaskExecutor.execute(objectAddingTask);
+            objectAddingTask.run();
         }
         if(result.getAutoCreateObjects()!=null && result.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)){
             for(int i=0;i<result.getNumberOfObjects();i++){
@@ -226,7 +222,7 @@ public class ProjectResource {
                 objectRepository.save(obj);
                 objectAddingTask.setDummy(false);
                 objectAddingTask.setObject(obj);
-                objectMappingTaskExecutor.execute(objectAddingTask);
+                objectAddingTask.run();
             }
         }
         //aidasProjectSearchRepository.save(result.getId());
@@ -627,20 +623,18 @@ public class ProjectResource {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         Page<ProjectDTO> page = null;
         if(user.getAuthority().getName().equals(AidasConstants.VENDOR_USER)){
-            List<ProjectDTO> projects =  projectRepository.findProjectWithUploadCountByUser(pageable,user.getId());
-            for(ProjectDTO p:projects){
+            page =  projectRepository.findProjectWithUploadCountByUser(pageable,user.getId());
+            for(ProjectDTO p:page.getContent()){
                 List<ProjectProperty> projectProperties = projectPropertyRepository.findAllProjectProperty(p.getId());
                 p.setAidasProjectProperties(projectProperties);
-                p.setTotalRequired(p.getTotalRequired() - p.getTotalApproved());
             }
-            PagedListHolder<ProjectDTO> pages = new PagedListHolder(projects);
-            pages.setPage(pageable.getPageNumber()); //set current page number
-            pages.setPageSize(pageable.getPageSize()); // set the size of page
-            if(pages.getPageList()!=null) {
-                return ResponseEntity.ok().body(pages.getPageList());
-            }else{
-                throw new BadRequestAlertException("Not Authorised", ENTITY_NAME, "idexists");
-            }
+            //PagedListHolder<ProjectDTO> pages = new PagedListHolder(projects);
+            //pages.setPage(pageable.getPageNumber()); //set current page number
+            //pages.setPageSize(pageable.getPageSize()); // set the size of page
+
+            HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+            return ResponseEntity.ok().headers(headers).body(page.getContent());
+
         }
         throw new BadRequestAlertException("Not Authorised", ENTITY_NAME, "idexists");
     }
@@ -658,9 +652,7 @@ public class ProjectResource {
     public ResponseEntity<Project> getProject(@PathVariable Long id) {
         log.debug("REST request to get AidasProject : {}", id);
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-        Project project =projectRepository.getById(id);
-        System.out.println(project.getId());
-        System.out.println(project.getName());
+        Project project =projectRepository.findById(id).get();
         if(project!=null) {
             return ResponseEntity.ok().body(project);
         }else{
@@ -744,8 +736,7 @@ public class ProjectResource {
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
-    @Autowired
-    TaskExecutor uploadDownloadTaskExecutor;
+
 
     @Autowired
     DownloadUploadS3 downloadUploadS3;
@@ -762,7 +753,7 @@ public class ProjectResource {
         downloadUploadS3.setUser(user);
         Project project = projectRepository.getById(aidasProjectId);
         downloadUploadS3.setUp(project,status);
-        uploadDownloadTaskExecutor.execute(downloadUploadS3);
+        taskExecutor.execute(downloadUploadS3);
     }
 
 

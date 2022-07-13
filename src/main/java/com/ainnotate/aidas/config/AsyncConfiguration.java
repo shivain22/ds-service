@@ -1,6 +1,9 @@
 package com.ainnotate.aidas.config;
 
 import java.util.concurrent.Executor;
+
+import com.ainnotate.aidas.service.ObjectAddingTask;
+import com.ainnotate.aidas.service.UserAddingTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
@@ -15,7 +18,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import tech.jhipster.async.ExceptionHandlingAsyncTaskExecutor;
 
 @Configuration
-@EnableAsync
+//@EnableAsync
 @EnableScheduling
 public class AsyncConfiguration implements AsyncConfigurer {
 
@@ -42,5 +45,15 @@ public class AsyncConfiguration implements AsyncConfigurer {
     @Override
     public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
         return new SimpleAsyncUncaughtExceptionHandler();
+    }
+
+    @Bean
+    public ObjectAddingTask objectAddingTask(){
+        return new ObjectAddingTask();
+    }
+
+    @Bean
+    public UserAddingTask userAddingTask(){
+        return new UserAddingTask();
     }
 }

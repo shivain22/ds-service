@@ -114,7 +114,7 @@ public class UserResource {
     private OrganisationRepository organisationRepository;
 
     @Autowired
-    TaskExecutor userVendorMappingObjectMappingTaskExecutor;
+    TaskExecutor taskExecutor;
 
     @Autowired
     UserAddingTask userVendorMappingObjectMappingTask;
@@ -259,19 +259,19 @@ public class UserResource {
         updateUserToKeyCloak(result);
         if(user!=null) {
             userVendorMappingObjectMappingTask.setUser(user);
-            userVendorMappingObjectMappingTaskExecutor.execute(userVendorMappingObjectMappingTask);
+            userVendorMappingObjectMappingTask.run();
         }
         if(user.getAuthority().getName().equals(AidasConstants.VENDOR_USER)) {
             if (userVendorMapping != null) {
                 userVendorMappingObjectMappingTask.setUserVendorMapping(userVendorMapping);
-                userVendorMappingObjectMappingTaskExecutor.execute(userVendorMappingObjectMappingTask);
+                userVendorMappingObjectMappingTask.run();
             }
         }
 
         if(user.getAuthority().getName().equals(AidasConstants.QC_USER)) {
             if (userCustomerMapping != null) {
                 userVendorMappingObjectMappingTask.setUserCustomerMapping(userCustomerMapping);
-                userVendorMappingObjectMappingTaskExecutor.execute(userVendorMappingObjectMappingTask);
+                userVendorMappingObjectMappingTask.run();
             }
         }
         return ResponseEntity
@@ -1086,7 +1086,6 @@ public class UserResource {
         for (RoleRepresentation roleRepresentation : roleRepresentationList)
         {
             for(Authority aa:myUser.getAuthorities()){
-                System.out.println(aa.getName()+""+roleRepresentation.getName());
                 if (roleRepresentation.getName().equals(aa.getName()))
                 {
                     userResource.roles().realmLevel().add(Arrays.asList(roleRepresentation));

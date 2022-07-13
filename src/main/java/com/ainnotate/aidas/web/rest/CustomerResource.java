@@ -170,7 +170,6 @@ public class CustomerResource {
 
     /**
      * {@code GET  /aidas-customers} : get all the aidasCustomers.
-     *
      * @param pageable the pagination information.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of aidasCustomers in body.
      */

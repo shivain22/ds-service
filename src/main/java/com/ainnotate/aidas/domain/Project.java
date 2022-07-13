@@ -108,7 +108,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
         "a.image_type , \n" +
         "a.name , \n" +
         "a.number_of_objects , \n" +
-        "a.num_of_uploads_reqd , \n" +
+        "a.number_of_uploads_required , \n" +
         "a.object_prefix , \n" +
         "a.object_suffix , \n" +
         "a.project_type , \n" +
@@ -133,7 +133,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
         "p.image_type , \n" +
         "p.name , \n" +
         "p.number_of_objects , \n" +
-        "p.num_of_uploads_reqd , \n" +
+        "p.number_of_uploads_required , \n" +
         "p.object_prefix , \n" +
         "p.object_suffix , \n" +
         "p.project_type , \n" +
@@ -441,7 +441,7 @@ public class Project extends AbstractAuditingEntity  implements Serializable {
 
     @Column(name="external_dataset_status",columnDefinition = "integer default 0")
     @JsonProperty
-    private Integer externalDatasetStatus;
+    private Integer externalDatasetStatus=0;
 
     @Column(name="image_type")
     @JsonProperty
@@ -466,7 +466,7 @@ public class Project extends AbstractAuditingEntity  implements Serializable {
     @Field(type=FieldType.Nested,store = false,storeNullValue = false)
     private Set<ProjectProperty> projectProperties=new HashSet<>();
     @Column(name="number_of_uploads_required")
-    private Integer numberOfUploadsRequired;
+    private Integer numberOfUploadsRequired=0;
     @Column(name="buffer_percent")
     private Integer bufferPercent=0;
 

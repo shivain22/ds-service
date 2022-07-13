@@ -48,10 +48,10 @@ public abstract class AbstractAuditingEntity implements Serializable {
     private Instant lastModifiedDate = Instant.now();
 
     @Column(name="is_sample_data")
-    private Integer sampleData;
+    private Integer sampleData=0;
 
     @Column(name="rating")
-    private Integer rating;
+    private Integer rating=0;
 
     public Integer getSampleData() {
         return sampleData;

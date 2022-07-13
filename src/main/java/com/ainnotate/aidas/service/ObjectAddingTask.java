@@ -4,13 +4,14 @@ import com.ainnotate.aidas.domain.*;
 import com.ainnotate.aidas.domain.Object;
 import com.ainnotate.aidas.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.scheduling.annotation.Async;
+
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Service
-public class ObjectAddingTask implements  Runnable{
+
+public class ObjectAddingTask {
 
     @Autowired
     private UserRepository userRepository;
@@ -52,20 +53,23 @@ public class ObjectAddingTask implements  Runnable{
         this.object = object;
     }
 
-    @Override
+    @Async
     public void run() {
 
         List<Long> vendorWithUserStatusOne = userVendorMappingObjectMappingRepository.getVendorsWhoseUsersAreHavingStatusOne(object.getProject().getId());
-        List<UserVendorMapping> userVendorMappings = userVendorMappingRepository.findAll();
+        List<UserVendorMapping> userVendorMappings = userVendorMappingRepository.getAllUserVendorMappingsOfVendorUsers();
         List<UserVendorMappingObjectMapping> uvmoms=new ArrayList<>();
         List<UserVendorMappingProjectMapping> uvmpoms=new ArrayList<>();
+
         for(UserVendorMapping uvm:userVendorMappings){
-            if(object.getProject().getUserAddedStatus().equals(0)){
-                UserVendorMappingProjectMapping uvmpm = new UserVendorMappingProjectMapping();
+            UserVendorMappingProjectMapping uvmpm = userVendorMappingProjectMappingRepository.findByUserVendorMappingIdProjectId(uvm.getId(),object.getProject().getId());
+            if(uvmpm==null) {
+                uvmpm = new UserVendorMappingProjectMapping();
                 uvmpm.setProject(object.getProject());
                 uvmpm.setUserVendorMapping(uvm);
-                uvmpoms.add(uvmpm);
+                userVendorMappingProjectMappingRepository.save(uvmpm);
             }
+
             UserVendorMappingObjectMapping uvmom = new UserVendorMappingObjectMapping();
             uvmom.setUserVendorMapping(uvm);
             uvmom.setObject(object);
@@ -74,12 +78,9 @@ public class ObjectAddingTask implements  Runnable{
             }else{
                 uvmom.setStatus(0);
             }
-            uvmoms.add(uvmom);
+            userVendorMappingObjectMappingRepository.save(uvmom);
         }
-        if(!uvmpoms.isEmpty()){
-            userVendorMappingProjectMappingRepository.saveAll(uvmpoms);
-        }
-        userVendorMappingObjectMappingRepository.saveAll(uvmoms);
+
         if(getDummy()) {
             List<UserCustomerMapping> qcUserCustomerMapping = userCustomerMappingRepository.getAllQcUserCustomerMapping(object.getProject().getCustomer().getId());
             List<CustomerQcProjectMapping> qpms = new ArrayList<>();
@@ -91,11 +92,10 @@ public class ObjectAddingTask implements  Runnable{
                         qpm.setProject(object.getProject());
                         qpm.setStatus(0);
                         qpm.setQcLevel(Long.valueOf(i + 1));
-                        qpms.add(qpm);
+                        customerQcProjectMappingRepository.save(qpm);
                     }
                 }
             }
-            customerQcProjectMappingRepository.saveAll(qpms);
         }
     }
 }

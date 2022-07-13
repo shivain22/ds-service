@@ -85,7 +85,7 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     Long countAidasProjectByVendorUser(Long aidasVendorUserId);
 
     @Query(nativeQuery = true)
-    List<ProjectDTO> findProjectWithUploadCountByUser(Pageable page, Long userId);
+    Page<ProjectDTO> findProjectWithUploadCountByUser(Pageable page, Long userId);
 
     @Query(nativeQuery = true)
     List<ProjectDTO> findProjectWithUploadCountByUserForDropDown(Long userId);

@@ -153,13 +153,13 @@ spring:
     execution:
       thread-name-prefix: ainnotateservice-task-
       pool:
-        core-size: 2
-        max-size: 50
+        core-size: 1
+        max-size: 1
         queue-capacity: 10000
     scheduling:
       thread-name-prefix: ainnotateservice-scheduling-
       pool:
-        size: 2
+        size: 1
   thymeleaf:
     mode: HTML
   output:

@@ -4,14 +4,15 @@ import com.ainnotate.aidas.domain.*;
 import com.ainnotate.aidas.domain.Object;
 import com.ainnotate.aidas.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-@Service
-public class UserAddingTask implements  Runnable{
+
+public class UserAddingTask {
 
     @Autowired
     private UserRepository userRepository;
@@ -61,11 +62,12 @@ public class UserAddingTask implements  Runnable{
     UserCustomerMappingRepository userCustomerMappingRepository;
 
     @Autowired
+    UserVendorMappingProjectMappingRepository userVendorMappingProjectMappingRepository;
+    @Autowired
     private AppPropertyRepository appPropertyRepository;
 
-    @Override
+    @Async
     public void run() {
-
         if(user!=null) {
             Set<AppProperty> appProperties = appPropertyRepository.getAppPropertyOfUser(-1l);
             List<AppProperty> appProperties1 = new ArrayList<>();
@@ -78,8 +80,13 @@ public class UserAddingTask implements  Runnable{
             }
             appPropertyRepository.saveAll(appProperties1);
         }
-        List<UserVendorMappingObjectMapping> uvmoms = new ArrayList<>();
             if(userVendorMapping!=null){
+                for(Project p: projectRepository.findAll()){
+                    UserVendorMappingProjectMapping uvpom = new UserVendorMappingProjectMapping();
+                    uvpom.setProject(p);
+                    uvpom.setUserVendorMapping(userVendorMapping);
+                    userVendorMappingProjectMappingRepository.save(uvpom);
+                }
                 for(Object o:objectRepository.findAll()){
                         List<Long> vendorWithUserStatusOne = userVendorMappingObjectMappingRepository.getVendorsWhoseUsersAreHavingStatusOne(o.getProject().getId());
                         UserVendorMappingObjectMapping uvmom = new UserVendorMappingObjectMapping();
@@ -90,9 +97,9 @@ public class UserAddingTask implements  Runnable{
                         }else{
                             uvmom.setStatus(0);
                         }
-                        uvmoms.add(uvmom);
+                        userVendorMappingObjectMappingRepository.save(uvmom);
                 }
-                userVendorMappingObjectMappingRepository.saveAll(uvmoms);
+
             }
             if(userCustomerMapping!=null){
                 List<Project> projects = projectRepository.findAllByAidasCustomer(userCustomerMapping.getCustomer().getId());

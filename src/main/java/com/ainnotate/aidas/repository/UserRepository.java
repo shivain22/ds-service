@@ -67,8 +67,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
         ,countQuery = "select count(*) from user u, user_vendor_mapping uvm where u.id=uvm.user_id and uvm.vendor_id=?1 and u.status=1 and deleted=0",nativeQuery = true)
     List<User> findAllByDeletedIsFalseAndAidasVendor( Vendor vendor);
 
-    @Query(value = "select * from user u where  u.status=1 and deleted=0 order by u.id desc"
-        ,countQuery = "select count(*) from user u where  u.status=1 and deleted=0",nativeQuery = true)
+    @Query(value = "select * from user u where  u.status=1 and deleted=0 and u.id>?1 order by u.id desc"
+        ,countQuery = "select count(*) from user u where  u.status=1 and deleted=0 and u.id>?1",nativeQuery = true)
     Page<User> findAllByIdGreaterThanAndDeletedIsFalse(Long id, Pageable page);
 
     @Query(value = "select * from user u where  u.status=1 and deleted=0 order by u.id desc"

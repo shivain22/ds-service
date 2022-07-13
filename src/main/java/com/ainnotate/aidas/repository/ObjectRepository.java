@@ -67,7 +67,7 @@ public interface ObjectRepository extends JpaRepository<Object, Long> {
     List<ObjectDTO> getAllObjectsByVendorUserProject(Pageable pageable,Long userId);
 
     @Query(nativeQuery = true)
-    List<ObjectDTO> getAllObjectsByVendorUserProjectWithProjectId(Pageable pageable,Long userId,Long projectId);
+    Page<ObjectDTO> getAllObjectsByVendorUserProjectWithProjectId(Pageable pageable,Long userId,Long projectId);
 
     @Query(nativeQuery = true)
     List<ObjectDTO> getAllObjectsByVendorUserProjectForDropdown(Long userId,Long projectId);

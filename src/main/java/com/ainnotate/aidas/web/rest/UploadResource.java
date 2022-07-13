@@ -319,17 +319,26 @@ public class UploadResource {
                 Upload result = uploadRepository.save(upload);
                 Object o = result.getUserVendorMappingObjectMapping().getObject();
                 Project p = o.getProject();
+
                 o.setTotalUploaded(o.getTotalUploaded()+1);
                 o.setTotalPending(o.getTotalPending()+1);
                 o.setTotalRequired(o.getTotalRequired()-1);
+
                 p.setTotalUploaded(p.getTotalUploaded()+1);
                 p.setTotalPending(p.getTotalPending()+1);
                 p.setTotalRequired(p.getTotalRequired()-1);
+
                 UserVendorMappingProjectMapping uvmpm = userVendorMappingProjectMappingRepository.findByUserVendorMappingIdProjectId(upload.getUserVendorMappingObjectMapping().getUserVendorMapping().getId(),p.getId());
                 uvmpm.setTotalUploaded(uvmpm.getTotalUploaded()+1);
                 uvmpm.setTotalPending(uvmpm.getTotalPending()+1);
+
                 objectRepository.save(o);
                 projectRepository.save(p);
+
+                uvmom.setTotalUploaded(uvmom.getTotalUploaded()+1);
+                uvmom.setTotalPending(uvmom.getTotalPending()+1);
+
+                userVendorMappingObjectMappingRepository.save(uvmom);
                 userVendorMappingProjectMappingRepository.save(uvmpm);
                 for (Map.Entry < String, String> entry:uploadDto.getUploadMetadata().entrySet() ) {
                     Property property = propertyRepository.getByNameAndUserId(entry.getKey().trim(),customer.getId());
@@ -529,8 +538,9 @@ public class UploadResource {
 
 
         Upload upload = uploadRepository.getById(id);
-        Customer customer = upload.getUserVendorMappingObjectMapping().getObject().getProject().getCustomer();
-        Project project = upload.getUserVendorMappingObjectMapping().getObject().getProject();
+        UserVendorMappingObjectMapping uvmom = upload.getUserVendorMappingObjectMapping();
+        Customer customer = uvmom.getObject().getProject().getCustomer();
+        Project project = uvmom.getObject().getProject();
         List<CustomerQcProjectMapping> qpms = customerQcProjectMappingRepository.getQcProjectMappingByProjectAndCustomerAndUser(project.getId(),customer.getId(),user.getId());
         upload.setStatus(AidasConstants.AIDAS_UPLOAD_APPROVED);
         upload.setApprovalStatus(AidasConstants.AIDAS_UPLOAD_APPROVED);
@@ -549,9 +559,12 @@ public class UploadResource {
         UserVendorMappingProjectMapping uvmpm = userVendorMappingProjectMappingRepository.findByUserVendorMappingIdProjectId(upload.getUserVendorMappingObjectMapping().getUserVendorMapping().getId(),p.getId());
         uvmpm.setTotalApproved(uvmpm.getTotalApproved()+1);
         uvmpm.setTotalPending(uvmpm.getTotalPending()-1);
+        uvmom.setTotalApproved(uvmom.getTotalApproved()+1);
+        uvmom.setTotalPending(uvmom.getTotalPending()-1);
         objectRepository.save(o);
         projectRepository.save(p);
         userVendorMappingProjectMappingRepository.save(uvmpm);
+        userVendorMappingObjectMappingRepository.save(uvmom);
         //aidasUploadSearchRepository.save(result);
         return ResponseEntity
             .ok()
@@ -595,6 +608,7 @@ public class UploadResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
         Upload upload = uploadRepository.getById(id);
+        UserVendorMappingObjectMapping uvmom = upload.getUserVendorMappingObjectMapping();
         Customer customer = upload.getUserVendorMappingObjectMapping().getObject().getProject().getCustomer();
         Project project = upload.getUserVendorMappingObjectMapping().getObject().getProject();
         List<CustomerQcProjectMapping> qpms = customerQcProjectMappingRepository.getQcProjectMappingByProjectAndCustomerAndUser(project.getId(),customer.getId(),user.getId());
@@ -632,9 +646,12 @@ public class UploadResource {
         UserVendorMappingProjectMapping uvmpm = userVendorMappingProjectMappingRepository.findByUserVendorMappingIdProjectId(upload.getUserVendorMappingObjectMapping().getUserVendorMapping().getId(),p.getId());
         uvmpm.setTotalRejected(uvmpm.getTotalRejected()+1);
         uvmpm.setTotalPending(uvmpm.getTotalPending()-1);
+        uvmom.setTotalApproved(uvmom.getTotalApproved()+1);
+        uvmom.setTotalPending(uvmom.getTotalPending()-1);
         objectRepository.save(o);
         projectRepository.save(p);
         userVendorMappingProjectMappingRepository.save(uvmpm);
+        userVendorMappingObjectMappingRepository.save(uvmom);
         //aidasUploadSearchRepository.save(result);
         return ResponseEntity
             .ok()
@@ -762,7 +779,7 @@ public class UploadResource {
         log.debug("REST request to get a page of AidasUploads");
         System.out.println("get upload starts");
         try {
-            Page<Upload> page = uploadRepository.findAll(pageable);
+            Page<Upload> page = null;//uploadRepository.findAll(pageable);
             Authority authority = user.getAuthority();
             if (authority.getName().equals(AidasConstants.ADMIN)) {
                 page = uploadRepository.findAll(pageable);
@@ -1036,7 +1053,7 @@ public class UploadResource {
     }
 
     @Autowired
-    TaskExecutor uploadDownloadTaskExecutor;
+    TaskExecutor taskExecutor;
 
     @Autowired
     DownloadUploadS3 downloadUploadS3;
@@ -1051,7 +1068,7 @@ public class UploadResource {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         downloadUploadS3.setUser(user);
         downloadUploadS3.setUp(uploadIds);
-        uploadDownloadTaskExecutor.execute(downloadUploadS3);
+        taskExecutor.execute(downloadUploadS3);
     }
 
     /*@Scheduled(cron = "0 0/15 * * * *")

@@ -29,7 +29,7 @@ public class SampleDataLoaderResource {
     private String applicationName;
 
     @Autowired
-    TaskExecutor uploadDownloadTaskExecutor;
+    TaskExecutor taskExecutor;
 
     @Autowired
     DataPopulatorBean dataPopulatorBean;
@@ -44,7 +44,7 @@ public class SampleDataLoaderResource {
        TaskDefinition taskDefinition = new TaskDefinition();
        taskDefinition.setActionType(dataFileName);
        dataPopulatorBean.setTaskDefinition(taskDefinition);
-       uploadDownloadTaskExecutor.execute(dataPopulatorBean);
+       taskExecutor.execute(dataPopulatorBean);
        return ResponseEntity.ok().body("Success");
    }
 
