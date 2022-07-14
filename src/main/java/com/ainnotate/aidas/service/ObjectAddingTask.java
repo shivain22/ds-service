@@ -67,9 +67,9 @@ public class ObjectAddingTask {
                 uvmpm = new UserVendorMappingProjectMapping();
                 uvmpm.setProject(object.getProject());
                 uvmpm.setUserVendorMapping(uvm);
+                uvmpm.setStatus(0);
                 userVendorMappingProjectMappingRepository.save(uvmpm);
             }
-
             UserVendorMappingObjectMapping uvmom = new UserVendorMappingObjectMapping();
             uvmom.setUserVendorMapping(uvm);
             uvmom.setObject(object);
