@@ -559,6 +559,7 @@ public class UploadResource {
         UserVendorMappingProjectMapping uvmpm = userVendorMappingProjectMappingRepository.findByUserVendorMappingIdProjectId(upload.getUserVendorMappingObjectMapping().getUserVendorMapping().getId(),p.getId());
         uvmpm.setTotalApproved(uvmpm.getTotalApproved()+1);
         uvmpm.setTotalPending(uvmpm.getTotalPending()-1);
+
         uvmom.setTotalApproved(uvmom.getTotalApproved()+1);
         uvmom.setTotalPending(uvmom.getTotalPending()-1);
         objectRepository.save(o);
@@ -640,14 +641,18 @@ public class UploadResource {
         o.setTotalRejected(o.getTotalRejected()+1);
         o.setTotalPending(o.getTotalPending()-1);
         o.setTotalRequired(o.getTotalRequired()+1);
+
         p.setTotalRejected(p.getTotalRejected()+1);
         p.setTotalPending(p.getTotalPending()-1);
         p.setTotalRequired(p.getTotalRequired()+1);
+
         UserVendorMappingProjectMapping uvmpm = userVendorMappingProjectMappingRepository.findByUserVendorMappingIdProjectId(upload.getUserVendorMappingObjectMapping().getUserVendorMapping().getId(),p.getId());
         uvmpm.setTotalRejected(uvmpm.getTotalRejected()+1);
         uvmpm.setTotalPending(uvmpm.getTotalPending()-1);
-        uvmom.setTotalApproved(uvmom.getTotalApproved()+1);
+
+        uvmom.setTotalRejected(uvmom.getTotalApproved()+1);
         uvmom.setTotalPending(uvmom.getTotalPending()-1);
+
         objectRepository.save(o);
         projectRepository.save(p);
         userVendorMappingProjectMappingRepository.save(uvmpm);
