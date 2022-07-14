@@ -116,18 +116,22 @@ public class UserAddingTask {
                     if(uvmpm==null) {
                         uvmpm = new UserVendorMappingProjectMapping();
                         uvmpm.setProject(p);
+                        uvmpm.setStatus(0);
                         uvmpm.setUserVendorMapping(userVendorMapping);
                         userVendorMappingProjectMappingRepository.save(uvmpm);
                     }
                 }
                 for(Object o:objectRepository.findAll()){
                         List<Long> vendorWithUserStatusOne = userVendorMappingObjectMappingRepository.getVendorsWhoseUsersAreHavingStatusOne(o.getProject().getId());
-                        UserVendorMappingObjectMapping uvmom = new UserVendorMappingObjectMapping();
-                        uvmom.setUserVendorMapping(userVendorMapping);
-                        uvmom.setObject(o);
-                        if(vendorWithUserStatusOne.contains(userVendorMapping.getVendor().getId())){
+                        UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserVendorMappingObject(userVendorMapping.getId(),o.getId());
+                        if(uvmom==null) {
+                            uvmom = new UserVendorMappingObjectMapping();
+                            uvmom.setUserVendorMapping(userVendorMapping);
+                            uvmom.setObject(o);
+                        }
+                        if (vendorWithUserStatusOne.contains(userVendorMapping.getVendor().getId())) {
                             uvmom.setStatus(0);
-                        }else{
+                        } else {
                             uvmom.setStatus(0);
                         }
                         userVendorMappingObjectMappingRepository.save(uvmom);

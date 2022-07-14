@@ -70,9 +70,12 @@ public class ObjectAddingTask {
                 uvmpm.setStatus(0);
                 userVendorMappingProjectMappingRepository.save(uvmpm);
             }
-            UserVendorMappingObjectMapping uvmom = new UserVendorMappingObjectMapping();
-            uvmom.setUserVendorMapping(uvm);
-            uvmom.setObject(object);
+            UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserVendorMappingObject(uvm.getId(),object.getId());
+            if(uvmom==null) {
+                uvmom = new UserVendorMappingObjectMapping();
+                uvmom.setUserVendorMapping(uvm);
+                uvmom.setObject(object);
+            }
             if(vendorWithUserStatusOne.contains(uvm.getVendor().getId())){
                 uvmom.setStatus(1);
             }else{

@@ -22,6 +22,9 @@ public interface UserVendorMappingObjectMappingRepository extends JpaRepository<
     @Query(value = "select * from user_vendor_mapping_object_mapping uvmom,user_vendor_mapping uvm where uvmom.user_vendor_mapping_id=uvm.id and uvm.user_id=?1 and object_id=?2", nativeQuery = true)
     UserVendorMappingObjectMapping findByUserObject(Long userId, Long objectId);
 
+    @Query(value = "select * from user_vendor_mapping_object_mapping uvmom where user_vendor_mapping_id=?1 and object_id=?2", nativeQuery = true)
+    UserVendorMappingObjectMapping findByUserVendorMappingObject(Long userVendorMappingId, Long objectId);
+
     @Query(value= "select count(*) from (select * from user_vendor_mapping_object_mapping uvmom, user_vendor_mapping uvm where uvmom.user_vendor_mapping_id=uvm.id and uvm.user_id  in (select id from user where vendor_id=?1) and object_id=?2) a",nativeQuery = true)
     Integer getCountOfAidasObjectMappingForVendorAdmin(Long vendorId,Long object);
 
