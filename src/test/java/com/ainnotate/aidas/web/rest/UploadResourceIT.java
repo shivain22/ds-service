@@ -109,7 +109,7 @@ class UploadResourceIT {
         } else {
             userVendorMappingObjectMapping = TestUtil.findAll(em, UserVendorMappingObjectMapping.class).get(0);
         }
-        upload.setAidasUserAidasObjectMapping(userVendorMappingObjectMapping);
+        upload.setUserVendorMappingObjectMapping(userVendorMappingObjectMapping);
         return upload;
     }
 
@@ -135,7 +135,7 @@ class UploadResourceIT {
         } else {
             userVendorMappingObjectMapping = TestUtil.findAll(em, UserVendorMappingObjectMapping.class).get(0);
         }
-        upload.setAidasUserAidasObjectMapping(userVendorMappingObjectMapping);
+        upload.setUserVendorMappingObjectMapping(userVendorMappingObjectMapping);
         return upload;
     }
 

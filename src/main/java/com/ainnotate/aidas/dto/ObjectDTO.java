@@ -36,44 +36,49 @@ public class ObjectDTO extends AbstractAuditingEntity implements Serializable {
         this.id=id;
         this.name=name;
     }
+
     public ObjectDTO(
-       Long id,
-       Long userVendorMappingObjectMappingId,
-       Long projectId,
-       Long parentObjectId,
-       Integer totalRequired,
-       Integer totalUploaded,
-       Integer totalApproved,
-       Integer totalRejected,
-       Integer totalPending,
-       Integer bufferPercent,
-       String name,
-       String description,
-       String imageType,
-       String audioType,
-       String videoType
+        Long id,
+        Long userVendorMappingObjectMappingId,
+        Long projectId,
+        Long parentObjectId,
+        Integer numberOfUploadsRequired,
+        Integer numberOfBufferedUploadsRequired,
+        Integer totalRequired,
+        Integer totalUploaded,
+        Integer totalApproved,
+        Integer totalRejected,
+        Integer totalPending,
+        Integer bufferPercent,
+        String name,
+        String description,
+        String imageType,
+        String audioType,
+        String videoType
     ){
-            this.id=id;
-            this.userVendorMappingObjectMappingId=userVendorMappingObjectMappingId;
-            this.totalRequired=totalRequired;
-            this.totalUploaded=totalUploaded;
-            this.totalApproved=totalApproved;
-            this.totalRejected=totalRejected;
-            this.totalPending=totalPending;
-            this.projectId=projectId;
-            this.parentObjectId=parentObjectId;
-            this.bufferPercent=bufferPercent;
-            this.name=name;
-            this.description=description;
-            this.imageType=imageType;
-            this.audioType=audioType;
-            this.videoType=videoType;
+        this.id=id;
+        this.userVendorMappingObjectMappingId=userVendorMappingObjectMappingId;
+        this.totalRequired=totalRequired;
+        this.totalUploaded=totalUploaded;
+        this.totalApproved=totalApproved;
+        this.totalRejected=totalRejected;
+        this.totalPending=totalPending;
+        this.numberOfUploadsRequired=numberOfUploadsRequired;
+        this.numberOfBufferedUploadsRequired = numberOfBufferedUploadsRequired;
+        this.projectId=projectId;
+        this.parentObjectId=parentObjectId;
+        this.bufferPercent=bufferPercent;
+        this.name=name;
+        this.description=description;
+        this.imageType=imageType;
+        this.audioType=audioType;
+        this.videoType=videoType;
     }
     private Long id;
     private String name;
     private Integer bufferPercent;
     private String description;
-    private Integer numberOfUploadReqd;
+    private Integer numberOfUploadsRequired;
     private Long projectId;
     private Long parentObjectId;
     private Integer uploadsCompleted;
@@ -86,6 +91,7 @@ public class ObjectDTO extends AbstractAuditingEntity implements Serializable {
     private String videoType;
     private String audioType;
     private Integer totalRequired;
+    private Integer numberOfBufferedUploadsRequired;
     private Long userVendorMappingObjectMappingId;
 
     public Long getUserVendorMappingObjectMappingId() {
@@ -94,6 +100,22 @@ public class ObjectDTO extends AbstractAuditingEntity implements Serializable {
 
     public void setUserVendorMappingObjectMappingId(Long userVendorMappingObjectMappingId) {
         this.userVendorMappingObjectMappingId = userVendorMappingObjectMappingId;
+    }
+
+    public Integer getNumberOfUploadsRequired() {
+        return numberOfUploadsRequired;
+    }
+
+    public void setNumberOfUploadsRequired(Integer numberOfUploadsRequired) {
+        this.numberOfUploadsRequired = numberOfUploadsRequired;
+    }
+
+    public Integer getNumberOfBufferedUploadsRequired() {
+        return numberOfBufferedUploadsRequired;
+    }
+
+    public void setNumberOfBufferedUploadsRequired(Integer numberOfBufferedUploadsRequired) {
+        this.numberOfBufferedUploadsRequired = numberOfBufferedUploadsRequired;
     }
 
     public Long getProjectId() {
@@ -248,15 +270,6 @@ public class ObjectDTO extends AbstractAuditingEntity implements Serializable {
         this.description = description;
     }
 
-    public Integer getNumberOfUploadReqd() {
-        return this.numberOfUploadReqd;
-    }
-
-
-
-    public void setNumberOfUploadReqd(Integer numberOfUploadReqd) {
-        this.numberOfUploadReqd = numberOfUploadReqd;
-    }
 
     @Override
     public boolean equals(java.lang.Object o) {
@@ -278,11 +291,11 @@ public class ObjectDTO extends AbstractAuditingEntity implements Serializable {
     // prettier-ignore
     @Override
     public String toString() {
-        return "AidasObject{" +
+        return "ObjectDTO{" +
             "id=" + getId() +
             ", name='" + getName() + "'" +
             ", description='" + getDescription() + "'" +
-            ", numberOfUploadReqd=" + getNumberOfUploadReqd() +
+            ", numberOfUploadReqd=" + getNumberOfUploadsRequired() +
             "}";
     }
 }

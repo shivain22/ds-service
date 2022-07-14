@@ -21,9 +21,12 @@ import org.hibernate.envers.Audited;
 @NamedNativeQuery(name="Object.getAllObjectsByVendorUserProject",
 query = "select \n" +
     "o.id," +
+    "uvmom.id as userVendorMappingObjectMappingId,"+
     "o.project_id as projectId,"+
     "o.parent_object_id parentObjectId,"+
-    "o.number_of_buffered_uploads_required as totalRequired," +
+    "o.number_of_uploads_required as numberOfUploadsRequired," +
+    "o.number_of_buffered_uploads_required as numberOfBufferedUploadsRequired," +
+    "o.total_required as totalRequired," +
     "uvmom.total_uploaded as totalUploaded, \n" +
     "uvmom.total_approved as totalApproved, \n" +
     "uvmom.total_rejected as totalRejected, \n" +
@@ -37,7 +40,7 @@ query = "select \n" +
     "from user_vendor_mapping_object_mapping uvmom  \n" +
     "left join object o on o.id=uvmom.object_id   \n" +
     "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id \n" +
-    "where    uvm.user_id=?1 and uvmom.status=1 and o.status=1 and o.is_dummy=0"
+    "where    uvm.user_id=?1 and uvmom.status=1 and o.status=1 and o.is_dummy=0 and o.project_id=?2"
     ,resultSetMapping = "Mapping.ObjectDTO")
 
 @NamedNativeQuery(name="Object.getAllObjectsByVendorUserProject.count",
@@ -47,20 +50,22 @@ query = "select \n" +
             "from user_vendor_mapping_object_mapping uvmom  \n" +
             "left join object o on o.id=uvmom.object_id   \n" +
             "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id \n" +
-            "where    uvm.user_id=?1 and uvmom.status=1 and o.status=1 and o.is_dummy=0)"
+            "where    uvm.user_id=?1 and uvmom.status=1 and o.status=1 and o.is_dummy=0 and o.project_id=?2)"
 )
 @SqlResultSetMapping(name = "Mapping.ObjectDTO",
     classes = @ConstructorResult(targetClass = ObjectDTO.class,
         columns = {
             @ColumnResult(name = "id",type = Long.class),
             @ColumnResult(name = "userVendorMappingObjectMappingId",type = Long.class),
+            @ColumnResult(name = "projectId",type = Long.class),
+            @ColumnResult(name = "parentObjectId",type = Long.class),
             @ColumnResult(name = "totalRequired",type = Integer.class),
+            @ColumnResult(name = "numberOfUploadsRequired",type = Integer.class),
+            @ColumnResult(name = "numberOfBufferedUploadsRequired",type = Integer.class),
             @ColumnResult(name = "totalUploaded",type = Integer.class),
             @ColumnResult(name = "totalApproved",type = Integer.class),
             @ColumnResult(name = "totalRejected",type = Integer.class),
             @ColumnResult(name = "totalPending",type = Integer.class),
-            @ColumnResult(name = "projectId",type = Long.class),
-            @ColumnResult(name = "parentObjectId",type = Long.class),
             @ColumnResult(name = "bufferPercent",type = Integer.class),
             @ColumnResult(name = "name",type = String.class),
             @ColumnResult(name = "description",type = String.class),
@@ -76,8 +81,11 @@ query = "select \n" +
 @NamedNativeQuery(name="Object.getAllObjectsByVendorUserProjectWithProjectId",
     query = "select \n" +
         "o.id," +
+        "uvmom.id as userVendorMappingObjectMappingId,"+
         "o.project_id as projectId,"+
         "o.parent_object_id parentObjectId,"+
+        "o.number_of_uploads_required as numberOfUploadsRequired," +
+        "o.number_of_buffered_uploads_required as numberOfBufferedUploadsRequired," +
         "o.total_required as totalRequired," +
         "uvmom.id as userVendorMappingObjectMappingId," +
         "uvmom.total_uploaded as totalUploaded, \n" +
@@ -93,7 +101,7 @@ query = "select \n" +
         "from user_vendor_mapping_object_mapping uvmom  \n" +
         "left join object o on o.id=uvmom.object_id   \n" +
         "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id \n" +
-        "where    uvm.user_id=?1 and uvmom.status=1 and o.status=1 and o.is_dummy=0"
+        "where    uvm.user_id=?1 and uvmom.status=1 and o.status=1 and o.is_dummy=0 and o.project_id=?2"
         ,resultSetMapping = "Mapping.ObjectDTOWithProjectId")
 
 @NamedNativeQuery(name="Object.getAllObjectsByVendorUserProjectWithProjectId.count",
@@ -103,15 +111,17 @@ query = "select \n" +
             "from user_vendor_mapping_object_mapping uvmom  \n" +
             "left join object o on o.id=uvmom.object_id   \n" +
             "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id \n" +
-            "where    uvm.user_id=?1 and uvmom.status=1 and o.status=1 and o.is_dummy=0)"
+            "where    uvm.user_id=?1 and uvmom.status=1 and o.status=1 and o.is_dummy=0 and o.project_id=?2)"
 )
 @SqlResultSetMapping(name = "Mapping.ObjectDTOWithProjectId",
     classes = @ConstructorResult(targetClass = ObjectDTO.class,
         columns = {
             @ColumnResult(name = "id",type = Long.class),
-            @ColumnResult(name = "projectId",type = Long.class),
             @ColumnResult(name = "userVendorMappingObjectMappingId",type = Long.class),
+            @ColumnResult(name = "projectId",type = Long.class),
             @ColumnResult(name = "parentObjectId",type = Long.class),
+            @ColumnResult(name = "numberOfUploadsRequired",type = Integer.class),
+            @ColumnResult(name = "numberOfBufferedUploadsRequired",type = Integer.class),
             @ColumnResult(name = "totalRequired",type = Integer.class),
             @ColumnResult(name = "totalUploaded",type = Integer.class),
             @ColumnResult(name = "totalApproved",type = Integer.class),
@@ -134,8 +144,11 @@ query = "select \n" +
 @NamedNativeQuery(name="Object.getAllObjectsByVendorUserProjectForDropdown",
     query = "select \n" +
         "o.id," +
+        "uvmom.id as userVendorMappingObjectMappingId,"+
         "o.project_id as projectId,"+
         "o.parent_object_id parentObjectId,"+
+        "o.number_of_uploads_required as numberOfUploadsRequired," +
+        "o.number_of_buffered_uploads_required as numberOfBufferedUploadsRequired," +
         "o.total_required as totalRequired," +
         "uvmom.total_uploaded as totalUploaded, \n" +
         "uvmom.total_approved as totalApproved, \n" +
@@ -150,7 +163,7 @@ query = "select \n" +
         "from user_vendor_mapping_object_mapping uvmom  \n" +
         "left join object o on o.id=uvmom.object_id   \n" +
         "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id \n" +
-        "where    uvm.user_id=?1 and uvmom.status=1 and o.status=1 and o.is_dummy=0"
+        "where    uvm.user_id=?1 and uvmom.status=1 and o.status=1 and o.is_dummy=0 and o.project_id=?2"
         ,resultSetMapping = "Mapping.ObjectDTOForDropdown")
 
 @NamedNativeQuery(name="Object.getAllObjectsByVendorUserProjectForDropdown.count",
@@ -160,19 +173,22 @@ query = "select \n" +
             "from user_vendor_mapping_object_mapping uvmom  \n" +
             "left join object o on o.id=uvmom.object_id   \n" +
             "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id \n" +
-            "where    uvm.user_id=?1 and uvmom.status=1 and o.status=1 and o.is_dummy=0)"
+            "where    uvm.user_id=?1 and uvmom.status=1 and o.status=1 and o.is_dummy=0 and o.project_id=?2)"
 )
 @SqlResultSetMapping(name = "Mapping.ObjectDTOForDropdown",
     classes = @ConstructorResult(targetClass = ObjectDTO.class,
         columns = {
             @ColumnResult(name = "id",type = Long.class),
+            @ColumnResult(name = "userVendorMappingObjectMappingId",type = Long.class),
+            @ColumnResult(name = "projectId",type = Long.class),
+            @ColumnResult(name = "parentObjectId",type = Long.class),
             @ColumnResult(name = "totalRequired",type = Integer.class),
+            @ColumnResult(name = "numberOfUploadsRequired",type = Integer.class),
+            @ColumnResult(name = "numberOfBufferedUploadsRequired",type = Integer.class),
             @ColumnResult(name = "totalUploaded",type = Integer.class),
             @ColumnResult(name = "totalApproved",type = Integer.class),
             @ColumnResult(name = "totalRejected",type = Integer.class),
             @ColumnResult(name = "totalPending",type = Integer.class),
-            @ColumnResult(name = "projectId",type = Long.class),
-            @ColumnResult(name = "parentObjectId",type = Long.class),
             @ColumnResult(name = "bufferPercent",type = Integer.class),
             @ColumnResult(name = "name",type = String.class),
             @ColumnResult(name = "description",type = String.class),

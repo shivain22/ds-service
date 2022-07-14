@@ -258,11 +258,17 @@ public class UserResource {
         User result = userRepository.save(user);
         updateUserToKeyCloak(result);
         if(user!=null) {
+            userVendorMappingObjectMappingTask.setAddProperty(true);
+            userVendorMappingObjectMappingTask.setAddVendorMappingObjectMapping(false);
+            userVendorMappingObjectMappingTask.setAddCustomerMappingQcProjectMapping(false);
             userVendorMappingObjectMappingTask.setUser(user);
             userVendorMappingObjectMappingTask.run();
         }
         if(user.getAuthority().getName().equals(AidasConstants.VENDOR_USER)) {
             if (userVendorMapping != null) {
+                userVendorMappingObjectMappingTask.setAddProperty(false);
+                userVendorMappingObjectMappingTask.setAddVendorMappingObjectMapping(true);
+                userVendorMappingObjectMappingTask.setAddCustomerMappingQcProjectMapping(false);
                 userVendorMappingObjectMappingTask.setUserVendorMapping(userVendorMapping);
                 userVendorMappingObjectMappingTask.run();
             }
@@ -270,6 +276,9 @@ public class UserResource {
 
         if(user.getAuthority().getName().equals(AidasConstants.QC_USER)) {
             if (userCustomerMapping != null) {
+                userVendorMappingObjectMappingTask.setAddProperty(false);
+                userVendorMappingObjectMappingTask.setAddVendorMappingObjectMapping(false);
+                userVendorMappingObjectMappingTask.setAddCustomerMappingQcProjectMapping(true);
                 userVendorMappingObjectMappingTask.setUserCustomerMapping(userCustomerMapping);
                 userVendorMappingObjectMappingTask.run();
             }

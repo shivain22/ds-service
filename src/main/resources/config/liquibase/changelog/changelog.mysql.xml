@@ -1422,7 +1422,7 @@
         <addUniqueConstraint columnNames="vendor_id, user_id" constraintName="uk_ap_oid_cid_vid_uid" tableName="user_vendor_mapping"/>
     </changeSet>
     <changeSet author="shiva (generated)" id="1657539087460-68">
-        <addUniqueConstraint columnNames="user_customer_mapping_id, project_id" constraintName="uk_cqpm_ucmid_pid" tableName="customer_qc_project_mapping"/>
+        <addUniqueConstraint columnNames="user_customer_mapping_id, project_id, qc_level" constraintName="uk_cqpm_ucmid_pid_qclevel" tableName="customer_qc_project_mapping"/>
     </changeSet>
     <changeSet author="shiva (generated)" id="1657539087460-69">
         <addUniqueConstraint columnNames="name, organisation_id" constraintName="uk_customer_organisation_name" tableName="customer"/>

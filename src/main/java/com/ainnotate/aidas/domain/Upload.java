@@ -64,7 +64,6 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
     @Fetch(FetchMode.SUBSELECT)
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     @JsonIgnoreProperties(value = { "upload" }, allowSetters = true)
-    @JsonIgnore
     private Set<UploadRejectReasonMapping> uploadRejectReasonMappings = new HashSet<>();
 
     @Column(name = "object_key",  nullable = true)
@@ -141,13 +140,7 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
         this.reworkUpload = reworkUpload;
     }
 
-    public Set<UploadRejectReasonMapping> getAidasUploadRejectMappings() {
-        return uploadRejectReasonMappings;
-    }
 
-    public void setAidasUploadRejectMappings(Set<UploadRejectReasonMapping> uploadRejectReasonMappings) {
-        this.uploadRejectReasonMappings = uploadRejectReasonMappings;
-    }
 
     public Integer getApprovalStatus() {
         return approvalStatus;
@@ -346,17 +339,6 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
         this.setStatusModifiedDate(statusModifiedDate);
         return this;
     }
-
-    public void setAidasUserAidasObjectMapping(UserVendorMappingObjectMapping userVendorMappingObjectMapping) {
-        this.userVendorMappingObjectMapping = userVendorMappingObjectMapping;
-    }
-
-    public Upload aidasUserAidasObjectMapping(UserVendorMappingObjectMapping userVendorMappingObjectMapping) {
-        this.setAidasUserAidasObjectMapping(userVendorMappingObjectMapping);
-        return this;
-    }
-
-    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
     @Override
     public boolean equals(java.lang.Object o) {

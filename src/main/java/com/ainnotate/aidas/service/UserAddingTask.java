@@ -40,6 +40,36 @@ public class UserAddingTask {
 
     private User user;
 
+    private boolean addProperty=false;
+
+    private boolean addVendorMappingObjectMapping=false;
+
+    private boolean addCustomerMappingQcProjectMapping=false;
+
+    public boolean isAddCustomerMappingQcProjectMapping() {
+        return addCustomerMappingQcProjectMapping;
+    }
+
+    public void setAddCustomerMappingQcProjectMapping(boolean addCustomerMappingQcProjectMapping) {
+        this.addCustomerMappingQcProjectMapping = addCustomerMappingQcProjectMapping;
+    }
+
+    public boolean isAddVendorMappingObjectMapping() {
+        return addVendorMappingObjectMapping;
+    }
+
+    public void setAddVendorMappingObjectMapping(boolean addVendorMappingObjectMapping) {
+        this.addVendorMappingObjectMapping = addVendorMappingObjectMapping;
+    }
+
+    public boolean isAddProperty() {
+        return addProperty;
+    }
+
+    public void setAddProperty(boolean addProperty) {
+        this.addProperty = addProperty;
+    }
+
     public User getUser() {
         return user;
     }
@@ -68,7 +98,7 @@ public class UserAddingTask {
 
     @Async
     public void run() {
-        if(user!=null) {
+        if(user!=null && addProperty) {
             Set<AppProperty> appProperties = appPropertyRepository.getAppPropertyOfUser(-1l);
             List<AppProperty> appProperties1 = new ArrayList<>();
             for (AppProperty ap : appProperties) {
@@ -80,12 +110,15 @@ public class UserAddingTask {
             }
             appPropertyRepository.saveAll(appProperties1);
         }
-            if(userVendorMapping!=null){
+            if(userVendorMapping!=null && addVendorMappingObjectMapping){
                 for(Project p: projectRepository.findAll()){
-                    UserVendorMappingProjectMapping uvpom = new UserVendorMappingProjectMapping();
-                    uvpom.setProject(p);
-                    uvpom.setUserVendorMapping(userVendorMapping);
-                    userVendorMappingProjectMappingRepository.save(uvpom);
+                    UserVendorMappingProjectMapping uvmpm = userVendorMappingProjectMappingRepository.findByUserVendorMappingIdProjectId(userVendorMapping.getId(),p.getId());
+                    if(uvmpm==null) {
+                        uvmpm = new UserVendorMappingProjectMapping();
+                        uvmpm.setProject(p);
+                        uvmpm.setUserVendorMapping(userVendorMapping);
+                        userVendorMappingProjectMappingRepository.save(uvmpm);
+                    }
                 }
                 for(Object o:objectRepository.findAll()){
                         List<Long> vendorWithUserStatusOne = userVendorMappingObjectMappingRepository.getVendorsWhoseUsersAreHavingStatusOne(o.getProject().getId());
@@ -101,22 +134,27 @@ public class UserAddingTask {
                 }
 
             }
-            if(userCustomerMapping!=null){
+            if(userCustomerMapping!=null && addCustomerMappingQcProjectMapping){
                 List<Project> projects = projectRepository.findAllByAidasCustomer(userCustomerMapping.getCustomer().getId());
-                List<CustomerQcProjectMapping> qpms = new ArrayList<>();
                 for(Project p : projects){
                     if(p.getQcLevels()!=null) {
-                        for( int i=0;i<p.getQcLevels();i++) {
-                            CustomerQcProjectMapping qpm = new CustomerQcProjectMapping();
-                            qpm.setUserCustomerMapping(userCustomerMapping);
-                            qpm.setProject(p);
-                            qpm.setStatus(0);
-                            qpm.setQcLevel(Long.valueOf(i+1));
-                            qpms.add(qpm);
+                        for( int i=1;i<=p.getQcLevels();i++) {
+                            System.out.println("userCustomerMappingId="+userCustomerMapping.getId()+"projcetId="+p.getId()+"level="+i);
+                            CustomerQcProjectMapping qpm = customerQcProjectMappingRepository.getQcProjectMappingByProjectAndCustomerAndUserAndLevel(p.getId(),userCustomerMapping.getId(),i);
+                            if(qpm!=null){
+                                System.out.println("userCustomerMappingId="+userCustomerMapping.getId()+"projcetId="+p.getId()+"level="+i+"qpmId="+qpm.getId());
+                            }
+                            if(qpm==null) {
+                                qpm =  new CustomerQcProjectMapping();
+                                qpm.setUserCustomerMapping(userCustomerMapping);
+                                qpm.setProject(p);
+                                qpm.setStatus(0);
+                                qpm.setQcLevel(Long.valueOf(i));
+                                customerQcProjectMappingRepository.save(qpm);
+                            }
                         }
                     }
                 }
-                customerQcProjectMappingRepository.saveAll(qpms);
             }
         }
 }

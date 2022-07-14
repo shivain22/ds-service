@@ -620,12 +620,12 @@ public class UploadResource {
                 uploadRejectReason = uploadRejectReasonRepository.getById(uploadRejectReason.getId());
                 uploadRejectReasonMapping.setUpload(upload);
                 uploadRejectReasonMapping.setAidasUploadRejectReason(uploadRejectReason);
-                upload.getAidasUploadRejectMappings().add(uploadRejectReasonMapping);
+                upload.getUploadRejectMappings().add(uploadRejectReasonMapping);
             }else{
                 uploadRejectReason = uploadRejectReasonRepository.save(uploadRejectReason);
                 uploadRejectReasonMapping.setUpload(upload);
                 uploadRejectReasonMapping.setAidasUploadRejectReason(uploadRejectReason);
-                upload.getAidasUploadRejectMappings().add(uploadRejectReasonMapping);
+                upload.getUploadRejectMappings().add(uploadRejectReasonMapping);
             }
         }
         upload.setQcEndDate(Instant.now());
@@ -777,7 +777,6 @@ public class UploadResource {
     public ResponseEntity<List<Upload>> getAllAidasUploads(Pageable pageable, @PathVariable Long id, @PathVariable String type, @PathVariable String status) {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to get a page of AidasUploads");
-        System.out.println("get upload starts");
         try {
             Page<Upload> page = null;//uploadRepository.findAll(pageable);
             Authority authority = user.getAuthority();
@@ -838,7 +837,6 @@ public class UploadResource {
             HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
             return ResponseEntity.ok().headers(headers).body(page.getContent());
         }catch(Exception e){
-            e.printStackTrace();
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
     }

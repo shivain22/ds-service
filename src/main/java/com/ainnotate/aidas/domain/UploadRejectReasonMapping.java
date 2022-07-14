@@ -22,6 +22,7 @@ import java.io.Serializable;
     })
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @org.springframework.data.elasticsearch.annotations.Document(indexName = "uploadrejectmapping")
+@JsonIgnoreProperties(value = { "upload" })
 @Audited
 public class UploadRejectReasonMapping extends AbstractAuditingEntity  implements Serializable {
 
@@ -34,7 +35,7 @@ public class UploadRejectReasonMapping extends AbstractAuditingEntity  implement
 
     @ManyToOne(optional = false)
     @NotNull
-    @JsonIgnoreProperties(value = { "aidasUserAidasObjectMapping", "customer", "vendor" }, allowSetters = true)
+    @JsonIgnoreProperties(value = { "userVendorMappingObjectMapping", "uploadRejectReasonMappings","reworkUpload","qcDoneBy", "vendor" }, allowSetters = true)
     @JoinColumn(name = "upload_id", nullable = true, foreignKey = @ForeignKey(name="fk_urm_upload"))
     private Upload upload;
 

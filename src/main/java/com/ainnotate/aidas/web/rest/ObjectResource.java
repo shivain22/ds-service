@@ -571,19 +571,14 @@ public class ObjectResource {
         log.debug("REST request to get a page of AidasObjects");
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         Page<ObjectDTO> page = null;
-
             page = objectRepository.getAllObjectsByVendorUserProjectWithProjectId(pageable,user.getId(),projectId);
-
                 for(ObjectDTO object : page.getContent()){
                     List<ObjectProperty>objectProperties = objectPropertyRepository.getAllObjectPropertyForObject(object.getId());
                     object.setObjectProperties(objectProperties);
                 }
             HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
             return ResponseEntity.ok().headers(headers).body(page.getContent());
-
-
     }
-
 
     /**
      * {@code GET  /aidas-objects/:id} : get the "id" object.

@@ -18,7 +18,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import tech.jhipster.async.ExceptionHandlingAsyncTaskExecutor;
 
 @Configuration
-//@EnableAsync
+@EnableAsync
 @EnableScheduling
 public class AsyncConfiguration implements AsyncConfigurer {
 

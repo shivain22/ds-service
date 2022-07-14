@@ -48,7 +48,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
         "project p\n" +
         "left join user_vendor_mapping_project_mapping uvmpm on p.id=uvmpm.project_id\n" +
         "left join user_vendor_mapping uvm on uvm.id=uvmpm.user_vendor_mapping_id \n" +
-        "where uvm.user_id=?1 and uvm.status=1",
+        "where uvm.user_id=?1 and uvm.status=1 and uvmpm.status=1",
     resultSetMapping = "Mapping.ProjectDTO")
 
 @NamedNativeQuery(name = "Project.findProjectWithUploadCountByUser.count",
@@ -59,7 +59,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
         "project p\n" +
         "left join user_vendor_mapping_project_mapping uvmpm on p.id=uvmpm.project_id\n" +
         "left join user_vendor_mapping uvm on uvm.id=uvmpm.user_vendor_mapping_id \n" +
-        "where uvm.user_id=?1 and uvm.status=1"+
+        "where uvm.user_id=?1 and uvm.status=1 and uvmpm.status=1"+
         ")a  ")
 
 
@@ -92,171 +92,46 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 
 
 @NamedNativeQuery(name = "Project.findProjectWithUploadCountByUserForDropDown",
-    query = "select \n" +
-        "projectId as id, \n" +
-        "sum(totalRequired) as totalRequired,\n" +
-        "sum(totalUploaded) as totalUploaded,\n" +
-        "sum(totalApproved) as totalApproved,\n" +
-        "sum(totalRejected) as totalRejected,\n" +
-        "sum(totalPending) as totalPending,\n" +
-        "a.status , \n" +
-        "a.audio_type , \n" +
-        "a.auto_create_objects , \n" +
-        "a.buffer_percent , \n" +
-        "a.description , \n" +
-        "a.external_dataset_status , \n" +
-        "a.image_type , \n" +
-        "a.name , \n" +
-        "a.number_of_objects , \n" +
-        "a.number_of_uploads_required , \n" +
-        "a.object_prefix , \n" +
-        "a.object_suffix , \n" +
-        "a.project_type , \n" +
-        "a.qc_levels , \n" +
-        "a.rework_status , \n" +
-        "a.video_type \n" +
-        "from (\n" +
-        "select \n" +
-        "p.id as projectId,\n" +
-        "o.id as objectId,\n" +
-        "o.number_of_uploads_required as totalRequired, \n" +
-        "count(u.id) as totalUploaded, \n" +
-        "sum(CASE WHEN u.approval_status = 1 THEN 1 ELSE 0 END) AS totalApproved,  \n" +
-        "sum(CASE WHEN u.approval_status = 0 THEN 1 ELSE 0 END) AS totalRejected,   \n" +
-        "sum(CASE WHEN u.approval_status = 2 THEN 1 ELSE 0 END) AS totalPending, \n" +
-        "p.status , \n" +
-        "p.audio_type , \n" +
-        "p.auto_create_objects , \n" +
-        "p.buffer_percent , \n" +
-        "p.description , \n" +
-        "p.external_dataset_status , \n" +
-        "p.image_type , \n" +
-        "p.name , \n" +
-        "p.number_of_objects , \n" +
-        "p.number_of_uploads_required , \n" +
-        "p.object_prefix , \n" +
-        "p.object_suffix , \n" +
-        "p.project_type , \n" +
-        "p.qc_levels , \n" +
-        "p.rework_status , \n" +
-        "p.video_type \n" +
-        "from upload u    \n" +
-        "left join user_vendor_mapping_object_mapping uvmom on u.user_vendor_mapping_object_mapping_id=uvmom.id   \n" +
-        "left join object o on o.id=uvmom.object_id   \n" +
-        "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id   \n" +
-        "left join project p on o.project_id=p.id \n" +
-        "where    uvm.user_id=?1 and uvmom.status=1  \n" +
-        "group by o.id,u.user_vendor_mapping_object_mapping_id\n" +
-        ") a group by projectId union "+
-        " (select " +
-        "        p.id," +
-        "        sum(o.number_of_uploads_required) as totalRequired, " +
-        "        0 as totalUploaded, " +
-        "        0 AS totalApproved,  " +
-        "        0 AS totalRejected,   " +
-        "        0 AS totalPending," +
-        "        p.status ," +
-        "        p.audio_type ," +
-        "        p.auto_create_objects ," +
-        "        p.buffer_percent ," +
-        "        p.description ," +
-        "        p.external_dataset_status ," +
-        "        p.image_type ," +
-        "        p.name ," +
-        "        p.number_of_objects ," +
-        "        p.number_of_uploads_required ," +
-        "        p.object_prefix ," +
-        "        p.object_suffix ," +
-        "        p.project_type ," +
-        "        p.qc_levels ," +
-        "        p.rework_status ," +
-        "        p.video_type " +
-        "        from  user_vendor_mapping_object_mapping uvmom  " +
-        "        left join object o on o.id=uvmom.object_id   " +
-        "        left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id   " +
-        "        left join project p on o.project_id=p.id" +
-        "        where    uvm.user_id=?1 and uvmom.status=1 and p.id not in(" +
-        "select " +
-        "        p.id" +
-        "        from upload u    " +
-        "        left join user_vendor_mapping_object_mapping uvmom on u.user_vendor_mapping_object_mapping_id=uvmom.id   " +
-        "        left join object o on o.id=uvmom.object_id   " +
-        "        left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id   " +
-        "        left join project p on o.project_id=p.id" +
-        "        where    uvm.user_id=?1 and uvmom.status=1 " +
-        "        group by p.id order by p.id desc"+
-        ") " +
-        "        group by p.id order by p.id desc)  ",
+    query = "select  \n" +
+        "p.id as id,  \n" +
+        "p.total_required as totalRequired, \n" +
+        "uvmpm.total_uploaded as totalUploaded, \n" +
+        "uvmpm.total_approved as totalApproved, \n" +
+        "uvmpm.total_rejected as totalRejected, \n" +
+        "uvmpm.total_pending as totalPending,\n" +
+        "p.status ,\n" +
+        "p.audio_type ,\n" +
+        "p.auto_create_objects ,\n" +
+        "p.buffer_percent ,\n" +
+        "p.description ,\n" +
+        "p.external_dataset_status ,\n" +
+        "p.image_type ,\n" +
+        "p.name ,\n" +
+        "p.number_of_objects ,\n" +
+        "p.number_of_uploads_required ,\n" +
+        "p.object_prefix ,\n" +
+        "p.object_suffix ,\n" +
+        "p.project_type ,\n" +
+        "p.qc_levels ,\n" +
+        "p.rework_status ,\n" +
+        "p.video_type\n" +
+        "from \n" +
+        "project p\n" +
+        "left join user_vendor_mapping_project_mapping uvmpm on p.id=uvmpm.project_id\n" +
+        "left join user_vendor_mapping uvm on uvm.id=uvmpm.user_vendor_mapping_id \n" +
+        "where uvm.user_id=?1 and uvm.status=1 and uvmpm.status=1",
     resultSetMapping = "Mapping.ProjectDTOForDropDown")
 
 @NamedNativeQuery(name = "Project.findProjectWithUploadCountByUserForDropDown.count",
-    query = "select count(*) from ((select " +
-        "        p.id," +
-        "        count(u.id) as totalUploaded, " +
-        "        SUM(CASE WHEN u.approval_status = 1 THEN 1 ELSE 0 END) AS totalApproved,  " +
-        "        SUM(CASE WHEN u.approval_status = 0 THEN 1 ELSE 0 END) AS totalRejected,   " +
-        "        SUM(CASE WHEN u.approval_status = 2 THEN 1 ELSE 0 END) AS totalPending," +
-        "        p.status ," +
-        "        p.audio_type ," +
-        "        p.auto_create_objects ," +
-        "        p.buffer_percent ," +
-        "        p.description ," +
-        "        p.external_dataset_status ," +
-        "        p.image_type ," +
-        "        p.name ," +
-        "        p.number_of_objects ," +
-        "        p.number_of_uploads_required ," +
-        "        p.object_prefix ," +
-        "        p.object_suffix ," +
-        "        p.project_type ," +
-        "        p.qc_levels ," +
-        "        p.rework_status ," +
-        "        p.video_type " +
-        "        from upload u    " +
-        "        left join user_vendor_mapping_object_mapping uvmom on u.user_vendor_mapping_object_mapping_id=uvmom.id   " +
-        "        left join object o on o.id=uvmom.object_id   " +
-        "        left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id   " +
-        "        left join project p on o.project_id=p.id" +
-        "        where    uvm.user_id=?1 and uvmom.status=1 " +
-        "        group by p.id order by p.id desc) union  " +
-        " (select " +
-        "        p.id," +
-        "        0 as totalUploaded, " +
-        "        0 AS totalApproved,  " +
-        "        0 AS totalRejected,   " +
-        "        0 AS totalPending," +
-        "        p.status ," +
-        "        p.audio_type ," +
-        "        p.auto_create_objects ," +
-        "        p.buffer_percent ," +
-        "        p.description ," +
-        "        p.external_dataset_status ," +
-        "        p.image_type ," +
-        "        p.name ," +
-        "        p.number_of_objects ," +
-        "        p.number_of_uploads_required ," +
-        "        p.object_prefix ," +
-        "        p.object_suffix ," +
-        "        p.project_type ," +
-        "        p.qc_levels ," +
-        "        p.rework_status ," +
-        "        p.video_type " +
-        "        from  user_vendor_mapping_object_mapping uvmom  " +
-        "        left join object o on o.id=uvmom.object_id   " +
-        "        left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id   " +
-        "        left join project p on o.project_id=p.id" +
-        "        where    uvm.user_id=?1 and p.id not in(" +
-        "select " +
-        "        p.id" +
-        "        from upload u    " +
-        "        left join user_vendor_mapping_object_mapping uvmom on u.user_vendor_mapping_object_mapping_id=uvmom.id   " +
-        "        left join object o on o.id=uvmom.object_id   " +
-        "        left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id   " +
-        "        left join project p on o.project_id=p.id" +
-        "        where    uvm.user_id=?1  " +
-        "        group by p.id order by p.id desc"+
-        ") " +
-        "        group by p.id order by p.id desc))a  ")
+    query = "select count(*) from (" +
+        "select  \n" +
+        "p.id as id  \n" +
+        "from \n" +
+        "project p\n" +
+        "left join user_vendor_mapping_project_mapping uvmpm on p.id=uvmpm.project_id\n" +
+        "left join user_vendor_mapping uvm on uvm.id=uvmpm.user_vendor_mapping_id \n" +
+        "where uvm.user_id=?1 and uvm.status=1 and uvmpm.status=1"+
+        ")a  ")
 
 
 @SqlResultSetMapping(name = "Mapping.ProjectDTOForDropDown",

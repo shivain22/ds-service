@@ -72,6 +72,8 @@ public class ProjectResource {
     private UserVendorMappingObjectMappingRepository userVendorMappingObjectMappingRepository;
 
     @Autowired
+    private UserVendorMappingProjectMappingRepository userVendorMappingProjectMappingRepository;
+    @Autowired
     private VendorRepository vendorRepository;
 
     @Autowired
@@ -283,6 +285,11 @@ public class ProjectResource {
             uvmom.setStatus(userVendorMappingStatusMap.get(uvmom.getUserVendorMapping().getId()));
         }
         userVendorMappingObjectMappingRepository.saveAll(uvmoms);
+        List<UserVendorMappingProjectMapping> uvmpms = userVendorMappingProjectMappingRepository.getAllUserVendorMappingProjectMappingByUserVendorMappingIdsAndObjectId(projectVendorMappingDTO.getProjectId());
+        for(UserVendorMappingProjectMapping uvmpm:uvmpms){
+            uvmpm.setStatus(userVendorMappingStatusMap.get(uvmpm.getUserVendorMapping().getId()));
+        }
+        userVendorMappingProjectMappingRepository.saveAll(uvmpms);
         return ResponseEntity.ok().body("Successfully mapped vendors to project");
     }
 
@@ -448,11 +455,9 @@ public class ProjectResource {
         existingProject.setAudioType(project.getAudioType());
         existingProject.setVideoType(project.getVideoType());
         existingProject.setImageType(project.getImageType());
-        //existingProject.setProjectProperties(project.getProjectProperties());
         Project result = projectRepository.save(existingProject);
         Project projectForSearch = new Project();
         projectForSearch.setId(result.getId());
-        //aidasProjectSearchRepository.save(projectForSearch);
         return ResponseEntity
             .ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, project.getId().toString()))
@@ -628,13 +633,8 @@ public class ProjectResource {
                 List<ProjectProperty> projectProperties = projectPropertyRepository.findAllProjectProperty(p.getId());
                 p.setAidasProjectProperties(projectProperties);
             }
-            //PagedListHolder<ProjectDTO> pages = new PagedListHolder(projects);
-            //pages.setPage(pageable.getPageNumber()); //set current page number
-            //pages.setPageSize(pageable.getPageSize()); // set the size of page
-
             HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
             return ResponseEntity.ok().headers(headers).body(page.getContent());
-
         }
         throw new BadRequestAlertException("Not Authorised", ENTITY_NAME, "idexists");
     }
