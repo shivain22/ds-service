@@ -250,43 +250,52 @@ public class UserResource {
             }
         }
 
-        addUserToKeyCloak(user);
-        user.setDeleted(0);
+        try {
+            try {
+                addUserToKeyCloak(user);
+                user.setDeleted(0);
+                User result = userRepository.save(user);
+                updateUserToKeyCloak(result);
+                if(user!=null) {
+                    userVendorMappingObjectMappingTask.setAddProperty(true);
+                    userVendorMappingObjectMappingTask.setAddVendorMappingObjectMapping(false);
+                    userVendorMappingObjectMappingTask.setAddCustomerMappingQcProjectMapping(false);
+                    userVendorMappingObjectMappingTask.setUser(user);
+                    userVendorMappingObjectMappingTask.run();
+                }
+                if(user.getAuthority().getName().equals(AidasConstants.VENDOR_USER)) {
+                    if (userVendorMapping != null) {
+                        userVendorMappingObjectMappingTask.setAddProperty(false);
+                        userVendorMappingObjectMappingTask.setAddVendorMappingObjectMapping(true);
+                        userVendorMappingObjectMappingTask.setAddCustomerMappingQcProjectMapping(false);
+                        userVendorMappingObjectMappingTask.setUserVendorMapping(userVendorMapping);
+                        userVendorMappingObjectMappingTask.run();
+                    }
+                }
 
-
-
-        User result = userRepository.save(user);
-        updateUserToKeyCloak(result);
-        if(user!=null) {
-            userVendorMappingObjectMappingTask.setAddProperty(true);
-            userVendorMappingObjectMappingTask.setAddVendorMappingObjectMapping(false);
-            userVendorMappingObjectMappingTask.setAddCustomerMappingQcProjectMapping(false);
-            userVendorMappingObjectMappingTask.setUser(user);
-            userVendorMappingObjectMappingTask.run();
-        }
-        if(user.getAuthority().getName().equals(AidasConstants.VENDOR_USER)) {
-            if (userVendorMapping != null) {
-                userVendorMappingObjectMappingTask.setAddProperty(false);
-                userVendorMappingObjectMappingTask.setAddVendorMappingObjectMapping(true);
-                userVendorMappingObjectMappingTask.setAddCustomerMappingQcProjectMapping(false);
-                userVendorMappingObjectMappingTask.setUserVendorMapping(userVendorMapping);
-                userVendorMappingObjectMappingTask.run();
+                if(user.getAuthority().getName().equals(AidasConstants.QC_USER)) {
+                    if (userCustomerMapping != null) {
+                        userVendorMappingObjectMappingTask.setAddProperty(false);
+                        userVendorMappingObjectMappingTask.setAddVendorMappingObjectMapping(false);
+                        userVendorMappingObjectMappingTask.setAddCustomerMappingQcProjectMapping(true);
+                        userVendorMappingObjectMappingTask.setUserCustomerMapping(userCustomerMapping);
+                        userVendorMappingObjectMappingTask.run();
+                    }
+                }
+                return ResponseEntity
+                    .created(new URI("/api/aidas-users/" + result.getId()))
+                    .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
+                    .body(result);
+            }catch (Exception e){
+                if(e.getMessage().equals("Create method returned status Conflict (Code: 409); expected status: Created (201)")){
+                    throw new BadRequestAlertException("User already registered....", ENTITY_NAME, "useralreadyregistered");
+                }else{
+                    throw new BadRequestAlertException("Server Error....", ENTITY_NAME, "servererror"+e.getMessage());
+                }
             }
+        }catch(Exception e){
+            throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
         }
-
-        if(user.getAuthority().getName().equals(AidasConstants.QC_USER)) {
-            if (userCustomerMapping != null) {
-                userVendorMappingObjectMappingTask.setAddProperty(false);
-                userVendorMappingObjectMappingTask.setAddVendorMappingObjectMapping(false);
-                userVendorMappingObjectMappingTask.setAddCustomerMappingQcProjectMapping(true);
-                userVendorMappingObjectMappingTask.setUserCustomerMapping(userCustomerMapping);
-                userVendorMappingObjectMappingTask.run();
-            }
-        }
-        return ResponseEntity
-            .created(new URI("/api/aidas-users/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
-            .body(result);
     }
 
     private static ByteBuffer getRandomByteBuffer(int size) throws IOException {
