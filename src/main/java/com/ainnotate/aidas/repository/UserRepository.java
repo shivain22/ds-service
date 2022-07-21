@@ -35,6 +35,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query(nativeQuery = true)
     List<UserDTO> findAllUsersOfVendorWithProject(Long projectId);
 
+    @Query(nativeQuery = true)
+    List<UserDTO> findAllUsersOfVendorWithObject(Long objectId);
+
     Optional<User> findOneByLogin(String login);
 
     @Query(value = "select * from user u, user_customer_mapping ucm where u.id=ucm.user_id and ucm.customer_id=?1 and u.status=1 and deleted=0"
