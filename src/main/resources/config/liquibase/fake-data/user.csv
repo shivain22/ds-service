@@ -1,2 +1,2 @@
 id;first_name;last_name;email;password;login;organisation_id;customer_id;vendor_id;authority_id;keycloak_id;status
--1;Super;Admin;admin@ainnotate.com;admin;admin;;;;1;test;1
+-1;Super;Admin;admin@ainnotate.com;admin;admin;;;;1;4c973896-5761-41fc-8217-07c5d13a004b;1
