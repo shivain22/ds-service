@@ -29,7 +29,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
         "u.login as login,\n" +
         "u.id as userId,\n" +
         "v.name as vendorName,\n" +
-        "uvm.id as vendorMappingId,\n" +
+        "uvm.id as userVendorMappingId,\n" +
         "v.id as vendorId,\n" +
         "uvmpm.status as status\n" +
         "FROM user_vendor_mapping_project_mapping uvmpm,\n" +
@@ -63,7 +63,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
         "u.login as login,\n" +
         "u.id as userId,\n" +
         "v.name as vendorName,\n" +
-        "uvm.id as vendorMappingId,\n" +
+        "uvm.id as userVendorMappingId,\n" +
         "v.id as vendorId,\n" +
         "uvmom.status as status\n" +
         "FROM user_vendor_mapping_object_mapping uvmom,\n" +
