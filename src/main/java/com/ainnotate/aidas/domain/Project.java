@@ -334,6 +334,10 @@ public class Project extends AbstractAuditingEntity  implements Serializable {
     @JsonProperty
     private String imageType="";
 
+    @Column(name="number_of_uploads_for_qc")
+    @JsonProperty
+    private Integer numberOfUploadsForQc=10;
+
     @Column(name="video_type")
     @JsonProperty
     private String videoType="";
@@ -369,6 +373,14 @@ public class Project extends AbstractAuditingEntity  implements Serializable {
     private Integer userAddedStatus=0;
     @Column(name ="number_of_buffered_uploads_required",columnDefinition = "integer default 0")
     private Integer numberOfBufferedUploadsdRequired=0;
+
+    public Integer getNumberOfUploadsForQc() {
+        return numberOfUploadsForQc;
+    }
+
+    public void setNumberOfUploadsForQc(Integer numberOfUploadsForQc) {
+        this.numberOfUploadsForQc = numberOfUploadsForQc;
+    }
 
     public SubCategory getSubCategory() {
         return subCategory;

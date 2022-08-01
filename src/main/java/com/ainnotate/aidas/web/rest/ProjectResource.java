@@ -191,6 +191,7 @@ public class ProjectResource {
             objectAddingTask.setObject(obj);
             objectAddingTask.run();
         }
+        List<Object> dynaObjects = new ArrayList<>();
         if(result.getAutoCreateObjects()!=null && result.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)){
             for(int i=0;i<result.getNumberOfObjects();i++){
                 Object obj = new Object();
@@ -221,13 +222,14 @@ public class ProjectResource {
                     opp.setStatus(1);
                     obj.addAidasObjectProperty(opp);
                 }
-                objectRepository.save(obj);
-                objectAddingTask.setDummy(false);
-                objectAddingTask.setObject(obj);
-                objectAddingTask.run();
+                Object resultObj = objectRepository.save(obj);
+                dynaObjects.add(resultObj);
             }
+            objectAddingTask.setDummy(false);
+            objectAddingTask.setDynamicObjects(dynaObjects);
+            objectAddingTask.runBulkObjects();
         }
-        //aidasProjectSearchRepository.save(result.getId());
+
         return ResponseEntity
             .created(new URI("/api/aidas-projects/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
