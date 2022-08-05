@@ -97,6 +97,9 @@ public class ProjectResource {
     @Autowired
     private CategoryRepository categoryRepository;
 
+    @Autowired
+    private QCLevelConfigurationRepository qcLevelConfigurationRepository;
+
     public ProjectResource(ProjectRepository projectRepository, ProjectSearchRepository aidasProjectSearchRepository) {
         this.projectRepository = projectRepository;
         this.aidasProjectSearchRepository = aidasProjectSearchRepository;
@@ -164,7 +167,19 @@ public class ProjectResource {
             project.setProjectType(c.getName());
             project.setCategory(c);
         }
-
+        if (project.getQcLevelConfigurations() != null) {
+            for (QCLevelConfiguration qcLevelConfiguration : project.getQcLevelConfigurations()) {
+                Optional<QCLevelConfiguration> qclevel  = qcLevelConfigurationRepository.findById(qcLevelConfiguration.getId());
+                if(qclevel.isEmpty()){
+                    QCLevelConfiguration configuration = new QCLevelConfiguration();
+                    configuration.setProject(project);
+                    configuration.setQcLevelName(qcLevelConfiguration.getQcLevelName());
+                    configuration.setQcLevelAcceptancePercentage(qcLevelConfiguration.getQcLevelAcceptancePercentage());
+                    qcLevelConfiguration.setProject(project);
+                    project.addQCLevelConfiguration(qcLevelConfiguration);
+                }
+            }
+        }
         Project result = projectRepository.save(project);
         {
             Object obj = new Object();

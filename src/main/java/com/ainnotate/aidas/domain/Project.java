@@ -358,6 +358,24 @@ public class Project extends AbstractAuditingEntity  implements Serializable {
     @Column(name ="number_of_buffered_uploads_required",columnDefinition = "integer default 0")
     private Integer numberOfBufferedUploadsdRequired=0;
 
+
+    @OneToMany(mappedBy = "project",cascade = {
+        CascadeType.MERGE,
+        CascadeType.REFRESH
+    },fetch = FetchType.EAGER)
+    private Set<QCLevelConfiguration> qcLevelConfigurations;
+
+    public Set<QCLevelConfiguration> getQcLevelConfigurations() {
+        return qcLevelConfigurations;
+    }
+
+    public void setQcLevelConfigurations(Set<QCLevelConfiguration> qcLevelConfigurations) {
+        this.qcLevelConfigurations = qcLevelConfigurations;
+    }
+    public void addQCLevelConfiguration(QCLevelConfiguration qcLevelConfiguration){
+        this.qcLevelConfigurations.add(qcLevelConfiguration);
+        qcLevelConfiguration.setProject(this);
+    }
     public SubCategory getSubCategory() {
         return subCategory;
     }
