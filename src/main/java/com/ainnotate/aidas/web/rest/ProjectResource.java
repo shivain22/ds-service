@@ -167,19 +167,18 @@ public class ProjectResource {
             project.setProjectType(c.getName());
             project.setCategory(c);
         }
-        if (project.getQcLevelConfigurations() != null) {
+
             for (QCLevelConfiguration qcLevelConfiguration : project.getQcLevelConfigurations()) {
-                Optional<QCLevelConfiguration> qclevel  = qcLevelConfigurationRepository.findById(qcLevelConfiguration.getId());
-                if(qclevel.isEmpty()){
-                    QCLevelConfiguration configuration = new QCLevelConfiguration();
-                    configuration.setProject(project);
-                    configuration.setQcLevelName(qcLevelConfiguration.getQcLevelName());
-                    configuration.setQcLevelAcceptancePercentage(qcLevelConfiguration.getQcLevelAcceptancePercentage());
-                    qcLevelConfiguration.setProject(project);
+                List<QCLevelConfiguration> qclevel  = qcLevelConfigurationRepository.findByProejctId(project.getId());
+                if(qclevel.size() == 0){
+                    QCLevelConfiguration ac = new QCLevelConfiguration();
+                    ac.setProject(project);
+                    ac.setQcLevelAcceptancePercentage(qcLevelConfiguration.getQcLevelAcceptancePercentage());
+                    ac.setQcLevelName(qcLevelConfiguration.getQcLevelName());
                     project.addQCLevelConfiguration(qcLevelConfiguration);
                 }
             }
-        }
+
         Project result = projectRepository.save(project);
         {
             Object obj = new Object();

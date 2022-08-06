@@ -1,6 +1,7 @@
 package com.ainnotate.aidas.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.hibernate.envers.Audited;
@@ -8,6 +9,7 @@ import org.hibernate.envers.Audited;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.Set;
 
 
 @Table(name = "qclevel_configuration")
@@ -23,9 +25,9 @@ public class QCLevelConfiguration extends AbstractAuditingEntity  implements Ser
     private Long id;
 
 
-    @ManyToOne(optional = false)
-    @NotNull
-    @JoinColumn(name = "project_id", nullable = false, foreignKey = @ForeignKey(name="fk_project_id"))
+    @ManyToOne(fetch = FetchType.EAGER, optional = false,cascade={CascadeType.MERGE})
+    @JoinColumn(name = "project_id")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private Project project;
 
     @Column(name ="qc_leval_name",columnDefinition = "varchar(50) default ' '")
@@ -33,6 +35,7 @@ public class QCLevelConfiguration extends AbstractAuditingEntity  implements Ser
 
     @Column(name ="qc_level_acceptance_percentage",columnDefinition = "integer default 0")
     private Integer qcLevelAcceptancePercentage=0;
+
 
     public Long getId() {
         return id;
