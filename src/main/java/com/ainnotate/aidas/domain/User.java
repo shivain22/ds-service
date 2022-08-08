@@ -23,16 +23,24 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
  */
 
 @NamedNativeQuery(name = "User.findAllUsersOfVendorWithProject",
-    query = "select " +
-        "a.firstName as firstName,   " +
-        "a.lastName as lastName,   " +
-        "a.login as login,   " +
-        "a.vendorName as vendorName,   " +
-        "a.userId as userId,   " +
-        "a.userVendorMappingId as userVendorMappingId,   " +
-        "a.vendorId as vendorId,   " +
-        "(CASE WHEN (a.object_count-a.enabledCount) = 0 THEN 1   WHEN (a.object_count-a.enabledCount) > 0 THEN 0 END) as status    " +
-        "from (   select    u.id as userId,   u.first_name as firstName,   u.last_name as lastName,   u.login as login,   count(o.id) as object_count,   uvmom.user_vendor_mapping_id as userVendorMappingId,    count(CASE WHEN uvmom.status = 0 THEN uvmom.status END) as disabledCount,   count(CASE WHEN uvmom.status = 1 THEN uvmom.status END) as enabledCount,   v.id as vendorId,   v.name as vendorName   from       user_vendor_mapping_object_mapping uvmom,   user_vendor_mapping uvm,   object o,   vendor v,   user u   where    uvmom.user_vendor_mapping_id=uvm.id and   uvm.user_id=u.id and   uvmom.object_id=o.id and   uvm.vendor_id=v.id and   o.project_id=?1   group by uvmom.user_vendor_mapping_id, uvmom.status,o.project_id   )a",
+    query = "select  \n" +
+        "u.first_name as firstName, \n" +
+        "u.last_name lastName,\n" +
+        "u.login as login,\n" +
+        "u.id as userId,\n" +
+        "v.name as vendorName,\n" +
+        "uvm.id as userVendorMappingId,\n" +
+        "v.id as vendorId,\n" +
+        "uvmpm.status as status\n" +
+        "FROM user_vendor_mapping_project_mapping uvmpm,\n" +
+        "user_vendor_mapping uvm,\n" +
+        "vendor v,\n" +
+        "user u \n" +
+        "where\n" +
+        "uvmpm.user_vendor_mapping_id=uvm.id\n" +
+        "and uvm.user_id=u.id\n" +
+        "and uvm.vendor_id=v.id\n" +
+        "and uvmpm.project_id=?1",
     resultSetMapping = "Mapping.UserDTO")
 @SqlResultSetMapping(name = "Mapping.UserDTO",
     classes = @ConstructorResult(targetClass = UserDTO.class,
@@ -47,6 +55,40 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
             @ColumnResult(name = "status",type = Integer.class)
 
     }))
+
+@NamedNativeQuery(name = "User.findAllUsersOfVendorWithObject",
+    query = "select  \n" +
+        "u.first_name as firstName, \n" +
+        "u.last_name lastName,\n" +
+        "u.login as login,\n" +
+        "u.id as userId,\n" +
+        "v.name as vendorName,\n" +
+        "uvm.id as userVendorMappingId,\n" +
+        "v.id as vendorId,\n" +
+        "uvmom.status as status\n" +
+        "FROM user_vendor_mapping_object_mapping uvmom,\n" +
+        "user_vendor_mapping uvm,\n" +
+        "vendor v,\n" +
+        "user u \n" +
+        "where\n" +
+        "uvmom.user_vendor_mapping_id=uvm.id\n" +
+        "and uvm.user_id=u.id\n" +
+        "and uvm.vendor_id=v.id\n" +
+        "and uvmom.object_id=?1",
+    resultSetMapping = "Mapping.UserObjectMappingDTO")
+@SqlResultSetMapping(name = "Mapping.UserObjectMappingDTO",
+    classes = @ConstructorResult(targetClass = UserDTO.class,
+        columns = {
+            @ColumnResult(name = "firstName",type = String.class),
+            @ColumnResult(name = "lastName",type = String.class),
+            @ColumnResult(name = "login",type = String.class),
+            @ColumnResult(name = "vendorName",type = String.class),
+            @ColumnResult(name = "userId",type = Long.class),
+            @ColumnResult(name = "userVendorMappingId",type = Long.class),
+            @ColumnResult(name = "vendorId",type = Long.class),
+            @ColumnResult(name = "status",type = Integer.class)
+
+        }))
 
 
 @Entity

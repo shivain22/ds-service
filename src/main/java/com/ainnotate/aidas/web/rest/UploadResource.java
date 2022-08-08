@@ -962,6 +962,7 @@ public class UploadResource {
         if(authority.getName().equals(AidasConstants.VENDOR_USER)){
 
         }
+        List<CustomerQcProjectMapping> cqpms = customerQcProjectMappingRepository.getQcProjectMappingByProjectAndCustomerAndUser(projectId,user.getCustomer().getId(),user.getId());
         Upload upload = uploadRepository.findTopByQcNotDoneYet(projectId);
         if(upload !=null) {
             Customer customer = upload.getUserVendorMappingObjectMapping().getObject().getProject().getCustomer();
@@ -981,6 +982,56 @@ public class UploadResource {
         return ResponseEntity.ok().body(upload);
     }
 
+
+
+    /**
+     * {@code GET  /aidas-uploads/next} : get the "id" upload.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the upload, or with status {@code 404 (Not Found)}.
+     */
+    @GetMapping("/aidas-uploads/next/{projectId}/{qcLevel}")
+    public ResponseEntity<List<Upload>> getNextAidasUpload(@PathVariable(name = "projectId") Long projectId,@PathVariable(name = "qcLevel") Integer qcLevel) {
+        User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        log.debug("REST request to get next AidasUpload : {}");
+        Authority authority = user.getAuthority();
+        if(authority.getName().equals(AidasConstants.ADMIN)){
+
+        }
+        if(authority.getName().equals(AidasConstants.ORG_ADMIN)){
+
+        }
+        if(authority.getName().equals(AidasConstants.CUSTOMER_ADMIN)){
+
+        }
+        if(authority.getName().equals(AidasConstants.VENDOR_ADMIN)){
+
+        }
+        if(authority.getName().equals(AidasConstants.VENDOR_USER)){
+
+        }
+        List<CustomerQcProjectMapping> cqpms = customerQcProjectMappingRepository.getQcProjectMappingByProjectAndCustomerAndUser(projectId,user.getCustomer().getId(),user.getId());
+        if(qcLevel!=null){
+
+        }
+        List<Upload> uploads = uploadRepository.findTopByQcNotDoneYetForQcLevel(projectId,qcLevel);
+        if(uploads !=null) {
+            for (Upload upload : uploads){
+                Customer customer = upload.getUserVendorMappingObjectMapping().getObject().getProject().getCustomer();
+                Project project = upload.getUserVendorMappingObjectMapping().getObject().getProject();
+                List<CustomerQcProjectMapping> qpms = customerQcProjectMappingRepository.getQcProjectMappingByProjectAndCustomerAndUser(project.getId(), customer.getId(), user.getId());
+                if (qpms != null && qpms.size() > 0) {
+                    upload.setQcDoneBy(qpms.get(0));
+                    upload.setQcStartDate(Instant.now());
+                    upload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
+                }
+        }
+        }else{
+            uploads = new ArrayList<>();
+            return ResponseEntity.ok().body(uploads);
+        }
+        uploadRepository.saveAll(uploads);
+
+        return ResponseEntity.ok().body(uploads);
+    }
 
 
     /**

@@ -15,6 +15,7 @@ import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
@@ -54,40 +55,41 @@ public class IdpSyncFilter implements Filter {
         User user = null;
         RealmResource realmResource = keycloak.realm(keycloakConfig.getClientRealm());
         UsersResource usersRessource = realmResource.users();
-        Map<String,Object> claims = ((JwtAuthenticationToken)authentication).getToken().getClaims();
-        try {
-            user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-            if ((user != null && user.getKeycloakId() == null) || (user!=null && user.getKeycloakId()!=null && user.getKeycloakId().equals("test"))) {
-                user.setKeycloakId(claims.get("sid").toString());
-                userRepository.save(user);
-                UserResource myUser = usersRessource.get(user.getKeycloakId());
-                List<String> userAttrsVals = new ArrayList<>();
-                if(user.getAuthority()!=null && user.getAuthority().getName()!=null) {
-                    userAttrsVals.add(user.getAuthority().getName());
-                }
-                else {
-                    Authority authority = authorityRepository.getById(6l);
-                    userAttrsVals.add(authority.getName());
-                }
-                userAttrsVals.add(String.valueOf(user.getId()));
-                if (myUser.toRepresentation().getAttributes() != null) {
-                    myUser.toRepresentation().getAttributes().put("current_role", userAttrsVals);
-                    myUser.toRepresentation().getAttributes().put("id", userAttrsVals);
+        if (authentication instanceof JwtAuthenticationToken) {
+            Map<String, Object> claims = ((JwtAuthenticationToken) authentication).getToken().getClaims();
+            try {
+                user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+                if ((user != null && user.getKeycloakId() == null) || (user != null && user.getKeycloakId() != null && user.getKeycloakId().equals("test"))) {
+                    user.setKeycloakId(claims.get("sid").toString());
+                    userRepository.save(user);
+                    UserResource myUser = usersRessource.get(user.getKeycloakId());
+                    List<String> userAttrsVals = new ArrayList<>();
+                    if (user.getAuthority() != null && user.getAuthority().getName() != null) {
+                        userAttrsVals.add(user.getAuthority().getName());
+                    } else {
+                        Authority authority = authorityRepository.getById(6l);
+                        userAttrsVals.add(authority.getName());
+                    }
+                    userAttrsVals.add(String.valueOf(user.getId()));
+                    if (myUser.toRepresentation().getAttributes() != null) {
+                        myUser.toRepresentation().getAttributes().put("current_role", userAttrsVals);
+                        myUser.toRepresentation().getAttributes().put("aidas_id", userAttrsVals);
+                    } else {
+                        Map<String, List<String>> userAttrs = new HashMap<>();
+                        userAttrs.put("current_role", userAttrsVals);
+                        userAttrs.put("aidas_id", userAttrsVals);
+                        myUser.toRepresentation().setAttributes(userAttrs);
+                    }
                 } else {
-                    Map<String, List<String>> userAttrs = new HashMap<>();
-                    userAttrs.put("current_role",userAttrsVals);
-                    userAttrs.put("id",userAttrsVals);
-                    myUser.toRepresentation().setAttributes(userAttrs);
-                }
-            }else{
 
-            }
-        }catch (Exception e){
+                }
+        }catch(Exception e){
             if (authentication instanceof JwtAuthenticationToken) {
-                JwtAuthenticationToken authToken =  ((JwtAuthenticationToken) authentication);
+                JwtAuthenticationToken authToken = ((JwtAuthenticationToken) authentication);
                 idpUserService.saveNewUserFromAuthentication(authToken);
             }
-        }*/
+        }
+    }*/
         chain.doFilter(req,res);
     }
 }

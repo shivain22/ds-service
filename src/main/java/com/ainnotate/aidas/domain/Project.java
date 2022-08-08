@@ -49,46 +49,113 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
         "left join user_vendor_mapping_project_mapping uvmpm on p.id=uvmpm.project_id\n" +
         "left join user_vendor_mapping uvm on uvm.id=uvmpm.user_vendor_mapping_id \n" +
         "where uvm.user_id=?1 and uvm.status=1 and uvmpm.status=1",
-    resultSetMapping = "Mapping.ProjectDTO")
+        resultSetMapping = "Mapping.ProjectDTO")
 
 @NamedNativeQuery(name = "Project.findProjectWithUploadCountByUser.count",
-    query = "select count(*) from (" +
-        "select  \n" +
-        "p.id as id  \n" +
+    query ="select  \n" +
+        "count(p.id) as count  \n" +
         "from \n" +
         "project p\n" +
         "left join user_vendor_mapping_project_mapping uvmpm on p.id=uvmpm.project_id\n" +
         "left join user_vendor_mapping uvm on uvm.id=uvmpm.user_vendor_mapping_id \n" +
-        "where uvm.user_id=?1 and uvm.status=1 and uvmpm.status=1"+
-        ")a  ")
+        "where uvm.user_id=?1 and uvm.status=1 and uvmpm.status=1",resultSetMapping = "Mapping.findProjectWithUploadCountByUserCount")
+
+@SqlResultSetMappings(value = {
+    @SqlResultSetMapping(
+        name = "Mapping.findProjectWithUploadCountByUserCount",
+        columns = { @ColumnResult(name = "count", type = Long.class) }
+    ),
+    @SqlResultSetMapping(name = "Mapping.ProjectDTO",
+        classes = @ConstructorResult(targetClass = ProjectDTO.class,
+            columns = {
+                @ColumnResult(name = "id",type = Long.class),
+                @ColumnResult(name = "totalRequired",type = Integer.class),
+                @ColumnResult(name = "totalUploaded",type = Integer.class),
+                @ColumnResult(name = "totalApproved",type = Integer.class),
+                @ColumnResult(name = "totalRejected",type = Integer.class),
+                @ColumnResult(name = "totalPending",type = Integer.class),
+                @ColumnResult(name = "status",type = Integer.class),
+                @ColumnResult(name = "audio_type",type = String.class),
+                @ColumnResult(name = "auto_create_objects",type = Integer.class),
+                @ColumnResult(name = "buffer_percent",type = Integer.class),
+                @ColumnResult(name = "description",type = String.class),
+                @ColumnResult(name = "external_dataset_status",type = Integer.class),
+                @ColumnResult(name = "image_type",type = String.class),
+                @ColumnResult(name = "name",type = String.class),
+                @ColumnResult(name = "number_of_objects",type = Integer.class),
+                @ColumnResult(name = "number_of_uploads_required",type = Integer.class),
+                @ColumnResult(name = "object_prefix",type = String.class),
+                @ColumnResult(name = "object_suffix",type = String.class),
+                @ColumnResult(name = "project_type",type = String.class),
+                @ColumnResult(name = "qc_levels",type = Integer.class),
+                @ColumnResult(name = "rework_status",type = Integer.class),
+                @ColumnResult(name = "video_type",type = String.class)
+            })),
+    @SqlResultSetMapping(name = "Mapping.ProjectDTOForDropDown",
+        classes = @ConstructorResult(targetClass = ProjectDTO.class,
+            columns = {
+                @ColumnResult(name = "id",type = Long.class),
+                @ColumnResult(name = "totalRequired",type = Integer.class),
+                @ColumnResult(name = "totalUploaded",type = Integer.class),
+                @ColumnResult(name = "totalApproved",type = Integer.class),
+                @ColumnResult(name = "totalRejected",type = Integer.class),
+                @ColumnResult(name = "totalPending",type = Integer.class),
+                @ColumnResult(name = "status",type = Integer.class),
+                @ColumnResult(name = "audio_type",type = String.class),
+                @ColumnResult(name = "auto_create_objects",type = Integer.class),
+                @ColumnResult(name = "buffer_percent",type = Integer.class),
+                @ColumnResult(name = "description",type = String.class),
+                @ColumnResult(name = "external_dataset_status",type = Integer.class),
+                @ColumnResult(name = "image_type",type = String.class),
+                @ColumnResult(name = "name",type = String.class),
+                @ColumnResult(name = "number_of_objects",type = Integer.class),
+                @ColumnResult(name = "number_of_uploads_required",type = Integer.class),
+                @ColumnResult(name = "object_prefix",type = String.class),
+                @ColumnResult(name = "object_suffix",type = String.class),
+                @ColumnResult(name = "project_type",type = String.class),
+                @ColumnResult(name = "qc_levels",type = Integer.class),
+                @ColumnResult(name = "rework_status",type = Integer.class),
+                @ColumnResult(name = "video_type",type = String.class)
+            })),
+    @SqlResultSetMapping(name = "Mapping.findAllByIdGreaterThanForDropDown",
+        classes = @ConstructorResult(targetClass = ProjectDTO.class,
+            columns = {
+                @ColumnResult(name = "id",type = Long.class),
+                @ColumnResult(name = "name",type = String.class)
+            })),
+    @SqlResultSetMapping(name = "Mapping.findAllByAidasCustomer_AidasOrganisationForDropDown",
+        classes = @ConstructorResult(targetClass = ProjectDTO.class,
+            columns = {
+                @ColumnResult(name = "id",type = Long.class),
+                @ColumnResult(name = "name",type = String.class)
+            })),
+    @SqlResultSetMapping(name = "Mapping.findAllByAidasCustomerForDropDown",
+        classes = @ConstructorResult(targetClass = ProjectDTO.class,
+            columns = {
+                @ColumnResult(name = "id",type = Long.class),
+                @ColumnResult(name = "name",type = String.class)
+            })),
+    @SqlResultSetMapping(name = "Mapping.findAllProjectsByVendorAdminDropDown",
+        classes = @ConstructorResult(targetClass = ProjectDTO.class,
+            columns = {
+                @ColumnResult(name = "id",type = Long.class),
+                @ColumnResult(name = "name",type = String.class)
+            })),
+    @SqlResultSetMapping(name = "Mapping.findProjectsForCustomerQC",
+        classes = @ConstructorResult(targetClass = ProjectDTO.class,
+            columns = {
+                @ColumnResult(name = "id",type = Long.class),
+                @ColumnResult(name = "name",type = String.class)
+            })),
+    @SqlResultSetMapping(name = "Mapping.findProjectsForOrganisationQC",
+        classes = @ConstructorResult(targetClass = ProjectDTO.class,
+            columns = {
+                @ColumnResult(name = "id",type = Long.class),
+                @ColumnResult(name = "name",type = String.class)
+            }))
+})
 
 
-@SqlResultSetMapping(name = "Mapping.ProjectDTO",
-    classes = @ConstructorResult(targetClass = ProjectDTO.class,
-        columns = {
-            @ColumnResult(name = "id",type = Long.class),
-            @ColumnResult(name = "totalRequired",type = Integer.class),
-            @ColumnResult(name = "totalUploaded",type = Integer.class),
-            @ColumnResult(name = "totalApproved",type = Integer.class),
-            @ColumnResult(name = "totalRejected",type = Integer.class),
-            @ColumnResult(name = "totalPending",type = Integer.class),
-            @ColumnResult(name = "status",type = Integer.class),
-            @ColumnResult(name = "audio_type",type = String.class),
-            @ColumnResult(name = "auto_create_objects",type = Integer.class),
-            @ColumnResult(name = "buffer_percent",type = Integer.class),
-            @ColumnResult(name = "description",type = String.class),
-            @ColumnResult(name = "external_dataset_status",type = Integer.class),
-            @ColumnResult(name = "image_type",type = String.class),
-            @ColumnResult(name = "name",type = String.class),
-            @ColumnResult(name = "number_of_objects",type = Integer.class),
-            @ColumnResult(name = "number_of_uploads_required",type = Integer.class),
-            @ColumnResult(name = "object_prefix",type = String.class),
-            @ColumnResult(name = "object_suffix",type = String.class),
-            @ColumnResult(name = "project_type",type = String.class),
-            @ColumnResult(name = "qc_levels",type = Integer.class),
-            @ColumnResult(name = "rework_status",type = Integer.class),
-            @ColumnResult(name = "video_type",type = String.class)
-        }))
 
 
 @NamedNativeQuery(name = "Project.findProjectWithUploadCountByUserForDropDown",
@@ -134,32 +201,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
         ")a  ")
 
 
-@SqlResultSetMapping(name = "Mapping.ProjectDTOForDropDown",
-    classes = @ConstructorResult(targetClass = ProjectDTO.class,
-        columns = {
-            @ColumnResult(name = "id",type = Long.class),
-            @ColumnResult(name = "totalRequired",type = Integer.class),
-            @ColumnResult(name = "totalUploaded",type = Integer.class),
-            @ColumnResult(name = "totalApproved",type = Integer.class),
-            @ColumnResult(name = "totalRejected",type = Integer.class),
-            @ColumnResult(name = "totalPending",type = Integer.class),
-            @ColumnResult(name = "status",type = Integer.class),
-            @ColumnResult(name = "audio_type",type = String.class),
-            @ColumnResult(name = "auto_create_objects",type = Integer.class),
-            @ColumnResult(name = "buffer_percent",type = Integer.class),
-            @ColumnResult(name = "description",type = String.class),
-            @ColumnResult(name = "external_dataset_status",type = Integer.class),
-            @ColumnResult(name = "image_type",type = String.class),
-            @ColumnResult(name = "name",type = String.class),
-            @ColumnResult(name = "number_of_objects",type = Integer.class),
-            @ColumnResult(name = "number_of_uploads_required",type = Integer.class),
-            @ColumnResult(name = "object_prefix",type = String.class),
-            @ColumnResult(name = "object_suffix",type = String.class),
-            @ColumnResult(name = "project_type",type = String.class),
-            @ColumnResult(name = "qc_levels",type = Integer.class),
-            @ColumnResult(name = "rework_status",type = Integer.class),
-            @ColumnResult(name = "video_type",type = String.class)
-        }))
+
 
 
 @NamedNativeQuery(
@@ -167,72 +209,42 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
     query="select id, name from project where id>0",
     resultSetMapping = "Mapping.findAllByIdGreaterThanForDropDown"
 )
-@SqlResultSetMapping(name = "Mapping.findAllByIdGreaterThanForDropDown",
-    classes = @ConstructorResult(targetClass = ProjectDTO.class,
-        columns = {
-            @ColumnResult(name = "id",type = Long.class),
-            @ColumnResult(name = "name",type = String.class)
-        }))
+
 
 @NamedNativeQuery(
     name = "Project.findAllByAidasCustomer_AidasOrganisationForDropDown",
     query="select * from project p , customer c where p.customer_id=c.id and c.organisation_id=?1 and p.status=1",
     resultSetMapping = "Mapping.findAllByAidasCustomer_AidasOrganisationForDropDown"
 )
-@SqlResultSetMapping(name = "Mapping.findAllByAidasCustomer_AidasOrganisationForDropDown",
-    classes = @ConstructorResult(targetClass = ProjectDTO.class,
-        columns = {
-            @ColumnResult(name = "id",type = Long.class),
-            @ColumnResult(name = "name",type = String.class)
-        }))
+
 
 @NamedNativeQuery(
     name = "Project.findAllByAidasCustomerForDropDown",
     query="select * from project p  where p.customer_id=?1 and p.status=1",
     resultSetMapping = "Mapping.findAllByAidasCustomerForDropDown"
 )
-@SqlResultSetMapping(name = "Mapping.findAllByAidasCustomerForDropDown",
-    classes = @ConstructorResult(targetClass = ProjectDTO.class,
-        columns = {
-            @ColumnResult(name = "id",type = Long.class),
-            @ColumnResult(name = "name",type = String.class)
-        }))
+
 
 @NamedNativeQuery(
     name = "Project.findAllProjectsByVendorAdminDropDown",
     query="select p.* from project p, object o,  user_vendor_mapping_object_mapping uvmom,user_vendor_mapping uvm ,user u where  uvmom.object_id=o.id and o.project_id=p.id and uvmom.user_vendor_mapping_id=uvm.id and uvm.vendor_id= ?1   and p.status=1",
     resultSetMapping = "Mapping.findAllProjectsByVendorAdminDropDown"
 )
-@SqlResultSetMapping(name = "Mapping.findAllProjectsByVendorAdminDropDown",
-    classes = @ConstructorResult(targetClass = ProjectDTO.class,
-        columns = {
-            @ColumnResult(name = "id",type = Long.class),
-            @ColumnResult(name = "name",type = String.class)
-        }))
+
 
 @NamedNativeQuery(
     name = "Project.findProjectsForCustomerQC",
     query="select p.* from project p, customer_qc_project_mapping cqpm, user_customer_mapping ucm where cqpm.user_customer_mapping_id=ucm.id and ucm.user_id=? and cqpm.project_id=p.id and p.status=1 and cqpm.status=1 and ucm.status=1 and p.id>0 order by p.id desc",
     resultSetMapping = "Mapping.findProjectsForCustomerQC"
 )
-@SqlResultSetMapping(name = "Mapping.findProjectsForCustomerQC",
-    classes = @ConstructorResult(targetClass = ProjectDTO.class,
-        columns = {
-            @ColumnResult(name = "id",type = Long.class),
-            @ColumnResult(name = "name",type = String.class)
-        }))
+
 
 @NamedNativeQuery(
     name = "Project.findProjectsForOrganisationQC",
     query="select p.* from project p, organisation_qc_project_mapping oqpm, user_customer_mapping ucm where oqpm.user_organisation_mapping_id=ucm.id and ucm.user_id=? and oqpm.project_id=p.id and p.status=1 and oqpm.status=1 and ucm.status=1 and p.id>0 order by p.id desc",
     resultSetMapping = "Mapping.findProjectsForOrganisationQC"
 )
-@SqlResultSetMapping(name = "Mapping.findProjectsForOrganisationQC",
-    classes = @ConstructorResult(targetClass = ProjectDTO.class,
-        columns = {
-            @ColumnResult(name = "id",type = Long.class),
-            @ColumnResult(name = "name",type = String.class)
-        }))
+
 
 
 @Entity
@@ -322,6 +334,10 @@ public class Project extends AbstractAuditingEntity  implements Serializable {
     @JsonProperty
     private String imageType="";
 
+    @Column(name="number_of_uploads_for_qc")
+    @JsonProperty
+    private Integer numberOfUploadsForQc=10;
+
     @Column(name="video_type")
     @JsonProperty
     private String videoType="";
@@ -357,6 +373,14 @@ public class Project extends AbstractAuditingEntity  implements Serializable {
     private Integer userAddedStatus=0;
     @Column(name ="number_of_buffered_uploads_required",columnDefinition = "integer default 0")
     private Integer numberOfBufferedUploadsdRequired=0;
+
+    public Integer getNumberOfUploadsForQc() {
+        return numberOfUploadsForQc;
+    }
+
+    public void setNumberOfUploadsForQc(Integer numberOfUploadsForQc) {
+        this.numberOfUploadsForQc = numberOfUploadsForQc;
+    }
 
 
     @OneToMany(mappedBy = "project", cascade=CascadeType.ALL,fetch = FetchType.EAGER)
