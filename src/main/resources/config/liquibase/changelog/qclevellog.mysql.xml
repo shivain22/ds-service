@@ -19,6 +19,7 @@
             <column defaultValueNumeric="1" name="status" type="BIGINT"/>
             <column name="qc_leval_name" type="VARCHAR(50)"/>
             <column name="qc_level_acceptance_percentage" type="BIGINT"/>
+            <column name="qc_leval_batch_size" type="BIGINT"/>
             <column name="project_id" type="BIGINT"/>
 
         </createTable>
