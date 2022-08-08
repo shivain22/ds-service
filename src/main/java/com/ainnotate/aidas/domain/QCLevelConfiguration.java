@@ -26,12 +26,12 @@ public class QCLevelConfiguration extends AbstractAuditingEntity  implements Ser
 
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false,cascade={CascadeType.MERGE})
-    @JoinColumn(name = "project_id")
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @JoinColumn(name = "project_id", nullable = false, foreignKey = @ForeignKey(name="fk_project_qclevel"))
     private Project project;
 
     @Column(name ="qc_leval_name",columnDefinition = "varchar(50) default ' '")
-    private String qcLevelName;
+    private Integer qcLevelName;
 
     @Column(name ="qc_level_acceptance_percentage",columnDefinition = "integer default 0")
     private Integer qcLevelAcceptancePercentage=0;
@@ -55,11 +55,11 @@ public class QCLevelConfiguration extends AbstractAuditingEntity  implements Ser
 
     }
 
-    public String getQcLevelName() {
+    public Integer getQcLevelName() {
         return qcLevelName;
     }
 
-    public void setQcLevelName(String qcLevelName) {
+    public void setQcLevelName(Integer qcLevelName) {
         this.qcLevelName = qcLevelName;
     }
 

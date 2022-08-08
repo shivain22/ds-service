@@ -168,17 +168,15 @@ public class ProjectResource {
             project.setCategory(c);
         }
 
-            for (QCLevelConfiguration qcLevelConfiguration : project.getQcLevelConfigurations()) {
-                List<QCLevelConfiguration> qclevel  = qcLevelConfigurationRepository.findByProejctId(project.getId());
-                if(qclevel.size() == 0){
-                    QCLevelConfiguration ac = new QCLevelConfiguration();
-                    ac.setProject(project);
-                    ac.setQcLevelAcceptancePercentage(qcLevelConfiguration.getQcLevelAcceptancePercentage());
-                    ac.setQcLevelName(qcLevelConfiguration.getQcLevelName());
-                    project.addQCLevelConfiguration(qcLevelConfiguration);
-                }
-            }
 
+        if(project.getQcLevelConfigurations() ==null ){
+            for(int i=1;i<=project.getQcLevels();i++){
+                QCLevelConfiguration qcLevelConfiguration = new QCLevelConfiguration();
+                qcLevelConfiguration.setQcLevelName(i);
+                qcLevelConfiguration.setQcLevelAcceptancePercentage(100);
+                project.addQCLevelConfiguration(qcLevelConfiguration);
+            }
+        }
         Project result = projectRepository.save(project);
         {
             Object obj = new Object();

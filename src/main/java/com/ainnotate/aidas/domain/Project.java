@@ -359,8 +359,8 @@ public class Project extends AbstractAuditingEntity  implements Serializable {
     private Integer numberOfBufferedUploadsdRequired=0;
 
 
-    @OneToMany(mappedBy = "project", cascade={CascadeType.MERGE},fetch = FetchType.EAGER)
-    private Set<QCLevelConfiguration> qcLevelConfigurations;
+    @OneToMany(mappedBy = "project", cascade=CascadeType.ALL,fetch = FetchType.EAGER)
+    private Set<QCLevelConfiguration> qcLevelConfigurations=new HashSet<>();
 
     public Set<QCLevelConfiguration> getQcLevelConfigurations() {
         return qcLevelConfigurations;
