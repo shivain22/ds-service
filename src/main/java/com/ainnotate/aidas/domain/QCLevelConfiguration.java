@@ -36,6 +36,8 @@ public class QCLevelConfiguration extends AbstractAuditingEntity  implements Ser
     @Column(name ="qc_level_acceptance_percentage",columnDefinition = "integer default 0")
     private Integer qcLevelAcceptancePercentage=0;
 
+    @Column(name ="qc_leval_batch_size",columnDefinition = "integer default 0")
+    private Integer qcLevelBatchSize;
 
     public Long getId() {
         return id;
@@ -80,12 +82,31 @@ public class QCLevelConfiguration extends AbstractAuditingEntity  implements Ser
 
         QCLevelConfiguration that = (QCLevelConfiguration) o;
 
-        return new EqualsBuilder().append(id, that.id).append(project, that.project).append(qcLevelName, that.qcLevelName).append(qcLevelAcceptancePercentage, that.qcLevelAcceptancePercentage).isEquals();
+        return new EqualsBuilder().append(id, that.id)
+            .append(project, that.project)
+            .append(qcLevelName, that.qcLevelName)
+            .append(qcLevelAcceptancePercentage, that.qcLevelAcceptancePercentage)
+            .append(qcLevelBatchSize, that.qcLevelBatchSize)
+            .isEquals();
+    }
+
+    public Integer getQcLevelBatchSize() {
+        return qcLevelBatchSize;
+    }
+
+    public void setQcLevelBatchSize(Integer batchSize) {
+        this.qcLevelBatchSize = batchSize;
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder(17, 37).append(id).append(project).append(qcLevelName).append(qcLevelAcceptancePercentage).toHashCode();
+        return new HashCodeBuilder(17, 37).
+            append(id)
+            .append(project)
+            .append(qcLevelName)
+            .append(qcLevelAcceptancePercentage)
+            .append(qcLevelBatchSize)
+            .toHashCode();
     }
 
     @Override
@@ -95,6 +116,7 @@ public class QCLevelConfiguration extends AbstractAuditingEntity  implements Ser
             ", project=" + project +
             ", qcLevelName='" + qcLevelName + '\'' +
             ", qcLevelAcceptancePercentage=" + qcLevelAcceptancePercentage +
+            ", QC Batch Size=" + qcLevelBatchSize +
             '}';
     }
 }
