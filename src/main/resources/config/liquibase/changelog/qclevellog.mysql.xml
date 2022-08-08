@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.5.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+    <changeSet author="shiva (generated)" id="1657539087461-1">
+        <createTable tableName="qclevel_configuration">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="created_by" type="VARCHAR(50)"/>
+            <column name="created_date" type="datetime"/>
+            <column name="last_modified_by" type="VARCHAR(50)"/>
+            <column name="last_modified_date" type="datetime"/>
+            <column name="rating" type="INT"/>
+            <column name="is_sample_data" type="INT"/>
+            <column defaultValueNumeric="1" name="status" type="BIGINT"/>
+            <column name="qc_leval_name" type="VARCHAR(50)"/>
+            <column name="qc_level_acceptance_percentage" type="BIGINT"/>
+            <column name="qc_leval_batch_size" type="BIGINT"/>
+            <column name="project_id" type="BIGINT"/>
+
+        </createTable>
+    </changeSet>
+</databaseChangeLog>

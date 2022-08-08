@@ -382,6 +382,28 @@ public class Project extends AbstractAuditingEntity  implements Serializable {
         this.numberOfUploadsForQc = numberOfUploadsForQc;
     }
 
+
+    @OneToMany(mappedBy = "project", cascade=CascadeType.ALL,fetch = FetchType.EAGER)
+    private Set<QCLevelConfiguration> qcLevelConfigurations=new HashSet<>();
+
+    public Set<QCLevelConfiguration> getQcLevelConfigurations() {
+        return qcLevelConfigurations;
+    }
+
+    public void setQcLevelConfigurations(Set<QCLevelConfiguration> qcLevelConfigurations) {
+        this.qcLevelConfigurations = qcLevelConfigurations;
+    }
+    public void addQCLevelConfiguration(QCLevelConfiguration qcLevelConfiguration){
+        this.qcLevelConfigurations.add(qcLevelConfiguration);
+        qcLevelConfiguration.setProject(this);
+    }
+
+    public void setQCLevelConfigs(Set<QCLevelConfiguration> qcLevelConfigurations) {
+        this.qcLevelConfigurations = qcLevelConfigurations;
+        for(QCLevelConfiguration b : qcLevelConfigurations) {
+            b.setProject(this);
+        }
+    }
     public SubCategory getSubCategory() {
         return subCategory;
     }
