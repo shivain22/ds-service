@@ -141,15 +141,17 @@ public class ProjectPropertyResource {
             for(ProjectPropertyDTO projectPropertyDTO : projectPropertyDTOS) {
                 Project project = projectRepository.getById(projectPropertyDTO.getAidasProjectId());
                 Property property = propertyRepository.getById(projectPropertyDTO.getAidasPropertyId());
-                if (project != null && property != null) {
-                    ProjectProperty projectProperty = new ProjectProperty();
-                    projectProperty.setProject(project);
-                    projectProperty.setProperty(property);
+                ProjectProperty projectProperty = projectPropertyRepository.findByProjectAndProperty(project.getId(),property.getId());
+                if (projectProperty!=null) {
                     projectProperty.setValue(projectPropertyDTO.getValue());
-                    ProjectProperty result = projectPropertyRepository.save(projectProperty);
                     i++;
                 } else {
-                    //throw new BadRequestAlertException("Error occured when trying to map aidas property to project", ENTITY_NAME, "idexists");
+                    ProjectProperty projectProperty1 = new ProjectProperty();
+                    projectProperty1.setProject(project);
+                    projectProperty1.setProperty(property);
+                    projectProperty1.setValue(projectPropertyDTO.getValue());
+                    ProjectProperty result = projectPropertyRepository.save(projectProperty1);
+                    i++;
                 }
             }
         }

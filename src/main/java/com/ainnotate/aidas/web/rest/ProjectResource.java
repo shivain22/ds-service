@@ -530,8 +530,20 @@ public class ProjectResource {
         existingProject.setVideoType(project.getVideoType());
         existingProject.setImageType(project.getImageType());
         Project result = projectRepository.save(existingProject);
-        Project projectForSearch = new Project();
-        projectForSearch.setId(result.getId());
+        if(project.getProjectProperties()!=null){
+            Property ap=null;
+            for(ProjectProperty app: project.getProjectProperties()){
+                if(app.getProperty()!=null && app.getProperty().getId()!=null){
+                    ap = propertyRepository.getById(app.getId());
+                    app.setProperty(ap);
+                    app.setProject(project);
+                }else{
+                    ap = propertyRepository.save(app.getProperty());
+                    app.setProperty(ap);
+                    app.setProject(project);
+                }
+            }
+        }
         return ResponseEntity
             .ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, project.getId().toString()))
