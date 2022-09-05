@@ -7,13 +7,17 @@ import com.ainnotate.aidas.repository.*;
 import com.ainnotate.aidas.repository.search.ProjectSearchRepository;
 import com.ainnotate.aidas.constants.AidasConstants;
 import com.ainnotate.aidas.security.SecurityUtils;
+import com.ainnotate.aidas.service.CSVHelper;
 import com.ainnotate.aidas.service.DownloadUploadS3;
 import com.ainnotate.aidas.service.ObjectAddingTask;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
 import java.util.*;
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -22,10 +26,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.support.PagedListHolder;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +41,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
 import tech.jhipster.web.util.ResponseUtil;
+import org.springframework.core.io.Resource;
 
 /**
  * REST controller for managing {@link Project}.
@@ -57,6 +65,9 @@ public class ProjectResource {
 
     @Autowired
     private CustomerQcProjectMappingRepository customerQcProjectMappingRepository;
+
+    @Autowired
+    private UploadMetaDataRepository uploadMetaDataRepository;
 
     private final ProjectSearchRepository aidasProjectSearchRepository;
 
@@ -135,6 +146,7 @@ public class ProjectResource {
                 throw new BadRequestAlertException("Not Authorized", ENTITY_NAME, "idexists");
             }
         }
+
         if(project.getProjectProperties()!=null){
             Property ap=null;
             for(ProjectProperty app: project.getProjectProperties()){
@@ -168,16 +180,11 @@ public class ProjectResource {
             project.setCategory(c);
         }
 
+        System.out.println(project.getQcLevelConfigurations().size());
 
-        if(project.getQcLevelConfigurations() ==null ){
-            for(int i=1;i<=project.getQcLevels();i++){
-                QCLevelConfiguration qcLevelConfiguration = new QCLevelConfiguration();
-                qcLevelConfiguration.setQcLevelName(i);
-                qcLevelConfiguration.setQcLevelAcceptancePercentage(100);
-                project.addQCLevelConfiguration(qcLevelConfiguration);
-            }
-        }
         Project result = projectRepository.save(project);
+
+
         {
             Object obj = new Object();
             obj.setName(result.getName()+" - Dummy Object");
@@ -215,10 +222,11 @@ public class ProjectResource {
                 if(result.getObjectSuffix()!=null){
                     objName=result.getObjectSuffix();
                 }
-                obj.setName(objName+"_"+i+"_"+objName);
+                obj.setName(objName);
                 obj.setNumberOfUploadsRequired(result.getNumberOfUploadsRequired());
-                obj.setDescription(objName+"_"+i+"_"+objName);
+                obj.setDescription(objName);
                 obj.setProject(result);
+
                 obj.setBufferPercent(result.getBufferPercent());
                 obj.setDummy(0);
                 obj.setStatus(1);
@@ -247,6 +255,19 @@ public class ProjectResource {
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
             .body(result);
     }
+
+
+    @GetMapping("/downloadFile/{projectId}")
+    public ResponseEntity<Resource> downloadFile(@PathVariable(value = "projectId", required = true) Long projectId) throws MalformedURLException {
+        String filename = "metadata_+"+projectId+".csv";
+        List<UploadMetaData> uploadMetaDatas = uploadMetaDataRepository.getAllUploadMetaDataForProject(projectId);
+        InputStreamResource file = new InputStreamResource(CSVHelper.uploadMetaDataToCsv(uploadMetaDatas));
+        return ResponseEntity.ok()
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
+            .contentType(MediaType.parseMediaType("application/csv"))
+            .body(file);
+    }
+
 
 
     /**
@@ -299,7 +320,7 @@ public class ProjectResource {
             uvmom.setStatus(userVendorMappingStatusMap.get(uvmom.getUserVendorMapping().getId()));
         }
         userVendorMappingObjectMappingRepository.saveAll(uvmoms);
-        List<UserVendorMappingProjectMapping> uvmpms = userVendorMappingProjectMappingRepository.getAllUserVendorMappingProjectMappingByUserVendorMappingIdsAndObjectId(projectVendorMappingDTO.getProjectId());
+        List<UserVendorMappingProjectMapping> uvmpms = userVendorMappingProjectMappingRepository.getAllUserVendorMappingProjectMappingByProjectId(projectVendorMappingDTO.getProjectId());
         for(UserVendorMappingProjectMapping uvmpm:uvmpms){
             uvmpm.setStatus(userVendorMappingStatusMap.get(uvmpm.getUserVendorMapping().getId()));
         }
@@ -307,6 +328,45 @@ public class ProjectResource {
         return ResponseEntity.ok().body("Successfully mapped vendors to project");
     }
 
+    /**
+     * {@code POST  /aidas-projects/vendormapping/add-remove/{fromObjectId}/{toObjectId}} : Create a new project.
+     *
+     * @param projectVendorMappingDTO the projectVendorMappings to create.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new project, or with status {@code 400 (Bad Request)} if the project has already an ID.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @Secured({AidasConstants.ADMIN, AidasConstants.ORG_ADMIN, AidasConstants.CUSTOMER_ADMIN})
+    @PostMapping("/aidas-projects/vendormapping/add-remove/{fromObjectId}/{toObjectId}")
+    public ResponseEntity<String> addRemoveVendorUsersMappingBulk(@Valid @RequestBody ProjectVendorMappingDTO projectVendorMappingDTO,@PathVariable(value = "fromObjectId", required = false) final Integer fromObjectId,@PathVariable(value = "toObjectId", required = false) final Integer toObjectId) throws URISyntaxException {
+        User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        log.debug("REST request to map AidasProject to AidasVendor: {}", projectVendorMappingDTO);
+        if (projectVendorMappingDTO.getProjectId() == null) {
+            throw new BadRequestAlertException("A new project cannot already have an ID", ENTITY_NAME, "idexists");
+        }
+        List<Long>userVendorMappingIds = new ArrayList<>();
+        Map<Long,Integer>userVendorMappingStatusMap = new HashMap<>();
+        for(VendorUserDTO vendorUserDTO:projectVendorMappingDTO.getVendors()){
+            for(UserDTO userDTO: vendorUserDTO.getUserDTOs()){
+                userVendorMappingIds.add(userDTO.getUserVendorMappingId());
+                userVendorMappingStatusMap.put(userDTO.getUserVendorMappingId(),userDTO.getStatus());
+            }
+        }
+        Project project = projectRepository.getById(projectVendorMappingDTO.getProjectId());
+        for(int i=fromObjectId;i<=toObjectId;i++){
+            Object object = objectRepository.getObjectByName(project.getObjectPrefix()+"_"+i+"_"+project.getObjectSuffix());
+            List<UserVendorMappingObjectMapping> uvmoms = userVendorMappingObjectMappingRepository.getAllUserVendorMappingObjectMappingsByObjectId(object.getId());
+            for(UserVendorMappingObjectMapping uvmom:uvmoms){
+                uvmom.setStatus(userVendorMappingStatusMap.get(uvmom.getUserVendorMapping().getId()));
+            }
+            userVendorMappingObjectMappingRepository.saveAll(uvmoms);
+        }
+        List<UserVendorMappingProjectMapping> uvmpms = userVendorMappingProjectMappingRepository.getAllUserVendorMappingProjectMappingByProjectId(projectVendorMappingDTO.getProjectId());
+        for(UserVendorMappingProjectMapping uvmpm:uvmpms){
+            uvmpm.setStatus(userVendorMappingStatusMap.get(uvmpm.getUserVendorMapping().getId()));
+        }
+        userVendorMappingProjectMappingRepository.saveAll(uvmpms);
+        return ResponseEntity.ok().body("Successfully mapped vendors to project");
+    }
 
 
 

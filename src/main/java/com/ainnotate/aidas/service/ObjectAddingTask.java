@@ -105,7 +105,7 @@ public class ObjectAddingTask {
                         qpm.setUserCustomerMapping(ucm);
                         qpm.setProject(object.getProject());
                         qpm.setStatus(0);
-                        qpm.setQcLevel(Long.valueOf(i + 1));
+                        qpm.setQcLevel(i + 1);
                         customerQcProjectMappingRepository.save(qpm);
                     }
                 }
@@ -124,7 +124,7 @@ public class ObjectAddingTask {
                     qpm.setUserCustomerMapping(ucm);
                     qpm.setProject(object.getProject());
                     qpm.setStatus(0);
-                    qpm.setQcLevel(Long.valueOf(i + 1));
+                    qpm.setQcLevel(i + 1);
                     customerQcProjectMappingRepository.save(qpm);
                 }
             }

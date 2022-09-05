@@ -134,8 +134,17 @@ public interface UploadRepository extends JpaRepository<Upload, Long> {
     @Query(value="select u.* from upload u, user_vendor_mapping_object_mapping uvmom, object o where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and o.project_id=?1 and u.qc_done_by_id is null and u.qc_status=0 and u.qc_end_date is null and qc_start_date is null and u.metadata_status=1  limit 1",nativeQuery = true)
     Upload findTopByQcNotDoneYet(Long projectId);
 
-    @Query(value="select u.* from upload u, user_vendor_mapping_object_mapping uvmom, object o where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and o.project_id=?1 and u.qc_done_by_id is null and u.qc_status=0 and u.qc_end_date is null and qc_start_date is null and u.metadata_status=1  limit 1",nativeQuery = true)
-    List findTopByQcNotDoneYetForQcLevel(Long projectId, Integer qcLevel);
+    @Query(value="select u.* from upload u, user_vendor_mapping_object_mapping uvmom, object o where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and o.project_id=?1 and u.qc_done_by_id is null and u.qc_start_date is null and u.qc_end_date is null  and ( u.qc_status is null or u.qc_status=2 ) and  u.metadata_status=1  limit 10",nativeQuery = true)
+    List<Upload> findTopByQcNotDoneYetForQcLevel(Long projectId, Integer qcLevel);
+
+    @Query(value="select u.* from upload u, user_vendor_mapping_object_mapping uvmom, object o where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and o.project_id=?1 and u.qc_done_by_id is null and u.qc_start_date is null and u.qc_end_date is null  and ( u.qc_status is null or u.qc_status=2 ) and  u.metadata_status=1 and u.current_qc_level=?2 limit ?3",nativeQuery = true)
+    List<Upload> findTop10ByQcNotDoneYetForQcLevel(Long projectId,Integer qcLevel, Integer batchSize);
+
+    @Query(value="select u.* from upload u where u.id in (?1)", nativeQuery = true)
+    List<Upload> getUploadsByIds(List<Long> uploadIds);
+
+    @Query(value="select count(u.id) from upload u, user_vendor_mapping_object_mapping uvmom, object o where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and o.project_id=?2 and  u.qc_done_by_id=?1 and u.qc_status=0 and  u.metadata_status=1  limit 10",nativeQuery = true)
+    Integer findPendingQcDoneByCQPM(Long customerQcProjectMappingId, Long projectId);
 
     @Query(value="select upload.* from upload where upload.qc_done_by_id is not null and qc_end_date is null and qc_start_date is not null and qc_status=0 and TIMEstampDIFF(SECOND,qc_start_date,now())>(select value from app_property where name='qc_clean_up_time')",nativeQuery = true)
     List<Upload> findUploadsHeldByQcForMoreThan10Mins();

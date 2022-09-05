@@ -20,6 +20,60 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
  */
 
 
+/*@NamedNativeQuery(name = "Project.findAllByIdGreaterThanForDropDown",
+    query = "select p.id, p.name, p.project_type from project p where p.id>0 and p.status=1",
+        resultSetMapping = "Mapping.findAllByIdGreaterThanForDropDown")
+
+@NamedNativeQuery(name = "Project.findAllByAidasCustomer_AidasOrganisationForDropDown",
+    query = "select p.id, p.name, p.project_type from project p, customer c where p.id>0 and p.status=1 and p.customer_id=c.id and c.organisation_id=?1 ",
+    resultSetMapping = "Mapping.findAllByAidasCustomer_AidasOrganisationForDropDown")
+
+@NamedNativeQuery(name = "Project.findAllByAidasCustomerForDropDown",
+    query = "select p.id, p.name, p.project_type from project p where p.id>0 and p.status=1 and p.customer_id=?1 ",
+    resultSetMapping = "Mapping.findAllByAidasCustomerForDropDown")
+
+@NamedNativeQuery(name = "Project.findAllProjectsByVendorAdminDropDown",
+    query = "select p.id, p.name, p.project_type \n" +
+        "from \n" +
+        "project p,\n" +
+        "user_vendor_mapping_project_mapping uvmpm, \n" +
+        "user_vendor_mapping uvm\n" +
+        "where\n" +
+        "uvmpm.project_id=p.id and\n" +
+        "uvmpm.user_vendor_mapping_id=uvm.id and\n" +
+        "p.id>0 and p.status=1 and\n" +
+        "uvm.vendor_id=?1\n" +
+        "group by p.id ",
+    resultSetMapping = "Mapping.findAllProjectsByVendorAdminDropDown")
+
+@NamedNativeQuery(name = "Project.findProjectsForCustomerQC",
+    query = "select p.id, p.name, p.project_type \n" +
+        "from \n" +
+        "project p,\n" +
+        "customer_qc_project_mapping cqpm,\n" +
+        "user_customer_mapping ucm\n" +
+        "where\n" +
+        "cqpm.project_id=p.id and\n" +
+        "cqpm.user_customer_mapping_id=ucm.id and\n" +
+        "p.id>0 and \n" +
+        "p.status=1 and\n" +
+        "ucm.user_id=?1 ",
+    resultSetMapping = "Mapping.findProjectsForCustomerQC")
+
+@NamedNativeQuery(name = "Project.findProjectsForOrganisationQC",
+    query = "select p.id, p.name, p.project_type \n" +
+        "from \n" +
+        "project p,\n" +
+        "organisation_qc_project_mapping oqpm,\n" +
+        "user_organisation_mapping uom\n" +
+        "where\n" +
+        "oqpm.project_id=p.id and\n" +
+        "oqpm.user_organisation_mapping_id=uom.id and\n" +
+        "p.id>0 and \n" +
+        "p.status=1 and\n" +
+        "uom.user_id=?1",
+    resultSetMapping = "Mapping.findProjectsForOrganisationQC")*/
+
 @NamedNativeQuery(name = "Project.findProjectWithUploadCountByUser",
     query = "select  \n" +
         "p.id as id,  \n" +
@@ -49,7 +103,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
         "left join user_vendor_mapping_project_mapping uvmpm on p.id=uvmpm.project_id\n" +
         "left join user_vendor_mapping uvm on uvm.id=uvmpm.user_vendor_mapping_id \n" +
         "where uvm.user_id=?1 and uvm.status=1 and uvmpm.status=1",
-        resultSetMapping = "Mapping.ProjectDTO")
+    resultSetMapping = "Mapping.ProjectDTO")
 
 @NamedNativeQuery(name = "Project.findProjectWithUploadCountByUser.count",
     query ="select  \n" +
@@ -121,37 +175,43 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
         classes = @ConstructorResult(targetClass = ProjectDTO.class,
             columns = {
                 @ColumnResult(name = "id",type = Long.class),
-                @ColumnResult(name = "name",type = String.class)
+                @ColumnResult(name = "name",type = String.class),
+                @ColumnResult(name = "project_type",type = String.class)
             })),
     @SqlResultSetMapping(name = "Mapping.findAllByAidasCustomer_AidasOrganisationForDropDown",
         classes = @ConstructorResult(targetClass = ProjectDTO.class,
             columns = {
                 @ColumnResult(name = "id",type = Long.class),
-                @ColumnResult(name = "name",type = String.class)
+                @ColumnResult(name = "name",type = String.class),
+                @ColumnResult(name = "project_type",type = String.class)
             })),
     @SqlResultSetMapping(name = "Mapping.findAllByAidasCustomerForDropDown",
         classes = @ConstructorResult(targetClass = ProjectDTO.class,
             columns = {
                 @ColumnResult(name = "id",type = Long.class),
-                @ColumnResult(name = "name",type = String.class)
+                @ColumnResult(name = "name",type = String.class),
+                @ColumnResult(name = "project_type",type = String.class)
             })),
     @SqlResultSetMapping(name = "Mapping.findAllProjectsByVendorAdminDropDown",
         classes = @ConstructorResult(targetClass = ProjectDTO.class,
             columns = {
                 @ColumnResult(name = "id",type = Long.class),
-                @ColumnResult(name = "name",type = String.class)
+                @ColumnResult(name = "name",type = String.class),
+                @ColumnResult(name = "project_type",type = String.class)
             })),
     @SqlResultSetMapping(name = "Mapping.findProjectsForCustomerQC",
         classes = @ConstructorResult(targetClass = ProjectDTO.class,
             columns = {
                 @ColumnResult(name = "id",type = Long.class),
-                @ColumnResult(name = "name",type = String.class)
+                @ColumnResult(name = "name",type = String.class),
+                @ColumnResult(name = "project_type",type = String.class)
             })),
     @SqlResultSetMapping(name = "Mapping.findProjectsForOrganisationQC",
         classes = @ConstructorResult(targetClass = ProjectDTO.class,
             columns = {
                 @ColumnResult(name = "id",type = Long.class),
-                @ColumnResult(name = "name",type = String.class)
+                @ColumnResult(name = "name",type = String.class),
+                @ColumnResult(name = "project_type",type = String.class)
             }))
 })
 
@@ -206,21 +266,21 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 
 @NamedNativeQuery(
     name = "Project.findAllByIdGreaterThanForDropDown",
-    query="select id, name from project where id>0",
+    query="select p.* from project p where id>0",
     resultSetMapping = "Mapping.findAllByIdGreaterThanForDropDown"
 )
 
 
 @NamedNativeQuery(
     name = "Project.findAllByAidasCustomer_AidasOrganisationForDropDown",
-    query="select * from project p , customer c where p.customer_id=c.id and c.organisation_id=?1 and p.status=1",
+    query="select p.* from project p , customer c where p.customer_id=c.id and c.organisation_id=?1 and p.status=1",
     resultSetMapping = "Mapping.findAllByAidasCustomer_AidasOrganisationForDropDown"
 )
 
 
 @NamedNativeQuery(
     name = "Project.findAllByAidasCustomerForDropDown",
-    query="select * from project p  where p.customer_id=?1 and p.status=1",
+    query="select p.* from project p  where p.customer_id=?1 and p.status=1",
     resultSetMapping = "Mapping.findAllByAidasCustomerForDropDown"
 )
 
@@ -334,10 +394,6 @@ public class Project extends AbstractAuditingEntity  implements Serializable {
     @JsonProperty
     private String imageType="";
 
-    @Column(name="number_of_uploads_for_qc")
-    @JsonProperty
-    private Integer numberOfUploadsForQc=10;
-
     @Column(name="video_type")
     @JsonProperty
     private String videoType="";
@@ -374,16 +430,8 @@ public class Project extends AbstractAuditingEntity  implements Serializable {
     @Column(name ="number_of_buffered_uploads_required",columnDefinition = "integer default 0")
     private Integer numberOfBufferedUploadsdRequired=0;
 
-    public Integer getNumberOfUploadsForQc() {
-        return numberOfUploadsForQc;
-    }
-
-    public void setNumberOfUploadsForQc(Integer numberOfUploadsForQc) {
-        this.numberOfUploadsForQc = numberOfUploadsForQc;
-    }
-
-
-    @OneToMany(mappedBy = "project", cascade=CascadeType.ALL,fetch = FetchType.EAGER)
+    @OneToMany(mappedBy="project",cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JsonIgnoreProperties(value = {"project","customer"})
     private Set<QCLevelConfiguration> qcLevelConfigurations=new HashSet<>();
 
     public Set<QCLevelConfiguration> getQcLevelConfigurations() {
@@ -391,6 +439,9 @@ public class Project extends AbstractAuditingEntity  implements Serializable {
     }
 
     public void setQcLevelConfigurations(Set<QCLevelConfiguration> qcLevelConfigurations) {
+        for(QCLevelConfiguration qcLevelConfiguration:qcLevelConfigurations){
+            qcLevelConfiguration.setProject(this);
+        }
         this.qcLevelConfigurations = qcLevelConfigurations;
     }
     public void addQCLevelConfiguration(QCLevelConfiguration qcLevelConfiguration){

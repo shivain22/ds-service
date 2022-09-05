@@ -31,5 +31,6 @@ id;name;value;property_type;optional;description;default_prop;user_id
 30;audioSamplingRate;44100;1;true;Audio Sampling Rate;1;-1
 31;audioBitsPerSample;16;1;true;Audio Bits Per Sample;1;-1
 32;audioChannels;1;1;true;Audio Channels;1;-1
-33;audioBitRate;128kbps;1;true;Audio Bit Rate;1;-1
+33;numberOfParticipants;128kbps;1;true;Number of Participants;1;-1
 34;videoBitRate;5000kbps;1;true;Vdieo Duration;1;-1
+35;audioDuration;10:00;1;true;Audio Bits Per Sample;1;-1

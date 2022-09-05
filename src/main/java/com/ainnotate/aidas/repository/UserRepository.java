@@ -32,6 +32,26 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query(value="select u.id as userId, u.first_name as firstName, u.last_name as lastName, uvm.id as userVendorMappingId, u.login as login from user u, user_authority_mapping uam, user_vendor_mapping uvm where uam.user_id=u.id and uvm.user_id=u.id and uvm.vendor_id=?1 and uam.authority_id=5",nativeQuery = true)
     List<IUserDTO> findAllUsersOfVendor(Long vendorId);
 
+    @Query(value="select \n" +
+        "u.id as userId, \n" +
+        "u.first_name as firstName, \n" +
+        "u.last_name as lastName, \n" +
+        "uvm.id as userVendorMappingId, \n" +
+        "uvmpm.id as userVendorMappingProjectMappingId,\n" +
+        "u.login as login \n" +
+        "from \n" +
+        "user u, user_authority_mapping uam, \n" +
+        "user_vendor_mapping uvm,\n" +
+        "user_vendor_mapping_project_mapping uvmpm\n" +
+        "where \n" +
+        "uam.user_id=u.id and \n" +
+        "uvm.user_id=u.id and\n" +
+        "uvmpm.user_vendor_mapping_id=uvm.id and\n" +
+        "uvmpm.project_id=?1  and \n" +
+        "uvm.vendor_id=?2 and \n" +
+        "uam.authority_id=5",nativeQuery = true)
+    List<IUserDTO> findAllVendorUserMappingObjectMappingOfVendor(Long projectId,Long vendorId);
+
     @Query(nativeQuery = true)
     List<UserDTO> findAllUsersOfVendorWithProject(Long projectId);
 

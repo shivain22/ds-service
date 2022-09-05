@@ -47,6 +47,9 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
     @Column(name = "upload_url",  nullable = true)
     private String uploadUrl;
 
+    @Column(name = "qc_batch_info",  nullable = true)
+    private String qcBatchInfo;
+
     @Column(name = "upload_etag",  nullable = true)
     private String uploadEtag;
 
@@ -102,6 +105,24 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
     @JsonIgnore
     @JoinColumn(name = "user_vendor_mapping_object_mapping_id", nullable = true, foreignKey = @ForeignKey(name="fk_upload_uvmom"))
     private UserVendorMappingObjectMapping userVendorMappingObjectMapping;
+    @Column(name ="current_qc_level",columnDefinition = "integer default 1")
+    private Integer currentQcLevel;
+
+    public Integer getCurrentQcLevel() {
+        return currentQcLevel;
+    }
+
+    public void setCurrentQcLevel(Integer currentQcLevel) {
+        this.currentQcLevel = currentQcLevel;
+    }
+
+    public String getQcBatchInfo() {
+        return qcBatchInfo;
+    }
+
+    public void setQcBatchInfo(String qcBatchInfo) {
+        this.qcBatchInfo = qcBatchInfo;
+    }
 
     public List<UploadMetadataDTO> getUploadMetaDatas(){
         List<UploadMetadataDTO> uds = new LinkedList<>();
@@ -118,16 +139,32 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
                 if(u.getProjectProperty()!=null && u.getProjectProperty().getProperty()!=null && u.getProjectProperty().getProperty().getName()!=null ){
                     UploadMetadataDTO ud = new UploadMetadataDTO();
                     ud.setName(u.getProjectProperty().getProperty().getName());
+                    ud.setPropertyType(u.getProjectProperty().getProperty().getPropertyType());
+                    ud.setProjectPropertyId(u.getProjectProperty().getId());
                     if(u.getValue()!=null) {
                         ud.setValue(u.getValue());
                     }
                     uds.add(ud);
-                }/*else if(u.getObjectProperty()!=null && u.getObjectProperty().getProperty()!=null && u.getObjectProperty().getProperty().getName()!=null  && u.getValue()!=null){
+                }else if(u.getObjectProperty()!=null && u.getObjectProperty().getProperty()!=null && u.getObjectProperty().getProperty().getName()!=null  && u.getValue()!=null){
+                    UploadMetadataDTO ud = new UploadMetadataDTO();
                     ud.setName(u.getObjectProperty().getProperty().getName());
-                    ud.setValue(u.getValue());
-                }*/
-
+                    ud.setObjectPropertyId(u.getObjectProperty().getId());
+                    ud.setPropertyType(u.getObjectProperty().getProperty().getPropertyType());
+                    if(u.getValue()!=null) {
+                        ud.setValue(u.getValue());
+                    }
+                    uds.add(ud);
+                }
             }
+            HashMap<String,UploadMetadataDTO> singleMap = new HashMap<>();
+            for(UploadMetadataDTO umdd:uds){
+                singleMap.put(umdd.getName(),umdd);
+            }
+            uds = new ArrayList<>();
+            for(Map.Entry<String,UploadMetadataDTO> entry:singleMap.entrySet()){
+                uds.add(entry.getValue());
+            }
+            uds.sort((o1, o2)-> o1.getName().compareTo(o2.getName()));
         }
         return uds;
     }

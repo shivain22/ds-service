@@ -25,9 +25,13 @@ public final class AidasConstants {
 
     public static final Integer AIDAS_UPLOAD_PENDING=2;
 
-    public static final Integer AIDAS_UPLOAD_QC_PENDING=0;
+    public static final Integer AIDAS_UPLOAD_QC_PENDING=2;
 
-    public static final Integer AIDAS_UPLOAD_QC_COMPLETED=1;
+    public static final Integer AIDAS_UPLOAD_QC_REJECTED=0;
+
+    public static final Integer AIDAS_UPLOAD_QC_APPROVED=1;
+
+    /*public static final Integer AIDAS_UPLOAD_QC_COMPLETED=1;*/
 
     public static final Integer AIDAS_UPLOAD_METADATA_COMPLETED=1;
 

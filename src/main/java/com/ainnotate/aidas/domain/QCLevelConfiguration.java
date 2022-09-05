@@ -1,5 +1,6 @@
 package com.ainnotate.aidas.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -12,7 +13,7 @@ import java.io.Serializable;
 import java.util.Set;
 
 
-@Table(name = "qclevel_configuration")
+@Table(name = "project_qc_level_configurations")
 @Entity
 @Audited
 public class QCLevelConfiguration extends AbstractAuditingEntity  implements Serializable {
@@ -25,19 +26,18 @@ public class QCLevelConfiguration extends AbstractAuditingEntity  implements Ser
     private Long id;
 
 
-    @ManyToOne(fetch = FetchType.EAGER, optional = false,cascade={CascadeType.MERGE})
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    @JoinColumn(name = "project_id", nullable = false, foreignKey = @ForeignKey(name="fk_project_qclevel"))
+    @ManyToOne
+    @JoinColumn(name="project_id", nullable=false)
     private Project project;
 
-    @Column(name ="qc_leval_name",columnDefinition = "varchar(50) default ' '")
+    @Column(name ="qc_level_name",columnDefinition = "varchar(50) default ' '")
     private Integer qcLevelName;
 
     @Column(name ="qc_level_acceptance_percentage",columnDefinition = "integer default 0")
     private Integer qcLevelAcceptancePercentage=0;
 
-    @Column(name ="qc_leval_batch_size",columnDefinition = "integer default 0")
-    private Integer qcLevelBatchSize;
+    @Column(name ="qc_level_batch_size",columnDefinition = "integer default 0")
+    private Integer qcLevelBatchSize=10;
 
     public Long getId() {
         return id;

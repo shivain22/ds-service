@@ -24,5 +24,5 @@ public interface UserVendorMappingProjectMappingRepository extends JpaRepository
     UserVendorMappingProjectMapping findByUserVendorMappingIdProjectId(Long userVendorMappingId, Long projectId);
 
     @Query(value = "select uvmpm.* from user_vendor_mapping_project_mapping uvmpm where  uvmpm.project_id=?1",nativeQuery = true)
-    List<UserVendorMappingProjectMapping> getAllUserVendorMappingProjectMappingByUserVendorMappingIdsAndObjectId(Long projectId);
+    List<UserVendorMappingProjectMapping> getAllUserVendorMappingProjectMappingByProjectId(Long projectId);
 }

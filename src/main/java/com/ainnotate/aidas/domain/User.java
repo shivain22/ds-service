@@ -31,8 +31,9 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
         "v.name as vendorName,\n" +
         "uvm.id as userVendorMappingId,\n" +
         "v.id as vendorId,\n" +
+        "uvmpm.id as userVendorMappingProjectMappingId,\n" +
         "uvmpm.status as status\n" +
-        "FROM user_vendor_mapping_project_mapping uvmpm,\n" +
+        "from user_vendor_mapping_project_mapping uvmpm,\n" +
         "user_vendor_mapping uvm,\n" +
         "vendor v,\n" +
         "user u \n" +
@@ -52,7 +53,8 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
             @ColumnResult(name = "userId",type = Long.class),
             @ColumnResult(name = "userVendorMappingId",type = Long.class),
             @ColumnResult(name = "vendorId",type = Long.class),
-            @ColumnResult(name = "status",type = Integer.class)
+            @ColumnResult(name = "status",type = Integer.class),
+            @ColumnResult(name = "userVendorMappingProjectMappingId",type = Long.class)
 
     }))
 

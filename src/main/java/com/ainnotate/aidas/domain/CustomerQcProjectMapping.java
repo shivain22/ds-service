@@ -43,13 +43,24 @@ public class CustomerQcProjectMapping extends AbstractAuditingEntity implements 
     private UserCustomerMapping userCustomerMapping;
 
     @Column(name="qc_level")
-    private Long qcLevel;
+    private Integer qcLevel;
 
-    public Long getQcLevel() {
+    @Column(name="current_qc_batch_no")
+    private Integer currentQcBatchNo;
+
+    public Integer getCurrentQcBatchNo() {
+        return currentQcBatchNo;
+    }
+
+    public void setCurrentQcBatchNo(Integer currentQcBatchNo) {
+        this.currentQcBatchNo = currentQcBatchNo;
+    }
+
+    public Integer getQcLevel() {
         return qcLevel;
     }
 
-    public void setQcLevel(Long qcLevel) {
+    public void setQcLevel(Integer qcLevel) {
         this.qcLevel = qcLevel;
     }
 
@@ -95,6 +106,6 @@ public class CustomerQcProjectMapping extends AbstractAuditingEntity implements 
 
     @Override
     public String toString() {
-        return "CustomerQcProjectMapping{" +"id="+id+",user_id="+this.userCustomerMapping.getUser().getId()+",organisation_id="+this.userCustomerMapping.getCustomer().getId()+"}";
+        return "CustomerQcProjectMapping{" +"id="+id+",user_id="+this.userCustomerMapping.getUser().getId()+",customer_id="+this.userCustomerMapping.getCustomer().getId()+"}";
     }
 }

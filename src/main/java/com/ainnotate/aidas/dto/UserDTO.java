@@ -11,10 +11,11 @@ public class UserDTO implements  IUserDTO {
     private Long userVendorMappingId;
     private Long userCustomerMappingId;
     private Integer status=0;
-    private Long qcLevel;
+    private Integer qcLevel;
     private Long userVendorMappingObjectMappingId;
     private Long vendorId;
     private String vendorName;
+    private Long userVendorMappingProjectMappingId;
 
     public UserDTO() {
     }
@@ -28,6 +29,18 @@ public class UserDTO implements  IUserDTO {
         this.status = status;
         this.vendorId = vendorId;
         this.vendorName = vendorName;
+    }
+
+    public UserDTO( String firstName, String lastName,String login, String vendorName, Long userId, Long userVendorMappingId, Long vendorId, Integer status,Long userVendorMappingProjectMappingId) {
+        this.userId = userId;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.login = login;
+        this.userVendorMappingId = userVendorMappingId;
+        this.status = status;
+        this.vendorId = vendorId;
+        this.vendorName = vendorName;
+        this.userVendorMappingProjectMappingId = userVendorMappingProjectMappingId;
     }
 
     @Override
@@ -66,13 +79,18 @@ public class UserDTO implements  IUserDTO {
     }
 
     @Override
-    public Long getQcLevel() {
+    public Integer getQcLevel() {
         return this.qcLevel;
     }
 
     @Override
     public Long getUserVendorMappingObjectMappingId() {
         return this.userVendorMappingObjectMappingId;
+    }
+
+    @Override
+    public Long getUserVendorMappingProjectMappingId() {
+        return this.userVendorMappingProjectMappingId;
     }
 
     @Override
@@ -121,13 +139,18 @@ this.status=status;
     }
 
     @Override
-    public void setQcLevel(Long qcLevel) {
+    public void setQcLevel(Integer qcLevel) {
 this.qcLevel = qcLevel;
     }
 
     @Override
     public void setUserVendorMappingObjectMappingId(Long userVendorMappingObjectMappingId) {
         this.userVendorMappingObjectMappingId= userVendorMappingObjectMappingId;
+    }
+
+    @Override
+    public void setUserVendorMappingProjectMappingId(Long userVendorMappingProjectMappingId) {
+        this.userVendorMappingProjectMappingId = userVendorMappingProjectMappingId;
     }
 
     @Override

@@ -153,7 +153,7 @@ public class UserAddingTask {
                                 qpm.setUserCustomerMapping(userCustomerMapping);
                                 qpm.setProject(p);
                                 qpm.setStatus(0);
-                                qpm.setQcLevel(Long.valueOf(i));
+                                qpm.setQcLevel(i);
                                 customerQcProjectMappingRepository.save(qpm);
                             }
                         }
