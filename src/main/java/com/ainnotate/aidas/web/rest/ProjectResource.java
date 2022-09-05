@@ -264,7 +264,7 @@ public class ProjectResource {
         InputStreamResource file = new InputStreamResource(CSVHelper.uploadMetaDataToCsv(uploadMetaDatas));
         return ResponseEntity.ok()
             .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
-            .contentType(MediaType.parseMediaType("application/csv"))
+            .contentType(MediaType.parseMediaType("application/octet-stream"))
             .body(file);
     }
 
