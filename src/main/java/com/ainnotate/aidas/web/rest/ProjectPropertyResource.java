@@ -1,11 +1,10 @@
 package com.ainnotate.aidas.web.rest;
 
 import com.ainnotate.aidas.domain.*;
+import com.ainnotate.aidas.domain.Object;
 import com.ainnotate.aidas.dto.ProjectPropertyDTO;
 import com.ainnotate.aidas.dto.ProperyProjectPropertyDTO;
-import com.ainnotate.aidas.repository.ProjectPropertyRepository;
-import com.ainnotate.aidas.repository.ProjectRepository;
-import com.ainnotate.aidas.repository.PropertyRepository;
+import com.ainnotate.aidas.repository.*;
 import com.ainnotate.aidas.repository.search.ProjectPropertySearchRepository;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
@@ -49,7 +48,13 @@ public class ProjectPropertyResource {
     private final ProjectPropertyRepository projectPropertyRepository;
 
     @Autowired
+    private  ObjectPropertyRepository objectPropertyRepository;
+
+    @Autowired
     private ProjectRepository projectRepository;
+
+    @Autowired
+    private ObjectRepository objectRepository;
 
     @Autowired
     private PropertyRepository propertyRepository;
@@ -259,16 +264,33 @@ public class ProjectPropertyResource {
         int i=0;
         try {
             for(ProjectPropertyDTO projectPropertyDTO : projectPropertyDTOS) {
-                if(projectPropertyDTO.getProjectPropertyId()!=null) {
-                    ProjectProperty projectProperty = projectPropertyRepository.getById(projectPropertyDTO.getProjectPropertyId());
-                    if (projectProperty != null) {
-                        projectProperty.setValue(projectPropertyDTO.getValue());
-                        projectProperty.setAddToMetadata(projectPropertyDTO.getAddToMetadata());
-                        projectProperty.setOptional(projectPropertyDTO.getOptional());
-                        ProjectProperty result = projectPropertyRepository.save(projectProperty);
-                        i++;
-                    } else {
-                        //throw new BadRequestAlertException("Error occured when trying to map aidas property to project", ENTITY_NAME, "idexists");
+                Project project = projectRepository.getById(projectPropertyDTO.getAidasProjectId());
+                Property property = propertyRepository.getById(projectPropertyDTO.getAidasPropertyId());
+                ProjectProperty projectProperty = projectPropertyRepository.findByProjectAndProperty(project.getId(),property.getId());
+                if (projectProperty!=null) {
+                    projectProperty.setValue(projectPropertyDTO.getValue());
+                    i++;
+                } else {
+                    ProjectProperty projectProperty1 = new ProjectProperty();
+                    projectProperty1.setProject(project);
+                    projectProperty1.setProperty(property);
+                    projectProperty1.setValue(projectPropertyDTO.getValue());
+                    ProjectProperty result = projectPropertyRepository.save(projectProperty1);
+                    i++;
+                }
+                List<Object> objects = objectRepository.getAllObjectsOfProject(project.getId());
+                for(Object  object:objects){
+                    List<ObjectProperty> objectProperties = objectPropertyRepository.getAllObjectPropertyForObject(object.getId());
+                    for(ObjectProperty objectProperty:objectProperties){
+                        if (objectProperty!=null) {
+                            objectProperty.setValue(projectPropertyDTO.getValue());
+                        } else {
+                            ObjectProperty objectProperty1 = new ObjectProperty();
+                            objectProperty1.setObject(object);
+                            objectProperty1.setProperty(property);
+                            objectProperty1.setValue(projectPropertyDTO.getValue());
+                            ObjectProperty result = objectPropertyRepository.save(objectProperty1);
+                        }
                     }
                 }
             }

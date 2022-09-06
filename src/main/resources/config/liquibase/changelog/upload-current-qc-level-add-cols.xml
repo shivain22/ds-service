@@ -14,7 +14,7 @@
         </addColumn>
         <addColumn catalogName="ainnotateservice"
                    schemaName= "ainnotateservice"
-                   tableName="upload" >
+                   tableName="upload_aud" >
             <column name="current_qc_level"
                     type="INT"/>
         </addColumn>
