@@ -1,5 +1,6 @@
 package com.ainnotate.aidas.web.rest;
 
+import com.ainnotate.aidas.constants.AidasConstants;
 import com.ainnotate.aidas.domain.*;
 import com.ainnotate.aidas.domain.Object;
 import com.ainnotate.aidas.dto.ProjectPropertyDTO;
@@ -194,12 +195,13 @@ public class ProjectPropertyResource {
                     property.setOptional(properyProjectPropertyDTO.getOptional());
                     property.setName(properyProjectPropertyDTO.getName());
                     property.setDefaultProp(properyProjectPropertyDTO.getDefaultProp());
-                    property.setPropertyType(properyProjectPropertyDTO.getPropertyType());
+                    property.setPropertyType(AidasConstants.AIDAS_METADATA_PROPERTY);
                     property.setDescription(properyProjectPropertyDTO.getDescription());
                     property.setValue(properyProjectPropertyDTO.getValue());
-                    property.setAddToMetadata(properyProjectPropertyDTO.getAddToMetadata());
+                    property.setAddToMetadata(1);
                     property.setValue("Not yet filled");
                     property.setCustomer(project.getCustomer());
+                    property.setShowToVendorUser(1);
                     Category category = categoryRepository.getById(6l);
                     property.setCategory(category);
                     property.setPropertyType(2);
@@ -208,9 +210,11 @@ public class ProjectPropertyResource {
                     projectProperty.setProject(project);
                     projectProperty.setProperty(property);
                     projectProperty.setOptional(property.getOptional());
-                    projectProperty.setAddToMetadata(property.getAddToMetadata());
+                    projectProperty.setAddToMetadata(1);
                     projectProperty.setDefaultProp(property.getDefaultProp());
                     projectProperty.setValue(properyProjectPropertyDTO.getAidasProjectPropertyValue());
+                    projectProperty.setShowToVendorUser(1);
+                    projectProperty.setProjectPropertyType(AidasConstants.AIDAS_METADATA_PROPERTY);
                     ProjectProperty result = projectPropertyRepository.save(projectProperty);
                     i++;
                 }
@@ -258,55 +262,26 @@ public class ProjectPropertyResource {
     /**
      * {@code POST  /aidas-project-property/dtos/update} : Create a new projectProperty.
      *
-     * @param projectPropertyDTOS the projectPropertyDto to create.
+     * @param projectPropertys the projectPropertyDto to create.
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new projectProperty, or with status {@code 400 (Bad Request)} if the projectProperty has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/aidas-project-property/dtos/update")
-    public ResponseEntity<String> updateAidasProjectProperties(@Valid @RequestBody List<ProjectPropertyDTO> projectPropertyDTOS)
+    public ResponseEntity<String> updateAidasProjectProperties(@Valid @RequestBody List<ProjectProperty> projectPropertys)
         throws URISyntaxException {
         int i=0;
         try {
-            for(ProjectPropertyDTO projectPropertyDTO : projectPropertyDTOS) {
-                Project project = projectRepository.getById(projectPropertyDTO.getAidasProjectId());
-                Property property = propertyRepository.getById(projectPropertyDTO.getAidasPropertyId());
-                ProjectProperty projectProperty = projectPropertyRepository.findByProjectAndProperty(project.getId(),property.getId());
-                if (projectProperty!=null) {
-                    projectProperty.setValue(projectPropertyDTO.getValue());
-                    i++;
-                } else {
-                    ProjectProperty projectProperty1 = new ProjectProperty();
-                    projectProperty1.setProject(project);
-                    projectProperty1.setProperty(property);
-                    projectProperty1.setValue(projectPropertyDTO.getValue());
-                    ProjectProperty result = projectPropertyRepository.save(projectProperty1);
-                    i++;
-                }
-                List<Object> objects = objectRepository.getAllObjectsOfProject(project.getId());
-                for(Object  object:objects){
-                    List<ObjectProperty> objectProperties = objectPropertyRepository.getAllObjectPropertyForObject(object.getId());
-                    for(ObjectProperty objectProperty:objectProperties){
-                        if (objectProperty!=null) {
-                            objectProperty.setValue(projectPropertyDTO.getValue());
-                        } else {
-                            ObjectProperty objectProperty1 = new ObjectProperty();
-                            objectProperty1.setObject(object);
-                            objectProperty1.setProperty(property);
-                            objectProperty1.setValue(projectPropertyDTO.getValue());
-                            ObjectProperty result = objectPropertyRepository.save(objectProperty1);
-                        }
-                    }
-                }
+            for(ProjectProperty projectProperty : projectPropertys) {
+                ProjectProperty projectProperty1 = projectPropertyRepository.getById(projectProperty.getId());
+                projectProperty1.setAddToMetadata(projectProperty.getAddToMetadata());
+                projectPropertyRepository.save(projectProperty1);
             }
         }
         catch(Exception e){
+            e.printStackTrace();
             throw new BadRequestAlertException(e.getMessage(), ENTITY_NAME, "idexists");
         }
-        if(i== projectPropertyDTOS.size()){
-            return ResponseEntity.ok().body("All project property created");
-        }else{
-            return ResponseEntity.ok().body("Some project property not created");
-        }
+        return ResponseEntity.ok().body("All project property created");
     }
 
     /**

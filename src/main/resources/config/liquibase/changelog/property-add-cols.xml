@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.5.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+    <changeSet author="shiva (generated)" id="16575390874623-61">
+        <addColumn catalogName="ainnotateservice"
+                   schemaName= "ainnotateservice"
+                   tableName="property" >
+            <column name="show_to_vendor_user"
+                    type="INT"/>
+        </addColumn>
+        <addColumn catalogName="ainnotateservice"
+                   schemaName= "ainnotateservice"
+                   tableName="property_aud" >
+            <column name="show_to_vendor_user"
+                    type="INT"/>
+        </addColumn>
+
+        <addColumn catalogName="ainnotateservice"
+                   schemaName= "ainnotateservice"
+                   tableName="project_property" >
+            <column name="show_to_vendor_user"
+                    type="INT"/>
+        </addColumn>
+        <addColumn catalogName="ainnotateservice"
+                   schemaName= "ainnotateservice"
+                   tableName="project_property_aud" >
+            <column name="show_to_vendor_user"
+                    type="INT"/>
+        </addColumn>
+
+        <addColumn catalogName="ainnotateservice"
+                   schemaName= "ainnotateservice"
+                   tableName="object_property" >
+            <column name="show_to_vendor_user"
+                    type="INT"/>
+        </addColumn>
+        <addColumn catalogName="ainnotateservice"
+                   schemaName= "ainnotateservice"
+                   tableName="object_property_aud" >
+            <column name="show_to_vendor_user"
+                    type="INT"/>
+        </addColumn>
+
+
+
+
+
+
+
+        <addColumn catalogName="ainnotateservice"
+                   schemaName= "ainnotateservice"
+                   tableName="project_property" >
+            <column name="project_property_type"
+                    type="INT"/>
+        </addColumn>
+        <addColumn catalogName="ainnotateservice"
+                   schemaName= "ainnotateservice"
+                   tableName="project_property_aud" >
+            <column name="project_property_type"
+                    type="INT"/>
+        </addColumn>
+
+        <addColumn catalogName="ainnotateservice"
+                   schemaName= "ainnotateservice"
+                   tableName="object_property" >
+            <column name="object_property_type"
+                    type="INT"/>
+        </addColumn>
+        <addColumn catalogName="ainnotateservice"
+                   schemaName= "ainnotateservice"
+                   tableName="object_property_aud" >
+            <column name="object_property_type"
+                    type="INT"/>
+        </addColumn>
+    </changeSet>
+</databaseChangeLog>

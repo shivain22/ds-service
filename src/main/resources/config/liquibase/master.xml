@@ -23,4 +23,7 @@
     <include file="config/liquibase/changelog/customer-qc-mapping-batch-info.mysql.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/customer-qc-mapping-batch-info-add-cols.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/upload-current-qc-level-add-cols.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/property-add-cols.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/dummy-data-add.xml" relativeToChangelogFile="false"/>
+
 </databaseChangeLog>

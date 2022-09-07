@@ -328,8 +328,27 @@ public class UploadResource {
                 userVendorMappingObjectMappingRepository.save(uvmom);
                 userVendorMappingProjectMappingRepository.save(uvmpm);
                 for (Map.Entry < String, String> entry:uploadDto.getUploadMetadata().entrySet() ) {
+                    System.out.println(entry.getKey()+"=="+entry.getValue());
                     Property property = propertyRepository.getByNameAndUserIdAndCategory(entry.getKey().trim(),customer.getId(),project.getCategory().getId());
                     if(property!=null) {
+                        ProjectProperty projectProperty = projectPropertyRepository.findByProjectAndProperty(project.getId(), property.getId());
+                        ObjectProperty objectProperty = objectPropertyRepository.findByAidasObject_IdAndAidasProperty_Id(object.getId(), property.getId());
+                        if(projectProperty!=null){
+                            UploadMetaData uploadMetaData = new UploadMetaData();
+                            uploadMetaData.setUpload(upload);
+                            uploadMetaData.setProjectProperty(projectProperty);
+                            uploadMetaData.setValue(entry.getValue().toString());
+                            uploadMetaDataRepository.save(uploadMetaData);
+                        }
+                        if(objectProperty!=null){
+                            UploadMetaData uploadMetaData = new UploadMetaData();
+                            uploadMetaData.setUpload(upload);
+                            uploadMetaData.setObjectProperty(objectProperty);
+                            uploadMetaData.setValue(entry.getValue().toString());
+                            uploadMetaDataRepository.save(uploadMetaData);
+                        }
+                    }else{
+                        property = propertyRepository.getByNameAndUserIdAndCategory(entry.getKey().trim(),customer.getId(),1l);
                         ProjectProperty projectProperty = projectPropertyRepository.findByProjectAndProperty(project.getId(), property.getId());
                         ObjectProperty objectProperty = objectPropertyRepository.findByAidasObject_IdAndAidasProperty_Id(object.getId(), property.getId());
                         if(projectProperty!=null){
@@ -1017,11 +1036,10 @@ public class UploadResource {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         List<UploadsMetadataDTO> uploadsMetadataDTOList = new ArrayList<>();
             List<Upload> uploads = uploadRepository.findAllByUserAndProjectAllForMetadata(user.getId(),projectId);
-            UploadsMetadataDTO uploadsMetadataDTO = new UploadsMetadataDTO();
-            List<ProjectProperty> projectProperties = projectPropertyRepository.findAllAidasProjectPropertyForMetadata(projectId);
+            UploadsMetadataDTO uploadsMetadataDTO = null;
+            List<ProjectProperty> projectProperties = projectPropertyRepository.findAllMetaDataToBeFilledByVendorUser(projectId);
             for(Upload au : uploads) {
-                List<UploadMetaData> uploadMetaDatas = uploadMetaDataRepository.getAllUploadMetaDataForUpload(au.getId());
-                List<ObjectProperty> objectProperties = objectPropertyRepository.findAllUncommonAidasObjectPropertyForMetadata(au.getUserVendorMappingObjectMapping().getObject().getId(),projectId);
+                List<ObjectProperty> objectProperties = objectPropertyRepository.findAllMetaDataToBeFilledByVendorUser(au.getUserVendorMappingObjectMapping().getObject().getId(),projectId);
                 uploadsMetadataDTO = new UploadsMetadataDTO();
                 UploadDTO uploadDTO = new UploadDTO();
                 uploadDTO.setUploadId(au.getId());
@@ -1034,11 +1052,6 @@ public class UploadResource {
                     pp.setProjectPropertyId(p.getId());
                     pp.setName(p.getProperty().getName());
                     projectPropertyDTOS.add(pp);
-                    for(UploadMetaData um:uploadMetaDatas){
-                        if(um.getProjectProperty()!=null && um.getProjectProperty().getId().equals(p.getId())){
-                            pp.setValue(um.getValue());
-                        }
-                    }
                 }
                 uploadsMetadataDTO.setProjectProperties(projectPropertyDTOS);
                 List<ObjectPropertyDTO> objectPropertyDTOS = new ArrayList<>();
@@ -1047,11 +1060,6 @@ public class UploadResource {
                     oo.setObjectPropertyId(o.getId());
                     oo.setName(o.getProperty().getName());
                     objectPropertyDTOS.add(oo);
-                    for(UploadMetaData um:uploadMetaDatas){
-                        if(um.getObjectProperty()!=null && um.getObjectProperty().getId().equals(o.getId())){
-                            oo.setValue(um.getValue());
-                        }
-                    }
                 }
                 uploadsMetadataDTO.setObjectProperties(objectPropertyDTOS);
                 uploadsMetadataDTOList.add(uploadsMetadataDTO);
@@ -1223,7 +1231,7 @@ public class UploadResource {
             List<UploadMetadataDTO> uds = new LinkedList<>();
             List<UploadMetaData> umds = uploadMetaDataRepository.getAllUploadMetaDataForUpload(u.getId());
                 for (UploadMetaData umd : umds) {
-                    if (umd.getProjectProperty() != null && umd.getProjectProperty().getProperty() != null && umd.getProjectProperty().getProperty().getName() != null) {
+                    if (umd.getProjectProperty() != null && umd.getProjectProperty().getProperty() != null && umd.getProjectProperty().getProperty().getName() != null && umd.getProjectProperty().getAddToMetadata()!=null && umd.getProjectProperty().getAddToMetadata().equals(1) ) {
                         UploadMetadataDTO ud = new UploadMetadataDTO();
                         ud.setName(umd.getProjectProperty().getProperty().getName());
                         ud.setPropertyType(umd.getProjectProperty().getProperty().getPropertyType());
@@ -1233,7 +1241,7 @@ public class UploadResource {
                         }
                         u.getUploadMetaDatas().add(ud);
                     }
-                    else if (umd.getObjectProperty() != null && umd.getObjectProperty().getProperty() != null && umd.getObjectProperty().getProperty().getName() != null && umd.getValue() != null) {
+                    else if (umd.getObjectProperty() != null && umd.getObjectProperty().getProperty() != null && umd.getObjectProperty().getProperty().getName() != null && umd.getValue() != null && umd.getObjectProperty().getAddToMetadata()!=null && umd.getObjectProperty().getAddToMetadata().equals(1)) {
                         UploadMetadataDTO ud = new UploadMetadataDTO();
                         ud.setName(umd.getObjectProperty().getProperty().getName());
                         ud.setObjectPropertyId(umd.getObjectProperty().getId());

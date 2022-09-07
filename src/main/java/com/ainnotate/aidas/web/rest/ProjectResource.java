@@ -160,9 +160,11 @@ public class ProjectResource {
                     pp.setProperty(p);
                     pp.setValue(p.getValue());
                     pp.setOptional(p.getOptional());
-                    pp.setAddToMetadata(1);
+                    pp.setAddToMetadata(0);
                     pp.setPassedFromApp(0);
+                    pp.setShowToVendorUser(0);
                     pp.setStatus(1);
+                    pp.setProjectPropertyType(p.getPropertyType());
                     project.addAidasProjectProperty(pp);
                 }
             }
@@ -198,7 +200,9 @@ public class ProjectResource {
                             op.setValue(p.getValue());
                             op.setOptional(p.getOptional());
                             op.setAddToMetadata(0);
+                            op.setShowToVendorUser(0);
                             op.setPassedFromApp(0);
+                            op.setObjectPropertyType(p.getPropertyType());
                             op.setStatus(1);
                             obj.addAidasObjectProperty(op);
                         }
@@ -263,7 +267,7 @@ public class ProjectResource {
 
     @GetMapping("/downloadFile/{projectId}")
     public ResponseEntity<Resource> downloadFile(@PathVariable(value = "projectId", required = true) Long projectId) throws MalformedURLException {
-        String filename = "metadata_+"+projectId+".csv";
+        String filename = "metadata_"+projectId+".csv";
         List<UploadMetaData> uploadMetaDatas = uploadMetaDataRepository.getAllUploadMetaDataForProject(projectId);
         InputStreamResource file = new InputStreamResource(CSVHelper.uploadMetaDataToCsv(uploadMetaDatas));
         return ResponseEntity.ok()

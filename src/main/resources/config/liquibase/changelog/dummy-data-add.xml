@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.5.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+    <changeSet author="shiva (generated)" id="1649822751915-1291">
+        <loadData
+            file="config/liquibase/fake-data/authority.csv"
+            separator=";"
+            tableName="authority"
+            usePreparedStatements="true">
+            <column name="id" type="numeric"/>
+            <column name="name" type="string"/>
+        </loadData>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1649822751914-118">
+        <loadData
+            file="config/liquibase/fake-data/organisation.csv"
+            separator=";"
+            tableName="organisation"
+            usePreparedStatements="true">
+            <column name="id" type="numeric"/>
+            <column name="name" type="string"/>
+            <column name="description" type="string"/>
+        </loadData>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1649822751914-119">
+        <loadData
+            file="config/liquibase/fake-data/customer.csv"
+            separator=";"
+            tableName="customer"
+            usePreparedStatements="true">
+            <column name="id" type="numeric"/>
+            <column name="name" type="string"/>
+            <column name="description" type="string"/>
+            <column name="organisation_id" type="numeric"/>
+        </loadData>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1649822751914-122">
+        <loadData
+            file="config/liquibase/fake-data/vendor.csv"
+            separator=";"
+            tableName="vendor"
+            usePreparedStatements="true">
+            <column name="id" type="numeric"/>
+            <column name="name" type="string"/>
+            <column name="description" type="string"/>
+        </loadData>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1649822751914-130">
+        <loadData
+            file="config/liquibase/fake-data/user.csv"
+            separator=";"
+            tableName="user"
+            usePreparedStatements="true">
+            <column name="id" type="numeric"/>
+            <column name="first_name" type="string"/>
+            <column name="last_name" type="string"/>
+            <column name="email" type="string"/>
+            <column name="password" type="string"/>
+            <column name="login" type="string"/>
+            <column name="organisation_id" type="numeric"/>
+            <column name="customer_id" type="numeric"/>
+            <column name="vendor_id" type="numeric"/>
+            <column name="authority_id" type="numeric"/>
+        </loadData>
+    </changeSet>
+
+    <changeSet author="shiva (generated)" id="1649822751914-120">
+        <loadData
+            file="config/liquibase/fake-data/project.csv"
+            separator=";"
+            tableName="project"
+            usePreparedStatements="true">
+            <column name="id" type="numeric"/>
+            <column name="name" type="string"/>
+            <column name="description" type="string"/>
+            <column name="project_type" type="string"/>
+            <column name="customer_id" type="numeric"/>
+        </loadData>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1649822751914-121">
+        <loadData
+            file="config/liquibase/fake-data/object.csv"
+            separator=";"
+            tableName="object"
+            usePreparedStatements="true">
+            <column name="id" type="numeric"/>
+            <column name="name" type="string"/>
+            <column name="description" type="string"/>
+            <column name="number_of_uploads_required" type="numeric"/>
+            <column name="project_id" type="numeric"/>
+        </loadData>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1649822751914-134">
+        <loadData
+            file="config/liquibase/fake-data/category.csv"
+            separator=";"
+            tableName="category"
+            usePreparedStatements="true">
+            <column name="id" type="numeric"/>
+            <column name="name" type="string"/>
+        </loadData>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1649822751914-125">
+        <loadData
+            file="config/liquibase/fake-data/property.csv"
+            separator=";"
+            tableName="property"
+            usePreparedStatements="true">
+            <column name="id" type="numeric"/>
+            <column name="name" type="string"/>
+            <column name="value" type="string"/>
+            <column name="optional" type="boolean"/>
+            <column name="description" type="string"/>
+            <column name="default_prop" type="numeric"/>
+            <column name="user_id" type="numeric"/>
+            <column name="customer_id" type="numeric"/>
+            <column name="category_id" type="numeric"/>
+            <column name="show_to_vendor_user" type="numeric"/>
+        </loadData>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1649822751914-132">
+        <loadData
+            file="config/liquibase/fake-data/upload_reject_reasons.csv"
+            separator=";"
+            tableName="upload_reject_reason"
+            usePreparedStatements="true">
+            <column name="id" type="numeric"/>
+            <column name="reason" type="string"/>
+            <column name="description" type="string"/>
+        </loadData>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1649822751914-133">
+        <loadData
+            file="config/liquibase/fake-data/user_authority_mapping.csv"
+            separator=";"
+            tableName="user_authority_mapping"
+            usePreparedStatements="true">
+            <column name="id" type="numeric"/>
+            <column name="authority_id" type="numeric"/>
+            <column name="user_id" type="numeric"/>
+        </loadData>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1649822751914-135">
+        <loadData
+            file="config/liquibase/fake-data/app_properties.csv"
+            separator=";"
+            tableName="app_property"
+            usePreparedStatements="true">
+            <column name="id" type="numeric"/>
+            <column name="status" type="numeric"/>
+            <column name="name" type="string"/>
+            <column name="value" type="string"/>
+            <column name="organisation_id" type="numeric"/>
+            <column name="customer_id" type="numeric"/>
+            <column name="vendor_id" type="numeric"/>
+            <column name="user_id" type="numeric"/>
+        </loadData>
+    </changeSet>
+    <changeSet author="shiva (generated)" id="1649822751914-136">
+        <loadData
+            file="config/liquibase/fake-data/sub_category.csv"
+            separator=";"
+            tableName="sub_category"
+            usePreparedStatements="true">
+            <column name="id" type="numeric"/>
+            <column name="value" type="string"/>
+            <column name="status" type="numeric"/>
+            <column name="category_id" type="numeric"/>
+        </loadData>
+    </changeSet>
+</databaseChangeLog>

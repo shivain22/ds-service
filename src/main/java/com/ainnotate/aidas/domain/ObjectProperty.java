@@ -68,6 +68,27 @@ public class ObjectProperty extends AbstractAuditingEntity  implements Serializa
     @JoinColumn(name = "category_id", nullable = true, foreignKey = @ForeignKey(name="fk_object_property_category"))
     private Category category;
 
+    @Column(name="show_to_vendor_user")
+    private Integer showToVendorUser;
+
+    public Integer getShowToVendorUser() {
+        return showToVendorUser;
+    }
+    @Column(name="object_property_type")
+    private Integer objectPropertyType;
+
+    public Integer getObjectPropertyType() {
+        return objectPropertyType;
+    }
+
+    public void setObjectPropertyType(Integer objectPropertyType) {
+        this.objectPropertyType = objectPropertyType;
+    }
+
+    public void setShowToVendorUser(Integer showToVendorUser) {
+        this.showToVendorUser = showToVendorUser;
+    }
+
     public Category getCategory() {
         return category;
     }

@@ -59,6 +59,29 @@ public class ProjectProperty extends AbstractAuditingEntity  implements Serializ
     @JoinColumn(name = "category_id", nullable = true, foreignKey = @ForeignKey(name="fk_project_property_category"))
     private Category category;
 
+    public Integer getProjectPropertyType() {
+        return projectPropertyType;
+    }
+
+    public void setProjectPropertyType(Integer projectPropertyType) {
+        this.projectPropertyType = projectPropertyType;
+    }
+
+    @Column(name="project_property_type")
+    private Integer projectPropertyType;
+
+    public Integer getShowToVendorUser() {
+        return showToVendorUser;
+    }
+
+    public void setShowToVendorUser(Integer showToVendorUser) {
+        this.showToVendorUser = showToVendorUser;
+    }
+
+    @Column(name="show_to_vendor_user")
+    private Integer showToVendorUser;
+
+
     public Category getCategory() {
         return category;
     }

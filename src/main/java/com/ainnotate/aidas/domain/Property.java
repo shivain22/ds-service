@@ -69,6 +69,17 @@ public class Property extends AbstractAuditingEntity  implements Serializable {
     @Column(name="add_to_metadata")
     private Integer addToMetadata;
 
+    @Column(name="show_to_vendor_user")
+    private Integer showToVendorUser;
+
+    public Integer getShowToVendorUser() {
+        return showToVendorUser;
+    }
+
+    public void setShowToVendorUser(Integer showToVendorUser) {
+        this.showToVendorUser = showToVendorUser;
+    }
+
     @ManyToOne
     @JoinColumn(name = "category_id", nullable = true, foreignKey = @ForeignKey(name="fk_property_category"))
     private Category category;
