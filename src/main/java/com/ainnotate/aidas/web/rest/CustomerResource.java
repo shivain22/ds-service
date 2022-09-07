@@ -104,6 +104,7 @@ public class CustomerResource {
                 p.setStatus(property.getStatus());
                 p.setPropertyType(property.getPropertyType());
                 p.setCustomer(result);
+                p.setCategory(property.getCategory());
                 propertyRepository.save(p);
             }
 

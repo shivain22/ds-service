@@ -73,11 +73,11 @@ public class Property extends AbstractAuditingEntity  implements Serializable {
     @JoinColumn(name = "category_id", nullable = true, foreignKey = @ForeignKey(name="fk_property_category"))
     private Category category;
 
-    public Category getProjectCategory() {
+    public Category getCategory() {
         return category;
     }
 
-    public void setProjectCategory(Category category) {
+    public void setCategory(Category category) {
         this.category = category;
     }
 

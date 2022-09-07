@@ -1,5 +1,7 @@
 id;name;value;status
-1;image;Image;1
-2;video;Video;1
-3;both;Image & Video;1
-4;audio;Audio;1
+1;Common;Common;1
+2;image;Image;1
+3;video;Video;1
+4;both;Image & Video;1
+5;audio;Audio;1
+6;custom;Custom;1

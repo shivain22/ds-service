@@ -1431,7 +1431,7 @@
         <addUniqueConstraint columnNames="name, project_id" constraintName="uk_object_project_name" tableName="object"/>
     </changeSet>
     <changeSet author="shiva (generated)" id="1657539087460-71">
-        <addUniqueConstraint columnNames="property_id, object_id" constraintName="uk_object_property_object_property" tableName="object_property"/>
+        <addUniqueConstraint columnNames="property_id, object_id" constraintName="uk_object_id_property_id" tableName="object_property"/>
     </changeSet>
     <changeSet author="shiva (generated)" id="1657539087460-72">
         <addUniqueConstraint columnNames="user_organisation_mapping_id, project_id" constraintName="uk_oqpm_uomid_pid" tableName="organisation_qc_project_mapping"/>
@@ -1443,7 +1443,7 @@
         <addUniqueConstraint columnNames="property_id, project_id" constraintName="uk_project_property_object_property" tableName="project_property"/>
     </changeSet>
     <changeSet author="shiva (generated)" id="1657539087460-75">
-        <addUniqueConstraint columnNames="name, customer_id, user_id" constraintName="uk_property_cid_uid" tableName="property"/>
+        <addUniqueConstraint columnNames="name, customer_id, user_id, category_id" constraintName="uk_property_cid_uid" tableName="property"/>
     </changeSet>
     <changeSet author="shiva (generated)" id="1657539087460-76">
         <addUniqueConstraint columnNames="value, category_id" constraintName="uk_subcategory_category" tableName="sub_category"/>
@@ -2225,7 +2225,16 @@
             <column name="project_id" type="numeric"/>
         </loadData>
     </changeSet>
-
+    <changeSet author="shiva (generated)" id="1649822751914-134">
+        <loadData
+            file="config/liquibase/fake-data/category.csv"
+            separator=";"
+            tableName="category"
+            usePreparedStatements="true">
+            <column name="id" type="numeric"/>
+            <column name="name" type="string"/>
+        </loadData>
+    </changeSet>
     <changeSet author="shiva (generated)" id="1649822751914-125">
         <loadData
             file="config/liquibase/fake-data/property.csv"
@@ -2239,6 +2248,8 @@
             <column name="description" type="string"/>
             <column name="default_prop" type="numeric"/>
             <column name="user_id" type="numeric"/>
+            <column name="customer_id" type="numeric"/>
+            <column name="category_id" type="numeric"/>
         </loadData>
     </changeSet>
     <changeSet author="shiva (generated)" id="1649822751914-132">
@@ -2261,16 +2272,6 @@
             <column name="id" type="numeric"/>
             <column name="authority_id" type="numeric"/>
             <column name="user_id" type="numeric"/>
-        </loadData>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1649822751914-134">
-        <loadData
-            file="config/liquibase/fake-data/category.csv"
-            separator=";"
-            tableName="category"
-            usePreparedStatements="true">
-            <column name="id" type="numeric"/>
-            <column name="name" type="string"/>
         </loadData>
     </changeSet>
     <changeSet author="shiva (generated)" id="1649822751914-135">

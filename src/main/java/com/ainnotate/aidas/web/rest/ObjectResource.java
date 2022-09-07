@@ -124,36 +124,24 @@ public class ObjectResource {
         object.setDummy(0);
         object.setStatus(1);
 
-        if(object.getObjectProperties()!=null){
-            Property ap=null;
-            for(ObjectProperty aop: object.getObjectProperties()){
-                if(aop.getProperty()!=null && aop.getProperty().getId()!=null){
-                    ap = propertyRepository.getById(aop.getId());
-                    aop.setProperty(ap);
-                    aop.setObject(object);
-                }else{
-                    ap = propertyRepository.save(aop.getProperty());
-                    aop.setProperty(ap);
-                    aop.setObject(object);
-                }
-            }
-        }
-
-        List<Property> aidasProperties = propertyRepository.findAllDefaultProps();
-        for(Property ap:aidasProperties){
-            ObjectProperty app = new ObjectProperty();
-            app.setObject(object);
-            app.setProperty(ap);
-            app.setValue(ap.getValue());
-            app.setOptional(ap.getOptional());
-            object.addAidasObjectProperty(app);
-        }
         if(object.getBufferPercent()==null){
             object.setBufferPercent(20);
         }
         object.setNumberOfBufferedUploadsRequired(object.getNumberOfUploadsRequired()+(object.getNumberOfUploadsRequired()*(object.getBufferPercent()/100)));
         object.setTotalRequired(object.getNumberOfBufferedUploadsRequired());
         Object result = objectRepository.save(object);
+        List<Property> commonProperties = propertyRepository.findAllDefaultPropsOfCustomerAndCategory(object.getProject().getCustomer().getId(), 1l);
+        List<Property> categorySpecificProperties = propertyRepository.findAllDefaultPropsOfCustomerAndCategory(object.getProject().getCustomer().getId(), object.getProject().getCategory().getId());
+        commonProperties.addAll(categorySpecificProperties);
+        for(Property p:commonProperties){
+            ObjectProperty op = new ObjectProperty();
+            op.setObject(object);
+            op.setProperty(p);
+            op.setValue(p.getValue());
+            op.setOptional(p.getOptional());
+            object.addAidasObjectProperty(op);
+        }
+        result = objectRepository.save(object);
         Project p = projectRepository.getById(result.getProject().getId());
         p.setNumberOfBufferedUploadsdRequired(result.getNumberOfBufferedUploadsRequired());
         p.setNumberOfUploadsRequired(p.getNumberOfUploadsRequired()+result.getNumberOfUploadsRequired());

@@ -58,6 +58,10 @@ public class ProjectPropertyResource {
 
     @Autowired
     private PropertyRepository propertyRepository;
+
+    @Autowired
+    private CategoryRepository categoryRepository;
+
     private final ProjectPropertySearchRepository aidasProjectPropertySearchRepository;
 
     public ProjectPropertyResource(
@@ -184,7 +188,6 @@ public class ProjectPropertyResource {
         int i=0;
         try {
             for(ProperyProjectPropertyDTO properyProjectPropertyDTO : properyProjectPropertyDTOS) {
-
                 Project project = projectRepository.getById(properyProjectPropertyDTO.getAidasProjectId());
                 Property property = new Property();
                 if (project != null && property != null) {
@@ -196,6 +199,9 @@ public class ProjectPropertyResource {
                     property.setValue(properyProjectPropertyDTO.getValue());
                     property.setAddToMetadata(properyProjectPropertyDTO.getAddToMetadata());
                     property.setValue("Not yet filled");
+                    property.setCustomer(project.getCustomer());
+                    Category category = categoryRepository.getById(6l);
+                    property.setCategory(category);
                     property.setPropertyType(2);
                     property = propertyRepository.save(property);
                     ProjectProperty projectProperty = new ProjectProperty();
@@ -207,8 +213,6 @@ public class ProjectPropertyResource {
                     projectProperty.setValue(properyProjectPropertyDTO.getAidasProjectPropertyValue());
                     ProjectProperty result = projectPropertyRepository.save(projectProperty);
                     i++;
-                } else {
-                    //throw new BadRequestAlertException("Error occured when trying to map aidas property to project", ENTITY_NAME, "idexists");
                 }
             }
         }

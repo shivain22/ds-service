@@ -147,113 +147,117 @@ public class ProjectResource {
             }
         }
 
-        if(project.getProjectProperties()!=null){
-            Property ap=null;
-            for(ProjectProperty app: project.getProjectProperties()){
-                if(app.getProperty()!=null && app.getProperty().getId()!=null){
-                    ap = propertyRepository.getById(app.getId());
-                    app.setProperty(ap);
-                    app.setProject(project);
-                }else{
-                    ap = propertyRepository.save(app.getProperty());
-                    app.setProperty(ap);
-                    app.setProject(project);
+            Category category = categoryRepository.getById(project.getCategory().getId());
+            if(category!=null){
+                project.setCategory(category);
+                project.setProjectType(category.getName());
+                List<Property> commonProperties = propertyRepository.findAllDefaultPropsOfCustomerAndCategory(project.getCustomer().getId(),1l);
+                List<Property> categorySpecificProperties = propertyRepository.findAllDefaultPropsOfCustomerAndCategory(project.getCustomer().getId(),category.getId());
+                commonProperties.addAll(categorySpecificProperties);
+                for(Property p:commonProperties){
+                    ProjectProperty pp = new ProjectProperty();
+                    pp.setProject(project);
+                    pp.setProperty(p);
+                    pp.setValue(p.getValue());
+                    pp.setOptional(p.getOptional());
+                    pp.setAddToMetadata(1);
+                    pp.setPassedFromApp(0);
+                    pp.setStatus(1);
+                    project.addAidasProjectProperty(pp);
                 }
             }
-        }
-
-        List<Property> aidasProperties = propertyRepository.findAllDefaultPropsOfCustomer(project.getCustomer().getId());
-        for(Property ap:aidasProperties){
-            ProjectProperty app = new ProjectProperty();
-            app.setProject(project);
-            app.setProperty(ap);
-            app.setValue(ap.getValue());
-            app.setOptional(ap.getOptional());
-            app.setAddToMetadata(0);
-            app.setPassedFromApp(0);
-            app.setStatus(1);
-            project.addAidasProjectProperty(app);
-        }
-        if(project.getCategory()!=null && project.getCategory().getId()!=null){
-            Category c = categoryRepository.getById(project.getCategory().getId());
-            project.setProjectType(c.getName());
-            project.setCategory(c);
-        }
-
-        System.out.println(project.getQcLevelConfigurations().size());
-
-        Project result = projectRepository.save(project);
-
-
-        {
-            Object obj = new Object();
-            obj.setName(result.getName()+" - Dummy Object");
-            obj.setNumberOfUploadsRequired(0);
-            obj.setDescription("Dummy object for project "+result.getName());
-            obj.setProject(result);
-            obj.setBufferPercent(0);
-            obj.setDummy(1);
-            obj.setStatus(0);
-            for(Property ap:aidasProperties){
-                ObjectProperty opp = new ObjectProperty();
-                opp.setObject(obj);
-                opp.setProperty(ap);
-                opp.setValue(ap.getValue());
-                opp.setOptional(ap.getOptional());
-                opp.setAddToMetadata(0);
-                opp.setPassedFromApp(0);
-                opp.setStatus(1);
-                obj.addAidasObjectProperty(opp);
+            boolean isQcLevelConfigsAdded = false;
+            if(project.getQcLevelConfigurations()!=null){
+                if(project.getQcLevelConfigurations().size()>0) {
+                    for (QCLevelConfiguration qc : project.getQcLevelConfigurations()) {
+                        if(qc.getQcLevelAcceptancePercentage()!=null && qc.getQcLevelBatchSize()!=null){
+                            isQcLevelConfigsAdded = true;
+                        }
+                    }
+                }
             }
-            objectRepository.save(obj);
-            objectAddingTask.setDummy(true);
-            objectAddingTask.setObject(obj);
-            objectAddingTask.run();
-        }
-        List<Object> dynaObjects = new ArrayList<>();
-        if(result.getAutoCreateObjects()!=null && result.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)){
-            for(int i=0;i<result.getNumberOfObjects();i++){
-                Object obj = new Object();
-                String objName ="";
-                if(result.getObjectPrefix()!=null){
-                    objName=result.getObjectPrefix();
+            if(isQcLevelConfigsAdded) {
+                Project result = projectRepository.save(project);
+                {
+                    Object obj = new Object();
+                    obj.setName(result.getName() + " - Dummy Object");
+                    obj.setNumberOfUploadsRequired(0);
+                    obj.setDescription("Dummy object for project " + result.getName());
+                    obj.setProject(result);
+                    obj.setBufferPercent(0);
+                    obj.setDummy(1);
+                    obj.setStatus(0);
+                    if (project.getCategory() != null) {
+                        List<Property> commonProperties = propertyRepository.findAllDefaultPropsOfCustomerAndCategory(project.getCustomer().getId(), 1l);
+                        List<Property> categorySpecificProperties = propertyRepository.findAllDefaultPropsOfCustomerAndCategory(project.getCustomer().getId(), project.getCategory().getId());
+                        commonProperties.addAll(categorySpecificProperties);
+                        for (Property p : commonProperties) {
+                            ObjectProperty op = new ObjectProperty();
+                            op.setObject(obj);
+                            op.setProperty(p);
+                            op.setValue(p.getValue());
+                            op.setOptional(p.getOptional());
+                            op.setAddToMetadata(0);
+                            op.setPassedFromApp(0);
+                            op.setStatus(1);
+                            obj.addAidasObjectProperty(op);
+                        }
+                    }
+                    objectRepository.save(obj);
+                    objectAddingTask.setDummy(true);
+                    objectAddingTask.setObject(obj);
+                    objectAddingTask.run();
                 }
-                objName+=String.valueOf(i);
-                if(result.getObjectSuffix()!=null){
-                    objName=result.getObjectSuffix();
+                List<Object> dynaObjects = new ArrayList<>();
+                if (result.getAutoCreateObjects() != null && result.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)) {
+                    for (int i = 0; i < result.getNumberOfObjects(); i++) {
+                        Object obj = new Object();
+                        String objName = "";
+                        if (result.getObjectPrefix() != null) {
+                            objName = result.getObjectPrefix();
+                        }
+                        objName += String.valueOf(i);
+                        if (result.getObjectSuffix() != null) {
+                            objName = result.getObjectSuffix();
+                        }
+                        obj.setName(objName);
+                        obj.setNumberOfUploadsRequired(result.getNumberOfUploadsRequired());
+                        obj.setDescription(objName);
+                        obj.setProject(result);
+                        obj.setBufferPercent(result.getBufferPercent());
+                        obj.setDummy(0);
+                        obj.setStatus(1);
+                        obj.setNumberOfBufferedUploadsRequired(obj.getNumberOfUploadsRequired() + (obj.getNumberOfUploadsRequired() * (obj.getBufferPercent() / 100)));
+                        if (project.getCategory() != null) {
+                            List<Property> commonProperties = propertyRepository.findAllDefaultPropsOfCustomerAndCategory(project.getCustomer().getId(), project.getCategory().getId());
+                            List<Property> categorySpecificProperties = propertyRepository.findAllDefaultPropsOfCustomerAndCategory(project.getCustomer().getId(), project.getCategory().getId());
+                            commonProperties.addAll(categorySpecificProperties);
+                            for (Property p : commonProperties) {
+                                ObjectProperty op = new ObjectProperty();
+                                op.setObject(obj);
+                                op.setProperty(p);
+                                op.setValue(p.getValue());
+                                op.setOptional(p.getOptional());
+                                op.setAddToMetadata(0);
+                                op.setPassedFromApp(0);
+                                op.setStatus(1);
+                                obj.addAidasObjectProperty(op);
+                            }
+                        }
+                        Object resultObj = objectRepository.save(obj);
+                        dynaObjects.add(resultObj);
+                    }
+                    objectAddingTask.setDummy(false);
+                    objectAddingTask.setDynamicObjects(dynaObjects);
+                    objectAddingTask.runBulkObjects();
                 }
-                obj.setName(objName);
-                obj.setNumberOfUploadsRequired(result.getNumberOfUploadsRequired());
-                obj.setDescription(objName);
-                obj.setProject(result);
-
-                obj.setBufferPercent(result.getBufferPercent());
-                obj.setDummy(0);
-                obj.setStatus(1);
-                obj.setNumberOfBufferedUploadsRequired(obj.getNumberOfUploadsRequired()+(obj.getNumberOfUploadsRequired()*(obj.getBufferPercent()/100)));
-                for(Property ap:aidasProperties){
-                    ObjectProperty opp = new ObjectProperty();
-                    opp.setObject(obj);
-                    opp.setProperty(ap);
-                    opp.setValue(ap.getValue());
-                    opp.setOptional(ap.getOptional());
-                    opp.setAddToMetadata(0);
-                    opp.setPassedFromApp(0);
-                    opp.setStatus(1);
-                    obj.addAidasObjectProperty(opp);
-                }
-                Object resultObj = objectRepository.save(obj);
-                dynaObjects.add(resultObj);
+                return ResponseEntity
+                    .created(new URI("/api/aidas-projects/" + result.getId()))
+                    .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
+                    .body(result);
+            }else{
+                throw new BadRequestAlertException("Qc Level configurations are required ", ENTITY_NAME, "idexists");
             }
-            objectAddingTask.setDummy(false);
-            objectAddingTask.setDynamicObjects(dynaObjects);
-            objectAddingTask.runBulkObjects();
-        }
-
-        return ResponseEntity
-            .created(new URI("/api/aidas-projects/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
-            .body(result);
     }
 
 

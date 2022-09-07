@@ -58,7 +58,7 @@ public class CategoryResource {
     @GetMapping("/aidas-category")
     public ResponseEntity<List<Category>> getAllAidasCategories() {
         log.debug("REST request to get a list of AidasAuthorities");
-        List<Category> categories = categoryRepository.findAll();
+        List<Category> categories = categoryRepository.findAllCategories();
         return ResponseEntity.ok().body(categories);
     }
 
@@ -70,7 +70,7 @@ public class CategoryResource {
     @GetMapping("/aidas-category/dropdown")
     public ResponseEntity<List<Category>> getAllAidasCategoriesDropdown() {
         log.debug("REST request to get a list of AidasAuthorities");
-        List<Category> categories = categoryRepository.findAll();
+        List<Category> categories = categoryRepository.findAllCategories();
         return ResponseEntity.ok().body(categories);
     }
 

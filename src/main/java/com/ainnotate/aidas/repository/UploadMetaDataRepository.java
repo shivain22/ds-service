@@ -26,8 +26,18 @@ public interface UploadMetaDataRepository extends JpaRepository<UploadMetaData, 
     @Query(value="select * from upload_meta_data where upload_id=?",nativeQuery = true)
     List<UploadMetaData> getAllUploadMetaDataForUpload(Long uploadId);
 
+    @Query(value="select project_property_id from upload_meta_data where upload_id=? and project_property_id is not null",nativeQuery = true)
+    List<Long> getAllProjectPropertyIdsOfUploadMetaDataForUpload(Long uploadId);
+
+
+    @Query(value="select object_property_id from upload_meta_data where upload_id=? and object_property_id is not null",nativeQuery = true)
+    List<Long> getAllObjectPropertyIdsOfUploadMetaDataForUpload(Long uploadId);
+
+
     @Query(value="select * from upload_meta_data umd, upload u, user_vendor_mapping_object_mapping uvmom, object o  where umd.upload_id=u.id and u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and o.project_id=?1",nativeQuery = true)
     List<UploadMetaData> getAllUploadMetaDataForProject(Long projectId);
+
+
 
 
 

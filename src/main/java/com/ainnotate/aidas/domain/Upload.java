@@ -124,49 +124,15 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
         this.qcBatchInfo = qcBatchInfo;
     }
 
+    @Transient
+    @JsonProperty
+    public List<UploadMetadataDTO> uploadMetaDatas=new ArrayList<>();
+
+    public void setUploadMetaDatas(List<UploadMetadataDTO> uploadMetadatas){
+        this.uploadMetaDatas= uploadMetadatas;
+    }
     public List<UploadMetadataDTO> getUploadMetaDatas(){
-        List<UploadMetadataDTO> uds = new LinkedList<>();
-        if(this.uploadMetaDataSet!=null){
-            UploadMetadataDTO ud1  = new UploadMetadataDTO();
-            if(this.userVendorMappingObjectMapping!=null) {
-                if(this.getUserVendorMappingObjectMapping().getObject()!=null) {
-                    ud1.setValue(this.userVendorMappingObjectMapping.getObject().getName());
-                    ud1.setName("Object Name");
-                    uds.add(ud1);
-                }
-            }
-            for(UploadMetaData u:uploadMetaDataSet){
-                if(u.getProjectProperty()!=null && u.getProjectProperty().getProperty()!=null && u.getProjectProperty().getProperty().getName()!=null ){
-                    UploadMetadataDTO ud = new UploadMetadataDTO();
-                    ud.setName(u.getProjectProperty().getProperty().getName());
-                    ud.setPropertyType(u.getProjectProperty().getProperty().getPropertyType());
-                    ud.setProjectPropertyId(u.getProjectProperty().getId());
-                    if(u.getValue()!=null) {
-                        ud.setValue(u.getValue());
-                    }
-                    uds.add(ud);
-                }else if(u.getObjectProperty()!=null && u.getObjectProperty().getProperty()!=null && u.getObjectProperty().getProperty().getName()!=null  && u.getValue()!=null){
-                    UploadMetadataDTO ud = new UploadMetadataDTO();
-                    ud.setName(u.getObjectProperty().getProperty().getName());
-                    ud.setObjectPropertyId(u.getObjectProperty().getId());
-                    ud.setPropertyType(u.getObjectProperty().getProperty().getPropertyType());
-                    if(u.getValue()!=null) {
-                        ud.setValue(u.getValue());
-                    }
-                    uds.add(ud);
-                }
-            }
-            HashMap<String,UploadMetadataDTO> singleMap = new HashMap<>();
-            for(UploadMetadataDTO umdd:uds){
-                singleMap.put(umdd.getName(),umdd);
-            }
-            uds = new ArrayList<>();
-            for(Map.Entry<String,UploadMetadataDTO> entry:singleMap.entrySet()){
-                uds.add(entry.getValue());
-            }
-            uds.sort((o1, o2)-> o1.getName().compareTo(o2.getName()));
-        }
-        return uds;
+        return this.uploadMetaDatas;
     }
 
     public Upload getReworkAidasUpload() {
