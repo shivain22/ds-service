@@ -61,4 +61,4 @@ id;name;value;property_type;optional;description;default_prop;user_id;customer_i
 60;audioBitsPerSample;16;1;true;Audio Bits Per Sample;1;-1;-1;5;0;0
 61;audioChannels;1;1;true;Audio Channels;1;-1;-1;5;0;0
 62;numberOfParticipants;128kbps;1;true;Number of Participants;1;-1;-1;5;0;0
-63;audioDuration;Unlimited;1;true;Audio Duration;1;-1;-1;5;0;0
+63;audioDuration;-1;1;true;Audio Duration;1;-1;-1;5;0;0
