@@ -218,11 +218,11 @@ public class ProjectResource {
                         Object obj = new Object();
                         String objName = "";
                         if (result.getObjectPrefix() != null) {
-                            objName = result.getObjectPrefix();
+                            objName += result.getObjectPrefix()+"_";
                         }
                         objName += String.valueOf(i);
                         if (result.getObjectSuffix() != null) {
-                            objName = result.getObjectSuffix();
+                            objName += "_"+result.getObjectSuffix();
                         }
                         obj.setName(objName);
                         obj.setNumberOfUploadsRequired(result.getNumberOfUploadsRequired());
@@ -233,7 +233,7 @@ public class ProjectResource {
                         obj.setStatus(1);
                         obj.setNumberOfBufferedUploadsRequired(obj.getNumberOfUploadsRequired() + (obj.getNumberOfUploadsRequired() * (obj.getBufferPercent() / 100)));
                         if (project.getCategory() != null) {
-                            List<Property> commonProperties = propertyRepository.findAllDefaultPropsOfCustomerAndCategory(project.getCustomer().getId(), project.getCategory().getId());
+                            List<Property> commonProperties = propertyRepository.findAllDefaultPropsOfCustomerAndCategory(project.getCustomer().getId(), 1l);
                             List<Property> categorySpecificProperties = propertyRepository.findAllDefaultPropsOfCustomerAndCategory(project.getCustomer().getId(), project.getCategory().getId());
                             commonProperties.addAll(categorySpecificProperties);
                             for (Property p : commonProperties) {
