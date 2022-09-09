@@ -11,6 +11,15 @@ public class UploadMetadataDTO {
     private Long objectPropertyId;
     private Boolean projectProperty;
     private Integer propertyType;
+    private Boolean failed=true;
+
+    public Boolean getFailed() {
+        return failed;
+    }
+
+    public void setFailed(Boolean failed) {
+        this.failed = failed;
+    }
 
     public Integer getPropertyType() {
         return propertyType;

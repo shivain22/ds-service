@@ -82,7 +82,7 @@ spring:
       discovery:
         enabled: true
   keycloak:
-    server-url: https://auth.ainnotate.com/auth
+    server-url: https://auth-staging.ainnotate.com/auth
     realm: master
     client-id: admin-cli
     client-secret:

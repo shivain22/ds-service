@@ -12,6 +12,8 @@ import com.ainnotate.aidas.service.DownloadUploadS3;
 import com.ainnotate.aidas.service.ObjectAddingTask;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -217,11 +219,11 @@ public class ProjectResource {
                     for (int i = 0; i < result.getNumberOfObjects(); i++) {
                         Object obj = new Object();
                         String objName = "";
-                        if (result.getObjectPrefix() != null) {
+                        if (result.getObjectPrefix() != null && result.getObjectPrefix().trim().length()>0) {
                             objName += result.getObjectPrefix()+"_";
                         }
                         objName += String.valueOf(i);
-                        if (result.getObjectSuffix() != null) {
+                        if (result.getObjectSuffix() != null && result.getObjectSuffix().trim().length()>0) {
                             objName += "_"+result.getObjectSuffix();
                         }
                         obj.setName(objName);
@@ -268,12 +270,37 @@ public class ProjectResource {
     @GetMapping("/downloadFile/{projectId}")
     public ResponseEntity<Resource> downloadFile(@PathVariable(value = "projectId", required = true) Long projectId) throws MalformedURLException {
         String filename = "metadata_"+projectId+".csv";
+        Integer colCount = projectRepository.getTotalPropertyCountForExport(projectId);
         List<UploadMetaData> uploadMetaDatas = uploadMetaDataRepository.getAllUploadMetaDataForProject(projectId);
-        InputStreamResource file = new InputStreamResource(CSVHelper.uploadMetaDataToCsv(uploadMetaDatas));
-        return ResponseEntity.ok()
-            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
-            .contentType(MediaType.parseMediaType("application/octet-stream"))
-            .body(file);
+        List<List<String>> csvDatas = new LinkedList<>();
+        csvDatas.add(projectRepository.getTotalPropertyNamesForExport(projectId));
+        if(uploadMetaDatas.size()%colCount==0){
+            int i=0;
+            List<String> csvData = null;
+            for(UploadMetaData umd:uploadMetaDatas){
+                if(i%colCount==0){
+                    if(csvData!=null)
+                        csvDatas.add(csvData);
+                    csvData = new ArrayList<>();
+                    csvData.add(umd.getValue());
+                }
+                csvData.add(umd.getValue());
+                i++;
+            }
+            csvDatas.add(csvData);
+        }
+        try {
+            String fileName = CSVHelper.uploadMetaDataToCsv(csvDatas, projectId);
+            File file = new File(fileName);
+            InputStreamResource file1 = new InputStreamResource(new FileInputStream(file));
+            return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
+                .contentType(MediaType.parseMediaType("application/octet-stream"))
+                .contentLength(file.length())
+                .body(file1);
+        }catch(Exception e){
+            throw new BadRequestAlertException("Unable to generate file ", ENTITY_NAME, "idexists");
+        }
     }
 
 

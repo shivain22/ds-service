@@ -10,6 +10,7 @@ import com.ainnotate.aidas.repository.search.ProjectPropertySearchRepository;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -62,6 +63,12 @@ public class ProjectPropertyResource {
 
     @Autowired
     private CategoryRepository categoryRepository;
+
+    @Autowired
+    private UploadRepository uploadRepository;
+
+    @Autowired
+    private UploadMetaDataRepository uploadMetaDataRepository;
 
     private final ProjectPropertySearchRepository aidasProjectPropertySearchRepository;
 
@@ -217,6 +224,17 @@ public class ProjectPropertyResource {
                     projectProperty.setProjectPropertyType(AidasConstants.AIDAS_METADATA_PROPERTY);
                     ProjectProperty result = projectPropertyRepository.save(projectProperty);
                     i++;
+
+                    List<Upload> uploads = uploadRepository.findAllUploadByProject(project.getId());
+                    List<UploadMetaData> umds = new ArrayList<>();
+                    for(Upload upload:uploads){
+                        UploadMetaData umd = new UploadMetaData();
+                        umd.setProjectProperty(projectProperty);
+                        umd.setUpload(upload);
+                        umd.setValue(" ");
+                        umds.add(umd);
+                    }
+                    uploadMetaDataRepository.saveAll(umds);
                 }
             }
         }
@@ -274,6 +292,7 @@ public class ProjectPropertyResource {
             for(ProjectProperty projectProperty : projectPropertys) {
                 ProjectProperty projectProperty1 = projectPropertyRepository.getById(projectProperty.getId());
                 projectProperty1.setAddToMetadata(projectProperty.getAddToMetadata());
+                projectProperty1.setValue(projectProperty.getValue());
                 projectPropertyRepository.save(projectProperty1);
             }
         }

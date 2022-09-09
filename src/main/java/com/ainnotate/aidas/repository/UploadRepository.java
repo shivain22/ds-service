@@ -168,6 +168,9 @@ public interface UploadRepository extends JpaRepository<Upload, Long> {
     @Query(value = "delete from upload where is_sample_data=1 order by id desc",nativeQuery = true)
     void deleteAllSampleUploads();
 
+    @Query(value="select u.* from upload u, user_vendor_mapping_object_mapping uvmom, object o where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and o.project_id=?1",nativeQuery = true)
+    List<Upload> findAllUploadByProject(Long projectId);
+
 
 
 }

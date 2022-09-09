@@ -23,7 +23,7 @@ public interface ProjectPropertyRepository extends JpaRepository<ProjectProperty
     @Query(value = "select * from project_property app where app.project_id>?1",nativeQuery = true)
     List<ProjectProperty> findAllByAidasProjectIdGreaterThanForDropDown(Long projectId);
 
-    @Query(value="select * from project_property pp,property p where pp.project_id=?1 and pp.property_id=p.id and pp.project_property_type=2 and pp.show_to_vendor_user=1",nativeQuery = true)
+    @Query(value="select * from project_property pp where pp.project_id=?1 and pp.project_property_type=2 and pp.show_to_vendor_user=1",nativeQuery = true)
     List<ProjectProperty> findAllMetaDataToBeFilledByVendorUser(Long projectId);
 
     @Query(value = "select * from project_property pp where pp.project_id=?1 and pp.property_id=?2",nativeQuery = true)
@@ -38,6 +38,8 @@ public interface ProjectPropertyRepository extends JpaRepository<ProjectProperty
     @Modifying
     @Query(value = "delete from project_property where is_sample_data=1 order by id desc",nativeQuery = true)
     void deleteAllSampleProjectProperty();
+
+
 
 
 }

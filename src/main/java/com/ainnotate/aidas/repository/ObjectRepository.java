@@ -184,5 +184,8 @@ public interface ObjectRepository extends JpaRepository<Object, Long> {
     @Query(value = "select * from object where is_dummy=1 and project_id=?1",nativeQuery = true)
     Object getDummyObjectOfProject(Long projectId);
 
+    @Query(value = "select * from object_property op where op.object_id=?1 and op.add_to_metadata=1 ",nativeQuery = true)
+    List<Long> findAllObjectPropertyForExport(Long projectId);
+
     Object getObjectByName(String name);
 }

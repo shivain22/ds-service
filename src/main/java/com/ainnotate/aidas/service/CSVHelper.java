@@ -57,21 +57,25 @@ public class CSVHelper {
         }
     }
 
-    public static ByteArrayInputStream uploadMetaDataToCsv(List<UploadMetaData> uploadMetaDatas) {
+    public static String uploadMetaDataToCsv(List<List<String>> uploadMetaDatas,Long projectId) {
         final CSVFormat format = CSVFormat.DEFAULT.withQuoteMode(QuoteMode.MINIMAL);
         try (ByteArrayOutputStream out = new ByteArrayOutputStream();
              CSVPrinter csvPrinter = new CSVPrinter(new PrintWriter(out), format);) {
-            for (UploadMetaData uploadMetaData : uploadMetaDatas) {
-                List<String> data = Arrays.asList(
-                    String.valueOf(uploadMetaData.getId()),
-                    uploadMetaData.getProjectProperty()!=null ? uploadMetaData.getProjectProperty().getProperty().getName():"",
-                    uploadMetaData.getObjectProperty()!=null ? uploadMetaData.getObjectProperty().getProperty().getName():"",
-                    uploadMetaData.getValue()
-                );
-                csvPrinter.printRecord(data);
+            for (List<String> uploadMetaData : uploadMetaDatas) {
+                csvPrinter.printRecord(uploadMetaData);
             }
             csvPrinter.flush();
-            return new ByteArrayInputStream(out.toByteArray());
+            FileOutputStream fos = null;
+            String fileName = System.getProperty("java.io.tmpdir")+"/"+projectId+"_metadata.csv";
+            try {
+                fos = new FileOutputStream(new File(fileName));
+                out.writeTo(fos);
+            } catch(IOException ioe) {
+                ioe.printStackTrace();
+            } finally {
+                fos.close();
+            }
+            return fileName;
         } catch (IOException e) {
             throw new RuntimeException("fail to import data to CSV file: " + e.getMessage());
         }

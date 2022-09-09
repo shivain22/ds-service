@@ -103,4 +103,18 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     @Query(value = "delete from project where is_sample_data=1 order by id desc",nativeQuery = true)
     void deleteAllSampleProjects();
 
+    @Query(value="select count(*) from\n" +
+        "(" +
+        "select pp.* from project_property pp where pp.project_id=?1 and pp.add_to_metadata=1 " +
+        " union " +
+        " select op.* from object_property op, object o where op.object_id=o.id and o.project_id=?1 and op.add_to_metadata=1 and op.property_id not in (select property_id from project_property where project_id=?1)" +
+        ")a",nativeQuery = true)
+    Integer getTotalPropertyCountForExport(Long projectId);
+
+    @Query(value="select a.name from (select p.id,p.name from project_property pp,property p where pp.property_id=p.id and pp.project_id=?1 and pp.add_to_metadata=1 " +
+        " union " +
+        " select p.id,p.name from object_property op,property p, object o where op.property_id=p.id and op.object_id=o.id and o.project_id=?1 and op.add_to_metadata=1 and op.property_id not in (select property_id from project_property where project_id=?1)) a order by a.id"
+        ,nativeQuery = true)
+    List<String> getTotalPropertyNamesForExport(Long projectId);
+
 }

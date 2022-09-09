@@ -27,8 +27,8 @@ public interface ObjectPropertyRepository extends JpaRepository<ObjectProperty, 
     @Query(value="select * from object_property aop,property ap where aop.object_id=?1 and aop.property_id=ap.id and ap.property_type=2",nativeQuery = true)
     List<ObjectProperty> findAllAidasObjectPropertyForMetadata(Long objectId);
 
-    @Query(value = "select aop.* from object_property aop,property ap1 where aop.object_id=?1 and aop.property_id=ap1.id and aop.object_property_type=2 and aop.show_to_vendor_user=1 and aop.property_id not in (select property_id from project_property where project_id=?2) ",nativeQuery = true)
-    List<ObjectProperty> findAllMetaDataToBeFilledByVendorUser(Long objectId, Long projectId);
+    @Query(value = "select op.* from object_property op where op.object_id=?1 and op.object_property_type=2 and op.show_to_vendor_user=1 ",nativeQuery = true)
+    List<ObjectProperty> findAllMetaDataToBeFilledByVendorUser(Long objectId);
 
     @Query(value = "select count(*) from object_property aop where aop.object_id=?1 and aop.property_id not in (select property_id from project_property where project_id=?2) and aop.optional=1",nativeQuery = true)
     Long findAllUncommonMandatoryAidasObjectPropertyForMetadata(Long aidasObjectId, Long aidasProjectId);
