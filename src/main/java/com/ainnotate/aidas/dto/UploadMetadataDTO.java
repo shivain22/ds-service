@@ -13,6 +13,23 @@ public class UploadMetadataDTO {
     private Integer propertyType;
     private Boolean failed=true;
 
+    private String projectName;
+    private String objectName;
+
+    public UploadMetadataDTO(){
+
+    }
+
+
+    public UploadMetadataDTO(String projectName, String objectName, Long uploadId, String value, Long projectPropertyId, Long objectPropertyId){
+            this.projectName = projectName;
+            this.objectName = objectName;
+            this.uploadId  = uploadId;
+            this.value = value;
+            this.projectPropertyId = projectPropertyId;
+            this.objectPropertyId = objectPropertyId;
+    }
+
     public Boolean getFailed() {
         return failed;
     }

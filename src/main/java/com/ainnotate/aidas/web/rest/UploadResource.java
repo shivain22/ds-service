@@ -324,8 +324,8 @@ public class UploadResource {
                     System.out.println(entry.getKey()+"=="+entry.getValue());
                     Property property = propertyRepository.getByNameAndUserIdAndCategory(entry.getKey().trim(),customer.getId(),project.getCategory().getId());
                     UploadMetaData umdpp = uploadMetaDataRepository.getUploadMetaDataByProjectPropertyName(result.getId(),entry.getKey());
-                    UploadMetaData umdop = uploadMetaDataRepository.getUploadMetaDataByProjectPropertyName(result.getId(),entry.getKey());
-                        if(umdpp!=null){
+                    UploadMetaData umdop = uploadMetaDataRepository.getUploadMetaDataByObjectPropertyName(result.getId(),entry.getKey());
+                        if(umdpp!=null ){
                             umdpp.setValue(entry.getValue().toString());
                             uploadMetaDataRepository.save(umdpp);
                         }

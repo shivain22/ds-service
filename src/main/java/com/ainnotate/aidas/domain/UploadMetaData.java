@@ -1,5 +1,7 @@
 package com.ainnotate.aidas.domain;
 
+import com.ainnotate.aidas.dto.ProjectDTO;
+import com.ainnotate.aidas.dto.UploadMetadataDTO;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.io.Serializable;
@@ -7,6 +9,7 @@ import javax.persistence.*;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.envers.Audited;
+import org.springframework.data.jpa.repository.Query;
 
 /**
  * A AidasUploadMetaData.
@@ -22,6 +25,60 @@ import org.hibernate.envers.Audited;
     })
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @org.springframework.data.elasticsearch.annotations.Document(indexName = "uploadmetadata")
+@NamedNativeQuery(name = "UploadMetaData.getAllUploadMetaDataForProject",query="select id," +
+    "        projectName," +
+    "        objectName," +
+    "        upload_id as uploadId," +
+    "        value," +
+    "        object_property_id as objectPropertyId," +
+    "        project_property_id as projectPropertyId" +
+    "        from (select umd.*,p.id as prop_id,o.name as objectName, p.name as projectName " +
+    "from " +
+    "upload_meta_data umd, " +
+    "upload u, " +
+    "user_vendor_mapping_object_mapping uvmom, " +
+    "object o," +
+    "project_property pp," +
+    "property p," +
+    "project pr " +
+    " where " +
+    "umd.upload_id=u.id and " +
+    "u.user_vendor_mapping_object_mapping_id=uvmom.id and " +
+    "uvmom.object_id=o.id and " +
+    "umd.project_property_id=pp.id and" +
+    " pp.add_to_metadata=1 and" +
+    " o.project_id=?1  and o.project_id=pr.id and" +
+    " pp.property_id=p.id" +
+    " union " +
+    "select umd.*,p.id as prop_id,o.name as objectName, p.name as projectName " +
+    "from " +
+    "upload_meta_data umd, " +
+    "upload u, " +
+    "user_vendor_mapping_object_mapping uvmom, " +
+    "object o," +
+    "object_property op," +
+    "property p," +
+    "project pr " +
+    " where " +
+    "umd.upload_id=u.id and " +
+    "u.user_vendor_mapping_object_mapping_id=uvmom.id and " +
+    "uvmom.object_id=o.id and " +
+    " op.add_to_metadata=1 and " +
+    " op.property_id=p.id and " +
+    "umd.object_property_id=op.id and" +
+    " op.property_id not in (select property_id from project_property where project_id=?1) and" +
+    " o.project_id=?1 and o.project_id=pr.id) umd order by umd.upload_id, umd.prop_id",resultSetMapping = "Mapping.UploadMetaDataDTO")
+
+@SqlResultSetMapping(name = "Mapping.UploadMetaDataDTO",
+    classes = @ConstructorResult(targetClass = UploadMetadataDTO.class,
+        columns = {
+            @ColumnResult(name = "projectName",type = String.class),
+            @ColumnResult(name = "objectName",type = String.class),
+            @ColumnResult(name = "uploadId",type = Long.class),
+            @ColumnResult(name = "value",type = String.class),
+            @ColumnResult(name = "projectPropertyId",type = Long.class),
+            @ColumnResult(name = "objectPropertyId",type = Long.class)
+        }))
 @Audited
 public class UploadMetaData extends AbstractAuditingEntity  implements Serializable {
 

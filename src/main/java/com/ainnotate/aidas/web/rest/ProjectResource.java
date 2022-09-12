@@ -234,6 +234,7 @@ public class ProjectResource {
                         obj.setDummy(0);
                         obj.setStatus(1);
                         obj.setNumberOfBufferedUploadsRequired(obj.getNumberOfUploadsRequired() + (obj.getNumberOfUploadsRequired() * (obj.getBufferPercent() / 100)));
+                        obj.setTotalRequired(result.getNumberOfUploadsRequired());
                         if (project.getCategory() != null) {
                             List<Property> commonProperties = propertyRepository.findAllDefaultPropsOfCustomerAndCategory(project.getCustomer().getId(), 1l);
                             List<Property> categorySpecificProperties = propertyRepository.findAllDefaultPropsOfCustomerAndCategory(project.getCustomer().getId(), project.getCategory().getId());
@@ -256,7 +257,11 @@ public class ProjectResource {
                     objectAddingTask.setDummy(false);
                     objectAddingTask.setDynamicObjects(dynaObjects);
                     objectAddingTask.runBulkObjects();
+                    //
                 }
+                project.setNumberOfBufferedUploadsdRequired(project.getNumberOfUploadsRequired()*project.getNumberOfObjects());
+                project.setNumberOfUploadsRequired(project.getNumberOfUploadsRequired()*project.getNumberOfObjects());
+                project.setTotalRequired(project.getNumberOfUploadsRequired()*project.getNumberOfObjects());
                 return ResponseEntity
                     .created(new URI("/api/aidas-projects/" + result.getId()))
                     .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
@@ -282,7 +287,7 @@ public class ProjectResource {
                     if(csvData!=null)
                         csvDatas.add(csvData);
                     csvData = new ArrayList<>();
-                    csvData.add(umd.getValue());
+                    //csvData.add(umd.getValue());
                 }
                 csvData.add(umd.getValue());
                 i++;

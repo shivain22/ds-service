@@ -105,6 +105,8 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
         "where uvm.user_id=?1 and uvm.status=1 and uvmpm.status=1",
     resultSetMapping = "Mapping.ProjectDTO")
 
+
+
 @NamedNativeQuery(name = "Project.findProjectWithUploadCountByUser.count",
     query ="select  \n" +
         "count(p.id) as count  \n" +

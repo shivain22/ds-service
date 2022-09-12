@@ -294,6 +294,16 @@ public class ProjectPropertyResource {
                 projectProperty1.setAddToMetadata(projectProperty.getAddToMetadata());
                 projectProperty1.setValue(projectProperty.getValue());
                 projectPropertyRepository.save(projectProperty1);
+                List<Object> objects = objectRepository.getAllObjectsOfProject(projectProperty1.getProject().getId());
+                for(Object object:objects) {
+                    List<ObjectProperty> objectProperties = objectPropertyRepository.getAllObjectPropertyForObject(object.getId());
+                    for(ObjectProperty objectProperty:objectProperties){
+                        if(objectProperty.getProperty().getId().equals(projectProperty1.getProperty().getId())){
+                            objectProperty.setValue(projectProperty.getValue());
+                            objectPropertyRepository.save(objectProperty);
+                        }
+                    }
+                }
             }
         }
         catch(Exception e){
