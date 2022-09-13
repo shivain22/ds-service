@@ -2,6 +2,7 @@ package com.ainnotate.aidas.repository;
 
 import com.ainnotate.aidas.domain.Organisation;
 import com.ainnotate.aidas.domain.UploadMetaData;
+import com.ainnotate.aidas.dto.UploadMetadataDTO;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,7 +37,8 @@ public interface UploadMetaDataRepository extends JpaRepository<UploadMetaData, 
 
 
 
-    List<UploadMetaData> getAllUploadMetaDataForProject(Long projectId);
+    @Query(nativeQuery = true)
+    List<UploadMetadataDTO> getAllUploadMetaDataForProject(Long projectId);
 
 
     @Query(value="select * from upload_meta_data umd,project_property pp,property p where umd.upload_id=?1 and umd.project_property_id=pp.id and pp.property_id=p.id and p.name=?2 ",nativeQuery = true)

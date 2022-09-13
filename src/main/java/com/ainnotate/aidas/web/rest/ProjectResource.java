@@ -233,7 +233,8 @@ public class ProjectResource {
                         obj.setBufferPercent(result.getBufferPercent());
                         obj.setDummy(0);
                         obj.setStatus(1);
-                        obj.setNumberOfBufferedUploadsRequired(obj.getNumberOfUploadsRequired() + (obj.getNumberOfUploadsRequired() * (obj.getBufferPercent() / 100)));
+                        Float bufferedRequired = obj.getBufferPercent().floatValue()/100f * obj.getNumberOfUploadsRequired();
+                        obj.setNumberOfBufferedUploadsRequired(obj.getNumberOfUploadsRequired() + bufferedRequired.intValue());
                         obj.setTotalRequired(result.getNumberOfUploadsRequired());
                         if (project.getCategory() != null) {
                             List<Property> commonProperties = propertyRepository.findAllDefaultPropsOfCustomerAndCategory(project.getCustomer().getId(), 1l);
@@ -259,9 +260,10 @@ public class ProjectResource {
                     objectAddingTask.runBulkObjects();
                     //
                 }
-                project.setNumberOfBufferedUploadsdRequired(project.getNumberOfUploadsRequired()*project.getNumberOfObjects());
-                project.setNumberOfUploadsRequired(project.getNumberOfUploadsRequired()*project.getNumberOfObjects());
                 project.setTotalRequired(project.getNumberOfUploadsRequired()*project.getNumberOfObjects());
+                Float bufferedRequired = project.getBufferPercent().floatValue()/100f * project.getTotalRequired();
+                project.setNumberOfBufferedUploadsdRequired(project.getNumberOfUploadsRequired()+bufferedRequired.intValue());
+                project.setNumberOfUploadsRequired(project.getNumberOfUploadsRequired()*project.getNumberOfObjects());
                 return ResponseEntity
                     .created(new URI("/api/aidas-projects/" + result.getId()))
                     .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
@@ -276,18 +278,17 @@ public class ProjectResource {
     public ResponseEntity<Resource> downloadFile(@PathVariable(value = "projectId", required = true) Long projectId) throws MalformedURLException {
         String filename = "metadata_"+projectId+".csv";
         Integer colCount = projectRepository.getTotalPropertyCountForExport(projectId);
-        List<UploadMetaData> uploadMetaDatas = uploadMetaDataRepository.getAllUploadMetaDataForProject(projectId);
+        List<UploadMetadataDTO> uploadMetaDatas = uploadMetaDataRepository.getAllUploadMetaDataForProject(projectId);
         List<List<String>> csvDatas = new LinkedList<>();
         csvDatas.add(projectRepository.getTotalPropertyNamesForExport(projectId));
         if(uploadMetaDatas.size()%colCount==0){
             int i=0;
             List<String> csvData = null;
-            for(UploadMetaData umd:uploadMetaDatas){
+            for(UploadMetadataDTO umd:uploadMetaDatas){
                 if(i%colCount==0){
                     if(csvData!=null)
                         csvDatas.add(csvData);
                     csvData = new ArrayList<>();
-                    //csvData.add(umd.getValue());
                 }
                 csvData.add(umd.getValue());
                 i++;

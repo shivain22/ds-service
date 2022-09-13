@@ -21,7 +21,7 @@ public class UploadMetadataDTO {
     }
 
 
-    public UploadMetadataDTO(String projectName, String objectName, Long uploadId, String value, Long projectPropertyId, Long objectPropertyId){
+    public UploadMetadataDTO(Long id,String projectName, String objectName, Long uploadId, String value, Long projectPropertyId, Long objectPropertyId){
             this.projectName = projectName;
             this.objectName = objectName;
             this.uploadId  = uploadId;

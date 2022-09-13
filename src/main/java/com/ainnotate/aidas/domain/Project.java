@@ -296,7 +296,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 
 @NamedNativeQuery(
     name = "Project.findProjectsForCustomerQC",
-    query="select p.* from project p, customer_qc_project_mapping cqpm, user_customer_mapping ucm where cqpm.user_customer_mapping_id=ucm.id and ucm.user_id=? and cqpm.project_id=p.id and p.status=1 and cqpm.status=1 and ucm.status=1 and p.id>0 order by p.id desc",
+    query="select distinct p.* from project p, customer_qc_project_mapping cqpm, user_customer_mapping ucm where cqpm.user_customer_mapping_id=ucm.id and ucm.user_id=?1 and cqpm.project_id=p.id and p.status=1 and cqpm.status=1 and ucm.status=1 and p.id>0 order by p.id desc",
     resultSetMapping = "Mapping.findProjectsForCustomerQC"
 )
 

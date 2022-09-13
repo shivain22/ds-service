@@ -140,6 +140,9 @@ public interface UploadRepository extends JpaRepository<Upload, Long> {
     @Query(value="select u.* from upload u, user_vendor_mapping_object_mapping uvmom, object o where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and o.project_id=?1 and u.qc_done_by_id is null and u.qc_start_date is null and u.qc_end_date is null  and ( u.qc_status is null or u.qc_status=2 ) and  u.metadata_status=1 and u.current_qc_level=?2 limit ?3 ",nativeQuery = true)
     List<Upload> findTopByQcNotDoneYetForQcLevel(Long projectId,Integer qcLevel, Integer batchSize);
 
+    @Query(value="select u.* from upload u, user_vendor_mapping_object_mapping uvmom, object o where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and o.project_id=?1 and  u.metadata_status=1 and u.current_qc_level=?2 limit ?3 ",nativeQuery = true)
+    List<Upload> findTopByQcNotDoneYetForQcLevelGreaterThan1(Long projectId,Integer qcLevel, Integer batchSize);
+
     @Query(value="select count(u.id) from upload u, user_vendor_mapping_object_mapping uvmom, object o where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and o.project_id=?1 and u.qc_status=1 and  u.current_qc_level=?2 ",nativeQuery = true)
     Integer getTotalApprovedForLevel(Long projectId,Integer qcLevel);
 

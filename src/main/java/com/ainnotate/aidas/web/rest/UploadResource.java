@@ -637,7 +637,7 @@ public class UploadResource {
         Integer totalApprovedAndAvailableForNextLevel = uploadRepository.getTotalApprovedForLevel(project.getId(), cqpm.getQcLevel() + 1);
         Integer batchSize = 10;
         Integer currentQcLevelAcceptancePercentage = 50;
-        Integer currentQcLevelReviewRequired =0;
+        Float currentQcLevelReviewRequired =0f;
         if(project.getQcLevels()!=null && project.getQcLevels()>1) {
 
             if (project != null && project.getQcLevelConfigurations() != null) {
@@ -648,14 +648,14 @@ public class UploadResource {
                     }
                 }
             }
-            currentQcLevelReviewRequired = (currentQcLevelAcceptancePercentage / 100) * totalApprovedAndAvailableForCurrentLevel;
+            currentQcLevelReviewRequired = (currentQcLevelAcceptancePercentage.floatValue() / 100f) * totalApprovedAndAvailableForCurrentLevel;
         }
 
         if(cqpm!=null) {
             if(project.getQcLevels().equals(cqpm.getQcLevel())) {
                 upload.setStatus(AidasConstants.AIDAS_UPLOAD_APPROVED);
                 upload.setApprovalStatus(AidasConstants.AIDAS_UPLOAD_APPROVED);
-            }else if(project.getQcLevels()<cqpm.getQcLevel()){
+            }else if(cqpm.getQcLevel()<project.getQcLevels()){
                 upload.setCurrentQcLevel(cqpm.getQcLevel()+1);
             }
             upload.setQcDoneBy(cqpm);
@@ -665,7 +665,7 @@ public class UploadResource {
                 ucqpmbi.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_APPROVED);
             }
         }
-        if(totalApprovedAndAvailableForNextLevel-currentQcLevelReviewRequired <0){
+        if(totalApprovedAndAvailableForNextLevel-currentQcLevelReviewRequired <=0){
             List<Upload> remainingUploads = uploadRepository.getApprovedUploadForLevel(project.getId(),cqpm.getQcLevel());
             for(Upload upload1:remainingUploads){
                 UploadCustomerQcProjectMappingBatchInfo ucqpmbi1 =  uploadCustomerQcProjectMappingBatchInfoRepository.getUploadIdByCustomerQcProjectMappingAndBatchNumber(customerQcProjectMappingId,cqpm.getCurrentQcBatchNo(),upload1.getId());
@@ -1147,10 +1147,11 @@ public class UploadResource {
                 }
             }
         }
-        Integer currentQcLevelReviewRequired = (currentQcLevelAcceptancePercentage / 100) * totalApprovedAndAvailableForCurrentLevel;
+
+        Float currentQcLevelReviewRequired = (currentQcLevelAcceptancePercentage.floatValue() / 100f) * totalApprovedAndAvailableForCurrentLevel;
 
         List<Upload> uploads = new ArrayList<>();
-        if(qcLevel.equals(1) || currentQcLevelReviewRequired>0){
+        if(qcLevel.equals(1) || currentQcLevelReviewRequired.intValue()>0){
             if (pendingInBatch != null && pendingInBatch > 0) {
                 System.out.println("Inside pending in batch condition....");
                 List<Long> uploadsByBatch = uploadCustomerQcProjectMappingBatchInfoRepository.getUploadIdByCustomerQcProjectMappingAndBatchNumber(customerQcProjectMappingId, currentQcBatchNo);
@@ -1168,7 +1169,14 @@ public class UploadResource {
             } else {
                 System.out.println("Inside getting new set of uploads for qc " + projectId + ",qc level =" + qcLevel);
                 System.out.println("BatchSize: " + batchSize);
-                uploads = uploadRepository.findTopByQcNotDoneYetForQcLevel(projectId, cqpm.getQcLevel(), batchSize);
+                if(cqpm.getQcLevel().equals(1)) {
+                    uploads = uploadRepository.findTopByQcNotDoneYetForQcLevel(projectId, cqpm.getQcLevel(), batchSize);
+                }else{
+                    if(currentQcLevelReviewRequired.intValue()<batchSize)
+                        uploads = uploadRepository.findTopByQcNotDoneYetForQcLevelGreaterThan1(projectId, cqpm.getQcLevel(), currentQcLevelReviewRequired.intValue());
+                    else
+                        uploads = uploadRepository.findTopByQcNotDoneYetForQcLevelGreaterThan1(projectId, cqpm.getQcLevel(), batchSize);
+                }
                 currentQcBatchNo = currentQcBatchNo + 1;
                 if (cqpm != null) {
                     for (Upload upload : uploads) {

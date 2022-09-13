@@ -72,6 +72,7 @@ import org.springframework.data.jpa.repository.Query;
 @SqlResultSetMapping(name = "Mapping.UploadMetaDataDTO",
     classes = @ConstructorResult(targetClass = UploadMetadataDTO.class,
         columns = {
+            @ColumnResult(name = "id",type = Long.class),
             @ColumnResult(name = "projectName",type = String.class),
             @ColumnResult(name = "objectName",type = String.class),
             @ColumnResult(name = "uploadId",type = Long.class),
