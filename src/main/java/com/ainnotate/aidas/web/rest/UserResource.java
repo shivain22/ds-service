@@ -294,6 +294,7 @@ public class UserResource {
                 }
             }
         }catch(Exception e){
+            e.printStackTrace();
             throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
         }
     }

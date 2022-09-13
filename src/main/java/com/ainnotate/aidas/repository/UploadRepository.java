@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Spring Data SQL repository for the AidasUpload entity.
@@ -137,7 +138,7 @@ public interface UploadRepository extends JpaRepository<Upload, Long> {
     @Query(value="select u.* from upload u, user_vendor_mapping_object_mapping uvmom, object o where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and o.project_id=?1 and u.qc_done_by_id is null and u.qc_start_date is null and u.qc_end_date is null  and ( u.qc_status is null or u.qc_status=2 ) and  u.metadata_status=1  limit 10",nativeQuery = true)
     List<Upload> findTopByQcNotDoneYetForQcLevel(Long projectId, Integer qcLevel);
 
-    @Query(value="select u.* from upload u, user_vendor_mapping_object_mapping uvmom, object o where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and o.project_id=?1 and u.qc_done_by_id is null and u.qc_start_date is null and u.qc_end_date is null  and ( u.qc_status is null or u.qc_status=2 ) and  u.metadata_status=1 and u.current_qc_level=?2 limit ?3 ",nativeQuery = true)
+    @Query(value="select u.* from upload u, user_vendor_mapping_object_mapping uvmom, object o where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and o.project_id=?1 and u.qc_done_by_id is null and u.qc_start_date is null and u.qc_end_date is null  and ( u.qc_status is null or u.qc_status=2 ) and  u.metadata_status=1 and u.current_qc_level=?2 order by uvmom.id, o.id limit ?3 ",nativeQuery = true)
     List<Upload> findTopByQcNotDoneYetForQcLevel(Long projectId,Integer qcLevel, Integer batchSize);
 
     @Query(value="select u.* from upload u, user_vendor_mapping_object_mapping uvmom, object o where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and o.project_id=?1 and  u.metadata_status=1 and u.current_qc_level=?2 limit ?3 ",nativeQuery = true)
@@ -147,7 +148,7 @@ public interface UploadRepository extends JpaRepository<Upload, Long> {
     Integer getTotalApprovedForLevel(Long projectId,Integer qcLevel);
 
     @Query(value="select u.* from upload u, user_vendor_mapping_object_mapping uvmom, object o where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and o.project_id=?1 and u.qc_status=1 and  u.current_qc_level=?2 ",nativeQuery = true)
-    List<Upload> getApprovedUploadForLevel(Long projectId,Integer qcLevel);
+    Set<Upload> getApprovedUploadForLevel(Long projectId, Integer qcLevel);
 
     @Query(value="select u.* from upload u where u.id in (?1)", nativeQuery = true)
     List<Upload> getUploadsByIds(List<Long> uploadIds);

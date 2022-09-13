@@ -326,7 +326,7 @@ public class DownloadUploadS3  implements  Runnable{
                     }
                     System.out.println("Finished uploading the zip file.....");
                     Download download = new Download();
-                    download.setName(this.zipFile);
+                    download.setName(this.zipFileKey);
                     download.setAwsKey(globalDownloadAccessKey);
                     if(url!=null) {
                         download.setUploadUrl(url.toString());
@@ -334,7 +334,7 @@ public class DownloadUploadS3  implements  Runnable{
                     download.setAwsSecret(globalDownloadAccessSecret);
                     download.setBucketName(globalDownloadBucketName);
                     download.setRegion(globalDownloadRegion);
-                    download.setObjectKey(this.zipFile);
+                    download.setObjectKey(this.zipFileKey);
                     download.setDateUploaded(Instant.now());
                     if (object != null) {
                         download.setObject(object);

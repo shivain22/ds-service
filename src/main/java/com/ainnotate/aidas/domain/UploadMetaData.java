@@ -25,14 +25,15 @@ import org.springframework.data.jpa.repository.Query;
     })
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @org.springframework.data.elasticsearch.annotations.Document(indexName = "uploadmetadata")
-@NamedNativeQuery(name = "UploadMetaData.getAllUploadMetaDataForProject",query="select id," +
+@NamedNativeQuery(name = "UploadMetaData.getAllUploadMetaDataForProject",
+    query=" select id as uploadMetaDataId," +
     "        projectName," +
     "        objectName," +
     "        upload_id as uploadId," +
     "        value," +
-    "        object_property_id as objectPropertyId," +
-    "        project_property_id as projectPropertyId" +
-    "        from (select umd.*,p.id as prop_id,o.name as objectName, p.name as projectName " +
+    "        project_property_id as projectPropertyId," +
+    "        object_property_id as objectPropertyId" +
+    "        from (select umd.*,p.id as prop_id,o.name as objectName, pr.name as projectName " +
     "from " +
     "upload_meta_data umd, " +
     "upload u, " +
@@ -50,7 +51,7 @@ import org.springframework.data.jpa.repository.Query;
     " o.project_id=?1  and o.project_id=pr.id and" +
     " pp.property_id=p.id" +
     " union " +
-    "select umd.*,p.id as prop_id,o.name as objectName, p.name as projectName " +
+    "select umd.*,p.id as prop_id,o.name as objectName, pr.name as projectName " +
     "from " +
     "upload_meta_data umd, " +
     "upload u, " +
@@ -69,10 +70,56 @@ import org.springframework.data.jpa.repository.Query;
     " op.property_id not in (select property_id from project_property where project_id=?1) and" +
     " o.project_id=?1 and o.project_id=pr.id) umd order by umd.upload_id, umd.prop_id",resultSetMapping = "Mapping.UploadMetaDataDTO")
 
+
+@NamedNativeQuery(name = "UploadMetaData.getAllUploadMetaDataForProjectWithStatus",
+    query=" select id as uploadMetaDataId," +
+        "        projectName," +
+        "        objectName," +
+        "        upload_id as uploadId," +
+        "        value," +
+        "        project_property_id as projectPropertyId," +
+        "        object_property_id as objectPropertyId" +
+        "        from (select umd.*,p.id as prop_id,o.name as objectName, pr.name as projectName " +
+        "from " +
+        "upload_meta_data umd, " +
+        "upload u, " +
+        "user_vendor_mapping_object_mapping uvmom, " +
+        "object o," +
+        "project_property pp," +
+        "property p," +
+        "project pr " +
+        " where " +
+        "umd.upload_id=u.id and " +
+        "u.user_vendor_mapping_object_mapping_id=uvmom.id and " +
+        "uvmom.object_id=o.id and " +
+        "umd.project_property_id=pp.id and" +
+        " pp.add_to_metadata=1 and" +
+        " o.project_id=?1  and o.project_id=pr.id and" +
+        " pp.property_id=p.id and u.approval_status=?2" +
+        " union " +
+        "select umd.*,p.id as prop_id,o.name as objectName, pr.name as projectName " +
+        "from " +
+        "upload_meta_data umd, " +
+        "upload u, " +
+        "user_vendor_mapping_object_mapping uvmom, " +
+        "object o," +
+        "object_property op," +
+        "property p," +
+        "project pr " +
+        " where " +
+        "umd.upload_id=u.id and " +
+        "u.user_vendor_mapping_object_mapping_id=uvmom.id and " +
+        "uvmom.object_id=o.id and " +
+        " op.add_to_metadata=1 and " +
+        " op.property_id=p.id and " +
+        "umd.object_property_id=op.id and" +
+        " op.property_id not in (select property_id from project_property where project_id=?1) and" +
+        " o.project_id=?1 and o.project_id=pr.id and u.approval_status=?2) umd order by umd.upload_id, umd.prop_id",resultSetMapping = "Mapping.UploadMetaDataDTO")
+
 @SqlResultSetMapping(name = "Mapping.UploadMetaDataDTO",
     classes = @ConstructorResult(targetClass = UploadMetadataDTO.class,
         columns = {
-            @ColumnResult(name = "id",type = Long.class),
+            @ColumnResult(name = "uploadMetaDataId",type = Long.class),
             @ColumnResult(name = "projectName",type = String.class),
             @ColumnResult(name = "objectName",type = String.class),
             @ColumnResult(name = "uploadId",type = Long.class),

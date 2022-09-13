@@ -111,6 +111,9 @@ public class ProjectResource {
     private CategoryRepository categoryRepository;
 
     @Autowired
+    private UploadCustomerQcProjectMappingBatchInfoRepository uploadCustomerQcProjectMappingBatchInfoRepository;
+
+    @Autowired
     private QCLevelConfigurationRepository qcLevelConfigurationRepository;
 
     public ProjectResource(ProjectRepository projectRepository, ProjectSearchRepository aidasProjectSearchRepository) {
@@ -233,9 +236,12 @@ public class ProjectResource {
                         obj.setBufferPercent(result.getBufferPercent());
                         obj.setDummy(0);
                         obj.setStatus(1);
-                        Float bufferedRequired = obj.getBufferPercent().floatValue()/100f * obj.getNumberOfUploadsRequired();
-                        obj.setNumberOfBufferedUploadsRequired(obj.getNumberOfUploadsRequired() + bufferedRequired.intValue());
-                        obj.setTotalRequired(result.getNumberOfUploadsRequired());
+
+                        int totalRequired = project.getNumberOfUploadsRequired();
+                        Float bufferedRequired = obj.getBufferPercent().floatValue()/100f * totalRequired;
+                        obj.setNumberOfBufferedUploadsRequired(totalRequired + bufferedRequired.intValue());
+                        obj.setTotalRequired(totalRequired + bufferedRequired.intValue());
+                        obj.setNumberOfUploadsRequired(totalRequired);
                         if (project.getCategory() != null) {
                             List<Property> commonProperties = propertyRepository.findAllDefaultPropsOfCustomerAndCategory(project.getCustomer().getId(), 1l);
                             List<Property> categorySpecificProperties = propertyRepository.findAllDefaultPropsOfCustomerAndCategory(project.getCustomer().getId(), project.getCategory().getId());
@@ -259,11 +265,15 @@ public class ProjectResource {
                     objectAddingTask.setDynamicObjects(dynaObjects);
                     objectAddingTask.runBulkObjects();
                     //
+                    int numOfUploadRequired = project.getNumberOfUploadsRequired();
+                    int numOfObjects = project.getNumberOfObjects();
+                    int totalRequired = numOfUploadRequired*numOfObjects;
+                    Float bufferedRequired = project.getBufferPercent().floatValue()/100f * totalRequired;
+                    project.setTotalRequired(totalRequired+bufferedRequired.intValue());
+                    project.setNumberOfBufferedUploadsdRequired(totalRequired+bufferedRequired.intValue());
+                    project.setNumberOfUploadsRequired(totalRequired);
                 }
-                project.setTotalRequired(project.getNumberOfUploadsRequired()*project.getNumberOfObjects());
-                Float bufferedRequired = project.getBufferPercent().floatValue()/100f * project.getTotalRequired();
-                project.setNumberOfBufferedUploadsdRequired(project.getNumberOfUploadsRequired()+bufferedRequired.intValue());
-                project.setNumberOfUploadsRequired(project.getNumberOfUploadsRequired()*project.getNumberOfObjects());
+
                 return ResponseEntity
                     .created(new URI("/api/aidas-projects/" + result.getId()))
                     .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
@@ -274,21 +284,83 @@ public class ProjectResource {
     }
 
 
-    @GetMapping("/downloadFile/{projectId}")
-    public ResponseEntity<Resource> downloadFile(@PathVariable(value = "projectId", required = true) Long projectId) throws MalformedURLException {
+    @GetMapping("/downloadFile/{projectId}/{approvalStatus}")
+    public ResponseEntity<Resource> downloadFile(@PathVariable(value = "projectId", required = true) Long projectId,@PathVariable(value="approvalStatus",required = false) String approvalStatus ) throws MalformedURLException {
+        int status=3;
+        if(approvalStatus==null ){
+            status=3;
+        }else if(approvalStatus.equals("approved")){
+            status =1;
+        }else if(approvalStatus.equals("rejected")){
+            status = 0;
+        }else if(approvalStatus.equals("all")){
+            status =3;
+        }
         String filename = "metadata_"+projectId+".csv";
         Integer colCount = projectRepository.getTotalPropertyCountForExport(projectId);
-        List<UploadMetadataDTO> uploadMetaDatas = uploadMetaDataRepository.getAllUploadMetaDataForProject(projectId);
+        List<UploadMetadataDTO> uploadMetaDatas;
+        if(status==3)
+            uploadMetaDatas = uploadMetaDataRepository.getAllUploadMetaDataForProject(projectId);
+        else
+            uploadMetaDatas = uploadMetaDataRepository.getAllUploadMetaDataForProjectWithStatus(projectId,status);
+
+        Project project = projectRepository.getById(projectId);
         List<List<String>> csvDatas = new LinkedList<>();
-        csvDatas.add(projectRepository.getTotalPropertyNamesForExport(projectId));
+        List<String> csvData = new LinkedList<>();
+        csvData.add("Sl No.");
+        csvData.add("Project Name");
+        csvData.add("Object Name");
+        csvData.add("Upload Id");
+        for(int q=1;q<=project.getQcLevels();q++){
+            csvData.add("QC Level "+q+" Done by");
+            csvData.add("QC Level "+q+" Status");
+            csvData.add("QC Level "+q+" Reject Reasons");
+        }
+        csvData.addAll(projectRepository.getTotalPropertyNamesForExport(projectId));
+        csvDatas.add(csvData);
         if(uploadMetaDatas.size()%colCount==0){
             int i=0;
-            List<String> csvData = null;
+            int slNo=1;
+            csvData = null;
             for(UploadMetadataDTO umd:uploadMetaDatas){
                 if(i%colCount==0){
                     if(csvData!=null)
                         csvDatas.add(csvData);
                     csvData = new ArrayList<>();
+                    csvData.add(String.valueOf(slNo));
+                    csvData.add(umd.getProjectName());
+                    csvData.add(umd.getObjectName());
+                    csvData.add(String.valueOf(umd.getUploadId()));
+                    Integer qcLevels = project.getQcLevels();
+                    for(int j=1;j<=qcLevels;j++){
+                        List<QcResultDTO> qcLevelStatus = uploadCustomerQcProjectMappingBatchInfoRepository.getQcLevelStatus(umd.getUploadId(),j);
+                        if(qcLevelStatus==null || (qcLevelStatus!=null && qcLevelStatus.size()==0)){
+                            csvData.add("QC Not Done Yet");
+                            csvData.add("Pending");
+                            csvData.add(" ");
+                        }else {
+                            for (QcResultDTO qcResultDTO : qcLevelStatus) {
+                                csvData.add(qcResultDTO.getFirstName() + " " + qcResultDTO.getLastName());
+                                if (qcResultDTO.getQcStatus().equals(0))
+                                    csvData.add("Rejected");
+                                if (qcResultDTO.getQcStatus().equals(1))
+                                    csvData.add("Approved");
+                                if (qcResultDTO.getQcStatus().equals(2))
+                                    csvData.add("Pending");
+                                if (qcResultDTO.getQcStatus() == 0) {
+                                    Upload upload = uploadRepository.getById(umd.getUploadId());
+                                    String rejectReasons ="";
+                                    for (UploadRejectReasonMapping urrm : upload.getUploadRejectMappings()) {
+                                        rejectReasons+=urrm.getUploadRejectReason().getReason() + ",";
+                                    }
+                                    csvData.add(rejectReasons.substring(0,rejectReasons.length()-1));
+                                } else {
+                                    csvData.add(" ");
+                                }
+                            }
+                        }
+                    }
+                    slNo++;
                 }
                 csvData.add(umd.getValue());
                 i++;

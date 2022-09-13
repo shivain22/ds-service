@@ -61,11 +61,11 @@ public class UploadRejectReasonMapping extends AbstractAuditingEntity  implement
         this.upload = upload;
     }
 
-    public UploadRejectReason getAidasUploadRejectReason() {
+    public UploadRejectReason getUploadRejectReason() {
         return uploadRejectReason;
     }
 
-    public void setAidasUploadRejectReason(UploadRejectReason uploadRejectReason) {
+    public void setUploadRejectReason(UploadRejectReason uploadRejectReason) {
         this.uploadRejectReason = uploadRejectReason;
     }
 

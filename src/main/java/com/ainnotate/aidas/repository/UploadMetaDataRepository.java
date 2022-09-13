@@ -39,7 +39,8 @@ public interface UploadMetaDataRepository extends JpaRepository<UploadMetaData, 
 
     @Query(nativeQuery = true)
     List<UploadMetadataDTO> getAllUploadMetaDataForProject(Long projectId);
-
+    @Query(nativeQuery = true)
+    List<UploadMetadataDTO> getAllUploadMetaDataForProjectWithStatus(Long projectId,Integer status);
 
     @Query(value="select * from upload_meta_data umd,project_property pp,property p where umd.upload_id=?1 and umd.project_property_id=pp.id and pp.property_id=p.id and p.name=?2 ",nativeQuery = true)
     UploadMetaData getUploadMetaDataByProjectPropertyName(Long uploadId, String propertyName);

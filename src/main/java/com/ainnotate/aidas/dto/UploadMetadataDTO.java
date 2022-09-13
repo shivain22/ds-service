@@ -16,6 +16,22 @@ public class UploadMetadataDTO {
     private String projectName;
     private String objectName;
 
+    public String getProjectName() {
+        return projectName;
+    }
+
+    public void setProjectName(String projectName) {
+        this.projectName = projectName;
+    }
+
+    public String getObjectName() {
+        return objectName;
+    }
+
+    public void setObjectName(String objectName) {
+        this.objectName = objectName;
+    }
+
     public UploadMetadataDTO(){
 
     }
