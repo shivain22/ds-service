@@ -662,6 +662,7 @@ public class UploadResource {
         Set<Upload> remainingUploads =new HashSet<>();
         HashMap<Long, Integer> oldQcStatus=new HashMap<>();
         oldQcStatus.put(upload.getId(),upload.getQcStatus());
+        boolean lastLevel = false;
         if(cqpm!=null && project.getQcLevels().equals(cqpm.getQcLevel())) {
             upload.setStatus(AidasConstants.AIDAS_UPLOAD_APPROVED);
             upload.setApprovalStatus(AidasConstants.AIDAS_UPLOAD_APPROVED);
@@ -677,6 +678,7 @@ public class UploadResource {
             }else{
                 remainingUploads.add(upload);
             }
+            lastLevel = true;
         }else if(cqpm!=null && cqpm.getQcLevel()<project.getQcLevels()){
             upload.setStatus(AidasConstants.AIDAS_UPLOAD_APPROVED);
             upload.setQcDoneBy(cqpm);
@@ -701,24 +703,26 @@ public class UploadResource {
             Project p = o.getProject();
             UserVendorMappingProjectMapping uvmpm = userVendorMappingProjectMappingRepository.findByUserVendorMappingIdProjectId(upload1.getUserVendorMappingObjectMapping().getUserVendorMapping().getId(), p.getId());
             uvmom = upload1.getUserVendorMappingObjectMapping();
-            if(oldQcStatus.get(upload1.getId()).equals(AidasConstants.AIDAS_UPLOAD_QC_PENDING)) {
-                o.setTotalApproved(o.getTotalApproved() + 1);
-                p.setTotalApproved(p.getTotalApproved() + 1);
-                uvmpm.setTotalApproved(uvmpm.getTotalApproved() + 1);
-                uvmom.setTotalApproved(uvmom.getTotalApproved() + 1);
-                uvmpm.setTotalPending(uvmpm.getTotalPending() - 1);
-                uvmom.setTotalPending(uvmom.getTotalPending() - 1);
-            }else if(oldQcStatus.get(upload1.getId()).equals(AidasConstants.AIDAS_UPLOAD_QC_REJECTED)){
-                o.setTotalApproved(o.getTotalApproved() + 1);
-                p.setTotalApproved(p.getTotalApproved()+1);
-                o.setTotalRequired(o.getTotalRequired() - 1);
-                p.setTotalRequired(p.getTotalRequired()-1);
-                uvmpm.setTotalApproved(uvmpm.getTotalApproved() + 1);
-                uvmom.setTotalApproved(uvmom.getTotalApproved() + 1);
-                o.setTotalRejected(o.getTotalRejected()-1);
-                p.setTotalRejected(p.getTotalRejected()-1);
-                uvmpm.setTotalRejected(uvmpm.getTotalRejected() - 1);
-                uvmom.setTotalRejected(uvmom.getTotalRejected() - 1);
+            if(lastLevel) {
+                if (oldQcStatus.get(upload1.getId()).equals(AidasConstants.AIDAS_UPLOAD_QC_PENDING)) {
+                    o.setTotalApproved(o.getTotalApproved() + 1);
+                    p.setTotalApproved(p.getTotalApproved() + 1);
+                    uvmpm.setTotalApproved(uvmpm.getTotalApproved() + 1);
+                    uvmom.setTotalApproved(uvmom.getTotalApproved() + 1);
+                    uvmpm.setTotalPending(uvmpm.getTotalPending() - 1);
+                    uvmom.setTotalPending(uvmom.getTotalPending() - 1);
+                } else if (oldQcStatus.get(upload1.getId()).equals(AidasConstants.AIDAS_UPLOAD_QC_REJECTED)) {
+                    o.setTotalApproved(o.getTotalApproved() + 1);
+                    p.setTotalApproved(p.getTotalApproved() + 1);
+                    o.setTotalRequired(o.getTotalRequired() - 1);
+                    p.setTotalRequired(p.getTotalRequired() - 1);
+                    uvmpm.setTotalApproved(uvmpm.getTotalApproved() + 1);
+                    uvmom.setTotalApproved(uvmom.getTotalApproved() + 1);
+                    o.setTotalRejected(o.getTotalRejected() - 1);
+                    p.setTotalRejected(p.getTotalRejected() - 1);
+                    uvmpm.setTotalRejected(uvmpm.getTotalRejected() - 1);
+                    uvmom.setTotalRejected(uvmom.getTotalRejected() - 1);
+                }
             }
             if (ucqpmbi != null) {
                 ucqpmbi.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_APPROVED);
@@ -786,10 +790,11 @@ public class UploadResource {
         CustomerQcProjectMapping cqpm = customerQcProjectMappingRepository.getById(customerQcProjectMappingId);
         UploadCustomerQcProjectMappingBatchInfo ucqpmbi =  uploadCustomerQcProjectMappingBatchInfoRepository.getUploadIdByCustomerQcProjectMappingAndBatchNumber(customerQcProjectMappingId,cqpm.getCurrentQcBatchNo(),upload.getId());
         ucqpmbi.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_REJECTED);
-        upload.setStatus(AidasConstants.AIDAS_UPLOAD_REJECTED);
+        upload.setApprovalStatus(AidasConstants.AIDAS_UPLOAD_REJECTED);
         upload.setQcEndDate(Instant.now());
         HashMap<Long, Integer> oldQcStatus=new HashMap<>();
         oldQcStatus.put(upload.getId(),upload.getQcStatus());
+        upload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_REJECTED);
         for(UploadRejectReason uploadRejectReason : uploadRejectReasons){
             UploadRejectReasonMapping uploadRejectReasonMapping = new UploadRejectReasonMapping();
             if(uploadRejectReason.getId()!=null){
