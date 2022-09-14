@@ -150,6 +150,9 @@ public interface UploadRepository extends JpaRepository<Upload, Long> {
     @Query(value="select u.* from upload u, user_vendor_mapping_object_mapping uvmom, object o where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and o.project_id=?1 and u.qc_status=1 and  u.current_qc_level=?2 ",nativeQuery = true)
     Set<Upload> getApprovedUploadForLevel(Long projectId, Integer qcLevel);
 
+    @Query(value="select u.* from upload u, user_vendor_mapping_object_mapping uvmom, object o where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and o.id=?2 and o.project_id=?1 and u.qc_status=1 and  u.current_qc_level=?3 ",nativeQuery = true)
+    Set<Upload> getApprovedUploadForLevel(Long projectId,Long objectId, Integer qcLevel);
+
     @Query(value="select u.* from upload u where u.id in (?1)", nativeQuery = true)
     List<Upload> getUploadsByIds(List<Long> uploadIds);
 

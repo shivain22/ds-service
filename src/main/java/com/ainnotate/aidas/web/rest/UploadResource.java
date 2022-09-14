@@ -669,7 +669,11 @@ public class UploadResource {
             upload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_APPROVED);
             upload.setQcEndDate(Instant.now());
             if(project.getQcLevels()>1  && totalApprovedAndAvailableForNextLevel-currentQcLevelReviewRequired.intValue() <=0){
-                remainingUploads = uploadRepository.getApprovedUploadForLevel(project.getId(),cqpm.getQcLevel());
+                if(project.getAutoCreateObjects().equals(1)){
+                    remainingUploads = uploadRepository.getApprovedUploadForLevel(project.getId(),upload.getUserVendorMappingObjectMapping().getObject().getId(), cqpm.getQcLevel());
+                }else {
+                    remainingUploads = uploadRepository.getApprovedUploadForLevel(project.getId(), cqpm.getQcLevel());
+                }
             }else{
                 remainingUploads.add(upload);
             }
@@ -692,6 +696,7 @@ public class UploadResource {
             upload1.setQcDoneBy(cqpm);
             upload1.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_APPROVED);
             upload1.setQcEndDate(Instant.now());
+            upload1.setCurrentQcLevel(cqpm.getQcLevel()+1);
             Object o = upload1.getUserVendorMappingObjectMapping().getObject();
             Project p = o.getProject();
             UserVendorMappingProjectMapping uvmpm = userVendorMappingProjectMappingRepository.findByUserVendorMappingIdProjectId(upload1.getUserVendorMappingObjectMapping().getUserVendorMapping().getId(), p.getId());
@@ -724,9 +729,8 @@ public class UploadResource {
             userVendorMappingObjectMappingRepository.save(uvmom);
             uploadRepository.save(upload1);
             if(ucqpmbi1!=null) {
-                ucqpmbi1.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_APPROVED);
+                uploadCustomerQcProjectMappingBatchInfoRepository.save(ucqpmbi1);
             }
-            uploadCustomerQcProjectMappingBatchInfoRepository.save(ucqpmbi1);
         }
         if(ucqpmbi!=null){
             uploadCustomerQcProjectMappingBatchInfoRepository.save(ucqpmbi);

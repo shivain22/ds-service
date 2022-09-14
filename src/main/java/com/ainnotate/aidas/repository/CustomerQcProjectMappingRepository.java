@@ -25,7 +25,7 @@ public interface CustomerQcProjectMappingRepository extends JpaRepository<Custom
     CustomerQcProjectMapping getQcProjectMappingByProjectAndCustomerAndUserAndLevel(Long projectId,Long userCustomerMappingId, Integer qcLevel);
 
     @Query(value = "select * from customer_qc_project_mapping cqpm,  user_customer_mapping ucm where " +
-        "cqpm.project_id=?1 and cqpm.user_customer_mapping_id = ucm.id and ucm.customer_id=?2 and ucm.user_id=?3 order by cqpm.qc_level asc",nativeQuery = true)
+        "cqpm.project_id=?1 and cqpm.user_customer_mapping_id = ucm.id and ucm.customer_id=?2 and ucm.user_id=?3 and cqpm.status=1 order by cqpm.qc_level asc ",nativeQuery = true)
     List<CustomerQcProjectMapping> getQcProjectMappingByProjectAndCustomerAndUser(Long projectId, Long customerId, Long userId);
 
 

@@ -42,7 +42,7 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     @Query(value="select p.* from project p, object o,  user_vendor_mapping_object_mapping uvmom,user_vendor_mapping uvm  where  uvmom.object_id=o.id and o.project_id=p.id and uvmom.user_vendor_mapping_id=uvm.id and uvm.user_id =?1 and p.id>-1  and p.status=1 group by p.id ",nativeQuery = true)
     List<Project> findAllProjectsByVendorUserList(Long userId);
 
-    @Query(value="select p.* from project p, object o,  user_vendor_mapping_object_mapping uvmom,user_vendor_mapping uvm ,user u where  uvmom.object_id=o.id and o.project_id=p.id and uvmom.user_vendor_mapping_id=uvm.id and uvm.vendor_id= ?1   and p.status=1 ",nativeQuery = true)
+    @Query(value="select distinct p.* from user_vendor_mapping_object_mapping uvmom, user_vendor_mapping uvm, object o, project p where uvmom.user_vendor_mapping_id=uvm.id and uvm.vendor_id=?1 and uvmom.object_id=o.id and o.project_id=p.id;",nativeQuery = true)
     Page<Project> findAllProjectsByVendorAdmin(Pageable page, Long vendorId);
 
     @Query(nativeQuery = true)
