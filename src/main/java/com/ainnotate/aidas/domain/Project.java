@@ -1,5 +1,6 @@
 package com.ainnotate.aidas.domain;
 
+import com.ainnotate.aidas.constants.AidasConstants;
 import com.ainnotate.aidas.dto.ProjectDTO;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.io.Serializable;
@@ -102,7 +103,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
         "project p\n" +
         "left join user_vendor_mapping_project_mapping uvmpm on p.id=uvmpm.project_id\n" +
         "left join user_vendor_mapping uvm on uvm.id=uvmpm.user_vendor_mapping_id \n" +
-        "where p.status=1 and uvm.user_id=?1 and uvm.status=1 and uvmpm.status=1",
+        "where p.status=1 and uvm.user_id=?1 and uvm.status=1 and uvmpm.status=1 order by p.id desc",
     resultSetMapping = "Mapping.ProjectDTO")
 
 
@@ -114,7 +115,50 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
         "project p\n" +
         "left join user_vendor_mapping_project_mapping uvmpm on p.id=uvmpm.project_id\n" +
         "left join user_vendor_mapping uvm on uvm.id=uvmpm.user_vendor_mapping_id \n" +
-        "where p.status=1 and uvm.user_id=?1 and uvm.status=1 and uvmpm.status=1",resultSetMapping = "Mapping.findProjectWithUploadCountByUserCount")
+        "where p.status=1 and uvm.user_id=?1 and uvm.status=1 and uvmpm.status=1 and p.objects_availability_status=1",resultSetMapping = "Mapping.findProjectWithUploadCountByUserCount")
+
+
+@NamedNativeQuery(name = "Project.findProjectWithUploadCountByUserForAllowedProjects",
+    query = "select  \n" +
+        "p.id as id,  \n" +
+        "p.total_required as totalRequired, \n" +
+        "uvmpm.total_uploaded as totalUploaded, \n" +
+        "uvmpm.total_approved as totalApproved, \n" +
+        "uvmpm.total_rejected as totalRejected, \n" +
+        "uvmpm.total_pending as totalPending,\n" +
+        "p.status ,\n" +
+        "p.audio_type ,\n" +
+        "p.auto_create_objects ,\n" +
+        "p.buffer_percent ,\n" +
+        "p.description ,\n" +
+        "p.external_dataset_status ,\n" +
+        "p.image_type ,\n" +
+        "p.name ,\n" +
+        "p.number_of_objects ,\n" +
+        "p.number_of_uploads_required ,\n" +
+        "p.object_prefix ,\n" +
+        "p.object_suffix ,\n" +
+        "p.project_type ,\n" +
+        "p.qc_levels ,\n" +
+        "p.rework_status ,\n" +
+        "p.video_type\n" +
+        "from \n" +
+        "project p\n" +
+        "left join user_vendor_mapping_project_mapping uvmpm on p.id=uvmpm.project_id\n" +
+        "left join user_vendor_mapping uvm on uvm.id=uvmpm.user_vendor_mapping_id \n" +
+        "where p.status=1 and uvm.user_id=?1 and uvm.status=1 and uvmpm.status=1 and p.id in (?2)",
+    resultSetMapping = "Mapping.ProjectDTO")
+
+
+
+@NamedNativeQuery(name = "Project.findProjectWithUploadCountByUserForAllowedProjects.count",
+    query ="select  \n" +
+        "count(p.id) as count  \n" +
+        "from \n" +
+        "project p\n" +
+        "left join user_vendor_mapping_project_mapping uvmpm on p.id=uvmpm.project_id\n" +
+        "left join user_vendor_mapping uvm on uvm.id=uvmpm.user_vendor_mapping_id \n" +
+        "where p.status=1 and uvm.user_id=?1 and uvm.status=1 and uvmpm.status=1 and p.id in (?2)",resultSetMapping = "Mapping.findProjectWithUploadCountByUserCount")
 
 @SqlResultSetMappings(value = {
     @SqlResultSetMapping(
@@ -268,28 +312,28 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 
 @NamedNativeQuery(
     name = "Project.findAllByIdGreaterThanForDropDown",
-    query="select p.* from project p where id>0",
+    query="select p.* from project p where id>0 and p.status=1 order by id desc",
     resultSetMapping = "Mapping.findAllByIdGreaterThanForDropDown"
 )
 
 
 @NamedNativeQuery(
     name = "Project.findAllByAidasCustomer_AidasOrganisationForDropDown",
-    query="select p.* from project p , customer c where p.customer_id=c.id and c.organisation_id=?1 and p.status=1",
+    query="select p.* from project p , customer c where p.customer_id=c.id and c.organisation_id=?1 and p.status=1 order by p.id desc",
     resultSetMapping = "Mapping.findAllByAidasCustomer_AidasOrganisationForDropDown"
 )
 
 
 @NamedNativeQuery(
     name = "Project.findAllByAidasCustomerForDropDown",
-    query="select p.* from project p  where p.customer_id=?1 and p.status=1",
+    query="select p.* from project p  where p.customer_id=?1 and p.status=1 order by p.id desc",
     resultSetMapping = "Mapping.findAllByAidasCustomerForDropDown"
 )
 
 
 @NamedNativeQuery(
     name = "Project.findAllProjectsByVendorAdminDropDown",
-    query="select p.* from project p, object o,  user_vendor_mapping_object_mapping uvmom,user_vendor_mapping uvm ,user u where  uvmom.object_id=o.id and o.project_id=p.id and uvmom.user_vendor_mapping_id=uvm.id and uvm.vendor_id= ?1   and p.status=1",
+    query="select p.* from project p, object o,  user_vendor_mapping_object_mapping uvmom,user_vendor_mapping uvm ,user u where  uvmom.object_id=o.id and o.project_id=p.id and uvmom.user_vendor_mapping_id=uvm.id and uvm.vendor_id= ?1   and p.status=1 order by p.id desc",
     resultSetMapping = "Mapping.findAllProjectsByVendorAdminDropDown"
 )
 
@@ -303,7 +347,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 
 @NamedNativeQuery(
     name = "Project.findProjectsForOrganisationQC",
-    query="select p.* from project p, organisation_qc_project_mapping oqpm, user_customer_mapping ucm where oqpm.user_organisation_mapping_id=ucm.id and ucm.user_id=? and oqpm.project_id=p.id and p.status=1 and oqpm.status=1 and ucm.status=1 and p.id>0 order by p.id desc",
+    query="select p.* from project p, organisation_qc_project_mapping oqpm, user_customer_mapping ucm where oqpm.user_organisation_mapping_id=ucm.id and ucm.user_id=? and oqpm.project_id=p.id and p.status=1 and oqpm.status=1 and ucm.status=1 and p.id>0 order by p.id desc ",
     resultSetMapping = "Mapping.findProjectsForOrganisationQC"
 )
 
@@ -374,7 +418,7 @@ public class Project extends AbstractAuditingEntity  implements Serializable {
 
     @Column(name="auto_create_objects",columnDefinition = "integer default 0")
     @JsonProperty
-    private Integer autoCreateObjects=0;
+    private Integer autoCreateObjects= AidasConstants.CREATE_MANUAL_OBJECTS;
 
     @Column(name="number_of_objects",columnDefinition = "integer default 0")
     @JsonProperty
@@ -434,29 +478,51 @@ public class Project extends AbstractAuditingEntity  implements Serializable {
 
     @OneToMany(mappedBy="project",cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JsonIgnoreProperties(value = {"project","customer"})
-    private Set<QCLevelConfiguration> qcLevelConfigurations=new HashSet<>();
+    private Set<ProjectQcLevelConfigurations> projectQcLevelConfigurations =new HashSet<>();
 
-    public Set<QCLevelConfiguration> getQcLevelConfigurations() {
-        return qcLevelConfigurations;
-    }
+    @Column(name="objects_availability_status" ,columnDefinition = "integer default 1")
+    private Integer objectAvailabilityStatus;
 
-    public void setQcLevelConfigurations(Set<QCLevelConfiguration> qcLevelConfigurations) {
-        for(QCLevelConfiguration qcLevelConfiguration:qcLevelConfigurations){
-            qcLevelConfiguration.setProject(this);
-        }
-        this.qcLevelConfigurations = qcLevelConfigurations;
-    }
-    public void addQCLevelConfiguration(QCLevelConfiguration qcLevelConfiguration){
-        this.qcLevelConfigurations.add(qcLevelConfiguration);
-        qcLevelConfiguration.setProject(this);
+    @Column(name="number_of_objects_can_be_assigned_to_vuser" ,columnDefinition = "integer default 5")
+    private Integer numberOfObjectsCanBeAssignedToVendorUser;
+
+    @Column(name="number_of_objects_for_qc_level" ,columnDefinition = "integer default 5")
+    private Integer numberOfObjectsForQcLevel=1;
+
+    public Integer getNumberOfObjectsCanBeAssignedToVendorUser() {
+        return numberOfObjectsCanBeAssignedToVendorUser;
     }
 
-    public void setQCLevelConfigs(Set<QCLevelConfiguration> qcLevelConfigurations) {
-        this.qcLevelConfigurations = qcLevelConfigurations;
-        for(QCLevelConfiguration b : qcLevelConfigurations) {
-            b.setProject(this);
-        }
+    public void setNumberOfObjectsCanBeAssignedToVendorUser(Integer numberOfObjectsCanBeAssignedToVendorUser) {
+        this.numberOfObjectsCanBeAssignedToVendorUser = numberOfObjectsCanBeAssignedToVendorUser;
     }
+
+    public Integer getNumberOfObjectsForQcLevel() {
+        return numberOfObjectsForQcLevel;
+    }
+
+    public void setNumberOfObjectsForQcLevel(Integer numberOfObjectsForQcLevel) {
+        this.numberOfObjectsForQcLevel = numberOfObjectsForQcLevel;
+    }
+
+    public Set<ProjectQcLevelConfigurations> getProjectQcLevelConfigurations() {
+        return projectQcLevelConfigurations;
+    }
+
+    public void setProjectQcLevelConfigurations(Set<ProjectQcLevelConfigurations> projectQcLevelConfigurations) {
+        this.projectQcLevelConfigurations = projectQcLevelConfigurations;
+    }
+
+
+
+    public Integer getObjectAvailabilityStatus() {
+        return objectAvailabilityStatus;
+    }
+
+    public void setObjectAvailabilityStatus(Integer objectAvailabilityStatus) {
+        this.objectAvailabilityStatus = objectAvailabilityStatus;
+    }
+
     public SubCategory getSubCategory() {
         return subCategory;
     }

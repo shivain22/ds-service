@@ -14,9 +14,12 @@ import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
+import java.util.stream.Collectors;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +27,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.support.PagedListHolder;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -76,6 +80,9 @@ public class ObjectResource {
 
     @Autowired
     private UserVendorMappingObjectMappingRepository userVendorMappingObjectMappingRepository;
+
+    @Autowired
+    private UserVendorMappingProjectMappingRepository userVendorMappingProjectMappingRepository;
 
     @Autowired
     private UserVendorMappingRepository userVendorMappingRepository;
@@ -559,13 +566,129 @@ public class ObjectResource {
         log.debug("REST request to get a page of AidasObjects");
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         Page<ObjectDTO> page = null;
-            page = objectRepository.getAllObjectsByVendorUserProjectWithProjectId(pageable,user.getId(),projectId);
-                for(ObjectDTO object : page.getContent()){
-                    List<ObjectProperty>objectProperties = objectPropertyRepository.getAllObjectPropertyForObject(object.getId());
+        Project project = projectRepository.getById(projectId);
+        UserVendorMapping uvm = userVendorMappingRepository.findByVendorIdAndUserId(user.getVendor().getId(),user.getId());
+        UserVendorMappingProjectMapping uvmpm = userVendorMappingProjectMappingRepository.findByUserVendorMappingIdProjectId(uvm.getId(),projectId);
+        ObjectMapper mapper = new ObjectMapper();
+        UvmomBatchMappingsDTO uvmomBatchMappingsDTO = new UvmomBatchMappingsDTO();
+        UvmomBatchMappingDTO uvmomBatchMappingDTO = new UvmomBatchMappingDTO();
+        Integer batchNumber =1;
+        List<Object> objects1 =null;
+        boolean unChanged = false;
+        try {
+            if (project.getAutoCreateObjects().equals(1)) {
+                Integer objectsRemaining = objectRepository.getObjectNotAllocatedYet(projectId);
+                if (uvmpm.getUvmomIds() != null) {
+                    uvmomBatchMappingsDTO = mapper.readValue(uvmpm.getUvmomIds(), UvmomBatchMappingsDTO.class);
+                }
+                if (uvmomBatchMappingsDTO.getUvmoms() != null && uvmomBatchMappingsDTO.getUvmoms().size() > 0) {
+                    uvmomBatchMappingsDTO.getUvmoms().sort(Comparator.comparing(UvmomBatchMappingDTO::getBatchNumber).reversed());
+                    uvmomBatchMappingDTO = uvmomBatchMappingsDTO.getUvmoms().get(0);
+                    batchNumber = uvmomBatchMappingDTO.getBatchNumber();
+                }
+                if(objectsRemaining>0) {
+                    int i = 0;
+                    if (uvmomBatchMappingDTO != null && uvmomBatchMappingDTO.getUserVendorMappingObjectMappingIds() != null && uvmomBatchMappingDTO.getUserVendorMappingObjectMappingIds().size() > 0) {
+                        for (Long uvmomId : uvmomBatchMappingDTO.getUserVendorMappingObjectMappingIds()) {
+                            UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.getById(uvmomId);
+                            if (uvmom.getTotalUploaded().equals(uvmom.getObject().getNumberOfUploadsRequired())) {
+                                i++;
+                            }
+                        }
+                        if (i == uvmomBatchMappingDTO.getUserVendorMappingObjectMappingIds().size()) {
+                            System.out.println("All uploadsd required for the reserved objects are completed.  So lets fetch new set of data.");
+                            PageRequest pages = PageRequest.of(pageable.getPageNumber(), project.getNumberOfObjectsCanBeAssignedToVendorUser(), pageable.getSort());
+                            page = objectRepository.getAllObjectsByVendorUserProjectWithProjectId(pages, user.getId(), projectId);
+                            if(page.getContent().size()==0){
+                                System.out.println("No more uploads are available so let us always send the complete list which are completed and assigned....");
+                                pages = PageRequest.of(pageable.getPageNumber(), project.getNumberOfObjectsCanBeAssignedToVendorUser(), pageable.getSort());
+                                List<Long>  tempUvmomIds = new ArrayList<>();
+                                for(UvmomBatchMappingDTO uvmbmdto:uvmomBatchMappingsDTO.getUvmoms()){
+                                    tempUvmomIds.addAll(uvmbmdto.getUserVendorMappingObjectMappingIds());
+                                }
+                                page = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdAndObjectAlreadyAssigned(pages, user.getId(), projectId, tempUvmomIds);
+                                HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+                                return ResponseEntity.ok().headers(headers).body(page.getContent());
+                            }else {
+                                uvmomBatchMappingDTO = new UvmomBatchMappingDTO();
+                                uvmomBatchMappingDTO.setBatchNumber(batchNumber + 1);
+                                HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+                                return ResponseEntity.ok().headers(headers).body(page.getContent());
+                            }
+                        } else {
+                            System.out.println("Not all object uploads are completed");
+                            PageRequest pages = PageRequest.of(pageable.getPageNumber(), project.getNumberOfObjectsCanBeAssignedToVendorUser(), pageable.getSort());
+                            page = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdAndObjectAlreadyAssigned(pages, user.getId(), projectId, uvmomBatchMappingDTO.getUserVendorMappingObjectMappingIds());
+                            unChanged = true;
+                        }
+                    } else {
+                        PageRequest pages = PageRequest.of(pageable.getPageNumber(), project.getNumberOfObjectsCanBeAssignedToVendorUser(), pageable.getSort());
+                        page = objectRepository.getAllObjectsByVendorUserProjectWithProjectId(pages, user.getId(), projectId);
+                        uvmomBatchMappingDTO = new UvmomBatchMappingDTO();
+                        uvmomBatchMappingDTO.setBatchNumber(batchNumber);
+                        uvmomBatchMappingsDTO.getUvmoms().add(uvmomBatchMappingDTO);
+                    }
+                    for (ObjectDTO object : page.getContent()) {
+                        Object o = objectRepository.getById(object.getId());
+                        UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserObject(user.getId(), object.getId());
+                        o.setObjectAcquiredByUvmomId(uvmom.getId());
+                        objectRepository.save(o);
+                        if(!unChanged) {
+                            uvmomBatchMappingDTO.getUserVendorMappingObjectMappingIds().add(uvmom.getId());
+                        }
+                        List<ObjectProperty> objectProperties = objectPropertyRepository.getAllObjectPropertyForObject(object.getId());
+                        object.setObjectProperties(objectProperties);
+                    }
+                    if (unChanged) {
+                        uvmomBatchMappingsDTO.getUvmoms().add(uvmomBatchMappingDTO);
+                        List<Long> tempUvmomIds = new ArrayList<>();
+                        for (UvmomBatchMappingDTO uvmbmdto : uvmomBatchMappingsDTO.getUvmoms()) {
+                            tempUvmomIds.addAll(uvmomBatchMappingDTO.getUserVendorMappingObjectMappingIds());
+                        }
+                        PageRequest pages = PageRequest.of(pageable.getPageNumber(), project.getNumberOfObjectsCanBeAssignedToVendorUser(), pageable.getSort());
+                        Page page1 = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdAndObjectAlreadyAssigned(pages, user.getId(), projectId, tempUvmomIds);
+                        page.getContent().addAll(page1.getContent());
+                    }
+                    uvmpm.setUvmomIds(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(uvmomBatchMappingsDTO));
+                    userVendorMappingProjectMappingRepository.save(uvmpm);
+                    HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+                    return ResponseEntity.ok().headers(headers).body(page.getContent());
+                }else{
+                    System.out.println("No more uploads are available so let us always send the complete list which are completed and assigned....");
+                    PageRequest pages = PageRequest.of(pageable.getPageNumber(), project.getNumberOfObjectsCanBeAssignedToVendorUser(), pageable.getSort());
+                    List<Long>  tempUvmomIds = new ArrayList<>();
+                    for(UvmomBatchMappingDTO uvmbmdto:uvmomBatchMappingsDTO.getUvmoms()){
+                        tempUvmomIds.addAll(uvmbmdto.getUserVendorMappingObjectMappingIds());
+                    }
+                    page = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdAndObjectAlreadyAssigned(pages, user.getId(), projectId, tempUvmomIds);
+                    for (ObjectDTO object : page.getContent()) {
+                        Object o = objectRepository.getById(object.getId());
+                        UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserObject(user.getId(), object.getId());
+                        o.setObjectAcquiredByUvmomId(uvmom.getId());
+                        objectRepository.save(o);
+                        if(!unChanged) {
+                            uvmomBatchMappingDTO.getUserVendorMappingObjectMappingIds().add(uvmom.getId());
+                        }
+                        List<ObjectProperty> objectProperties = objectPropertyRepository.getAllObjectPropertyForObject(object.getId());
+                        object.setObjectProperties(objectProperties);
+                    }
+
+                    HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+                    return ResponseEntity.ok().headers(headers).body(page.getContent());
+                }
+            } else {
+                page = objectRepository.getAllObjectsByVendorUserProjectWithProjectId(pageable, user.getId(), projectId);
+                for (ObjectDTO object : page.getContent()) {
+                    Object o = objectRepository.getById(object.getId());
+                    List<ObjectProperty> objectProperties = objectPropertyRepository.getAllObjectPropertyForObject(object.getId());
                     object.setObjectProperties(objectProperties);
                 }
-            HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
-            return ResponseEntity.ok().headers(headers).body(page.getContent());
+                HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+                return ResponseEntity.ok().headers(headers).body(page.getContent());
+            }
+        }catch(Exception e){
+            throw new BadRequestAlertException("Error in fetch object details ", ENTITY_NAME, "object");
+        }
     }
 
     /**

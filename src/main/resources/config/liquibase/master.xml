@@ -25,5 +25,11 @@
     <include file="config/liquibase/changelog/upload-current-qc-level-add-cols.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/property-add-cols.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/dummy-data-add.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/project-object-add-cols.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/project-qc-level-configurations-modify-cols.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/upload-cqpm-batch-info-add-cols.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/upload-add-cols.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/project-add-cols.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/user-vendor-mapping-project-mapping-add-cols.xml" relativeToChangelogFile="false"/>
 
 </databaseChangeLog>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.5.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+    <changeSet author="shiva (generated)" id="1657539087462-6">
+        <addColumn catalogName="ainnotateservice"
+                   schemaName= "ainnotateservice"
+                   tableName="project" >
+            <column name="objects_availability_status"
+                    type="INT"/>
+        </addColumn>
+        <addColumn catalogName="ainnotateservice"
+                   schemaName= "ainnotateservice"
+                   tableName="project_aud" >
+            <column name="objects_availability_status"
+                    type="INT"/>
+        </addColumn>
+
+        <addColumn catalogName="ainnotateservice"
+                   schemaName= "ainnotateservice"
+                   tableName="project" >
+            <column name="number_of_objects_can_be_assigned"
+                    type="INT"/>
+        </addColumn>
+        <addColumn catalogName="ainnotateservice"
+                   schemaName= "ainnotateservice"
+                   tableName="project_aud" >
+            <column name="number_of_objects_can_be_assigned"
+                    type="INT"/>
+        </addColumn>
+
+        <addColumn catalogName="ainnotateservice"
+                   schemaName= "ainnotateservice"
+                   tableName="object" >
+            <column name="object_acquired_by_uvmom_id"
+                    type="INT"/>
+        </addColumn>
+        <addColumn catalogName="ainnotateservice"
+                   schemaName= "ainnotateservice"
+                   tableName="object_aud" >
+            <column name="object_acquired_by_uvmom_id"
+                    type="INT"/>
+        </addColumn>
+    </changeSet>
+</databaseChangeLog>

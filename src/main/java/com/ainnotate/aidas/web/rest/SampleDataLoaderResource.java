@@ -1,7 +1,7 @@
 package com.ainnotate.aidas.web.rest;
 
 import com.ainnotate.aidas.domain.*;
-import com.ainnotate.aidas.service.DataPopulatorBean;
+import com.ainnotate.aidas.service.DataPopulator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +32,7 @@ public class SampleDataLoaderResource {
     TaskExecutor taskExecutor;
 
     @Autowired
-    DataPopulatorBean dataPopulatorBean;
+    DataPopulator dataPopulator;
     /**
      * {@code GET  /aidas-authorities/:id} : get the "id" authority.
      *
@@ -43,8 +43,8 @@ public class SampleDataLoaderResource {
     public ResponseEntity<String> loadSampleData(@PathVariable String  dataFileName) {
        TaskDefinition taskDefinition = new TaskDefinition();
        taskDefinition.setActionType(dataFileName);
-       dataPopulatorBean.setTaskDefinition(taskDefinition);
-       taskExecutor.execute(dataPopulatorBean);
+       dataPopulator.setTaskDefinition(taskDefinition);
+       taskExecutor.execute(dataPopulator);
        return ResponseEntity.ok().body("Success");
    }
 

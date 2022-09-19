@@ -1,7 +1,7 @@
 package com.ainnotate.aidas.web.rest;
 
 import com.ainnotate.aidas.domain.TaskDefinition;
-import com.ainnotate.aidas.service.DataPopulatorBean;
+import com.ainnotate.aidas.service.DataPopulator;
 import com.ainnotate.aidas.service.ESReIndexBean;
 import com.ainnotate.aidas.service.QcCleanUpBean;
 import com.ainnotate.aidas.service.TaskSchedulingService;
@@ -25,7 +25,7 @@ public class JobSchedulingController {
     private ESReIndexBean esReIndexBean;
 
     @Autowired
-    private DataPopulatorBean dataPopulatorBean;
+    private DataPopulator dataPopulator;
 
     @PostMapping(path="/taskdef/qc-cleanup", consumes = "application/json", produces="application/json")
     public void scheduleQcCleanUpTask(@RequestBody TaskDefinition taskDefinition) {
@@ -43,9 +43,9 @@ public class JobSchedulingController {
 
     @PostMapping(path="/taskdef/load-dummy-data", consumes = "application/json", produces="application/json")
     public void loadDummyData(@RequestBody TaskDefinition taskDefinition) {
-        dataPopulatorBean.setTaskDefinition(taskDefinition);
+        dataPopulator.setTaskDefinition(taskDefinition);
         UUID randomUUID = UUID.randomUUID();
-        taskSchedulingService.scheduleATask(randomUUID.toString(), dataPopulatorBean, taskDefinition.getCronExpression());
+        taskSchedulingService.scheduleATask(randomUUID.toString(), dataPopulator, taskDefinition.getCronExpression());
     }
 
     @GetMapping(path="/remove/{jobid}")

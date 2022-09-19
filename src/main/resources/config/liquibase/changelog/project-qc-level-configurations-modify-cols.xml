@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.5.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+    <changeSet author="shiva (generated)" id="1657539087468-6">
+        <renameColumn  catalogName="ainnotateservice"
+                       columnDataType="int"
+                       newColumnName="qc_level"
+                       oldColumnName="qc_level_name"
+                       remarks="A String"
+                       schemaName="ainnotateservice"
+                       tableName="project_qc_level_configurations"/>
+
+        <renameColumn  catalogName="ainnotateservice"
+                       columnDataType="int"
+                       newColumnName="qc_level"
+                       oldColumnName="qc_level_name"
+                       remarks="A String"
+                       schemaName="ainnotateservice"
+                       tableName="project_qc_level_configurations_aud"/>
+        <modifyDataType  catalogName="ainnotateservice"
+                         columnName="qc_level"
+                         newDataType="int"
+                         schemaName="ainnotateservice"
+                         tableName="project_qc_level_configurations"/>
+        <modifyDataType  catalogName="ainnotateservice"
+                         columnName="qc_level"
+                         newDataType="int"
+                         schemaName="ainnotateservice"
+                         tableName="project_qc_level_configurations_aud"/>
+
+        <addColumn catalogName="ainnotateservice"
+                   schemaName= "ainnotateservice"
+                   tableName="project_qc_level_configurations" >
+            <column name="allocation_strategy"
+                    type="INT"/>
+        </addColumn>
+        <addColumn catalogName="ainnotateservice"
+                   schemaName= "ainnotateservice"
+                   tableName="project_qc_level_configurations_aud" >
+            <column name="allocation_strategy"
+                    type="INT"/>
+        </addColumn>
+    </changeSet>
+</databaseChangeLog>

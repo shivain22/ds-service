@@ -46,7 +46,7 @@ public class CustomerQcProjectMapping extends AbstractAuditingEntity implements 
     private Integer qcLevel;
 
     @Column(name="current_qc_batch_no")
-    private Integer currentQcBatchNo;
+    private Integer currentQcBatchNo=0;
 
     public Integer getCurrentQcBatchNo() {
         return currentQcBatchNo;

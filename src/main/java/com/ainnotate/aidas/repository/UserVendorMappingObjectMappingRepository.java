@@ -19,8 +19,14 @@ import java.util.List;
 @Transactional
 public interface UserVendorMappingObjectMappingRepository extends JpaRepository<UserVendorMappingObjectMapping, Long> {
 
-    @Query(value = "select * from user_vendor_mapping_object_mapping uvmom,user_vendor_mapping uvm where uvmom.user_vendor_mapping_id=uvm.id and uvm.user_id=?1 and object_id=?2", nativeQuery = true)
+    @Query(value = "select uvmom.* from user_vendor_mapping_object_mapping uvmom,user_vendor_mapping uvm where uvmom.user_vendor_mapping_id=uvm.id and uvm.user_id=?1 and object_id=?2", nativeQuery = true)
     UserVendorMappingObjectMapping findByUserObject(Long userId, Long objectId);
+
+    @Query(value = "select * from user_vendor_mapping_object_mapping uvmom,user_vendor_mapping uvm,object o where uvmom.object_id=o.id and uvmom.user_vendor_mapping_id=uvm.id and uvm.user_id<>?1 and object_id=?2 and uvmom.status=1 and o.project_id=?3", nativeQuery = true)
+    List<UserVendorMappingObjectMapping> findByOtherUsersAndObject(Long userId, Long objectId,Long projectId);
+
+    @Query(value = "select * from user_vendor_mapping_object_mapping uvmom,user_vendor_mapping uvm,object o where uvmom.object_id=o.id and uvmom.user_vendor_mapping_id=uvm.id and uvm.user_id=?1 and object_id<>?2 and o.project_id=?3 and uvmom.status=1", nativeQuery = true)
+    List<UserVendorMappingObjectMapping> findByOtherObjectsForUser(Long userId, Long objectId,Long projectId);
 
     @Query(value = "select * from user_vendor_mapping_object_mapping uvmom where user_vendor_mapping_id=?1 and object_id=?2", nativeQuery = true)
     UserVendorMappingObjectMapping findByUserVendorMappingObject(Long userVendorMappingId, Long objectId);
@@ -56,6 +62,9 @@ public interface UserVendorMappingObjectMappingRepository extends JpaRepository<
 
     @Query(value = "select uvmom.* from user_vendor_mapping_object_mapping uvmom, object o where  uvmom.object_id=o.id and o.project_id=?1",nativeQuery = true)
     List<UserVendorMappingObjectMapping> getAllUserVendorMappingObjectMappingByUserVendorMappingIdsAndObjectId(Long projectId);
+
+    @Query(value = "select uvmom.* from user_vendor_mapping_object_mapping uvmom, object o,user_vendor_mapping uvm where  uvmom.object_id=o.id and o.project_id=?1  and uvmom.user_vendor_mapping_id=uvm.id and uvm.user_id=?2 and uvmom.status=1",nativeQuery = true)
+    List<UserVendorMappingObjectMapping> getAllUserVendorMappingObjectMappingByUserVendorMappingIdsAndObjectIdAndStatus1(Long projectId,Long userId);
 
 
     @Query(value="select * from user_vendor_mapping_object_mapping where object_id=?1",nativeQuery = true)

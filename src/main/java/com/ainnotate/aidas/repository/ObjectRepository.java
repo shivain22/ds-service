@@ -70,6 +70,10 @@ public interface ObjectRepository extends JpaRepository<Object, Long> {
     Page<ObjectDTO> getAllObjectsByVendorUserProjectWithProjectId(Pageable pageable,Long userId,Long projectId);
 
     @Query(nativeQuery = true)
+    Page<ObjectDTO> getAllObjectsByVendorUserProjectWithProjectIdAndObjectAlreadyAssigned(Pageable pageable,Long userId,Long projectId,List uvmomIds);
+
+
+    @Query(nativeQuery = true)
     List<ObjectDTO> getAllObjectsByVendorUserProjectForDropdown(Long userId,Long projectId);
 
     @Query(value="select \n" +
@@ -187,5 +191,20 @@ public interface ObjectRepository extends JpaRepository<Object, Long> {
     @Query(value = "select * from object_property op where op.object_id=?1 and op.add_to_metadata=1 ",nativeQuery = true)
     List<Long> findAllObjectPropertyForExport(Long projectId);
 
+    @Query(value = "select count(*) from object o where o.object_acquired_by_uvmom_id is not null and o.project_id=?1",nativeQuery = true)
+    Integer findAllObjectWithoutAcquiredByAnyUser(Long projectId);
+
     Object getObjectByName(String name);
+
+    @Query(value ="select p.id from user_vendor_mapping_object_mapping uvmom,user_vendor_mapping uvm, object o,project p where uvmom.object_id=o.id and uvmom.user_vendor_mapping_id=uvm.id and uvm.user_id=?1 and uvmom.status=1 and o.project_id=p.id and o.object_acquired_by_uvmom_id in (select uvmom1.id from user_vendor_mapping_object_mapping uvmom1, object o1 , user_vendor_mapping uvm1 where uvmom1.user_vendor_mapping_id=uvm1.id and uvm1.user_id=?1 and uvmom.object_id=o.id)",nativeQuery = true)
+    List<Long> getObjectsEnabledForUser(Long userId);
+
+    @Query(value = "select o.* from object o where o.object_acquired_by_uvmom_id in (?1)", nativeQuery = true)
+    List<Object> getOBjectsForUvmoms(List<Long> uvmomIds);
+
+    @Query(value = "select count(*) from object o where o.project_id=?1 and o.object_acquired_by_uvmom_id is null and o.is_dummy=0", nativeQuery = true)
+    Integer getObjectNotAllocatedYet(Long projectId);
+
+
+
 }

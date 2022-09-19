@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.5.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+    <changeSet author="shiva (generated)" id="1657539087468-6">
+        <addColumn catalogName="ainnotateservice"
+                   schemaName= "ainnotateservice"
+                   tableName="upload_cqpm_batch_info" >
+            <column name="qc_status_other_than_level_1"
+                    type="INT"/>
+        </addColumn>
+        <addColumn catalogName="ainnotateservice"
+                   schemaName= "ainnotateservice"
+                   tableName="upload_cqpm_batch_info_aud" >
+            <column name="qc_status_other_than_level_1"
+                    type="INT"/>
+        </addColumn>
+
+        <addColumn catalogName="ainnotateservice"
+                   schemaName= "ainnotateservice"
+                   tableName="upload_cqpm_batch_info" >
+            <column name="show_to_qc"
+                    type="INT"/>
+        </addColumn>
+        <addColumn catalogName="ainnotateservice"
+                   schemaName= "ainnotateservice"
+                   tableName="upload_cqpm_batch_info_aud" >
+            <column name="show_to_qc"
+                    type="INT"/>
+        </addColumn>
+
+        <addColumn catalogName="ainnotateservice"
+                   schemaName= "ainnotateservice"
+                   tableName="upload_cqpm_batch_info" >
+            <column name="qc_seen_status"
+                    type="INT"/>
+        </addColumn>
+        <addColumn catalogName="ainnotateservice"
+                   schemaName= "ainnotateservice"
+                   tableName="upload_cqpm_batch_info_aud" >
+            <column name="qc_seen_status"
+                    type="INT"/>
+        </addColumn>
+    </changeSet>
+</databaseChangeLog>

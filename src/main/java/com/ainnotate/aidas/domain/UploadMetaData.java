@@ -47,7 +47,7 @@ import org.springframework.data.jpa.repository.Query;
     "u.user_vendor_mapping_object_mapping_id=uvmom.id and " +
     "uvmom.object_id=o.id and " +
     "umd.project_property_id=pp.id and" +
-    " pp.add_to_metadata=1 and" +
+    " pp.show_to_vendor_user=1 and" +
     " o.project_id=?1  and o.project_id=pr.id and" +
     " pp.property_id=p.id" +
     " union " +
@@ -64,11 +64,99 @@ import org.springframework.data.jpa.repository.Query;
     "umd.upload_id=u.id and " +
     "u.user_vendor_mapping_object_mapping_id=uvmom.id and " +
     "uvmom.object_id=o.id and " +
-    " op.add_to_metadata=1 and " +
+    " op.show_to_vendor_user=1 and " +
     " op.property_id=p.id and " +
     "umd.object_property_id=op.id and" +
     " op.property_id not in (select property_id from project_property where project_id=?1) and" +
     " o.project_id=?1 and o.project_id=pr.id) umd order by umd.upload_id, umd.prop_id",resultSetMapping = "Mapping.UploadMetaDataDTO")
+
+@NamedNativeQuery(name = "UploadMetaData.getAllUploadMetaDataForObject",
+    query=" select id as uploadMetaDataId," +
+        "        projectName," +
+        "        objectName," +
+        "        upload_id as uploadId," +
+        "        value," +
+        "        project_property_id as projectPropertyId," +
+        "        object_property_id as objectPropertyId" +
+        "        from (select umd.*,p.id as prop_id,o.name as objectName, pr.name as projectName " +
+        "from " +
+        "upload_meta_data umd, " +
+        "upload u, " +
+        "user_vendor_mapping_object_mapping uvmom, " +
+        "object o," +
+        "project_property pp," +
+        "property p," +
+        "project pr " +
+        " where " +
+        "umd.upload_id=u.id and " +
+        "u.user_vendor_mapping_object_mapping_id=uvmom.id and " +
+        "uvmom.object_id=o.id and " +
+        "umd.project_property_id=pp.id and" +
+        " pp.show_to_vendor_user=1 and" +
+        " o.id=?1  and o.project_id=pr.id and" +
+        " pp.property_id=p.id" +
+        " union " +
+        "select umd.*,p.id as prop_id,o.name as objectName, pr.name as projectName " +
+        "from " +
+        "upload_meta_data umd, " +
+        "upload u, " +
+        "user_vendor_mapping_object_mapping uvmom, " +
+        "object o," +
+        "object_property op," +
+        "property p," +
+        "project pr " +
+        " where " +
+        "umd.upload_id=u.id and " +
+        "u.user_vendor_mapping_object_mapping_id=uvmom.id and " +
+        "uvmom.object_id=o.id and " +
+        " op.show_to_vendor_user=1 and " +
+        " op.property_id=p.id and " +
+        "umd.object_property_id=op.id and" +
+        " o.id=?1 and o.project_id=pr.id) umd order by umd.upload_id, umd.prop_id",resultSetMapping = "Mapping.UploadMetaDataDTO")
+
+@NamedNativeQuery(name = "UploadMetaData.getAllUploadMetaDataForUpload",
+    query=" select id as uploadMetaDataId," +
+        "        projectName," +
+        "        objectName," +
+        "        upload_id as uploadId," +
+        "        value," +
+        "        project_property_id as projectPropertyId," +
+        "        object_property_id as objectPropertyId" +
+        "        from (select umd.*,p.id as prop_id,o.name as objectName, pr.name as projectName " +
+        "from " +
+        "upload_meta_data umd, " +
+        "upload u, " +
+        "user_vendor_mapping_object_mapping uvmom, " +
+        "object o," +
+        "project_property pp," +
+        "property p," +
+        "project pr " +
+        " where " +
+        "umd.upload_id=u.id and " +
+        "u.user_vendor_mapping_object_mapping_id=uvmom.id and " +
+        "uvmom.object_id=o.id and " +
+        "umd.project_property_id=pp.id and" +
+        " pp.show_to_vendor_user=1 and" +
+        " u.id=?1  and o.project_id=pr.id and" +
+        " pp.property_id=p.id" +
+        " union " +
+        "select umd.*,p.id as prop_id,o.name as objectName, pr.name as projectName " +
+        "from " +
+        "upload_meta_data umd, " +
+        "upload u, " +
+        "user_vendor_mapping_object_mapping uvmom, " +
+        "object o," +
+        "object_property op," +
+        "property p," +
+        "project pr " +
+        " where " +
+        "umd.upload_id=u.id and " +
+        "u.user_vendor_mapping_object_mapping_id=uvmom.id and " +
+        "uvmom.object_id=o.id and " +
+        " op.show_to_vendor_user=1 and " +
+        " op.property_id=p.id and " +
+        "umd.object_property_id=op.id and" +
+        " u.id=?1 and o.project_id=pr.id) umd order by umd.upload_id, umd.prop_id",resultSetMapping = "Mapping.UploadMetaDataDTO")
 
 
 @NamedNativeQuery(name = "UploadMetaData.getAllUploadMetaDataForProjectWithStatus",

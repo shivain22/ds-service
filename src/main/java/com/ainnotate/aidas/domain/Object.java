@@ -154,7 +154,7 @@ query = "select \n" +
         "from user_vendor_mapping_object_mapping uvmom  \n" +
         "left join object o on o.id=uvmom.object_id   \n" +
         "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id \n" +
-        "where uvm.user_id=?1 and uvmom.status=1 and o.status=1 and o.is_dummy=0 and o.project_id=?2"
+        "where uvm.user_id=?1 and uvmom.status=1 and o.status=1 and o.is_dummy=0 and o.project_id=?2 and o.object_acquired_by_uvmom_id is null"
         ,resultSetMapping = "Mapping.ObjectDTOWithProjectId")
 
 @NamedNativeQuery(name="Object.getAllObjectsByVendorUserProjectWithProjectId.count",
@@ -167,6 +167,40 @@ query = "select \n" +
 
 
 
+
+@NamedNativeQuery(name="Object.getAllObjectsByVendorUserProjectWithProjectIdAndObjectAlreadyAssigned",
+    query = "select \n" +
+        "o.id," +
+        "uvmom.id as userVendorMappingObjectMappingId,"+
+        "o.project_id as projectId,"+
+        "o.parent_object_id parentObjectId,"+
+        "o.number_of_uploads_required as numberOfUploadsRequired," +
+        "o.number_of_buffered_uploads_required as numberOfBufferedUploadsRequired," +
+        "o.total_required as totalRequired," +
+        "uvmom.id as userVendorMappingObjectMappingId," +
+        "uvmom.total_uploaded as totalUploaded, \n" +
+        "uvmom.total_approved as totalApproved, \n" +
+        "uvmom.total_rejected as totalRejected, \n" +
+        "uvmom.total_pending as totalPending,\n" +
+        "o.buffer_percent as bufferPercent," +
+        "o.name as name," +
+        "o.description as description," +
+        "o.image_type as imageType," +
+        "o.audio_type as audioType," +
+        "o.video_type as videoType " +
+        "from user_vendor_mapping_object_mapping uvmom  \n" +
+        "left join object o on o.id=uvmom.object_id   \n" +
+        "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id \n" +
+        "where uvm.user_id=?1 and uvmom.status=1 and o.status=1 and o.is_dummy=0 and o.project_id=?2 and o.object_acquired_by_uvmom_id in (?3) "
+    ,resultSetMapping = "Mapping.ObjectDTOWithProjectId")
+
+@NamedNativeQuery(name="Object.getAllObjectsByVendorUserProjectWithProjectIdAndObjectAlreadyAssigned.count",
+    query = "select count(o.id) as count  \n" +
+        "from user_vendor_mapping_object_mapping uvmom  \n" +
+        "left join object o on o.id=uvmom.object_id   \n" +
+        "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id \n" +
+        "where uvm.user_id=?1 and o.status=1 and o.is_dummy=0 and o.project_id=?2 and o.object_acquired_by_uvmom_id is null ",resultSetMapping = "Mapping.ObjectDTOCount"
+)
 
 
 
@@ -287,6 +321,7 @@ public class Object extends AbstractAuditingEntity  implements Serializable {
     @Column(name ="number_of_buffered_uploads_required",columnDefinition = "integer default 0")
     private Integer numberOfBufferedUploadsRequired=0;
 
+
     @Column(name="image_type")
     @JsonProperty
     private String imageType="";
@@ -296,10 +331,34 @@ public class Object extends AbstractAuditingEntity  implements Serializable {
     @Column(name="audio_type")
     @JsonProperty
     private String audioType="";
+
     @OneToMany(mappedBy = "object",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
     @Filter(name = "objectPropertyStatusFilter",condition="status = 1")
     @JsonIgnoreProperties(value = { "object" }, allowSetters = true)
     private Set<ObjectProperty> objectProperties = new HashSet<>();
+
+    //This is userVendorMappingObjectMappingId not the userId
+    @Column(name="object_acquired_by_uvmom_id" ,columnDefinition = "integer default null")
+    private Long objectAcquiredByUvmomId;
+
+    /*@Column(name="batch_status" ,columnDefinition = "integer default null")
+    private Integer batchStatus;
+
+    public Integer getBatchStatus() {
+        return batchStatus;
+    }
+
+    public void setBatchStatus(Integer batchStatus) {
+        this.batchStatus = batchStatus;
+    }*/
+
+    public Long getObjectAcquiredByUvmomId() {
+        return objectAcquiredByUvmomId;
+    }
+
+    public void setObjectAcquiredByUvmomId(Long objectAcquiredByUvmomId) {
+        this.objectAcquiredByUvmomId = objectAcquiredByUvmomId;
+    }
 
     public Integer getTotalRequired() {
         return totalRequired;

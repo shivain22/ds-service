@@ -39,7 +39,6 @@ public interface ProjectPropertyRepository extends JpaRepository<ProjectProperty
     @Query(value = "delete from project_property where is_sample_data=1 order by id desc",nativeQuery = true)
     void deleteAllSampleProjectProperty();
 
-
-
-
+    @Query(value = "select count(*) from project_property pp where pp.project_id=?1 and pp.optional=0",nativeQuery = true)
+    Integer getMandatoryPropertyCountForProject(Long projectId);
 }

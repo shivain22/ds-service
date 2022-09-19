@@ -1,22 +1,18 @@
 package com.ainnotate.aidas.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.ainnotate.aidas.constants.AidasConstants;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.hibernate.envers.Audited;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.io.Serializable;
-import java.util.Set;
 
 
 @Table(name = "project_qc_level_configurations")
 @Entity
 @Audited
-public class QCLevelConfiguration extends AbstractAuditingEntity  implements Serializable {
+public class ProjectQcLevelConfigurations extends AbstractAuditingEntity  implements Serializable {
 
 
     private static final long serialVersionUID = 1L;
@@ -30,14 +26,25 @@ public class QCLevelConfiguration extends AbstractAuditingEntity  implements Ser
     @JoinColumn(name="project_id", nullable=false)
     private Project project;
 
-    @Column(name ="qc_level_name",columnDefinition = "varchar(50) default ' '")
-    private Integer qcLevelName;
+    @Column(name ="qc_level",columnDefinition = "integer default 1")
+    private Integer qcLevel;
 
     @Column(name ="qc_level_acceptance_percentage",columnDefinition = "integer default 0")
     private Integer qcLevelAcceptancePercentage=0;
 
     @Column(name ="qc_level_batch_size",columnDefinition = "integer default 0")
     private Integer qcLevelBatchSize=10;
+
+    @Column(name="allocation_strategy",columnDefinition = "integer default 0")
+    private Integer allocationStrategy= AidasConstants.QC_LEVEL_FCFS;
+
+    public Integer getAllocationStrategy() {
+        return allocationStrategy;
+    }
+
+    public void setAllocationStrategy(Integer allocationStrategy) {
+        this.allocationStrategy = allocationStrategy;
+    }
 
     public Long getId() {
         return id;
@@ -57,12 +64,12 @@ public class QCLevelConfiguration extends AbstractAuditingEntity  implements Ser
 
     }
 
-    public Integer getQcLevelName() {
-        return qcLevelName;
+    public Integer getQcLevel() {
+        return qcLevel;
     }
 
-    public void setQcLevelName(Integer qcLevelName) {
-        this.qcLevelName = qcLevelName;
+    public void setQcLevel(Integer qcLevel) {
+        this.qcLevel = qcLevel;
     }
 
     public Integer getQcLevelAcceptancePercentage() {
@@ -80,11 +87,11 @@ public class QCLevelConfiguration extends AbstractAuditingEntity  implements Ser
 
         if (o == null || getClass() != o.getClass()) return false;
 
-        QCLevelConfiguration that = (QCLevelConfiguration) o;
+        ProjectQcLevelConfigurations that = (ProjectQcLevelConfigurations) o;
 
         return new EqualsBuilder().append(id, that.id)
             .append(project, that.project)
-            .append(qcLevelName, that.qcLevelName)
+            .append(qcLevel, that.qcLevel)
             .append(qcLevelAcceptancePercentage, that.qcLevelAcceptancePercentage)
             .append(qcLevelBatchSize, that.qcLevelBatchSize)
             .isEquals();
@@ -103,7 +110,7 @@ public class QCLevelConfiguration extends AbstractAuditingEntity  implements Ser
         return new HashCodeBuilder(17, 37).
             append(id)
             .append(project)
-            .append(qcLevelName)
+            .append(qcLevel)
             .append(qcLevelAcceptancePercentage)
             .append(qcLevelBatchSize)
             .toHashCode();
@@ -114,7 +121,7 @@ public class QCLevelConfiguration extends AbstractAuditingEntity  implements Ser
         return "QCLevelConfiguration{" +
             "id=" + id +
             ", project=" + project +
-            ", qcLevelName='" + qcLevelName + '\'' +
+            ", qcLevelName='" + qcLevel + '\'' +
             ", qcLevelAcceptancePercentage=" + qcLevelAcceptancePercentage +
             ", QC Batch Size=" + qcLevelBatchSize +
             '}';

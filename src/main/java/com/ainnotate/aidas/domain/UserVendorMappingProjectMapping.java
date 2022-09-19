@@ -69,6 +69,17 @@ public class UserVendorMappingProjectMapping extends AbstractAuditingEntity  imp
     @JsonProperty
     private Integer totalRequired=0;
 
+    @Column(name="uvmom_ids")
+    private String uvmomIds;
+
+    public String getUvmomIds() {
+        return uvmomIds;
+    }
+
+    public void setUvmomIds(String uvmomIds) {
+        this.uvmomIds = uvmomIds;
+    }
+
     public Integer getTotalUploaded() {
         return totalUploaded;
     }

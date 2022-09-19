@@ -17,9 +17,7 @@ import java.io.FileInputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.Path;
 import java.util.*;
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -27,9 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.beans.support.PagedListHolder;
 import org.springframework.core.io.InputStreamResource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -114,7 +110,7 @@ public class ProjectResource {
     private UploadCustomerQcProjectMappingBatchInfoRepository uploadCustomerQcProjectMappingBatchInfoRepository;
 
     @Autowired
-    private QCLevelConfigurationRepository qcLevelConfigurationRepository;
+    private ProjectQcLevelConfigurationsRepository projectQcLevelConfigurationsRepository;
 
     public ProjectResource(ProjectRepository projectRepository, ProjectSearchRepository aidasProjectSearchRepository) {
         this.projectRepository = projectRepository;
@@ -152,6 +148,12 @@ public class ProjectResource {
             }
         }
 
+        if(project.getObjectAvailabilityStatus()==null){
+            project.setObjectAvailabilityStatus(1);
+        }
+        if(project.getNumberOfObjectsCanBeAssignedToVendorUser()==null){
+            project.setNumberOfObjectsCanBeAssignedToVendorUser(5);
+        }
             Category category = categoryRepository.getById(project.getCategory().getId());
             if(category!=null){
                 project.setCategory(category);
@@ -174,14 +176,13 @@ public class ProjectResource {
                 }
             }
             boolean isQcLevelConfigsAdded = false;
-            if(project.getQcLevelConfigurations()!=null){
-                if(project.getQcLevelConfigurations().size()>0) {
-                    for (QCLevelConfiguration qc : project.getQcLevelConfigurations()) {
-                        if(qc.getQcLevelAcceptancePercentage()!=null && qc.getQcLevelBatchSize()!=null){
+            if(project.getProjectQcLevelConfigurations()!=null && project.getProjectQcLevelConfigurations().size()>0){
+                    for (ProjectQcLevelConfigurations pqlc : project.getProjectQcLevelConfigurations()) {
+                        if(pqlc.getQcLevelAcceptancePercentage()!=null && pqlc.getQcLevelBatchSize()!=null){
                             isQcLevelConfigsAdded = true;
                         }
+                        pqlc.setProject(project);
                     }
-                }
             }
             if(isQcLevelConfigsAdded) {
                 Project result = projectRepository.save(project);
@@ -318,6 +319,7 @@ public class ProjectResource {
         }
         csvData.addAll(projectRepository.getTotalPropertyNamesForExport(projectId));
         csvDatas.add(csvData);
+        colCount = csvData.size();
         if(uploadMetaDatas.size()%colCount==0){
             int i=0;
             int slNo=1;
@@ -825,10 +827,12 @@ public class ProjectResource {
     public ResponseEntity<List<ProjectDTO>> getAllAidasProjectDetails(Pageable pageable) {
         log.debug("REST request to get a page of AidasProjects");
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        List<Long> enabledProjects = objectRepository.getObjectsEnabledForUser(user.getId());
         Page<ProjectDTO> page = null;
         if(user.getAuthority().getName().equals(AidasConstants.VENDOR_USER)){
-            page =  projectRepository.findProjectWithUploadCountByUser(pageable,user.getId());
+            page = projectRepository.findProjectWithUploadCountByUser(pageable, user.getId());
             for(ProjectDTO p:page.getContent()){
+                Integer availableObjectCount = projectRepository.findProjectWithAnyObjectEnabledForUser(user.getId(),p.getId());
                 List<ProjectProperty> projectProperties = projectPropertyRepository.findAllProjectProperty(p.getId());
                 p.setAidasProjectProperties(projectProperties);
             }

@@ -2,16 +2,12 @@ package com.ainnotate.aidas.service;
 
 
 import com.ainnotate.aidas.config.KeycloakConfig;
-import com.ainnotate.aidas.constants.AidasConstants;
 import com.ainnotate.aidas.domain.*;
 import com.ainnotate.aidas.domain.Object;
 import com.ainnotate.aidas.repository.*;
 import com.ainnotate.aidas.repository.search.*;
-import com.ainnotate.aidas.security.SecurityUtils;
 import com.opencsv.exceptions.CsvException;
 import lombok.SneakyThrows;
-import org.apache.commons.lang3.time.StopWatch;
-import org.aspectj.weaver.ast.Or;
 import org.keycloak.admin.client.CreatedResponseUtil;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.RealmResource;
@@ -24,30 +20,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ResourceLoader;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
 
 import javax.ws.rs.core.Response;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.sql.*;
-import java.time.Instant;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
-public class DataPopulatorBean implements Runnable {
+public class DataPopulator implements Runnable {
 
     private TaskDefinition taskDefinition;
 
-    private final Logger log = LoggerFactory.getLogger(DataPopulatorBean.class);
+    private final Logger log = LoggerFactory.getLogger(DataPopulator.class);
 
     @Autowired
     private OrganisationSearchRepository organisationSearchRepository;
@@ -132,6 +121,8 @@ public class DataPopulatorBean implements Runnable {
 
     @Autowired
     ResourceLoader resourceLoader;
+
+
 
     @SneakyThrows
     @Override

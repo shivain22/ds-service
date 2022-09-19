@@ -79,9 +79,9 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
     @Column(name="status", nullable=false)
     private Integer status;
     @Column(name="approval_status",nullable = true)
-    private Integer approvalStatus;
+    private Integer approvalStatus=2;
     @Column(name="qc_status", nullable=true)
-    private Integer qcStatus;
+    private Integer qcStatus=2;
     @Column(name="metadata_status", nullable=true)
     private Integer metadataStatus;
     @ManyToOne
@@ -106,7 +106,18 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
     @JoinColumn(name = "user_vendor_mapping_object_mapping_id", nullable = true, foreignKey = @ForeignKey(name="fk_upload_uvmom"))
     private UserVendorMappingObjectMapping userVendorMappingObjectMapping;
     @Column(name ="current_qc_level",columnDefinition = "integer default 1")
-    private Integer currentQcLevel;
+    private Integer currentQcLevel=1;
+
+    @Column(name ="current_batch_number",columnDefinition = "integer default 1")
+    private Integer currentBatchNumber=1;
+
+    public Integer getCurrentBatchNumber() {
+        return currentBatchNumber;
+    }
+
+    public void setCurrentBatchNumber(Integer currentBatchNumber) {
+        this.currentBatchNumber = currentBatchNumber;
+    }
 
     public Integer getCurrentQcLevel() {
         return currentQcLevel;

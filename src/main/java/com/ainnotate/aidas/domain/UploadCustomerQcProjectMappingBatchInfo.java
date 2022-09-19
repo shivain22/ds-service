@@ -56,13 +56,30 @@ public class UploadCustomerQcProjectMappingBatchInfo extends AbstractAuditingEnt
     private Long uploadId;
 
     @Column(name="customer_qc_project_mapping_id")
-    private Long customerQcMappingId;
+    private Long customerQcProjectMappingId;
 
     @Column(name="batch_number")
     private Integer batchNumber;
 
     @Column(name="qc_status")
     private Integer qcStatus;
+
+    @Column(name="qc_status_other_than_level_1")
+    private Integer qcStatusOtherThanLevel1;
+
+    @Column(name="show_to_qc")
+    private Integer showToQc=0;
+
+    @Column(name="qc_seen_status")
+    private Integer qc_seen_status=0;
+
+    public Integer getQcStatusOtherThanLevel1() {
+        return qcStatusOtherThanLevel1;
+    }
+
+    public void setQcStatusOtherThanLevel1(Integer qcStatusOtherThanLevel1) {
+        this.qcStatusOtherThanLevel1 = qcStatusOtherThanLevel1;
+    }
 
     public Long getId() {
         return id;
@@ -80,12 +97,12 @@ public class UploadCustomerQcProjectMappingBatchInfo extends AbstractAuditingEnt
         this.uploadId = uploadId;
     }
 
-    public Long getCustomerQcMappingId() {
-        return customerQcMappingId;
+    public Long getCustomerQcProjectMappingId() {
+        return customerQcProjectMappingId;
     }
 
-    public void setCustomerQcMappingId(Long customerQcMappingId) {
-        this.customerQcMappingId = customerQcMappingId;
+    public void setCustomerQcProjectMappingId(Long customerQcProjectMappingId) {
+        this.customerQcProjectMappingId = customerQcProjectMappingId;
     }
 
     public Integer getBatchNumber() {

@@ -79,7 +79,11 @@ public final class AidasConstants {
 
     public static final Integer AUTO_CREATE_OBJECTS=1;
 
+    public static final Integer CREATE_MANUAL_OBJECTS=0;
 
+    public static final Integer QC_LEVEL_FCFS=0;
+
+    public static final Integer QC_LEVEL_ED=1;
 
     private AidasConstants() {}
 }

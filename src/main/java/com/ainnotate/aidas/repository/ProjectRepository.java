@@ -88,6 +88,16 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     Page<ProjectDTO> findProjectWithUploadCountByUser(Pageable page, Long userId);
 
     @Query(nativeQuery = true)
+    Page<ProjectDTO> findProjectWithUploadCountByUserForAllowedProjects(Pageable page, Long userId,List<Long> enabledProjectIds);
+
+    @Query(value="select count(o.id) as count \n" +
+        "from user_vendor_mapping_object_mapping uvmom  \n" +
+        "left join object o on o.id=uvmom.object_id  \n" +
+        "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id\n" +
+        "where uvm.user_id<>?1 and uvmom.status=1 and o.status=1 and o.is_dummy=0 and o.project_id=?2", nativeQuery = true)
+    Integer findProjectWithAnyObjectEnabledForUser(Long userId,Long projectId);
+
+    @Query(nativeQuery = true)
     List<ProjectDTO> findProjectWithUploadCountByUserForDropDown(Long userId);
 
     @Query(value=" select count(*) from upload u, user_vendor_mapping_object_mapping uvmom, object o where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and u.approval_status=1 and o.project_id=?1 group by o.project_id ",nativeQuery = true)
@@ -116,5 +126,8 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
         " select p.id,p.name from object_property op,property p, object o where op.property_id=p.id and op.object_id=o.id and o.project_id=?1 and op.add_to_metadata=1 and op.property_id not in (select property_id from project_property where project_id=?1)) a order by a.id"
         ,nativeQuery = true)
     List<String> getTotalPropertyNamesForExport(Long projectId);
+
+
+
 
 }

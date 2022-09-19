@@ -25,7 +25,7 @@ public interface UploadMetaDataRepository extends JpaRepository<UploadMetaData, 
     void deleteAllSampleUploadMetadata();
 
     @Query(value="select * from upload_meta_data where upload_id=?",nativeQuery = true)
-    List<UploadMetaData> getAllUploadMetaDataForUpload(Long uploadId);
+    List<UploadMetaData> getAllUploadMetaDataForUploadForQc(Long uploadId);
 
     @Query(value="select project_property_id from upload_meta_data where upload_id=? and project_property_id is not null",nativeQuery = true)
     List<Long> getAllProjectPropertyIdsOfUploadMetaDataForUpload(Long uploadId);
@@ -34,11 +34,15 @@ public interface UploadMetaDataRepository extends JpaRepository<UploadMetaData, 
     @Query(value="select object_property_id from upload_meta_data where upload_id=? and object_property_id is not null",nativeQuery = true)
     List<Long> getAllObjectPropertyIdsOfUploadMetaDataForUpload(Long uploadId);
 
-
-
-
     @Query(nativeQuery = true)
     List<UploadMetadataDTO> getAllUploadMetaDataForProject(Long projectId);
+
+    @Query(nativeQuery = true)
+    List<UploadMetadataDTO> getAllUploadMetaDataForUpload(Long uploadId);
+
+    @Query(nativeQuery = true)
+    List<UploadMetadataDTO> getAllUploadMetaDataForObject(Long projectId);
+
     @Query(nativeQuery = true)
     List<UploadMetadataDTO> getAllUploadMetaDataForProjectWithStatus(Long projectId,Integer status);
 
@@ -54,6 +58,9 @@ public interface UploadMetaDataRepository extends JpaRepository<UploadMetaData, 
     @Query(value="select * from upload_meta_data umd where umd.upload_id=?1 and umd.object_property_id=?2 ",nativeQuery = true)
     UploadMetaData getUploadMetaDataByObjectPropertyId(Long uploadId, Long objectPropertyId);
 
+    @Query(value="select count(*) from upload_meta_data umd,project_property pp where umd.upload_id=?1 and umd.project_property_id=pp.property_id and (umd.value is null or length(trim(umd.value))=0) and pp.optional=0 and pp.add_to_metadata=0 ",nativeQuery = true)
+    Integer getUploadMetadataCountMandatoryProjectPropertyNotFilled(Long uploadId);
 
-
+    @Query(value="select count(*) from upload_meta_data umd,project_property pp where umd.upload_id=?1 and umd.project_property_id=pp.property_id and (umd.value is null or length(trim(umd.value))=0) and pp.optional=0 and pp.add_to_metadata=0 ",nativeQuery = true)
+    Integer getUploadMetadataCountMandatoryObjectPropertyNotFilled(Long uploadId);
 }
