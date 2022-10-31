@@ -216,6 +216,20 @@ public class PropertyResource {
     }
 
     /**
+     * {@code GET  /aidas-property} : get all the aidasProperties with specific type.
+     *
+     * @param customerId the pagination information.
+     * @param categoryId the type of property required (1=property , 2=metadata)
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of aidasProperties in body.
+     */
+    @GetMapping("/aidas-property/category/{customerId}/{categoryId}")
+    public ResponseEntity<List<Property>> getAllPropertiesByType(@PathVariable(value = "customerId", required = false) final Long customerId, @PathVariable(value = "categoryId", required = false) final Long categoryId) {
+        log.debug("REST request to get a page of AidasProperties");
+        List<Property> properties = propertyRepository.findAllDefaultPropsOfCustomerAndCategory(customerId,categoryId);
+        return ResponseEntity.ok().body(properties);
+    }
+
+    /**
      * {@code GET  /aidas-app-property/option/{projectType}} : get all the options for given project option (image, view, both).
      *
      * @param projectType projectType for which opttions required

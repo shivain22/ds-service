@@ -167,9 +167,9 @@ public class ProjectResource {
                     pp.setProperty(p);
                     pp.setValue(p.getValue());
                     pp.setOptional(p.getOptional());
-                    pp.setAddToMetadata(0);
+                    pp.setAddToMetadata(p.getAddToMetadata());
                     pp.setPassedFromApp(0);
-                    pp.setShowToVendorUser(0);
+                    pp.setShowToVendorUser(p.getShowToVendorUser());
                     pp.setStatus(1);
                     pp.setProjectPropertyType(p.getPropertyType());
                     project.addAidasProjectProperty(pp);
@@ -181,6 +181,7 @@ public class ProjectResource {
                         if(pqlc.getQcLevelAcceptancePercentage()!=null && pqlc.getQcLevelBatchSize()!=null){
                             isQcLevelConfigsAdded = true;
                         }
+                        pqlc.setAllocationStrategy(AidasConstants.QC_LEVEL_FCFS);
                         pqlc.setProject(project);
                     }
             }
@@ -317,17 +318,19 @@ public class ProjectResource {
             csvData.add("QC Level "+q+" Status");
             csvData.add("QC Level "+q+" Reject Reasons");
         }
-        csvData.addAll(projectRepository.getTotalPropertyNamesForExport(projectId));
+        List<String> cols = projectRepository.getTotalPropertyNamesForExport(projectId);
+        csvData.addAll(cols);
         csvDatas.add(csvData);
         colCount = csvData.size();
-        if(uploadMetaDatas.size()%colCount==0){
+        if(uploadMetaDatas.size()%cols.size()==0){
             int i=0;
             int slNo=1;
             csvData = null;
             for(UploadMetadataDTO umd:uploadMetaDatas){
-                if(i%colCount==0){
-                    if(csvData!=null)
+                if(i%cols.size()==0){
+                    if(csvData!=null) {
                         csvDatas.add(csvData);
+                    }
                     csvData = new ArrayList<>();
                     csvData.add(String.valueOf(slNo));
                     csvData.add(umd.getProjectName());
@@ -379,6 +382,7 @@ public class ProjectResource {
                 .contentLength(file.length())
                 .body(file1);
         }catch(Exception e){
+            e.printStackTrace();
             throw new BadRequestAlertException("Unable to generate file ", ENTITY_NAME, "idexists");
         }
     }

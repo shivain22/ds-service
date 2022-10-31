@@ -47,7 +47,6 @@ import org.springframework.data.jpa.repository.Query;
     "u.user_vendor_mapping_object_mapping_id=uvmom.id and " +
     "uvmom.object_id=o.id and " +
     "umd.project_property_id=pp.id and" +
-    " pp.show_to_vendor_user=1 and" +
     " o.project_id=?1  and o.project_id=pr.id and" +
     " pp.property_id=p.id" +
     " union " +
@@ -64,7 +63,6 @@ import org.springframework.data.jpa.repository.Query;
     "umd.upload_id=u.id and " +
     "u.user_vendor_mapping_object_mapping_id=uvmom.id and " +
     "uvmom.object_id=o.id and " +
-    " op.show_to_vendor_user=1 and " +
     " op.property_id=p.id and " +
     "umd.object_property_id=op.id and" +
     " op.property_id not in (select property_id from project_property where project_id=?1) and" +
@@ -92,7 +90,6 @@ import org.springframework.data.jpa.repository.Query;
         "u.user_vendor_mapping_object_mapping_id=uvmom.id and " +
         "uvmom.object_id=o.id and " +
         "umd.project_property_id=pp.id and" +
-        " pp.show_to_vendor_user=1 and" +
         " o.id=?1  and o.project_id=pr.id and" +
         " pp.property_id=p.id" +
         " union " +
@@ -109,7 +106,6 @@ import org.springframework.data.jpa.repository.Query;
         "umd.upload_id=u.id and " +
         "u.user_vendor_mapping_object_mapping_id=uvmom.id and " +
         "uvmom.object_id=o.id and " +
-        " op.show_to_vendor_user=1 and " +
         " op.property_id=p.id and " +
         "umd.object_property_id=op.id and" +
         " o.id=?1 and o.project_id=pr.id) umd order by umd.upload_id, umd.prop_id",resultSetMapping = "Mapping.UploadMetaDataDTO")

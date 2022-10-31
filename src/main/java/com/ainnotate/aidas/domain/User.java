@@ -123,7 +123,8 @@ public class User extends AbstractAuditingEntity implements Serializable {
     @Column(name = "last_name" )
     private String lastName;
     @NotNull
-    @Column(name = "email",  nullable = true, unique = false)
+    @Email
+    @Column(name = "email",  nullable = true, unique = false )
     private String email;
 
 

@@ -37,9 +37,9 @@ public final class AidasConstants {
 
     public static final Integer AIDAS_UPLOAD_METADATA_REQUIRED=0;
 
-    public static final Integer AIDAS_PROPERTY_OPTIONAL=0;
+    public static final Integer AIDAS_PROPERTY_OPTIONAL=1;
 
-    public static final Integer AIDAS_PROPERTY_REQUIRED=1;
+    public static final Integer AIDAS_PROPERTY_REQUIRED=0;
 
     public static final Integer AIDAS_PROPERTY=0;
 
@@ -84,6 +84,14 @@ public final class AidasConstants {
     public static final Integer QC_LEVEL_FCFS=0;
 
     public static final Integer QC_LEVEL_ED=1;
+
+    public static final Integer PROJECT_PROPERTY_OPTIONAL=1;
+
+    public static final Integer PROJECT_PROPERTY_MANDATORY=0;
+
+    public static final Integer OBJECT_PROPERTY_OPTIONAL=1;
+
+    public static final Integer OBJECT_PROPERTY_MANDATORY=0;
 
     private AidasConstants() {}
 }

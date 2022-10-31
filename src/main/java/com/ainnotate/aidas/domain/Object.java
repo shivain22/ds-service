@@ -53,9 +53,10 @@ query = "select \n" +
 @SqlResultSetMappings(value={
     @SqlResultSetMapping(
         name = "Mapping.ObjectDTOCount",
-        columns = { @ColumnResult(name = "count", type = Long.class) }
+        columns = { @ColumnResult(name = "count", type = Integer.class) }
     ),
-    @SqlResultSetMapping(name = "Mapping.ObjectDTO",
+    @SqlResultSetMapping(
+        name = "Mapping.ObjectDTO",
         classes = @ConstructorResult(targetClass = ObjectDTO.class,
             columns = {
                 @ColumnResult(name = "id",type = Long.class),
@@ -157,6 +158,8 @@ query = "select \n" +
         "where uvm.user_id=?1 and uvmom.status=1 and o.status=1 and o.is_dummy=0 and o.project_id=?2 and o.object_acquired_by_uvmom_id is null"
         ,resultSetMapping = "Mapping.ObjectDTOWithProjectId")
 
+
+
 @NamedNativeQuery(name="Object.getAllObjectsByVendorUserProjectWithProjectId.count",
     query = "select count(o.id) as count  \n" +
             "from user_vendor_mapping_object_mapping uvmom  \n" +
@@ -199,7 +202,7 @@ query = "select \n" +
         "from user_vendor_mapping_object_mapping uvmom  \n" +
         "left join object o on o.id=uvmom.object_id   \n" +
         "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id \n" +
-        "where uvm.user_id=?1 and o.status=1 and o.is_dummy=0 and o.project_id=?2 and o.object_acquired_by_uvmom_id is null ",resultSetMapping = "Mapping.ObjectDTOCount"
+        "where uvm.user_id=?1 and o.status=1 and o.is_dummy=0 and o.project_id=?2 and o.object_acquired_by_uvmom_id in (?3) ",resultSetMapping = "Mapping.ObjectDTOCount"
 )
 
 
@@ -341,7 +344,19 @@ public class Object extends AbstractAuditingEntity  implements Serializable {
     @Column(name="object_acquired_by_uvmom_id" ,columnDefinition = "integer default null")
     private Long objectAcquiredByUvmomId;
 
-    /*@Column(name="batch_status" ,columnDefinition = "integer default null")
+    @Transient
+    @JsonProperty
+    private Long userVendorMappingObjectMappingId;
+
+
+    public Long getUserVendorMappingObjectMappingId() {
+        return userVendorMappingObjectMappingId;
+    }
+
+    public void setUserVendorMappingObjectMappingId(Long userVendorMappingObjectMappingId) {
+        this.userVendorMappingObjectMappingId = userVendorMappingObjectMappingId;
+    }
+/*@Column(name="batch_status" ,columnDefinition = "integer default null")
     private Integer batchStatus;
 
     public Integer getBatchStatus() {

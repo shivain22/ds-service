@@ -1,9 +1,13 @@
 package com.ainnotate.aidas.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.util.HashMap;
 import java.util.Map;
 
 public class UploadMetadataDTO {
+    @JsonIgnoreProperties(value = {"userVendorMappingObjecMapping","uploadRejectReasonMappings","uploadMetaDataSet"})
+    UploadDTO uploadDTO;
     private Long uploadId;
     private Long projectPropertyId;
     private String value;
@@ -11,10 +15,18 @@ public class UploadMetadataDTO {
     private Long objectPropertyId;
     private Boolean projectProperty;
     private Integer propertyType;
-    private Boolean failed=true;
+    private Boolean failed=false;
 
     private String projectName;
     private String objectName;
+
+    public UploadDTO getUploadDTO() {
+        return uploadDTO;
+    }
+
+    public void setUploadDTO(UploadDTO uploadDTO) {
+        this.uploadDTO = uploadDTO;
+    }
 
     public String getProjectName() {
         return projectName;

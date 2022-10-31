@@ -292,7 +292,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
         "project p\n" +
         "left join user_vendor_mapping_project_mapping uvmpm on p.id=uvmpm.project_id\n" +
         "left join user_vendor_mapping uvm on uvm.id=uvmpm.user_vendor_mapping_id \n" +
-        "where uvm.user_id=?1 and uvm.status=1 and uvmpm.status=1",
+        "where uvm.user_id=?1 and uvm.status=1 and uvmpm.status=1 order by p.id desc",
     resultSetMapping = "Mapping.ProjectDTOForDropDown")
 
 @NamedNativeQuery(name = "Project.findProjectWithUploadCountByUserForDropDown.count",

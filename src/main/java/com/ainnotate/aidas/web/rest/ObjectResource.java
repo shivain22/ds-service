@@ -559,135 +559,96 @@ public class ObjectResource {
         return ResponseEntity.ok().body(objects);
     }
 
-
-
     @GetMapping("/aidas-projects/{id}/aidas-objects/details")
-    public ResponseEntity<List<ObjectDTO>> getAllAidasObjectsOfProjectForVendorUser(Pageable pageable, @PathVariable(value = "id", required = false) final Long projectId) {
+    public ResponseEntity<List<Object>> getAllAidasObjectsOfProjectForVendorUser(Pageable pageable, @PathVariable(value = "id", required = false) final Long projectId) {
         log.debug("REST request to get a page of AidasObjects");
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-        Page<ObjectDTO> page = null;
+        Page<Object> page = null;
         Project project = projectRepository.getById(projectId);
         UserVendorMapping uvm = userVendorMappingRepository.findByVendorIdAndUserId(user.getVendor().getId(),user.getId());
         UserVendorMappingProjectMapping uvmpm = userVendorMappingProjectMappingRepository.findByUserVendorMappingIdProjectId(uvm.getId(),projectId);
         ObjectMapper mapper = new ObjectMapper();
         UvmomBatchMappingsDTO uvmomBatchMappingsDTO = new UvmomBatchMappingsDTO();
         UvmomBatchMappingDTO uvmomBatchMappingDTO = new UvmomBatchMappingDTO();
-        Integer batchNumber =1;
-        List<Object> objects1 =null;
-        boolean unChanged = false;
-        try {
-            if (project.getAutoCreateObjects().equals(1)) {
-                Integer objectsRemaining = objectRepository.getObjectNotAllocatedYet(projectId);
+        Integer batchNumber =0;
+        List<Long> allObjectsIds = new ArrayList<>();
+        boolean containFresh = false;
+        if(project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)){
                 if (uvmpm.getUvmomIds() != null) {
-                    uvmomBatchMappingsDTO = mapper.readValue(uvmpm.getUvmomIds(), UvmomBatchMappingsDTO.class);
-                }
-                if (uvmomBatchMappingsDTO.getUvmoms() != null && uvmomBatchMappingsDTO.getUvmoms().size() > 0) {
+                    try {
+                        uvmomBatchMappingsDTO = mapper.readValue(uvmpm.getUvmomIds(), UvmomBatchMappingsDTO.class);
+                    } catch (JsonProcessingException e) {
+                        e.printStackTrace();
+                    }
                     uvmomBatchMappingsDTO.getUvmoms().sort(Comparator.comparing(UvmomBatchMappingDTO::getBatchNumber).reversed());
+                    for(UvmomBatchMappingDTO ubmdto:uvmomBatchMappingsDTO.getUvmoms()){
+                        allObjectsIds.addAll(ubmdto.getUserVendorMappingObjectMappingIds());
+                    }
                     uvmomBatchMappingDTO = uvmomBatchMappingsDTO.getUvmoms().get(0);
                     batchNumber = uvmomBatchMappingDTO.getBatchNumber();
                 }
-                if(objectsRemaining>0) {
-                    int i = 0;
-                    if (uvmomBatchMappingDTO != null && uvmomBatchMappingDTO.getUserVendorMappingObjectMappingIds() != null && uvmomBatchMappingDTO.getUserVendorMappingObjectMappingIds().size() > 0) {
-                        for (Long uvmomId : uvmomBatchMappingDTO.getUserVendorMappingObjectMappingIds()) {
-                            UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.getById(uvmomId);
-                            if (uvmom.getTotalUploaded().equals(uvmom.getObject().getNumberOfUploadsRequired())) {
-                                i++;
-                            }
-                        }
-                        if (i == uvmomBatchMappingDTO.getUserVendorMappingObjectMappingIds().size()) {
-                            System.out.println("All uploadsd required for the reserved objects are completed.  So lets fetch new set of data.");
-                            PageRequest pages = PageRequest.of(pageable.getPageNumber(), project.getNumberOfObjectsCanBeAssignedToVendorUser(), pageable.getSort());
-                            page = objectRepository.getAllObjectsByVendorUserProjectWithProjectId(pages, user.getId(), projectId);
-                            if(page.getContent().size()==0){
-                                System.out.println("No more uploads are available so let us always send the complete list which are completed and assigned....");
-                                pages = PageRequest.of(pageable.getPageNumber(), project.getNumberOfObjectsCanBeAssignedToVendorUser(), pageable.getSort());
-                                List<Long>  tempUvmomIds = new ArrayList<>();
-                                for(UvmomBatchMappingDTO uvmbmdto:uvmomBatchMappingsDTO.getUvmoms()){
-                                    tempUvmomIds.addAll(uvmbmdto.getUserVendorMappingObjectMappingIds());
-                                }
-                                page = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdAndObjectAlreadyAssigned(pages, user.getId(), projectId, tempUvmomIds);
-                                HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
-                                return ResponseEntity.ok().headers(headers).body(page.getContent());
-                            }else {
-                                uvmomBatchMappingDTO = new UvmomBatchMappingDTO();
-                                uvmomBatchMappingDTO.setBatchNumber(batchNumber + 1);
-                                HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
-                                return ResponseEntity.ok().headers(headers).body(page.getContent());
-                            }
-                        } else {
-                            System.out.println("Not all object uploads are completed");
-                            PageRequest pages = PageRequest.of(pageable.getPageNumber(), project.getNumberOfObjectsCanBeAssignedToVendorUser(), pageable.getSort());
-                            page = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdAndObjectAlreadyAssigned(pages, user.getId(), projectId, uvmomBatchMappingDTO.getUserVendorMappingObjectMappingIds());
-                            unChanged = true;
-                        }
-                    } else {
-                        PageRequest pages = PageRequest.of(pageable.getPageNumber(), project.getNumberOfObjectsCanBeAssignedToVendorUser(), pageable.getSort());
-                        page = objectRepository.getAllObjectsByVendorUserProjectWithProjectId(pages, user.getId(), projectId);
-                        uvmomBatchMappingDTO = new UvmomBatchMappingDTO();
-                        uvmomBatchMappingDTO.setBatchNumber(batchNumber);
-                        uvmomBatchMappingsDTO.getUvmoms().add(uvmomBatchMappingDTO);
+                if(batchNumber>0){
+                    log.debug("There is already one batch available Batch Number ->"+uvmomBatchMappingDTO.getBatchNumber()+" uvmomIds in batch "+uvmomBatchMappingDTO.getBatchNumber() +" are "+uvmomBatchMappingDTO.getUserVendorMappingObjectMappingIds());
+                    Integer objectsNotCompleted = objectRepository.getObjectsNotCompleted(allObjectsIds);
+                    //User have not completed all uploads required by object.
+                    if(objectsNotCompleted>0){
+                        log.debug("There are some objects for which uploads is not completed. objectsNotCompleted-> "+objectsNotCompleted);
+                        //get all the objects which are requires more upload and already uploaded.
+                        PageRequest pages = PageRequest.of(pageable.getPageNumber(), allObjectsIds.size(), pageable.getSort());
+                        page = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdAndObjectAlreadyAssigned(pages,user.getId(),projectId,allObjectsIds);
+                    }else{
+                        log.debug("All uploads required by all objects are completed. Fetching new batch ");
+                        //All objects required uploads completed, so lets get new batch along with already available batches.
+                        PageRequest pages = PageRequest.of(pageable.getPageNumber(), allObjectsIds.size()+project.getNumberOfObjectsCanBeAssignedToVendorUser(), pageable.getSort());
+                        page = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdWithAlreadyCompleted(pages, user.getId(), projectId,allObjectsIds,project.getNumberOfObjectsCanBeAssignedToVendorUser());
+                        containFresh = true;
                     }
-                    for (ObjectDTO object : page.getContent()) {
-                        Object o = objectRepository.getById(object.getId());
-                        UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserObject(user.getId(), object.getId());
-                        o.setObjectAcquiredByUvmomId(uvmom.getId());
-                        objectRepository.save(o);
-                        if(!unChanged) {
-                            uvmomBatchMappingDTO.getUserVendorMappingObjectMappingIds().add(uvmom.getId());
-                        }
-                        List<ObjectProperty> objectProperties = objectPropertyRepository.getAllObjectPropertyForObject(object.getId());
-                        object.setObjectProperties(objectProperties);
-                    }
-                    if (unChanged) {
-                        uvmomBatchMappingsDTO.getUvmoms().add(uvmomBatchMappingDTO);
-                        List<Long> tempUvmomIds = new ArrayList<>();
-                        for (UvmomBatchMappingDTO uvmbmdto : uvmomBatchMappingsDTO.getUvmoms()) {
-                            tempUvmomIds.addAll(uvmomBatchMappingDTO.getUserVendorMappingObjectMappingIds());
-                        }
-                        PageRequest pages = PageRequest.of(pageable.getPageNumber(), project.getNumberOfObjectsCanBeAssignedToVendorUser(), pageable.getSort());
-                        Page page1 = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdAndObjectAlreadyAssigned(pages, user.getId(), projectId, tempUvmomIds);
-                        page.getContent().addAll(page1.getContent());
-                    }
-                    uvmpm.setUvmomIds(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(uvmomBatchMappingsDTO));
-                    userVendorMappingProjectMappingRepository.save(uvmpm);
-                    HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
-                    return ResponseEntity.ok().headers(headers).body(page.getContent());
-                }else{
-                    System.out.println("No more uploads are available so let us always send the complete list which are completed and assigned....");
+                }else {
+                    //The user is coming for the first time.  Get new set of objects.
+                    log.debug("User is coming for first time.  Fetching new batch from DB");
                     PageRequest pages = PageRequest.of(pageable.getPageNumber(), project.getNumberOfObjectsCanBeAssignedToVendorUser(), pageable.getSort());
-                    List<Long>  tempUvmomIds = new ArrayList<>();
-                    for(UvmomBatchMappingDTO uvmbmdto:uvmomBatchMappingsDTO.getUvmoms()){
-                        tempUvmomIds.addAll(uvmbmdto.getUserVendorMappingObjectMappingIds());
-                    }
-                    page = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdAndObjectAlreadyAssigned(pages, user.getId(), projectId, tempUvmomIds);
-                    for (ObjectDTO object : page.getContent()) {
-                        Object o = objectRepository.getById(object.getId());
-                        UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserObject(user.getId(), object.getId());
+                    page = objectRepository.getAllObjectsByVendorUserProjectWithProjectId(pages, user.getId(), projectId);
+                    containFresh = true;
+                }
+                if(containFresh){
+                    uvmomBatchMappingDTO=new UvmomBatchMappingDTO();
+                    uvmomBatchMappingDTO.setBatchNumber(batchNumber+1);
+                }
+                for(Object o:page.getContent()){
+                    UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserVendorMappingObject(uvm.getId(),o.getId());
+                    o.setTotalUploaded(uvmom.getTotalUploaded());
+                    o.setTotalApproved(uvmom.getTotalApproved());
+                    o.setTotalRejected(uvmom.getTotalRejected());
+                    o.setTotalPending(uvmom.getTotalPending());
+                    o.setUserVendorMappingObjectMappingId(uvmom.getId());
+                    if(containFresh && o.getObjectAcquiredByUvmomId()==null) {
                         o.setObjectAcquiredByUvmomId(uvmom.getId());
+                        uvmomBatchMappingDTO.getUserVendorMappingObjectMappingIds().add(uvmom.getId());
                         objectRepository.save(o);
-                        if(!unChanged) {
-                            uvmomBatchMappingDTO.getUserVendorMappingObjectMappingIds().add(uvmom.getId());
-                        }
-                        List<ObjectProperty> objectProperties = objectPropertyRepository.getAllObjectPropertyForObject(object.getId());
-                        object.setObjectProperties(objectProperties);
                     }
-
-                    HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
-                    return ResponseEntity.ok().headers(headers).body(page.getContent());
                 }
-            } else {
-                page = objectRepository.getAllObjectsByVendorUserProjectWithProjectId(pageable, user.getId(), projectId);
-                for (ObjectDTO object : page.getContent()) {
-                    Object o = objectRepository.getById(object.getId());
-                    List<ObjectProperty> objectProperties = objectPropertyRepository.getAllObjectPropertyForObject(object.getId());
-                    object.setObjectProperties(objectProperties);
+                if(containFresh){
+                    uvmomBatchMappingsDTO.getUvmoms().add(uvmomBatchMappingDTO);
+                    try {
+                        uvmpm.setUvmomIds(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(uvmomBatchMappingsDTO));
+                    } catch (JsonProcessingException e) {
+                        e.printStackTrace();
+                    }
                 }
-                HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
-                return ResponseEntity.ok().headers(headers).body(page.getContent());
+            HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+            return ResponseEntity.ok().headers(headers).body(page.getContent());
+        }else{
+            page = objectRepository.getAllObjectsByVendorUserProjectWithProjectId(pageable, user.getId(), projectId);
+            for(Object o:page.getContent()){
+                UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserVendorMappingObject(uvm.getId(),o.getId());
+                o.setTotalUploaded(uvmom.getTotalUploaded());
+                o.setTotalApproved(uvmom.getTotalApproved());
+                o.setTotalRejected(uvmom.getTotalRejected());
+                o.setTotalPending(uvmom.getTotalPending());
+                o.setUserVendorMappingObjectMappingId(uvmom.getId());
             }
-        }catch(Exception e){
-            throw new BadRequestAlertException("Error in fetch object details ", ENTITY_NAME, "object");
+            HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+            return ResponseEntity.ok().headers(headers).body(page.getContent());
         }
     }
 

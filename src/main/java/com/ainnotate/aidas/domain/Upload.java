@@ -109,7 +109,7 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
     private Integer currentQcLevel=1;
 
     @Column(name ="current_batch_number",columnDefinition = "integer default 1")
-    private Integer currentBatchNumber=1;
+    private Integer currentBatchNumber=0;
 
     public Integer getCurrentBatchNumber() {
         return currentBatchNumber;

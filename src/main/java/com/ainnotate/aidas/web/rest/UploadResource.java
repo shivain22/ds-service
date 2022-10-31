@@ -17,7 +17,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 
-
+import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -164,12 +164,17 @@ public class UploadResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/aidas-uploads/metadata")
-    public ResponseEntity<List<UploadMetadataDTO>> submitMetadata(@Valid @RequestBody List<UploadMetadataDTO> uploadMetadataDTOS) throws URISyntaxException {
+    public ResponseEntity<List<UploadMetadataDTO>> submitMetadata(@RequestBody List<UploadMetadataDTO> uploadMetadataDTOS) throws URISyntaxException {
         log.debug("REST request to save AidasUpload : {}", uploadMetadataDTOS);
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         Authority authority = user.getAuthority();
         if(authority.getName().equals(AidasConstants.VENDOR_USER)){
             for(UploadMetadataDTO umd:uploadMetadataDTOS){
+                UploadDTO uploadDTO = new UploadDTO();
+                Upload upload = uploadRepository.getById(umd.getUploadId());
+                uploadDTO.setUploadId(upload.getId());
+                uploadDTO.setName(upload.getUserVendorMappingObjectMapping().getObject().getName());
+                uploadDTO.setObjectKey(upload.getUploadUrl());
                 if(umd.getProjectProperty()!=null && umd.getProjectProperty() && umd.getProjectPropertyId()!=null){
                     UploadMetaData umdpp = uploadMetaDataRepository.getUploadMetaDataByProjectPropertyId(umd.getUploadId(),umd.getProjectPropertyId());
                     if(umdpp.getProjectProperty().getOptional().equals(0)){
@@ -190,6 +195,9 @@ public class UploadResource {
                     umdop.setValue(umd.getValue());
                     uploadMetaDataRepository.save(umdop);
                 }
+                umd.setUploadDTO(uploadDTO);
+                upload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
+                uploadRepository.save(upload);
             }
             return ResponseEntity.ok().body(uploadMetadataDTOS);
         }
@@ -204,22 +212,57 @@ public class UploadResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/aidas-uploads/qc")
-    public ResponseEntity<String> submitForQc(@Valid @RequestBody List<Long> uploadIds) throws URISyntaxException {
+    public ResponseEntity<List<UploadMetadataDTO>> submitForQc(@Valid @RequestBody List<Long> uploadIds) throws URISyntaxException {
         log.debug("REST request to save AidasUpload : {}", uploadIds);
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         Authority authority = user.getAuthority();
+        List<UploadMetadataDTO> uploadMetadataDTOS = new ArrayList<>();
+        List<Upload> successUploads = new ArrayList<>();
         if(authority.getName().equals(AidasConstants.VENDOR_USER)){
             for(Long upId:uploadIds){
-                Upload upload = uploadRepository.getById(upId);
-                if(upload.getMetadataStatus().equals(AidasConstants.AIDAS_UPLOAD_METADATA_COMPLETED)) {
-                    upload.setMetadataStatus(AidasConstants.AIDAS_UPLOAD_METADATA_COMPLETED);
-                    upload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
+                int i=0;
+                Upload upload = uploadRepository.getUploadById(upId);
+               List<UploadMetadataDTO> umds = uploadMetaDataRepository.getAllUploadMetaDataForUpload(upId);
+                    for (UploadMetadataDTO umd : umds) {
+                        UploadDTO uploadDTO = new UploadDTO();
+                        uploadDTO.setUploadId(upload.getId());
+                        uploadDTO.setName(upload.getUserVendorMappingObjectMapping().getObject().getName());
+                        uploadDTO.setObjectKey(upload.getUploadUrl());
+                        umd.setUploadId(upId);
+                        if (umd.getProjectPropertyId() != null) {
+                            UploadMetaData umdpp = uploadMetaDataRepository.getUploadMetaDataByProjectPropertyId(umd.getUploadId(), umd.getProjectPropertyId());
+                            if (umdpp.getProjectProperty().getOptional().equals(0)) {
+                                if (umd.getValue() == null || (umd.getValue() != null && umd.getValue().trim().length() == 0)) {
+                                    umd.setFailed(true);
+                                    i++;
+                                } else {
+                                    umd.setFailed(false);
+                                }
+                            }
+                        } else if (umd.getObjectPropertyId() != null) {
+                            UploadMetaData umdop = uploadMetaDataRepository.getUploadMetaDataByObjectPropertyId(umd.getUploadId(), umd.getObjectPropertyId());
+                            if (umdop.getObjectProperty().getOptional().equals(0)) {
+                                if (umd.getValue() == null || (umd.getValue() != null && umd.getValue().trim().length() == 0)) {
+                                    umd.setFailed(true);
+                                    i++;
+                                } else {
+                                    umd.setFailed(false);
+                                }
+                            }
+                        }
+                        umd.setUploadDTO(uploadDTO);
+                        uploadMetadataDTOS.add(umd);
+                    }
+                    if(i==0){
+                        successUploads.add(upload);
+                    }
                 }
-                uploadRepository.save(upload);
             }
-            return ResponseEntity.ok().body("Success");
+        for(Upload u:successUploads){
+            uploadRepository.updateMetadataStatus(u.getId(),AidasConstants.AIDAS_UPLOAD_METADATA_COMPLETED);
         }
-        throw new BadRequestAlertException("You can not upload as there was an error internally", ENTITY_NAME, "idexists");
+        //uploadRepository.saveAllAndFlush(successUploads);
+            return ResponseEntity.ok().body(uploadMetadataDTOS);
     }
 
     /**
@@ -263,38 +306,34 @@ public class UploadResource {
                 upload.setCurrentQcLevel(1);
                 Long mandatoryProjectProperties = projectPropertyRepository.countProjectPropertyByProjectAndOptional(project.getId(), AidasConstants.AIDAS_PROPERTY_REQUIRED);
                 Long mandatoryObjectProperties = objectPropertyRepository.countObjectProperties(object.getId(), AidasConstants.AIDAS_PROPERTY_REQUIRED);
-                if (mandatoryObjectProperties == 0 && mandatoryProjectProperties == 0) {
+                /*if (mandatoryObjectProperties == 0 && mandatoryProjectProperties == 0) {
                     upload.setMetadataStatus(AidasConstants.AIDAS_UPLOAD_METADATA_COMPLETED);
                 } else {
                     upload.setMetadataStatus(AidasConstants.AIDAS_UPLOAD_METADATA_REQUIRED);
-                }
+                }*/
                 upload.setApprovalStatus(AidasConstants.AIDAS_UPLOAD_PENDING);
                 upload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
                 try {
                     Upload result = uploadRepository.save(upload);
                     Object o = result.getUserVendorMappingObjectMapping().getObject();
                     Project p = o.getProject();
-
                     o.setTotalUploaded(o.getTotalUploaded() + 1);
                     o.setTotalPending(o.getTotalPending() + 1);
-                    if (o.getTotalRequired() > 0)
+                    if (o.getTotalRequired() > 0) {
                         o.setTotalRequired(o.getTotalRequired() - 1);
-
+                    }
                     p.setTotalUploaded(p.getTotalUploaded() + 1);
                     p.setTotalPending(p.getTotalPending() + 1);
-                    if (p.getTotalRequired() > 0)
+                    if (p.getTotalRequired() > 0) {
                         p.setTotalRequired(p.getTotalRequired() - 1);
-
+                    }
                     UserVendorMappingProjectMapping uvmpm = userVendorMappingProjectMappingRepository.findByUserVendorMappingIdProjectId(upload.getUserVendorMappingObjectMapping().getUserVendorMapping().getId(), p.getId());
                     uvmpm.setTotalUploaded(uvmpm.getTotalUploaded() + 1);
                     uvmpm.setTotalPending(uvmpm.getTotalPending() + 1);
-
                     objectRepository.save(o);
                     projectRepository.save(p);
-
                     uvmom.setTotalUploaded(uvmom.getTotalUploaded() + 1);
                     uvmom.setTotalPending(uvmom.getTotalPending() + 1);
-
                     userVendorMappingObjectMappingRepository.save(uvmom);
                     userVendorMappingProjectMappingRepository.save(uvmpm);
                     List<ProjectProperty> projectProperties = projectPropertyRepository.findAllProjectProperty(project.getId());
@@ -318,7 +357,6 @@ public class UploadResource {
                     }
                     uploadMetaDataRepository.saveAll(uploadMetaDataList);
                     for (Map.Entry<String, String> entry : uploadDto.getUploadMetadata().entrySet()) {
-                        System.out.println(entry.getKey() + "==" + entry.getValue());
                         Property property = propertyRepository.getByNameAndUserIdAndCategory(entry.getKey().trim(), customer.getId(), project.getCategory().getId());
                         UploadMetaData umdpp = uploadMetaDataRepository.getUploadMetaDataByProjectPropertyName(result.getId(), entry.getKey());
                         UploadMetaData umdop = uploadMetaDataRepository.getUploadMetaDataByObjectPropertyName(result.getId(), entry.getKey());
@@ -331,12 +369,13 @@ public class UploadResource {
                             uploadMetaDataRepository.save(umdop);
                         }
                     }
-                    Integer numberOfMandatoryProjectProperties = uploadMetaDataRepository.getUploadMetadataCountMandatoryProjectPropertyNotFilled(project.getId());
-                    Integer numberOfMandatoryObjectProperties = uploadMetaDataRepository.getUploadMetadataCountMandatoryObjectPropertyNotFilled(object.getId());
-                    if(numberOfMandatoryObjectProperties==0 && numberOfMandatoryProjectProperties==0){
-                        upload.setMetadataStatus(AidasConstants.AIDAS_UPLOAD_METADATA_COMPLETED);
+                    //Integer numberOfMandatoryProjectProperties = uploadMetaDataRepository.getUploadMetadataCountMandatoryProjectPropertyNotFilled(project.getId());
+                    //Integer numberOfMandatoryObjectProperties = uploadMetaDataRepository.getUploadMetadataCountMandatoryObjectPropertyNotFilled(object.getId());
+                    //if(numberOfMandatoryObjectProperties==0 && numberOfMandatoryProjectProperties==0){
+                      upload.setMetadataStatus(AidasConstants.AIDAS_UPLOAD_METADATA_REQUIRED);
                         upload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
-                    }
+                   // }
+                    upload.setCurrentBatchNumber(0);
                     uploadRepository.save(upload);
                     return ResponseEntity
                         .created(new URI("/api/aidas-uploads/" + result.getId()))
@@ -355,7 +394,7 @@ public class UploadResource {
 
 
     /**
-     * {@code POST  /aidas-uploads/dto} : Create a new upload.
+     * {@code POST  /aidas-uploads/dtos} : Create a new upload.
      *
      * @param uploadDtos the upload to create.
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new upload, or with status {@code 400 (Bad Request)} if the upload has already an ID.
@@ -368,100 +407,125 @@ public class UploadResource {
         Authority authority = user.getAuthority();
         if(authority.getName().equals(AidasConstants.VENDOR_USER)) {
             for(UploadDTO uploadDto: uploadDtos){
-            if (uploadDto.getUserId() == null) {
-                throw new BadRequestAlertException("No User Id", ENTITY_NAME, "idexists");
-            }
-            if (uploadDto.getObjectId() == null) {
-                throw new BadRequestAlertException("No Object Id", ENTITY_NAME, "idexists");
-            }
-            if (uploadDto.getUploadUrl() == null) {
-                throw new BadRequestAlertException("No Upload URL Id", ENTITY_NAME, "idexists");
-            }
-            if (uploadDto.getEtag() == null) {
-                throw new BadRequestAlertException("No Etag Id", ENTITY_NAME, "idexists");
-            }
-            Upload upload = new Upload();
-            UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserObject(uploadDto.getUserId(), uploadDto.getObjectId());
-            Object object = uvmom.getObject();
-            Project project = object.getProject();
-            Customer customer = project.getCustomer();
-            upload.setUserVendorMappingObjectMapping(uvmom);
-            upload.setDateUploaded(Instant.now());
-            upload.setName(uploadDto.getObjectKey());
-            upload.setUploadUrl(uploadDto.getUploadUrl());
-            upload.setUploadEtag(uploadDto.getEtag());
-            upload.setObjectKey(uploadDto.getObjectKey());
-            upload.setApprovalStatus(AidasConstants.AIDAS_UPLOAD_PENDING);
-            Long mandatoryProjectProperties = projectPropertyRepository.countProjectPropertyByProjectAndOptional(project.getId(), AidasConstants.AIDAS_PROPERTY_REQUIRED);
-            Long mandatoryObjectProperties = objectPropertyRepository.countObjectProperties(object.getId(), AidasConstants.AIDAS_PROPERTY_REQUIRED);
-            if (mandatoryObjectProperties == 0 && mandatoryProjectProperties == 0) {
-                upload.setMetadataStatus(AidasConstants.AIDAS_UPLOAD_METADATA_COMPLETED);
-            } else {
-                upload.setMetadataStatus(AidasConstants.AIDAS_UPLOAD_METADATA_REQUIRED);
-            }
-            upload.setApprovalStatus(AidasConstants.AIDAS_UPLOAD_PENDING);
-            upload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
-            try {
-                Upload result = uploadRepository.save(upload);
-                Object o = result.getUserVendorMappingObjectMapping().getObject();
-                Project p = o.getProject();
 
-                o.setTotalUploaded(o.getTotalUploaded() + 1);
-                o.setTotalPending(o.getTotalPending() + 1);
-                o.setTotalRequired(o.getTotalRequired() - 1);
-
-                p.setTotalUploaded(p.getTotalUploaded() + 1);
-                p.setTotalPending(p.getTotalPending() + 1);
-                p.setTotalRequired(p.getTotalRequired() - 1);
-
-                UserVendorMappingProjectMapping uvmpm = userVendorMappingProjectMappingRepository.findByUserVendorMappingIdProjectId(upload.getUserVendorMappingObjectMapping().getUserVendorMapping().getId(), p.getId());
-                uvmpm.setTotalUploaded(uvmpm.getTotalUploaded() + 1);
-                uvmpm.setTotalPending(uvmpm.getTotalPending() + 1);
-
-                objectRepository.save(o);
-                projectRepository.save(p);
-
-                uvmom.setTotalUploaded(uvmom.getTotalUploaded() + 1);
-                uvmom.setTotalPending(uvmom.getTotalPending() + 1);
-
-                userVendorMappingObjectMappingRepository.save(uvmom);
-                userVendorMappingProjectMappingRepository.save(uvmpm);
-                for (Map.Entry<String, String> entry : uploadDto.getUploadMetadata().entrySet()) {
-                    Property property = propertyRepository.getByNameAndUserIdAndCategory(entry.getKey().trim(), customer.getId(),project.getId());
-                    if (property != null) {
-                        ProjectProperty projectProperty = projectPropertyRepository.findByProjectAndProperty(project.getId(), property.getId());
-                        ObjectProperty objectProperty = objectPropertyRepository.findByAidasObject_IdAndAidasProperty_Id(object.getId(), property.getId());
-                        if (projectProperty != null) {
-                            UploadMetaData uploadMetaData = new UploadMetaData();
-                            uploadMetaData.setUpload(upload);
-                            uploadMetaData.setProjectProperty(projectProperty);
-                            uploadMetaData.setValue(entry.getValue().toString());
-                            uploadMetaDataRepository.save(uploadMetaData);
-                        }
-                        if (objectProperty != null) {
-                            UploadMetaData uploadMetaData = new UploadMetaData();
-                            uploadMetaData.setUpload(upload);
-                            uploadMetaData.setObjectProperty(objectProperty);
-                            uploadMetaData.setValue(entry.getValue().toString());
-                            uploadMetaDataRepository.save(uploadMetaData);
-                        }
-                    }
+                if (uploadDto.getUserId() == null) {
+                    throw new BadRequestAlertException("No User Id", ENTITY_NAME, "idexists");
                 }
-                return ResponseEntity
-                    .created(new URI("/api/aidas-uploads/" + result.getId()))
-                    .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
-                    .body(result);
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw new BadRequestAlertException("Internal error occured.  Contact administrator", ENTITY_NAME, "idexists");
+                if (uploadDto.getObjectId() == null) {
+                    throw new BadRequestAlertException("No Object Id", ENTITY_NAME, "idexists");
+                }
+                if (uploadDto.getUploadUrl() == null) {
+                    throw new BadRequestAlertException("No Upload URL Id", ENTITY_NAME, "idexists");
+                }
+                if (uploadDto.getEtag() == null) {
+                    throw new BadRequestAlertException("No Etag Id", ENTITY_NAME, "idexists");
+                }
+                Upload upload = new Upload();
+                UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserObject(uploadDto.getUserId(), uploadDto.getObjectId());
+                if(uvmom!=null && uvmom.getObject()!=null){
+                    Object object = uvmom.getObject();
+                    Project project = object.getProject();
+                    Customer customer = project.getCustomer();
+                    upload.setUserVendorMappingObjectMapping(uvmom);
+                    upload.setDateUploaded(Instant.now());
+                    upload.setName(uploadDto.getObjectKey());
+                    upload.setUploadUrl(uploadDto.getUploadUrl());
+                    upload.setUploadEtag(uploadDto.getEtag());
+                    upload.setObjectKey(uploadDto.getObjectKey());
+                    upload.setApprovalStatus(AidasConstants.AIDAS_UPLOAD_PENDING);
+                    upload.setCurrentQcLevel(1);
+                    Long mandatoryProjectProperties = projectPropertyRepository.countProjectPropertyByProjectAndOptional(project.getId(), AidasConstants.AIDAS_PROPERTY_REQUIRED);
+                    Long mandatoryObjectProperties = objectPropertyRepository.countObjectProperties(object.getId(), AidasConstants.AIDAS_PROPERTY_REQUIRED);
+                    if (mandatoryObjectProperties == 0 && mandatoryProjectProperties == 0) {
+                        upload.setMetadataStatus(AidasConstants.AIDAS_UPLOAD_METADATA_COMPLETED);
+                    } else {
+                        upload.setMetadataStatus(AidasConstants.AIDAS_UPLOAD_METADATA_REQUIRED);
+                    }
+                    upload.setApprovalStatus(AidasConstants.AIDAS_UPLOAD_PENDING);
+                    upload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
+                    try {
+                        Upload result = uploadRepository.save(upload);
+                        Object o = result.getUserVendorMappingObjectMapping().getObject();
+                        Project p = o.getProject();
+                        o.setTotalUploaded(o.getTotalUploaded() + 1);
+                        o.setTotalPending(o.getTotalPending() + 1);
+                        if (o.getTotalRequired() > 0) {
+                            o.setTotalRequired(o.getTotalRequired() - 1);
+                        }
+                        p.setTotalUploaded(p.getTotalUploaded() + 1);
+                        p.setTotalPending(p.getTotalPending() + 1);
+                        if (p.getTotalRequired() > 0) {
+                            p.setTotalRequired(p.getTotalRequired() - 1);
+                        }
+                        UserVendorMappingProjectMapping uvmpm = userVendorMappingProjectMappingRepository.findByUserVendorMappingIdProjectId(upload.getUserVendorMappingObjectMapping().getUserVendorMapping().getId(), p.getId());
+                        uvmpm.setTotalUploaded(uvmpm.getTotalUploaded() + 1);
+                        uvmpm.setTotalPending(uvmpm.getTotalPending() + 1);
+                        objectRepository.save(o);
+                        projectRepository.save(p);
+                        uvmom.setTotalUploaded(uvmom.getTotalUploaded() + 1);
+                        uvmom.setTotalPending(uvmom.getTotalPending() + 1);
+                        userVendorMappingObjectMappingRepository.save(uvmom);
+                        userVendorMappingProjectMappingRepository.save(uvmpm);
+                        List<ProjectProperty> projectProperties = projectPropertyRepository.findAllProjectProperty(project.getId());
+                        List<ObjectProperty> objectProperties = objectPropertyRepository.getAllObjectPropertyForObject(object.getId());
+                        List<UploadMetaData> uploadMetaDataList = new ArrayList<>();
+                        for (ProjectProperty pp : projectProperties) {
+                            UploadMetaData umd = new UploadMetaData();
+                            umd.setProjectProperty(pp);
+                            umd.setUpload(upload);
+                            umd.setValue(" ");
+                            umd.setStatus(1);
+                            uploadMetaDataList.add(umd);
+                        }
+                        for (ObjectProperty op : objectProperties) {
+                            UploadMetaData umd = new UploadMetaData();
+                            umd.setObjectProperty(op);
+                            umd.setUpload(upload);
+                            umd.setValue(" ");
+                            umd.setStatus(1);
+                            uploadMetaDataList.add(umd);
+                        }
+                        uploadMetaDataRepository.saveAll(uploadMetaDataList);
+                        for (Map.Entry<String, String> entry : uploadDto.getUploadMetadata().entrySet()) {
+                            Property property = propertyRepository.getByNameAndUserIdAndCategory(entry.getKey().trim(), customer.getId(), project.getCategory().getId());
+                            UploadMetaData umdpp = uploadMetaDataRepository.getUploadMetaDataByProjectPropertyName(result.getId(), entry.getKey());
+                            UploadMetaData umdop = uploadMetaDataRepository.getUploadMetaDataByObjectPropertyName(result.getId(), entry.getKey());
+                            if (umdpp != null) {
+                                umdpp.setValue(entry.getValue().toString());
+                                uploadMetaDataRepository.save(umdpp);
+                            }
+                            if (umdop != null) {
+                                umdop.setValue(entry.getValue().toString());
+                                uploadMetaDataRepository.save(umdop);
+                            }
+                        }
+                        Integer numberOfMandatoryProjectProperties = uploadMetaDataRepository.getUploadMetadataCountMandatoryProjectPropertyNotFilled(project.getId());
+                        Integer numberOfMandatoryObjectProperties = uploadMetaDataRepository.getUploadMetadataCountMandatoryObjectPropertyNotFilled(object.getId());
+                        if(numberOfMandatoryObjectProperties==0 && numberOfMandatoryProjectProperties==0){
+                            upload.setMetadataStatus(AidasConstants.AIDAS_UPLOAD_METADATA_COMPLETED);
+                            upload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
+                        }
+                        upload.setCurrentBatchNumber(0);
+                        uploadRepository.save(upload);
+                        return ResponseEntity
+                            .created(new URI("/api/aidas-uploads/" + result.getId()))
+                            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
+                            .body(result);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        throw new BadRequestAlertException("Internal error occured.  Contact administrator", ENTITY_NAME, "idexists");
+                    }
+                }else{
+                    throw new BadRequestAlertException("Some issue with upload.... ", ENTITY_NAME, "idexists");
+                }
+
             }
-        }
         }
         throw new BadRequestAlertException("End of Upload...No way ", ENTITY_NAME, "idexists");
     }
 
     /**
-     * {@code POST  /aidas-uploads/dto} : Create a new upload.
+     * {@code POST  /aidas-uploads/user-object-mapping-dto} : Create a new upload.
      *
      * @param uploadByUserObjectMappingDto the upload to create.
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new upload, or with status {@code 400 (Bad Request)} if the upload has already an ID.
@@ -602,26 +666,9 @@ public class UploadResource {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to approve AidasUpload : {}, {}", id);
         Authority authority = user.getAuthority();
-        if(authority.getName().equals(AidasConstants.ADMIN)){
-
-        }
-        if(authority.getName().equals(AidasConstants.ORG_ADMIN)){
-
-        }
-        if(authority.getName().equals(AidasConstants.CUSTOMER_ADMIN)){
-
-        }
-        if(authority.getName().equals(AidasConstants.VENDOR_ADMIN)){
-
-        }
-        if(authority.getName().equals(AidasConstants.VENDOR_USER)){
-
-        }
         if (!uploadRepository.existsById(id)) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
-
-
         Upload upload = uploadRepository.getById(id);
         UserVendorMappingObjectMapping uvmom = upload.getUserVendorMappingObjectMapping();
         Customer customer = uvmom.getObject().getProject().getCustomer();
@@ -635,19 +682,10 @@ public class UploadResource {
         Float currentQcLevelReviewRequired =0f;
         Double correctedCurrentQcLevelReviewRequired= 0d;
         if(project.getQcLevels()!=null && project.getQcLevels()>1) {
-
-           /* if (project != null && project.getQcLevelConfigurations() != null) {
-                for (ProjectQcLevelConfigurations qclc : project.getQcLevelConfigurations()) {
-                    if (cqpm != null && cqpm.getQcLevel() != null && qclc.getQcLevelName() != null && qclc.getQcLevelName().equals(cqpm.getQcLevel())) {
-                        batchSize = qclc.getQcLevelBatchSize();
-                        currentQcLevelAcceptancePercentage = qclc.getQcLevelAcceptancePercentage();
-                    }
-                }
-            }*/
             currentQcLevelReviewRequired = (currentQcLevelAcceptancePercentage.floatValue() / 100f) * totalApprovedAndAvailableForCurrentLevel;
             correctedCurrentQcLevelReviewRequired = Math.floor(currentQcLevelReviewRequired);
         }
-        Set<Upload> remainingUploads =new HashSet<>();
+        List<Upload> remainingUploads =new ArrayList<>();
         HashMap<Long, Integer> oldQcStatus=new HashMap<>();
         oldQcStatus.put(upload.getId(),upload.getQcStatus());
         boolean lastLevel = false;
@@ -657,17 +695,12 @@ public class UploadResource {
             upload.setQcDoneBy(cqpm);
             upload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_APPROVED);
             upload.setQcEndDate(Instant.now());
-            if(project.getQcLevels()>1  && totalApprovedAndAvailableForNextLevel-correctedCurrentQcLevelReviewRequired.intValue() <=0){
-                if(project.getAutoCreateObjects().equals(1)){
-                    remainingUploads = uploadRepository.getApprovedUploadForLevel(project.getId(),upload.getUserVendorMappingObjectMapping().getObject().getId(), cqpm.getQcLevel());
-                }else {
-                    remainingUploads = uploadRepository.getApprovedUploadForLevel(project.getId(), cqpm.getQcLevel());
-                }
-            }else{
-                remainingUploads.add(upload);
-            }
+            List<Long> allUploadsInBatch = uploadCustomerQcProjectMappingBatchInfoRepository.getAllPendingBatchInfoForProjectAndLevelForLoggedInUserGreaterThanLevel1(project.getId(),cqpm.getQcLevel(),cqpm.getId(),cqpm.getCurrentQcBatchNo());
+            remainingUploads = uploadRepository.getUploadsByIds(allUploadsInBatch);
+            //remainingUploads.add(upload);
             lastLevel = true;
-        }else if(cqpm!=null && cqpm.getQcLevel()<project.getQcLevels()){
+        }
+        else if(cqpm!=null && cqpm.getQcLevel()<project.getQcLevels()){
             upload.setStatus(AidasConstants.AIDAS_UPLOAD_APPROVED);
             upload.setQcDoneBy(cqpm);
             upload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_APPROVED);
@@ -686,6 +719,7 @@ public class UploadResource {
             upload1.setQcDoneBy(cqpm);
             upload1.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_APPROVED);
             upload1.setQcEndDate(Instant.now());
+            upload1.setCurrentBatchNumber(null);
             upload1.setCurrentQcLevel(cqpm.getQcLevel()+1);
             Object o = upload1.getUserVendorMappingObjectMapping().getObject();
             Project p = o.getProject();
@@ -1103,9 +1137,9 @@ public class UploadResource {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         List<UploadsMetadataDTO> uploadsMetadataDTOList = new ArrayList<>();
         List<Upload> uploads = null;
-        if(projectId!=null)
-            uploads = uploadRepository.findAllByUserAndProjectAllForMetadataProjectWise(user.getId(),projectId);
-
+        if(projectId!=null) {
+            uploads = uploadRepository.findAllByUserAndProjectAllForMetadataProjectWise(user.getId(), projectId);
+        }
         UploadsMetadataDTO uploadsMetadataDTO=null;
         for(Upload au : uploads) {
             uploadsMetadataDTO =  new UploadsMetadataDTO();
@@ -1154,14 +1188,10 @@ public class UploadResource {
     public ResponseEntity<List<UploadsMetadataDTO>> getAllAidasUploadsForMetadata(@PathVariable(required = true,name = "projectId") Long projectId,@PathVariable(name="objectId" ,required = false) Long objectId) {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         List<UploadsMetadataDTO> uploadsMetadataDTOList = new ArrayList<>();
-        List<Upload> uploads = null;
-        if(objectId!=null)
-            uploads = uploadRepository.findAllByUserAndProjectAllForMetadataObjectWise(user.getId(),projectId);
-        else if(projectId!=null)
-            uploads = uploadRepository.findAllByUserAndProjectAllForMetadataProjectWise(user.getId(),projectId);
-
+        List<Upload> uploads = uploadRepository.findAllByUserAndProjectAllForMetadataObjectWise(user.getId(),objectId);
         UploadsMetadataDTO uploadsMetadataDTO=new UploadsMetadataDTO();
         for(Upload au : uploads) {
+            uploadsMetadataDTO=new UploadsMetadataDTO();
             List<UploadMetadataDTO> uploadMetaDataList = uploadMetaDataRepository.getAllUploadMetaDataForUpload(au.getId());
             List<ProjectPropertyDTO> projectPropertyDTOS = new ArrayList<>();
             List<ObjectPropertyDTO> objectPropertyDTOS = new ArrayList<>();
@@ -1180,7 +1210,7 @@ public class UploadResource {
                     pp.setValue(umdt.getValue());
                     projectPropertyDTOS.add(pp);
                 }
-                uploadsMetadataDTO.setProjectProperties(projectPropertyDTOS);
+
                 if(umdt.getObjectPropertyId()!=null){
                     ObjectPropertyDTO oo = new ObjectPropertyDTO();
                     ObjectProperty o = objectPropertyRepository.getById(umdt.getObjectPropertyId());
@@ -1190,8 +1220,9 @@ public class UploadResource {
                     oo.setValue(umdt.getValue());
                     objectPropertyDTOS.add(oo);
                 }
-                uploadsMetadataDTO.setObjectProperties(objectPropertyDTOS);
             }
+            uploadsMetadataDTO.setProjectProperties(projectPropertyDTOS);
+            uploadsMetadataDTO.setObjectProperties(objectPropertyDTOS);
             uploadsMetadataDTOList.add(uploadsMetadataDTO);
         }
         return ResponseEntity.ok().body(uploadsMetadataDTOList);
@@ -1245,34 +1276,154 @@ public class UploadResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the upload, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/aidas-uploads/next-batch/{projectId}/{customerQcProjectMappingId}/{qcLevel}")
-    public ResponseEntity<List<Upload>> getNextAidasUploadBatchWithBatchNumber(@PathVariable(name = "projectId",required = true) Long projectId,@PathVariable(value = "customerQcProjectMappingId",required = true) Long customerQcProjectMappingId,@PathVariable(value = "qcLevel",required = true) Integer qcLevel) {
+    public ResponseEntity<List<Upload>> getNextAidasUploadBatch(@PathVariable(name = "projectId",required = true) Long projectId,@PathVariable(value = "customerQcProjectMappingId",required = true) Long customerQcProjectMappingId,@PathVariable(value = "qcLevel",required = true) Integer qcLevel) {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to get next AidasUpload : {}");
         List<Upload> uploads = new ArrayList<>();
         Authority authority = user.getAuthority();
         Project project = projectRepository.getById(projectId);
         CustomerQcProjectMapping cqpm = customerQcProjectMappingRepository.getById(customerQcProjectMappingId);
-        ProjectQcLevelConfigurations pqclc = projectQcLevelConfigurationsRepository.findByProejctIdAndQcLevel(projectId,qcLevel);
-        if(qcLevel.equals(1) && pqclc.getQcLevel().equals(1)){
-            if(project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)){
-                Integer maxBatchForCqpm = uploadCustomerQcProjectMappingBatchInfoRepository.getMaxBatchNoForQcLevel(customerQcProjectMappingId);
-                Integer pendingInBatchForLoggedInUserAndProject = uploadCustomerQcProjectMappingBatchInfoRepository.getQcPendingCount(customerQcProjectMappingId, cqpm.getCurrentQcBatchNo(),qcLevel);
-                if(pendingInBatchForLoggedInUserAndProject>0){
-                    /*if(batchNumber==null){
-                        batchNumber = uploadCustomerQcProjectMappingBatchInfoRepository.getMinPendingBatchNoForQcLevel(projectId,customerQcProjectMappingId,qcLevel);
-                        if(batchNumber==null)
-                            batchNumber=1;
-                        uploads = uploadRepository.getUploadsForProjectPendingByQcLevel1InBatch(batchNumber);
-                    }*/
-                }else{
-                    uploads = uploadRepository.getUploadsForProjectToBeAssignedToQcLevel1FromUploads(projectId, project.getNumberOfObjectsForQcLevel());
-                    int i=0;
+        ProjectQcLevelConfigurations pqlc = projectQcLevelConfigurationsRepository.findByProejctIdAndQcLevel(projectId,qcLevel);
+        List<Long> allCqpmsForProjectAndLevel= customerQcProjectMappingRepository.getAllCqpmAvailableForProjectAndLevel(projectId, qcLevel);
+        Integer maxBatchForCqpm = uploadCustomerQcProjectMappingBatchInfoRepository.getMaxBatchNoForQcLevel(customerQcProjectMappingId);
+        List<Long> pendingInBatchForLoggedInUserAndProject = uploadCustomerQcProjectMappingBatchInfoRepository.getQcPendingCount(customerQcProjectMappingId, cqpm.getCurrentQcBatchNo());
+        List<Integer> pendingInAllBatchForLoggedInUserAndProject = uploadCustomerQcProjectMappingBatchInfoRepository.getQcPendingInAllCount(projectId,customerQcProjectMappingId);
+
+        if (maxBatchForCqpm == null) {
+            maxBatchForCqpm = 0;
+        }
+        boolean batchChanged =true;
+            if(project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)) {
+                if(pqlc.getQcLevel().equals(1)){
+                //QC level 1 for First Come First Served Basis
+                if (pqlc.getAllocationStrategy().equals(AidasConstants.QC_LEVEL_FCFS)) {
+                    //Let us check whether he is asking for the batch for the first time
+                    if(cqpm.getCurrentQcBatchNo().equals(0)){
+                        //This is the first time the qc1 user is asking for a batch of objects
+                        //Get any uploads of object of the project is available for qc1
+                        List<Long> objectsQcNotStarted = uploadRepository.findObjectsQcNotStartedForLevel1(projectId,project.getNumberOfObjectsForQcLevel());
+                        uploads = uploadRepository.getUploadsForProjectToBeAssignedToQcLevel1FromUploads(projectId, objectsQcNotStarted);
+                    }else{
+                        List<Long> uploadsPendingByLoggedInQc1 = uploadCustomerQcProjectMappingBatchInfoRepository.getAllPendingBatchInfoForProjectAndLevelForLoggedInUserLevel1(project.getId(), qcLevel, customerQcProjectMappingId, cqpm.getCurrentQcBatchNo());
+                        if (uploadsPendingByLoggedInQc1.size() > 0) {
+                            uploads = uploadRepository.getUploadsByIds(uploadsPendingByLoggedInQc1);
+                            batchChanged= false;
+                        } else {
+                            List<Long> objectsQcNotStarted = uploadRepository.findObjectsQcNotStartedForLevel1(projectId,project.getNumberOfObjectsForQcLevel());
+                            uploads = uploadRepository.getUploadsForProjectToBeAssignedToQcLevel1FromUploads(projectId, objectsQcNotStarted);
+                        }
+                    }
+                    int i = 0;
+                    Integer newBatchNumber = maxBatchForCqpm +1;
+                    for (Upload u : uploads) {
+                        if(batchChanged) {
+                            UploadCustomerQcProjectMappingBatchInfo ucqpmbinfo = new UploadCustomerQcProjectMappingBatchInfo();
+                            ucqpmbinfo.setUploadId(u.getId());
+                            ucqpmbinfo.setCustomerQcProjectMappingId(cqpm.getId());
+                            ucqpmbinfo.setBatchNumber(newBatchNumber);
+                            ucqpmbinfo.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
+                            cqpm.setCurrentQcBatchNo(newBatchNumber);
+                            u.setCurrentBatchNumber(newBatchNumber);
+                            uploadCustomerQcProjectMappingBatchInfoRepository.save(ucqpmbinfo);
+                        }
+                        customerQcProjectMappingRepository.save(cqpm);
+                        u.setQcDoneBy(cqpm);
+                        u.setQcStartDate(Instant.now());
+                        u.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
+                        uploadRepository.save(u);
+                        i++;
+                    }
+                }
+                else if (pqlc.getAllocationStrategy().equals(AidasConstants.QC_LEVEL_ED)) {
+
+                }
+            }else{
+                    if (pqlc.getAllocationStrategy().equals(AidasConstants.QC_LEVEL_FCFS)) {
+                        //Check whether there is any pending in batch for the user
+                        if(!(pendingInBatchForLoggedInUserAndProject!=null && pendingInBatchForLoggedInUserAndProject.size()>0 )){
+                            List<Long> objectIds = uploadRepository.findAllObjectsQcInAssignedForLevelGreaterThan1(projectId,qcLevel,project.getNumberOfObjectsForQcLevel(),pendingInBatchForLoggedInUserAndProject);
+                            List<Long> uploadsPendingByLoggedInQc = uploadCustomerQcProjectMappingBatchInfoRepository.getAllPendingBatchInfoForProjectAndLevelForLoggedInUserGreaterThanLevel1(project.getId(), qcLevel, customerQcProjectMappingId, cqpm.getCurrentQcBatchNo(),objectIds);
+                            uploads = uploadRepository.getUploadsByIds(uploadsPendingByLoggedInQc);
+                            for(Upload upload: uploads){
+                                upload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
+                                uploadRepository.save(upload);
+                            }
+                        }else if(!(pendingInAllBatchForLoggedInUserAndProject !=null && pendingInAllBatchForLoggedInUserAndProject.size()==0)){
+                            List<Long> objectIds = uploadCustomerQcProjectMappingBatchInfoRepository.getQcPendingObjectInAllCount(projectId,customerQcProjectMappingId,pendingInAllBatchForLoggedInUserAndProject);
+                            //List<Long> objectIds = uploadRepository.findAllObjectsQcInAssignedForLevelGreaterThan1(projectId,qcLevel,project.getNumberOfObjectsForQcLevel(),pendingInAllBatchForLoggedInUserAndProject);
+                            List<Long> uploadsPendingByLoggedInQc = uploadCustomerQcProjectMappingBatchInfoRepository.getAllPendingBatchInfoForProjectAndLevelForLoggedInUserGreaterThanLevel1(project.getId(), qcLevel, customerQcProjectMappingId, cqpm.getCurrentQcBatchNo(),objectIds);
+                            uploadsPendingByLoggedInQc = uploadCustomerQcProjectMappingBatchInfoRepository.getAllPendingBatchInfoForProjectAndLevelForLoggedInUserGreaterThanLevel1(project.getId(), qcLevel, customerQcProjectMappingId,pendingInAllBatchForLoggedInUserAndProject.get(0),objectIds);
+                            uploads = uploadRepository.getUploadsByIds(uploadsPendingByLoggedInQc);
+                            for(Upload upload: uploads){
+                                upload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
+                                uploadRepository.save(upload);
+                            }
+                        }
+                        else{
+                            //Check total pending uploads for all objects of the project and for the selected qc level (whether it is assigned to another user or the same user).
+                            List<Long> allApprovedObjectsForNextLevel = uploadRepository.findAllObjectsPendingQcForLevelGreaterThan1(projectId,qcLevel);
+                            //Calculate based on qcLevelAcceptancePercentage how much is required to show to the selected qc level
+                            Float currentQcLevelRequiredObject = (pqlc.getQcLevelAcceptancePercentage().floatValue() / 100f) * allApprovedObjectsForNextLevel.size();
+                            //Floor it to lower level to get a integer.
+                            Double correctedQcLevelRequiredObject = Math.floor(currentQcLevelRequiredObject);
+                            Integer currentBatch = maxBatchForCqpm+1;
+                            Double numberOfObjectsPerBatch = Math.floor(allApprovedObjectsForNextLevel.size()/correctedQcLevelRequiredObject);
+
+                            if(allApprovedObjectsForNextLevel.size()>=correctedQcLevelRequiredObject.intValue()){
+                                for (int i = 0; i < correctedQcLevelRequiredObject.intValue(); i++) {
+                                    List<Long> objectsPerBatch = new ArrayList<>();
+                                    for(int j=0;j<numberOfObjectsPerBatch;j++){
+                                        if(i*j<allApprovedObjectsForNextLevel.size()){
+                                            objectsPerBatch.add(allApprovedObjectsForNextLevel.get(i*j));
+                                        }
+                                    }
+                                    List<Upload> batchUploads = uploadRepository.findTopByQcNotDoneYetForQcLevelGreaterThan1(projectId, cqpm.getQcLevel(), objectsPerBatch, pqlc.getQcLevelBatchSize());
+                                    for (Upload u : batchUploads) {
+                                        UploadCustomerQcProjectMappingBatchInfo ucqpmbinfo = new UploadCustomerQcProjectMappingBatchInfo();
+                                        ucqpmbinfo.setUploadId(u.getId());
+                                        ucqpmbinfo.setCustomerQcProjectMappingId(cqpm.getId());
+                                        ucqpmbinfo.setBatchNumber(currentBatch);
+                                        cqpm.setCurrentQcBatchNo(currentBatch);
+                                        customerQcProjectMappingRepository.save(cqpm);
+                                        if(i<currentQcLevelRequiredObject.intValue()){
+                                            ucqpmbinfo.setShowToQc(1);
+                                        }else{
+                                            ucqpmbinfo.setShowToQc(0);
+                                        }
+                                        ucqpmbinfo.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
+                                        uploadCustomerQcProjectMappingBatchInfoRepository.save(ucqpmbinfo);
+                                        u.setQcDoneBy(cqpm);
+                                        u.setQcStartDate(Instant.now());
+                                        u.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
+                                        u.setCurrentBatchNumber(currentBatch);
+                                        u.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
+                                        uploadRepository.save(u);
+                                    }
+                                    if (i == 0) {
+                                        uploads.addAll(batchUploads);
+                                    }
+                                    currentBatch++;
+                                }
+                            }else{
+                                System.out.println("There is not enough uploads available for the selected level "+qcLevel+ " as the qcLevelAcceptancePercentage is "+ pqlc.getQcLevelAcceptancePercentage()+ " and correctedQcLevelRequiredObject is "+ correctedQcLevelRequiredObject.intValue() + " and available unassigned approved objects count ");
+                            }
+                        }
+                    }
+                    else if (pqlc.getAllocationStrategy().equals(AidasConstants.QC_LEVEL_ED)) {
+
+                    }
+                }
+            }else{
+                if(pqlc.getAllocationStrategy().equals(AidasConstants.QC_LEVEL_FCFS)) {
+                    List<Long> uploadsAlreadyTakenByOtherQcLevels = uploadCustomerQcProjectMappingBatchInfoRepository.getAllPendingBatchInfoForProjectAndLevelAndOtherThanCqpmId(project.getId(),qcLevel,customerQcProjectMappingId);
+                    uploads = uploadRepository.findTopByQcNotDoneYetForQcLevelGreaterThan1(projectId,qcLevel,uploadsAlreadyTakenByOtherQcLevels, project.getNumberOfObjectsForQcLevel());
+                    int i = 0;
                     for (Upload u : uploads) {
                         UploadCustomerQcProjectMappingBatchInfo ucqpmbinfo = new UploadCustomerQcProjectMappingBatchInfo();
                         ucqpmbinfo.setUploadId(u.getId());
                         ucqpmbinfo.setCustomerQcProjectMappingId(cqpm.getId());
-                        if(maxBatchForCqpm==null){
-                            maxBatchForCqpm=1;
+                        if (maxBatchForCqpm == null) {
+                            maxBatchForCqpm = 1;
                         }
                         ucqpmbinfo.setBatchNumber(maxBatchForCqpm + (i + 1));
                         customerQcProjectMappingRepository.save(cqpm);
@@ -1285,161 +1436,11 @@ public class UploadResource {
                         uploadRepository.save(u);
                         i++;
                     }
-                }
-            }else{
+                }else if(pqlc.getAllocationStrategy().equals(AidasConstants.QC_LEVEL_ED)) {
 
-            }
-        }
-
-/*
-        Project project = projectRepository.getById(projectId);
-        CustomerQcProjectMapping cqpm = customerQcProjectMappingRepository.getById(customerQcProjectMappingId);
-        ProjectQcLevelConfigurations pqclc = projectQcLevelConfigurationsRepository.findByProejctIdAndQcLevel(projectId,qcLevel);
-        Integer maxBatchForCqpm = uploadCustomerQcProjectMappingBatchInfoRepository.getMaxBatchNoForQcLevel(customerQcProjectMappingId);
-        Integer pendingInBatchForLoggedInUserAndProject = uploadCustomerQcProjectMappingBatchInfoRepository.getQcPendingCount(customerQcProjectMappingId, cqpm.getCurrentQcBatchNo(),qcLevel);
-        Integer pendingInAllBatchForLoggedInUserAndProject = uploadCustomerQcProjectMappingBatchInfoRepository.getQcPendingInAllCount(projectId,customerQcProjectMappingId);
-        List<Long> allCqpmsForProjectAndLevel= customerQcProjectMappingRepository.getAllCqpmAvailableForProjectAndLevel(projectId, qcLevel);
-        //Check whether project is of type auto create objects
-        if(project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)){
-            //Check whether any batch is pending for approval.
-            if(pendingInAllBatchForLoggedInUserAndProject>0){
-
-            }else{
-                //Check total pending uploads for all objects of the project and for the selected qc level (whether it is assigned to another user or the same user).
-                List<Long> allApprovedObjectsForNextLevel = uploadRepository.findAllObjectsPendingQcForLevelGreaterThan1(projectId,qcLevel);
-                //Calculate based on qcLevelAcceptancePercentage how much is required to show to the selected qc level
-                Float currentQcLevelRequiredObject = (pqclc.getQcLevelAcceptancePercentage().floatValue() / 100f) * allApprovedObjectsForNextLevel.size();
-                //Floor it to lower level to get a integer.
-                Double correctedQcLevelRequiredObject = Math.floor(currentQcLevelRequiredObject);
-                Integer objectsPerCqpm = allApprovedObjectsForNextLevel.size()/allCqpmsForProjectAndLevel.size();
-
-                List<Long> pendingAssignedObjects = uploadRepository.findAllObjectsQcInAssignedForLevelGreaterThan1(projectId,qcLevel);
-                List<Long> pendingUnAssignedObjects = uploadRepository.findAllObjectsQcInUnAssignedForLevelGreaterThan1(projectId,qcLevel);
-
-
-
-                //Check what is the strategy used for assigning batch of uploads
-                if(pqclc.getAllocationStrategy().equals(AidasConstants.QC_LEVEL_FCFS)){
-                    if(allApprovedObjectsForNextLevel.size()>=correctedQcLevelRequiredObject.intValue()){
-                        for (int i = 0; i < correctedQcLevelRequiredObject.intValue(); i++) {
-                            List<Upload> batchUploads = uploadRepository.findTopByQcNotDoneYetForQcLevelGreaterThan1(projectId, cqpm.getQcLevel(), allApprovedObjectsForNextLevel.get(i), pqclc.getQcLevelBatchSize());
-                            for (Upload u : batchUploads) {
-                                UploadCustomerQcProjectMappingBatchInfo ucqpmbinfo = new UploadCustomerQcProjectMappingBatchInfo();
-                                ucqpmbinfo.setUploadId(u.getId());
-                                ucqpmbinfo.setCustomerQcProjectMappingId(cqpm.getId());
-                                ucqpmbinfo.setBatchNumber(maxBatchForCqpm + (i + 1));
-                                customerQcProjectMappingRepository.save(cqpm);
-                                ucqpmbinfo.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
-                                uploadCustomerQcProjectMappingBatchInfoRepository.save(ucqpmbinfo);
-                                u.setQcDoneBy(cqpm);
-                                u.setQcStartDate(Instant.now());
-                                u.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
-                                uploadRepository.save(u);
-                            }
-                            if (i == 0) {
-                                uploads.addAll(batchUploads);
-                            }
-                        }
-                    }else{
-                        System.out.println("There is not enough uploads available for the selected level "+qcLevel+ " as the qcLevelAcceptancePercentage is "+ pqclc.getQcLevelAcceptancePercentage()+ " and correctedQcLevelRequiredObject is "+ correctedQcLevelRequiredObject.intValue() + " and available unassigned approved objects count "+pendingObjects.size());
-                    }
-                }else if(pqclc.getAllocationStrategy().equals(AidasConstants.QC_LEVEL_ED)){
-
-                    Integer objectsAvailableForEach = pendingObjects.size()/allCqpmsForProjectAndLevel.size();
                 }
             }
-        }else if(project.getAutoCreateObjects().equals(AidasConstants.CREATE_MANUAL_OBJECTS)){
-            if(pqclc.getAllocationStrategy().equals(AidasConstants.QC_LEVEL_FCFS)){
 
-            }else if(pqclc.getAllocationStrategy().equals(AidasConstants.QC_LEVEL_ED)){
-
-            }
-        }*/
-
-
-        /*Integer totalApprovedAndAvailableForCurrentLevel = uploadRepository.getTotalApprovedForLevel(projectId, qcLevel);
-        List<Long> totalApprovedAndAvailableObjectsForCurrentLevel = uploadRepository. getTotalApprovedObjectForLevelAndProject(projectId,qcLevel);
-
-
-        List<Long> objectIdQcNotDone = uploadRepository.findObjectsQcNotStartedLevelGreaterThan1(projectId, cqpm.getQcLevel());
-        Float currentQcLevelReviewRequired = (pqclc.getQcLevelAcceptancePercentage().floatValue() / 100f) * totalApprovedAndAvailableForCurrentLevel;
-        Double correctedQcLevelReviewRequired = Math.floor(currentQcLevelReviewRequired);
-        Double correctedQcLevelRequiredObject=0d;
-        Float currentQcLevelRequiredObject=0f;
-
-        if(project.getAutoCreateObjects().equals(1)){
-            currentQcLevelRequiredObject = (pqclc.getQcLevelAcceptancePercentage().floatValue() / 100f) * objectIdQcNotDone.size();
-            correctedQcLevelRequiredObject = Math.floor(currentQcLevelRequiredObject);
-        }else{
-
-        }*/
-
-       /* if(pendingInBatch>0){
-            List<Long> uploadsByBatch = uploadCustomerQcProjectMappingBatchInfoRepository.getUploadIdByCustomerQcProjectMappingAndBatchNumber(customerQcProjectMappingId, cqpm.getCurrentQcBatchNo());
-            uploads = uploadRepository.getUploadsByIds(uploadsByBatch);
-        }else{
-            if(cqpm.getQcLevel().equals(1)) {
-                    Long objectIdQcNotDone1 = uploadRepository.findObjectsQcNotStarted(projectId, cqpm.getQcLevel());
-                    uploads = uploadRepository.findTopByQcNotDoneYetForQcLevel(projectId, cqpm.getQcLevel(), objectIdQcNotDone1, pqclc.getQcLevelBatchSize());
-            }else{
-                if(project.getAutoCreateObjects().equals(1)) {
-                    if(pendingInAllBatch>0){
-                        Integer minPendingBatchNo = uploadCustomerQcProjectMappingBatchInfoRepository.getMinBatchNoPendingForQcLevel(customerQcProjectMappingId);
-                        List<Long> uploadsByBatch = uploadCustomerQcProjectMappingBatchInfoRepository.getUploadIdByCustomerQcProjectMappingAndBatchNumber(customerQcProjectMappingId, minPendingBatchNo);
-                        uploads = uploadRepository.getUploadsByIds(uploadsByBatch);
-                        cqpm.setCurrentQcBatchNo(minPendingBatchNo);
-                        customerQcProjectMappingRepository.save(cqpm);
-                    } else {
-
-                        if(pqclc.getAllocationStrategy().equals(AidasConstants.QC_LEVEL_FCFS)){
-
-                        }else if(pqclc.getAllocationStrategy().equals(AidasConstants.QC_LEVEL_FCFS)) {
-
-                        }
-                        for (int i = 0; i < objectIdQcNotDone.size(); i++) {
-                            List<Upload> batchUploads = uploadRepository.findTopByQcNotDoneYetForQcLevelGreaterThan1(projectId, cqpm.getQcLevel(), objectIdQcNotDone.get(i), pqclc.getQcLevelBatchSize());
-                            for (Upload u : batchUploads) {
-                                UploadCustomerQcProjectMappingBatchInfo ucqpmbinfo = new UploadCustomerQcProjectMappingBatchInfo();
-                                ucqpmbinfo.setUploadId(u.getId());
-                                ucqpmbinfo.setCustomerQcProjectMappingId(cqpm.getId());
-                                ucqpmbinfo.setBatchNumber(maxBatchForCqpm + (i + 1));
-                                customerQcProjectMappingRepository.save(cqpm);
-                                ucqpmbinfo.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
-                                uploadCustomerQcProjectMappingBatchInfoRepository.save(ucqpmbinfo);
-                                u.setQcDoneBy(cqpm);
-                                u.setQcStartDate(Instant.now());
-                                u.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
-                                uploadRepository.save(u);
-                            }
-                            if (i == 0) {
-                                uploads.addAll(batchUploads);
-                            }
-                        }
-                        cqpm.setCurrentQcBatchNo(maxBatchForCqpm+1);
-                        customerQcProjectMappingRepository.save(cqpm);
-                    }
-                }else{
-                    uploads = uploadRepository.findTopByQcNotDoneYetForQcLevelGreaterThan1(projectId,cqpm.getQcLevel(),pqclc.getQcLevelBatchSize());
-                    int i=0;
-                    for(Upload u:uploads){
-                        UploadCustomerQcProjectMappingBatchInfo ucqpmbinfo = new UploadCustomerQcProjectMappingBatchInfo();
-                        ucqpmbinfo.setUploadId(u.getId());
-                        ucqpmbinfo.setCustomerQcProjectMappingId(cqpm.getId());
-                        ucqpmbinfo.setBatchNumber(maxBatchForCqpm + (i + 1));
-                        customerQcProjectMappingRepository.save(cqpm);
-                        ucqpmbinfo.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
-                        uploadCustomerQcProjectMappingBatchInfoRepository.save(ucqpmbinfo);
-                        u.setQcDoneBy(cqpm);
-                        u.setQcStartDate(Instant.now());
-                        u.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
-                        uploadRepository.save(u);
-                        i++;
-                    }
-                    cqpm.setCurrentQcBatchNo(maxBatchForCqpm+1);
-                    customerQcProjectMappingRepository.save(cqpm);
-                }
-            }
-        }*/
         List<Upload> responseUploads = new LinkedList<>();
         for(Upload u : uploads) {
             UploadMetadataDTO ud1 = new UploadMetadataDTO();
@@ -1493,7 +1494,7 @@ public class UploadResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the upload, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/aidas-uploads/next-batch/{projectId}/{customerQcProjectMappingId}/{qcLevel}/{batchNumber}")
-    public ResponseEntity<List<Upload>> getNextAidasUploadBatch(@PathVariable(name = "projectId",required = true) Long projectId,@PathVariable(value = "customerQcProjectMappingId",required = true) Long customerQcProjectMappingId,@PathVariable(value = "qcLevel",required = true) Integer qcLevel,@PathVariable(value = "batchNumber",required = false) Integer batchNumber) {
+    public ResponseEntity<List<Upload>> getNextAidasUploadBatchWithBatchNumber(@PathVariable(name = "projectId",required = true) Long projectId,@PathVariable(value = "customerQcProjectMappingId",required = true) Long customerQcProjectMappingId,@PathVariable(value = "qcLevel",required = true) Integer qcLevel,@PathVariable(value = "batchNumber",required = false) Integer batchNumber) {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to get next AidasUpload : {}");
         List<Upload> uploads = new ArrayList<>();
@@ -1504,8 +1505,8 @@ public class UploadResource {
         if(qcLevel.equals(1) && pqclc.getQcLevel().equals(1)){
             if(project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)){
                 Integer maxBatchForCqpm = uploadCustomerQcProjectMappingBatchInfoRepository.getMaxBatchNoForQcLevel(customerQcProjectMappingId);
-                Integer pendingInBatchForLoggedInUserAndProject = uploadCustomerQcProjectMappingBatchInfoRepository.getQcPendingCount(customerQcProjectMappingId, cqpm.getCurrentQcBatchNo(),qcLevel);
-                if(pendingInBatchForLoggedInUserAndProject>0){
+                List<Long> pendingInBatchForLoggedInUserAndProject = uploadCustomerQcProjectMappingBatchInfoRepository.getQcPendingCount(customerQcProjectMappingId, cqpm.getCurrentQcBatchNo());
+                if(pendingInBatchForLoggedInUserAndProject.size()>0){
                     if(batchNumber==null){
                         batchNumber = uploadCustomerQcProjectMappingBatchInfoRepository.getMinPendingBatchNoForQcLevel(projectId,customerQcProjectMappingId,qcLevel);
                         if(batchNumber==null)
@@ -1513,7 +1514,8 @@ public class UploadResource {
                         uploads = uploadRepository.getUploadsForProjectPendingByQcLevel1InBatch(batchNumber);
                     }
                 }else{
-                    uploads = uploadRepository.getUploadsForProjectToBeAssignedToQcLevel1FromUploads(projectId, project.getNumberOfObjectsForQcLevel());
+                    List<Long> objectsQcNotStarted = uploadRepository.findObjectsQcNotStartedForLevel1(projectId,project.getNumberOfObjectsForQcLevel());
+                    uploads = uploadRepository.getUploadsForProjectToBeAssignedToQcLevel1FromUploads(projectId, objectsQcNotStarted);
                     int i=0;
                     for (Upload u : uploads) {
                         UploadCustomerQcProjectMappingBatchInfo ucqpmbinfo = new UploadCustomerQcProjectMappingBatchInfo();
@@ -1535,156 +1537,6 @@ public class UploadResource {
 
             }
         }
-
-/*
-        Project project = projectRepository.getById(projectId);
-        CustomerQcProjectMapping cqpm = customerQcProjectMappingRepository.getById(customerQcProjectMappingId);
-        ProjectQcLevelConfigurations pqclc = projectQcLevelConfigurationsRepository.findByProejctIdAndQcLevel(projectId,qcLevel);
-        Integer maxBatchForCqpm = uploadCustomerQcProjectMappingBatchInfoRepository.getMaxBatchNoForQcLevel(customerQcProjectMappingId);
-        Integer pendingInBatchForLoggedInUserAndProject = uploadCustomerQcProjectMappingBatchInfoRepository.getQcPendingCount(customerQcProjectMappingId, cqpm.getCurrentQcBatchNo(),qcLevel);
-        Integer pendingInAllBatchForLoggedInUserAndProject = uploadCustomerQcProjectMappingBatchInfoRepository.getQcPendingInAllCount(projectId,customerQcProjectMappingId);
-        List<Long> allCqpmsForProjectAndLevel= customerQcProjectMappingRepository.getAllCqpmAvailableForProjectAndLevel(projectId, qcLevel);
-        //Check whether project is of type auto create objects
-        if(project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)){
-            //Check whether any batch is pending for approval.
-            if(pendingInAllBatchForLoggedInUserAndProject>0){
-
-            }else{
-                //Check total pending uploads for all objects of the project and for the selected qc level (whether it is assigned to another user or the same user).
-                List<Long> allApprovedObjectsForNextLevel = uploadRepository.findAllObjectsPendingQcForLevelGreaterThan1(projectId,qcLevel);
-                //Calculate based on qcLevelAcceptancePercentage how much is required to show to the selected qc level
-                Float currentQcLevelRequiredObject = (pqclc.getQcLevelAcceptancePercentage().floatValue() / 100f) * allApprovedObjectsForNextLevel.size();
-                //Floor it to lower level to get a integer.
-                Double correctedQcLevelRequiredObject = Math.floor(currentQcLevelRequiredObject);
-                Integer objectsPerCqpm = allApprovedObjectsForNextLevel.size()/allCqpmsForProjectAndLevel.size();
-
-                List<Long> pendingAssignedObjects = uploadRepository.findAllObjectsQcInAssignedForLevelGreaterThan1(projectId,qcLevel);
-                List<Long> pendingUnAssignedObjects = uploadRepository.findAllObjectsQcInUnAssignedForLevelGreaterThan1(projectId,qcLevel);
-
-
-
-                //Check what is the strategy used for assigning batch of uploads
-                if(pqclc.getAllocationStrategy().equals(AidasConstants.QC_LEVEL_FCFS)){
-                    if(allApprovedObjectsForNextLevel.size()>=correctedQcLevelRequiredObject.intValue()){
-                        for (int i = 0; i < correctedQcLevelRequiredObject.intValue(); i++) {
-                            List<Upload> batchUploads = uploadRepository.findTopByQcNotDoneYetForQcLevelGreaterThan1(projectId, cqpm.getQcLevel(), allApprovedObjectsForNextLevel.get(i), pqclc.getQcLevelBatchSize());
-                            for (Upload u : batchUploads) {
-                                UploadCustomerQcProjectMappingBatchInfo ucqpmbinfo = new UploadCustomerQcProjectMappingBatchInfo();
-                                ucqpmbinfo.setUploadId(u.getId());
-                                ucqpmbinfo.setCustomerQcProjectMappingId(cqpm.getId());
-                                ucqpmbinfo.setBatchNumber(maxBatchForCqpm + (i + 1));
-                                customerQcProjectMappingRepository.save(cqpm);
-                                ucqpmbinfo.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
-                                uploadCustomerQcProjectMappingBatchInfoRepository.save(ucqpmbinfo);
-                                u.setQcDoneBy(cqpm);
-                                u.setQcStartDate(Instant.now());
-                                u.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
-                                uploadRepository.save(u);
-                            }
-                            if (i == 0) {
-                                uploads.addAll(batchUploads);
-                            }
-                        }
-                    }else{
-                        System.out.println("There is not enough uploads available for the selected level "+qcLevel+ " as the qcLevelAcceptancePercentage is "+ pqclc.getQcLevelAcceptancePercentage()+ " and correctedQcLevelRequiredObject is "+ correctedQcLevelRequiredObject.intValue() + " and available unassigned approved objects count "+pendingObjects.size());
-                    }
-                }else if(pqclc.getAllocationStrategy().equals(AidasConstants.QC_LEVEL_ED)){
-
-                    Integer objectsAvailableForEach = pendingObjects.size()/allCqpmsForProjectAndLevel.size();
-                }
-            }
-        }else if(project.getAutoCreateObjects().equals(AidasConstants.CREATE_MANUAL_OBJECTS)){
-            if(pqclc.getAllocationStrategy().equals(AidasConstants.QC_LEVEL_FCFS)){
-
-            }else if(pqclc.getAllocationStrategy().equals(AidasConstants.QC_LEVEL_ED)){
-
-            }
-        }*/
-
-
-        /*Integer totalApprovedAndAvailableForCurrentLevel = uploadRepository.getTotalApprovedForLevel(projectId, qcLevel);
-        List<Long> totalApprovedAndAvailableObjectsForCurrentLevel = uploadRepository. getTotalApprovedObjectForLevelAndProject(projectId,qcLevel);
-
-
-        List<Long> objectIdQcNotDone = uploadRepository.findObjectsQcNotStartedLevelGreaterThan1(projectId, cqpm.getQcLevel());
-        Float currentQcLevelReviewRequired = (pqclc.getQcLevelAcceptancePercentage().floatValue() / 100f) * totalApprovedAndAvailableForCurrentLevel;
-        Double correctedQcLevelReviewRequired = Math.floor(currentQcLevelReviewRequired);
-        Double correctedQcLevelRequiredObject=0d;
-        Float currentQcLevelRequiredObject=0f;
-
-        if(project.getAutoCreateObjects().equals(1)){
-            currentQcLevelRequiredObject = (pqclc.getQcLevelAcceptancePercentage().floatValue() / 100f) * objectIdQcNotDone.size();
-            correctedQcLevelRequiredObject = Math.floor(currentQcLevelRequiredObject);
-        }else{
-
-        }*/
-
-       /* if(pendingInBatch>0){
-            List<Long> uploadsByBatch = uploadCustomerQcProjectMappingBatchInfoRepository.getUploadIdByCustomerQcProjectMappingAndBatchNumber(customerQcProjectMappingId, cqpm.getCurrentQcBatchNo());
-            uploads = uploadRepository.getUploadsByIds(uploadsByBatch);
-        }else{
-            if(cqpm.getQcLevel().equals(1)) {
-                    Long objectIdQcNotDone1 = uploadRepository.findObjectsQcNotStarted(projectId, cqpm.getQcLevel());
-                    uploads = uploadRepository.findTopByQcNotDoneYetForQcLevel(projectId, cqpm.getQcLevel(), objectIdQcNotDone1, pqclc.getQcLevelBatchSize());
-            }else{
-                if(project.getAutoCreateObjects().equals(1)) {
-                    if(pendingInAllBatch>0){
-                        Integer minPendingBatchNo = uploadCustomerQcProjectMappingBatchInfoRepository.getMinBatchNoPendingForQcLevel(customerQcProjectMappingId);
-                        List<Long> uploadsByBatch = uploadCustomerQcProjectMappingBatchInfoRepository.getUploadIdByCustomerQcProjectMappingAndBatchNumber(customerQcProjectMappingId, minPendingBatchNo);
-                        uploads = uploadRepository.getUploadsByIds(uploadsByBatch);
-                        cqpm.setCurrentQcBatchNo(minPendingBatchNo);
-                        customerQcProjectMappingRepository.save(cqpm);
-                    } else {
-
-                        if(pqclc.getAllocationStrategy().equals(AidasConstants.QC_LEVEL_FCFS)){
-
-                        }else if(pqclc.getAllocationStrategy().equals(AidasConstants.QC_LEVEL_FCFS)) {
-
-                        }
-                        for (int i = 0; i < objectIdQcNotDone.size(); i++) {
-                            List<Upload> batchUploads = uploadRepository.findTopByQcNotDoneYetForQcLevelGreaterThan1(projectId, cqpm.getQcLevel(), objectIdQcNotDone.get(i), pqclc.getQcLevelBatchSize());
-                            for (Upload u : batchUploads) {
-                                UploadCustomerQcProjectMappingBatchInfo ucqpmbinfo = new UploadCustomerQcProjectMappingBatchInfo();
-                                ucqpmbinfo.setUploadId(u.getId());
-                                ucqpmbinfo.setCustomerQcProjectMappingId(cqpm.getId());
-                                ucqpmbinfo.setBatchNumber(maxBatchForCqpm + (i + 1));
-                                customerQcProjectMappingRepository.save(cqpm);
-                                ucqpmbinfo.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
-                                uploadCustomerQcProjectMappingBatchInfoRepository.save(ucqpmbinfo);
-                                u.setQcDoneBy(cqpm);
-                                u.setQcStartDate(Instant.now());
-                                u.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
-                                uploadRepository.save(u);
-                            }
-                            if (i == 0) {
-                                uploads.addAll(batchUploads);
-                            }
-                        }
-                        cqpm.setCurrentQcBatchNo(maxBatchForCqpm+1);
-                        customerQcProjectMappingRepository.save(cqpm);
-                    }
-                }else{
-                    uploads = uploadRepository.findTopByQcNotDoneYetForQcLevelGreaterThan1(projectId,cqpm.getQcLevel(),pqclc.getQcLevelBatchSize());
-                    int i=0;
-                    for(Upload u:uploads){
-                        UploadCustomerQcProjectMappingBatchInfo ucqpmbinfo = new UploadCustomerQcProjectMappingBatchInfo();
-                        ucqpmbinfo.setUploadId(u.getId());
-                        ucqpmbinfo.setCustomerQcProjectMappingId(cqpm.getId());
-                        ucqpmbinfo.setBatchNumber(maxBatchForCqpm + (i + 1));
-                        customerQcProjectMappingRepository.save(cqpm);
-                        ucqpmbinfo.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
-                        uploadCustomerQcProjectMappingBatchInfoRepository.save(ucqpmbinfo);
-                        u.setQcDoneBy(cqpm);
-                        u.setQcStartDate(Instant.now());
-                        u.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
-                        uploadRepository.save(u);
-                        i++;
-                    }
-                    cqpm.setCurrentQcBatchNo(maxBatchForCqpm+1);
-                    customerQcProjectMappingRepository.save(cqpm);
-                }
-            }
-        }*/
         List<Upload> responseUploads = new LinkedList<>();
         for(Upload u : uploads) {
                 UploadMetadataDTO ud1 = new UploadMetadataDTO();
@@ -1742,25 +1594,7 @@ public class UploadResource {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to get next AidasUpload : {}");
         Authority authority = user.getAuthority();
-        if(authority.getName().equals(AidasConstants.ADMIN)){
-
-        }
-        if(authority.getName().equals(AidasConstants.ORG_ADMIN)){
-
-        }
-        if(authority.getName().equals(AidasConstants.CUSTOMER_ADMIN)){
-
-        }
-        if(authority.getName().equals(AidasConstants.VENDOR_ADMIN)){
-
-        }
-        if(authority.getName().equals(AidasConstants.VENDOR_USER)){
-
-        }
         List<CustomerQcProjectMapping> cqpms = customerQcProjectMappingRepository.getQcProjectMappingByProjectAndCustomerAndUser(projectId,user.getCustomer().getId(),user.getId());
-        if(qcLevel!=null){
-
-        }
         List<Upload> uploads = uploadRepository.findTopByQcNotDoneYetForQcLevel(projectId,qcLevel);
         if(uploads !=null) {
             for (Upload upload : uploads){
@@ -1778,7 +1612,6 @@ public class UploadResource {
             return ResponseEntity.ok().body(uploads);
         }
         uploadRepository.saveAll(uploads);
-
         return ResponseEntity.ok().body(uploads);
     }
 
@@ -1794,23 +1627,6 @@ public class UploadResource {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to delete AidasUpload : {}", id);
         Authority authority = user.getAuthority();
-        if(authority.getName().equals(AidasConstants.ADMIN)){
-
-        }
-        if(authority.getName().equals(AidasConstants.ORG_ADMIN)){
-
-        }
-        if(authority.getName().equals(AidasConstants.CUSTOMER_ADMIN)){
-
-        }
-        if(authority.getName().equals(AidasConstants.VENDOR_ADMIN)){
-
-        }
-        if(authority.getName().equals(AidasConstants.VENDOR_USER)){
-
-        }
-        //aidasUploadRepository.deleteById(id);
-        //aidasUploadSearchRepository.deleteById(id);
         Upload upload = uploadRepository.getById(id);
         if(upload !=null){
             upload.setStatus(0);
@@ -1835,21 +1651,6 @@ public class UploadResource {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to search for a page of AidasUploads for query {}", query);
         Authority authority = user.getAuthority();
-        if(authority.getName().equals(AidasConstants.ADMIN)){
-
-        }
-        if(authority.getName().equals(AidasConstants.ORG_ADMIN)){
-
-        }
-        if(authority.getName().equals(AidasConstants.CUSTOMER_ADMIN)){
-
-        }
-        if(authority.getName().equals(AidasConstants.VENDOR_ADMIN)){
-
-        }
-        if(authority.getName().equals(AidasConstants.VENDOR_USER)){
-
-        }
         Page<Upload> page = aidasUploadSearchRepository.search(query, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
@@ -1873,15 +1674,4 @@ public class UploadResource {
         downloadUploadS3.setUp(uploadIds);
         taskExecutor.execute(downloadUploadS3);
     }
-
-    /*@Scheduled(cron = "0 0/15 * * * *")
-    public void clearQCPendingUploads(){
-        List<AidasUpload> qcPendingUploadsForMoreThan10Mins = aidasUploadRepository.findUploadsHeldByQcForMoreThan10Mins();
-        for(AidasUpload au:qcPendingUploadsForMoreThan10Mins){
-            au.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
-            au.setQcDoneBy(null);
-            au.setQcStartDate(null);
-            aidasUploadRepository.save(au);
-        }
-    }*/
 }
