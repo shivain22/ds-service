@@ -151,8 +151,8 @@ public interface UploadRepository extends JpaRepository<Upload, Long> {
     @Query(value="select u.* from upload u where u.qc_done_by_id is null and u.qc_start_date is null and u.qc_end_date is null  and u.qc_status=2  and  u.metadata_status=1 and u.current_qc_level=1 and u.current_batch_number=?1 ",nativeQuery = true)
     List<Upload> getUploadsForProjectPendingByQcLevel1InBatch(Integer batchNumber);
 
-    @Query(value="select u.* from upload u, user_vendor_mapping_object_mapping uvmom, object o where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and o.project_id=?1 and u.qc_done_by_id is null and u.qc_start_date is null and u.qc_end_date is null  and  u.qc_status=2 and  u.metadata_status=1 and u.current_qc_level=1 and o.id in (?2) and (u.current_batch_number is null or u.current_batch_number=0) order by o.id",nativeQuery = true)
-    List<Upload> getUploadsForProjectToBeAssignedToQcLevel1FromUploads(Long projectId, List<Long> objectIds);
+    @Query(value="select u.* from upload u, user_vendor_mapping_object_mapping uvmom, object o where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and o.project_id=?1 and u.qc_done_by_id is null and u.qc_start_date is null and u.qc_end_date is null  and  u.qc_status=2 and  u.metadata_status=1 and u.current_qc_level=1 and o.id in (?2) and (u.current_batch_number is null or u.current_batch_number=0) order by o.id limit ?3",nativeQuery = true)
+    List<Upload> getUploadsForProjectToBeAssignedToQcLevel1FromUploads(Long projectId, Long objectId,Integer batchSize);
 
     @Query(value="select u.* from upload u, user_vendor_mapping_object_mapping uvmom, object o where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and o.project_id=?1 and u.qc_done_by_id is null and u.qc_start_date is null and u.qc_end_date is null  and  u.qc_status=2 and  u.metadata_status=1 and u.current_qc_level=1 and o.id in (select o1.id from object o1 where o1.project_id=?1 ) and u.id not in (?3) order by o.id limit ?2",nativeQuery = true)
     List<Upload> getUploadsForProjectToBeAssignedToQcLevel1FromUploads(Long projectId, Integer numberOfObjectsForQcLevel,List<Long> uploadIdsAlreadySelected);
@@ -247,8 +247,8 @@ public interface UploadRepository extends JpaRepository<Upload, Long> {
         "    u.qc_start_date is null and\n" +
         "    u.qc_end_date is null  and\n" +
         "    (u.qc_status is not null or u.qc_status=2)  and  u.metadata_status=1 and\n" +
-        "    u.current_qc_level=1 limit ?2",nativeQuery = true)
-    List<Long> findObjectsQcNotStartedForLevel1(Long projectId, Integer numberOfObjectsRequired);
+        "    u.current_qc_level=1",nativeQuery = true)
+    List<Long> findObjectsQcNotStartedForLevel1(Long projectId);
 
     @Query(value="select u.* from upload u, user_vendor_mapping_object_mapping uvmom, object o where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and o.project_id=?1 and  u.metadata_status=1 and u.current_qc_level=?2 and o.id=?3  order by uvmom.id, o.id  ",nativeQuery = true)
     List<Upload> findTopByQcNotDoneYetForQcLevelGreaterThan1(Long projectId,Integer qcLevel,Long objectIdQcNotDone, Integer batchSize);

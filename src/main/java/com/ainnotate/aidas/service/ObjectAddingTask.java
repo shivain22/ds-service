@@ -82,11 +82,12 @@ public class ObjectAddingTask {
                 uvmpm.setProject(object.getProject());
                 uvmpm.setUserVendorMapping(uvm);
                 uvmpm.setStatus(0);
+                uvmpms.add(uvmpm);
                 if(count%batchSize==0){
                     userVendorMappingProjectMappingRepository.saveAll(uvmpms);
                     uvmpms = new ArrayList<>();
                 }
-                uvmpms.add(uvmpm);
+                count++;
             }
 
             UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserVendorMappingObject(uvm.getId(),object.getId());

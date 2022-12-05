@@ -22,6 +22,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.Response;
 
+import com.ainnotate.aidas.web.rest.vm.ChangePasswordUserVM;
 import com.ainnotate.aidas.web.rest.vm.ManagedUserVM;
 /*import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProvider;
@@ -318,6 +319,9 @@ public class UserResource {
         user.setEmail(newUser.getEmail());
         user.setFirstName(newUser.getFirstName());
         user.setLastName(newUser.getLastName());
+        user.setCountry(newUser.getCountry());
+        user.setState(newUser.getState());
+        user.setMobileNumber(newUser.getMobileNumber());
         user.setLocked(0);
         user.setPassword(newUser.getPassword());
         if (user.getId() != null) {
@@ -326,12 +330,13 @@ public class UserResource {
 
         registerNewUser(user);
         user.setDeleted(0);
+        Vendor defaultVendor = vendorRepository.getById(-1l);
+        user.setVendor(defaultVendor);
         User result = userRepository.save(user);
 
         Object defaultObject = objectRepository.getById(-1l);
 
         UserVendorMappingObjectMapping auao = new UserVendorMappingObjectMapping();
-        Vendor defaultVendor = vendorRepository.getById(-1l);
         UserVendorMapping auavm = new UserVendorMapping();
         auavm.setUser(result);
         auavm.setVendor(defaultVendor);
@@ -340,7 +345,7 @@ public class UserResource {
         auao.setUserVendorMapping(auavm);
         auao.setObject(defaultObject);
         userVendorMappingObjectMappingRepository.save(auao);
-        aidasUserSearchRepository.save(result);
+        //aidasUserSearchRepository.save(result);
         updateUserToKeyCloak(result);
         return ResponseEntity
             .created(new URI("/api/aidas-users/" + result.getId()))
@@ -348,6 +353,30 @@ public class UserResource {
             .body(result);
     }
 
+    /**
+     * {@code POST  /aidas-users} : Create a new user.
+     *
+     * @param cpwd the user to create.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new user, or with status {@code 400 (Bad Request)} if the user has already an ID.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @PostMapping("/change-secret")
+    public ResponseEntity<User> changePassword(@RequestBody ChangePasswordUserVM cpwd) throws URISyntaxException {
+        log.debug("REST request to save AidasUser : {}", cpwd);
+        User user =null;
+        if(cpwd.getEmail()!=null){
+            user = userRepository.getByEmail(cpwd.getEmail());
+        }
+        boolean changePassword = changePassword(user,cpwd.getPassword());
+        if(changePassword){
+        return ResponseEntity
+            .created(new URI("/api/aidas-users/" + user.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, user.getId().toString()))
+            .body(user);
+        }else{
+            throw new BadRequestAlertException("Unable to change password", ENTITY_NAME, "idexists");
+        }
+    }
     /**
      * {@code POST  /aidas-users/:role} : Update/change current role of the user.
      *
@@ -1118,9 +1147,9 @@ public class UserResource {
 
         UserRepresentation user = new UserRepresentation();
         user.setEnabled(true);
-        user.setUsername(user.getEmail());
-        user.setEmail(user.getEmail());
-        myUser.setLogin(user.getEmail());
+        user.setUsername(myUser.getEmail());
+        user.setEmail(myUser.getEmail());
+        myUser.setLogin(myUser.getEmail());
         if(SecurityUtils.getCurrentUserLogin().get()!=null) {
             myUser.setCreatedBy(SecurityUtils.getCurrentUserLogin().get());
             myUser.setLastModifiedBy(SecurityUtils.getCurrentUserLogin().get());
@@ -1178,6 +1207,19 @@ public class UserResource {
         passwordCred.setValue(myUser.getPassword());
         userResource.resetPassword(passwordCred);
         userResource.roles().realmLevel().add(myUser.getAuthorities().stream().map(authority -> {return realmResource.roles().get(authority.getName()).toRepresentation();}).collect(Collectors.toList()));
+    }
+
+    private boolean changePassword(User myUser,String password){
+        RealmResource realmResource = keycloak.realm(keycloakConfig.getClientRealm());
+        UsersResource usersRessource = realmResource.users();
+        org.keycloak.admin.client.resource.UserResource userResource = usersRessource.get(myUser.getKeycloakId());
+        UserRepresentation user = userResource.toRepresentation();
+        CredentialRepresentation passwordCred = new CredentialRepresentation();
+        passwordCred.setTemporary(false);
+        passwordCred.setType(CredentialRepresentation.PASSWORD);
+        passwordCred.setValue(myUser.getPassword());
+        userResource.resetPassword(passwordCred);
+        return true;
     }
 
     private void deleteUserFromKeyCloak(User user){

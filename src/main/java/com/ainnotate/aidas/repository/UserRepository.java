@@ -29,6 +29,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query(value = "select * from user u where id=?1",nativeQuery = true)
     User getById(Long id);
 
+    @Query(value = "select * from user u where email=?1",nativeQuery = true)
+    User getByEmail(String email );
+
+    @Query(value = "select * from user u where login=?1",nativeQuery = true)
+    User getByLogin(String login );
+
     @Query(value="select u.id as userId, u.first_name as firstName, u.last_name as lastName, uvm.id as userVendorMappingId, u.login as login from user u, user_authority_mapping uam, user_vendor_mapping uvm where uam.user_id=u.id and uvm.user_id=u.id and uvm.vendor_id=?1 and uam.authority_id=5",nativeQuery = true)
     List<IUserDTO> findAllUsersOfVendor(Long vendorId);
 

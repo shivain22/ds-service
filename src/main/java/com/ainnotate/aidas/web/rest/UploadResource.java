@@ -674,7 +674,7 @@ public class UploadResource {
         Customer customer = uvmom.getObject().getProject().getCustomer();
         Project project = uvmom.getObject().getProject();
         CustomerQcProjectMapping cqpm = customerQcProjectMappingRepository.getById(customerQcProjectMappingId);
-        UploadCustomerQcProjectMappingBatchInfo ucqpmbi =  uploadCustomerQcProjectMappingBatchInfoRepository.getUploadIdByCustomerQcProjectMappingAndBatchNumber(customerQcProjectMappingId,cqpm.getCurrentQcBatchNo(),upload.getId());
+        UploadCustomerQcProjectMappingBatchInfo ucqpmbi =  uploadCustomerQcProjectMappingBatchInfoRepository.getUploadIdByCustomerQcProjectMappingAndBatchNumber(customerQcProjectMappingId,cqpm.getCurrentQcBatchNo(),id);
         Integer totalApprovedAndAvailableForCurrentLevel = uploadRepository.getTotalApprovedForLevel(project.getId(), cqpm.getQcLevel());
         Integer totalApprovedAndAvailableForNextLevel = uploadRepository.getTotalApprovedForLevel(project.getId(), cqpm.getQcLevel() + 1);
         Integer batchSize = 10;
@@ -1301,16 +1301,24 @@ public class UploadResource {
                     if(cqpm.getCurrentQcBatchNo().equals(0)){
                         //This is the first time the qc1 user is asking for a batch of objects
                         //Get any uploads of object of the project is available for qc1
-                        List<Long> objectsQcNotStarted = uploadRepository.findObjectsQcNotStartedForLevel1(projectId,project.getNumberOfObjectsForQcLevel());
-                        uploads = uploadRepository.getUploadsForProjectToBeAssignedToQcLevel1FromUploads(projectId, objectsQcNotStarted);
+                        List<Long> objectsQcNotStarted = uploadRepository.findObjectsQcNotStartedForLevel1(projectId);
+                        if(objectsQcNotStarted!=null && objectsQcNotStarted.size()>0){
+                            uploads = uploadRepository.getUploadsForProjectToBeAssignedToQcLevel1FromUploads(projectId, objectsQcNotStarted.get(0),pqlc.getQcLevelBatchSize());
+                        }else {
+                            uploads = uploadRepository.getUploadsForProjectToBeAssignedToQcLevel1FromUploads(projectId, null, pqlc.getQcLevelBatchSize());
+                        }
                     }else{
                         List<Long> uploadsPendingByLoggedInQc1 = uploadCustomerQcProjectMappingBatchInfoRepository.getAllPendingBatchInfoForProjectAndLevelForLoggedInUserLevel1(project.getId(), qcLevel, customerQcProjectMappingId, cqpm.getCurrentQcBatchNo());
                         if (uploadsPendingByLoggedInQc1.size() > 0) {
                             uploads = uploadRepository.getUploadsByIds(uploadsPendingByLoggedInQc1);
                             batchChanged= false;
                         } else {
-                            List<Long> objectsQcNotStarted = uploadRepository.findObjectsQcNotStartedForLevel1(projectId,project.getNumberOfObjectsForQcLevel());
-                            uploads = uploadRepository.getUploadsForProjectToBeAssignedToQcLevel1FromUploads(projectId, objectsQcNotStarted);
+                            List<Long> objectsQcNotStarted = uploadRepository.findObjectsQcNotStartedForLevel1(projectId);
+                            if(objectsQcNotStarted!=null && objectsQcNotStarted.size()>0){
+                                uploads = uploadRepository.getUploadsForProjectToBeAssignedToQcLevel1FromUploads(projectId, objectsQcNotStarted.get(0),pqlc.getQcLevelBatchSize());
+                            }else {
+                                uploads = uploadRepository.getUploadsForProjectToBeAssignedToQcLevel1FromUploads(projectId, null, pqlc.getQcLevelBatchSize());
+                            }
                         }
                     }
                     int i = 0;
@@ -1414,31 +1422,173 @@ public class UploadResource {
                     }
                 }
             }else{
-                if(pqlc.getAllocationStrategy().equals(AidasConstants.QC_LEVEL_FCFS)) {
-                    List<Long> uploadsAlreadyTakenByOtherQcLevels = uploadCustomerQcProjectMappingBatchInfoRepository.getAllPendingBatchInfoForProjectAndLevelAndOtherThanCqpmId(project.getId(),qcLevel,customerQcProjectMappingId);
-                    uploads = uploadRepository.findTopByQcNotDoneYetForQcLevelGreaterThan1(projectId,qcLevel,uploadsAlreadyTakenByOtherQcLevels, project.getNumberOfObjectsForQcLevel());
-                    int i = 0;
-                    for (Upload u : uploads) {
-                        UploadCustomerQcProjectMappingBatchInfo ucqpmbinfo = new UploadCustomerQcProjectMappingBatchInfo();
-                        ucqpmbinfo.setUploadId(u.getId());
-                        ucqpmbinfo.setCustomerQcProjectMappingId(cqpm.getId());
-                        if (maxBatchForCqpm == null) {
-                            maxBatchForCqpm = 1;
+                /*if(pqlc.getAllocationStrategy().equals(AidasConstants.QC_LEVEL_FCFS)) {
+                    Integer qcPendingInCurrentBatch = uploadCustomerQcProjectMappingBatchInfoRepository.getQcPendingCountInCurrentBatch(customerQcProjectMappingId,cqpm.getCurrentQcBatchNo());
+                    if(qcPendingInCurrentBatch==0) {
+                        List<Long> uploadsAlreadyTakenByOtherQcLevels = uploadCustomerQcProjectMappingBatchInfoRepository.getAllPendingBatchInfoForProjectAndLevelAndOtherThanCqpmId(project.getId(), qcLevel, customerQcProjectMappingId);
+                        if (uploadsAlreadyTakenByOtherQcLevels != null && uploadsAlreadyTakenByOtherQcLevels.size() == 0) {
+                            uploadsAlreadyTakenByOtherQcLevels.add(-1l);
                         }
-                        ucqpmbinfo.setBatchNumber(maxBatchForCqpm + (i + 1));
-                        customerQcProjectMappingRepository.save(cqpm);
-                        ucqpmbinfo.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
-                        uploadCustomerQcProjectMappingBatchInfoRepository.save(ucqpmbinfo);
-                        u.setQcDoneBy(cqpm);
-                        u.setQcStartDate(Instant.now());
-                        u.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
-                        u.setCurrentBatchNumber(maxBatchForCqpm + (i + 1));
-                        uploadRepository.save(u);
-                        i++;
+                        uploads = uploadRepository.findTopByQcNotDoneYetForQcLevelGreaterThan1(projectId, qcLevel, uploadsAlreadyTakenByOtherQcLevels, project.getNumberOfObjectsForQcLevel());
+                        int i = 0;
+                        int newBatchNumber = maxBatchForCqpm + (i + 1);
+                        for (Upload u : uploads) {
+                            UploadCustomerQcProjectMappingBatchInfo ucqpmbinfo = new UploadCustomerQcProjectMappingBatchInfo();
+                            ucqpmbinfo.setUploadId(u.getId());
+                            ucqpmbinfo.setCustomerQcProjectMappingId(cqpm.getId());
+                            if (maxBatchForCqpm == null) {
+                                maxBatchForCqpm = 1;
+                            }
+                            ucqpmbinfo.setBatchNumber(newBatchNumber);
+                            cqpm.setCurrentQcBatchNo(newBatchNumber);
+                            customerQcProjectMappingRepository.save(cqpm);
+                            ucqpmbinfo.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
+                            uploadCustomerQcProjectMappingBatchInfoRepository.save(ucqpmbinfo);
+                            u.setQcDoneBy(cqpm);
+                            u.setQcStartDate(Instant.now());
+                            u.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
+                            u.setCurrentBatchNumber(newBatchNumber);
+                            uploadRepository.save(u);
+                            i++;
+                        }
+                    }else{
+                        uploads = uploadCustomerQcProjectMappingBatchInfoRepository.getUploadByBatchNumber(customerQcProjectMappingId,cqpm.getCurrentQcBatchNo());
                     }
+
                 }else if(pqlc.getAllocationStrategy().equals(AidasConstants.QC_LEVEL_ED)) {
 
+                }*/
+
+
+                if(pqlc.getQcLevel().equals(1)){
+                    //QC level 1 for First Come First Served Basis
+                    if (pqlc.getAllocationStrategy().equals(AidasConstants.QC_LEVEL_FCFS)) {
+                        //Let us check whether he is asking for the batch for the first time
+                        if(cqpm.getCurrentQcBatchNo().equals(0)){
+                            //This is the first time the qc1 user is asking for a batch of objects
+                            //Get any uploads of object of the project is available for qc1
+                            List<Long> objectsQcNotStarted = uploadRepository.findObjectsQcNotStartedForLevel1(projectId);
+                            if(objectsQcNotStarted!=null && objectsQcNotStarted.size()>0){
+                                uploads = uploadRepository.getUploadsForProjectToBeAssignedToQcLevel1FromUploads(projectId, objectsQcNotStarted.get(0),pqlc.getQcLevelBatchSize());
+                            }else {
+                                uploads = uploadRepository.getUploadsForProjectToBeAssignedToQcLevel1FromUploads(projectId, null, pqlc.getQcLevelBatchSize());
+                            }
+                        }else{
+                            List<Long> uploadsPendingByLoggedInQc1 = uploadCustomerQcProjectMappingBatchInfoRepository.getAllPendingBatchInfoForProjectAndLevelForLoggedInUserLevel1(project.getId(), qcLevel, customerQcProjectMappingId, cqpm.getCurrentQcBatchNo());
+                            if (uploadsPendingByLoggedInQc1.size() > 0) {
+                                uploads = uploadRepository.getUploadsByIds(uploadsPendingByLoggedInQc1);
+                                batchChanged= false;
+                            } else {
+                                List<Long> objectsQcNotStarted = uploadRepository.findObjectsQcNotStartedForLevel1(projectId);
+                                if(objectsQcNotStarted!=null && objectsQcNotStarted.size()>0){
+                                    uploads = uploadRepository.getUploadsForProjectToBeAssignedToQcLevel1FromUploads(projectId, objectsQcNotStarted.get(0),pqlc.getQcLevelBatchSize());
+                                }else {
+                                    uploads = uploadRepository.getUploadsForProjectToBeAssignedToQcLevel1FromUploads(projectId, null, pqlc.getQcLevelBatchSize());
+                                }
+                            }
+                        }
+                        int i = 0;
+                        Integer newBatchNumber = maxBatchForCqpm +1;
+                        for (Upload u : uploads) {
+                            if(batchChanged) {
+                                UploadCustomerQcProjectMappingBatchInfo ucqpmbinfo = new UploadCustomerQcProjectMappingBatchInfo();
+                                ucqpmbinfo.setUploadId(u.getId());
+                                ucqpmbinfo.setCustomerQcProjectMappingId(cqpm.getId());
+                                ucqpmbinfo.setBatchNumber(newBatchNumber);
+                                ucqpmbinfo.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
+                                cqpm.setCurrentQcBatchNo(newBatchNumber);
+                                u.setCurrentBatchNumber(newBatchNumber);
+                                uploadCustomerQcProjectMappingBatchInfoRepository.save(ucqpmbinfo);
+                            }
+                            customerQcProjectMappingRepository.save(cqpm);
+                            u.setQcDoneBy(cqpm);
+                            u.setQcStartDate(Instant.now());
+                            u.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
+                            uploadRepository.save(u);
+                            i++;
+                        }
+                    }
+                    else if (pqlc.getAllocationStrategy().equals(AidasConstants.QC_LEVEL_ED)) {
+
+                    }
+                }else{
+                    if (pqlc.getAllocationStrategy().equals(AidasConstants.QC_LEVEL_FCFS)) {
+                        //Check whether there is any pending in batch for the user
+                        if(!(pendingInBatchForLoggedInUserAndProject!=null && pendingInBatchForLoggedInUserAndProject.size()>0 )){
+                            List<Long> objectIds = uploadRepository.findAllObjectsQcInAssignedForLevelGreaterThan1(projectId,qcLevel,project.getNumberOfObjectsForQcLevel(),pendingInBatchForLoggedInUserAndProject);
+                            List<Long> uploadsPendingByLoggedInQc = uploadCustomerQcProjectMappingBatchInfoRepository.getAllPendingBatchInfoForProjectAndLevelForLoggedInUserGreaterThanLevel1(project.getId(), qcLevel, customerQcProjectMappingId, cqpm.getCurrentQcBatchNo(),objectIds);
+                            uploads = uploadRepository.getUploadsByIds(uploadsPendingByLoggedInQc);
+                            for(Upload upload: uploads){
+                                upload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
+                                uploadRepository.save(upload);
+                            }
+                        }else if(!(pendingInAllBatchForLoggedInUserAndProject !=null && pendingInAllBatchForLoggedInUserAndProject.size()==0)){
+                            List<Long> objectIds = uploadCustomerQcProjectMappingBatchInfoRepository.getQcPendingObjectInAllCount(projectId,customerQcProjectMappingId,pendingInAllBatchForLoggedInUserAndProject);
+                            //List<Long> objectIds = uploadRepository.findAllObjectsQcInAssignedForLevelGreaterThan1(projectId,qcLevel,project.getNumberOfObjectsForQcLevel(),pendingInAllBatchForLoggedInUserAndProject);
+                            List<Long> uploadsPendingByLoggedInQc = uploadCustomerQcProjectMappingBatchInfoRepository.getAllPendingBatchInfoForProjectAndLevelForLoggedInUserGreaterThanLevel1(project.getId(), qcLevel, customerQcProjectMappingId, cqpm.getCurrentQcBatchNo(),objectIds);
+                            uploadsPendingByLoggedInQc = uploadCustomerQcProjectMappingBatchInfoRepository.getAllPendingBatchInfoForProjectAndLevelForLoggedInUserGreaterThanLevel1(project.getId(), qcLevel, customerQcProjectMappingId,pendingInAllBatchForLoggedInUserAndProject.get(0),objectIds);
+                            uploads = uploadRepository.getUploadsByIds(uploadsPendingByLoggedInQc);
+                            for(Upload upload: uploads){
+                                upload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
+                                uploadRepository.save(upload);
+                            }
+                        }
+                        else{
+                            //Check total pending uploads for all objects of the project and for the selected qc level (whether it is assigned to another user or the same user).
+                            List<Long> allApprovedObjectsForNextLevel = uploadRepository.findAllObjectsPendingQcForLevelGreaterThan1(projectId,qcLevel);
+                            //Calculate based on qcLevelAcceptancePercentage how much is required to show to the selected qc level
+                            Float currentQcLevelRequiredObject = (pqlc.getQcLevelAcceptancePercentage().floatValue() / 100f) * allApprovedObjectsForNextLevel.size();
+                            //Floor it to lower level to get a integer.
+                            Double correctedQcLevelRequiredObject = Math.floor(currentQcLevelRequiredObject);
+                            Integer currentBatch = maxBatchForCqpm+1;
+                            Double numberOfObjectsPerBatch = Math.floor(allApprovedObjectsForNextLevel.size()/correctedQcLevelRequiredObject);
+
+                            if(allApprovedObjectsForNextLevel.size()>=correctedQcLevelRequiredObject.intValue()){
+                                for (int i = 0; i < correctedQcLevelRequiredObject.intValue(); i++) {
+                                    List<Long> objectsPerBatch = new ArrayList<>();
+                                    for(int j=0;j<numberOfObjectsPerBatch;j++){
+                                        if(i*j<allApprovedObjectsForNextLevel.size()){
+                                            objectsPerBatch.add(allApprovedObjectsForNextLevel.get(i*j));
+                                        }
+                                    }
+                                    List<Upload> batchUploads = uploadRepository.findTopByQcNotDoneYetForQcLevelGreaterThan1(projectId, cqpm.getQcLevel(), objectsPerBatch, pqlc.getQcLevelBatchSize());
+                                    for (Upload u : batchUploads) {
+                                        UploadCustomerQcProjectMappingBatchInfo ucqpmbinfo = new UploadCustomerQcProjectMappingBatchInfo();
+                                        ucqpmbinfo.setUploadId(u.getId());
+                                        ucqpmbinfo.setCustomerQcProjectMappingId(cqpm.getId());
+                                        ucqpmbinfo.setBatchNumber(currentBatch);
+                                        cqpm.setCurrentQcBatchNo(currentBatch);
+                                        customerQcProjectMappingRepository.save(cqpm);
+                                        if(i<currentQcLevelRequiredObject.intValue()){
+                                            ucqpmbinfo.setShowToQc(1);
+                                        }else{
+                                            ucqpmbinfo.setShowToQc(0);
+                                        }
+                                        ucqpmbinfo.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
+                                        uploadCustomerQcProjectMappingBatchInfoRepository.save(ucqpmbinfo);
+                                        u.setQcDoneBy(cqpm);
+                                        u.setQcStartDate(Instant.now());
+                                        u.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
+                                        u.setCurrentBatchNumber(currentBatch);
+                                        u.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
+                                        uploadRepository.save(u);
+                                    }
+                                    if (i == 0) {
+                                        uploads.addAll(batchUploads);
+                                    }
+                                    currentBatch++;
+                                }
+                            }else{
+                                System.out.println("There is not enough uploads available for the selected level "+qcLevel+ " as the qcLevelAcceptancePercentage is "+ pqlc.getQcLevelAcceptancePercentage()+ " and correctedQcLevelRequiredObject is "+ correctedQcLevelRequiredObject.intValue() + " and available unassigned approved objects count ");
+                            }
+                        }
+                    }
+                    else if (pqlc.getAllocationStrategy().equals(AidasConstants.QC_LEVEL_ED)) {
+
+                    }
                 }
+
+
             }
 
         List<Upload> responseUploads = new LinkedList<>();
@@ -1514,8 +1664,12 @@ public class UploadResource {
                         uploads = uploadRepository.getUploadsForProjectPendingByQcLevel1InBatch(batchNumber);
                     }
                 }else{
-                    List<Long> objectsQcNotStarted = uploadRepository.findObjectsQcNotStartedForLevel1(projectId,project.getNumberOfObjectsForQcLevel());
-                    uploads = uploadRepository.getUploadsForProjectToBeAssignedToQcLevel1FromUploads(projectId, objectsQcNotStarted);
+                    List<Long> objectsQcNotStarted = uploadRepository.findObjectsQcNotStartedForLevel1(projectId);
+                    if(objectsQcNotStarted!=null && objectsQcNotStarted.size()>0){
+                        uploads = uploadRepository.getUploadsForProjectToBeAssignedToQcLevel1FromUploads(projectId, objectsQcNotStarted.get(0), project.getNumberOfObjectsForQcLevel());
+                    }else {
+                        uploads = uploadRepository.getUploadsForProjectToBeAssignedToQcLevel1FromUploads(projectId, null, project.getNumberOfObjectsForQcLevel());
+                    }
                     int i=0;
                     for (Upload u : uploads) {
                         UploadCustomerQcProjectMappingBatchInfo ucqpmbinfo = new UploadCustomerQcProjectMappingBatchInfo();

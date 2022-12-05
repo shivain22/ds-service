@@ -6,6 +6,7 @@ import com.ainnotate.aidas.config.Constants;
 import com.ainnotate.aidas.domain.Authority;
 import com.ainnotate.aidas.domain.User;
 
+import javax.persistence.Column;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
@@ -41,8 +42,54 @@ public class AdminUserDTO {
 
     private boolean activated = false;
 
-    @Size(min = 2, max = 10)
+
     private String langKey;
+
+
+    private String country;
+
+
+    private String state;
+
+
+    private String time_zone;
+
+
+    private String mobileNumber;
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
+    }
+
+    public String getTime_zone() {
+        return time_zone;
+    }
+
+    public void setTime_zone(String time_zone) {
+        this.time_zone = time_zone;
+    }
+
+    public String getMobileNumber() {
+        return mobileNumber;
+    }
+
+    public void setMobileNumber(String mobileNumber) {
+        this.mobileNumber = mobileNumber;
+    }
+
+
 
     private String createdBy;
 

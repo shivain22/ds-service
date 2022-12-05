@@ -630,6 +630,7 @@ public class ObjectResource {
                 if(containFresh){
                     uvmomBatchMappingsDTO.getUvmoms().add(uvmomBatchMappingDTO);
                     try {
+
                         uvmpm.setUvmomIds(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(uvmomBatchMappingsDTO));
                     } catch (JsonProcessingException e) {
                         e.printStackTrace();
@@ -649,6 +650,60 @@ public class ObjectResource {
             }
             HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
             return ResponseEntity.ok().headers(headers).body(page.getContent());
+        }
+    }
+
+
+
+    @GetMapping("/aidas-projects/{id}/aidas-objects/details/status")
+    public ResponseEntity<Boolean> getAllAidasObjectsOfProjectForVendorUserStatus( @PathVariable(value = "id", required = false) final Long projectId) {
+        log.debug("REST request to get a page of AidasObjects");
+        User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        Page<Object> page = null;
+        Project project = projectRepository.getById(projectId);
+        UserVendorMapping uvm = userVendorMappingRepository.findByVendorIdAndUserId(user.getVendor().getId(),user.getId());
+        UserVendorMappingProjectMapping uvmpm = userVendorMappingProjectMappingRepository.findByUserVendorMappingIdProjectId(uvm.getId(),projectId);
+        ObjectMapper mapper = new ObjectMapper();
+        UvmomBatchMappingsDTO uvmomBatchMappingsDTO = new UvmomBatchMappingsDTO();
+        UvmomBatchMappingDTO uvmomBatchMappingDTO = new UvmomBatchMappingDTO();
+        Integer batchNumber =0;
+        List<Long> allObjectsIds = new ArrayList<>();
+        boolean containFresh = false;
+        if(project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)){
+            if (uvmpm.getUvmomIds() != null) {
+                try {
+                    uvmomBatchMappingsDTO = mapper.readValue(uvmpm.getUvmomIds(), UvmomBatchMappingsDTO.class);
+                } catch (JsonProcessingException e) {
+                    e.printStackTrace();
+                }
+                uvmomBatchMappingsDTO.getUvmoms().sort(Comparator.comparing(UvmomBatchMappingDTO::getBatchNumber).reversed());
+                for(UvmomBatchMappingDTO ubmdto:uvmomBatchMappingsDTO.getUvmoms()){
+                    allObjectsIds.addAll(ubmdto.getUserVendorMappingObjectMappingIds());
+                }
+                uvmomBatchMappingDTO = uvmomBatchMappingsDTO.getUvmoms().get(0);
+                batchNumber = uvmomBatchMappingDTO.getBatchNumber();
+            }
+            if(batchNumber>0){
+                log.debug("There is already one batch available Batch Number ->"+uvmomBatchMappingDTO.getBatchNumber()+" uvmomIds in batch "+uvmomBatchMappingDTO.getBatchNumber() +" are "+uvmomBatchMappingDTO.getUserVendorMappingObjectMappingIds());
+                Integer objectsNotCompleted = objectRepository.getObjectsNotCompleted(allObjectsIds);
+                //User have not completed all uploads required by object.
+                if(objectsNotCompleted>0){
+                    log.debug("There are some objects for which uploads is not completed. objectsNotCompleted-> "+objectsNotCompleted);
+                    //get all the objects which are requires more upload and already uploaded.
+                    return ResponseEntity.ok().body(true);
+                }else{
+                    log.debug("All uploads required by all objects are completed. Fetching new batch ");
+                    //All objects required uploads completed, so lets get new batch along with already available batches.
+                    return ResponseEntity.ok().body(false);
+                }
+            }else {
+                //The user is coming for the first time.  Get new set of objects.
+                log.debug("User is coming for first time.  Fetching new batch from DB");
+                return ResponseEntity.ok().body(false);
+            }
+
+        }else{
+            return ResponseEntity.ok().body(false);
         }
     }
 

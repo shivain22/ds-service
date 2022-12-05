@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.5.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+    <changeSet author="shiva (generated)" id="1657539087462-7">
+        <addColumn catalogName="ainnotateservice"
+                   schemaName= "ainnotateservice"
+                   tableName="user" >
+            <column name="country"
+                    type="TEXT"/>
+        </addColumn>
+        <addColumn catalogName="ainnotateservice"
+                   schemaName= "ainnotateservice"
+                   tableName="user_aud" >
+            <column name="country"
+                    type="TEXT"/>
+        </addColumn>
+
+        <addColumn catalogName="ainnotateservice"
+                   schemaName= "ainnotateservice"
+                   tableName="user" >
+            <column name="state"
+                    type="TEXT"/>
+        </addColumn>
+        <addColumn catalogName="ainnotateservice"
+                   schemaName= "ainnotateservice"
+                   tableName="user_aud" >
+            <column name="state"
+                    type="TEXT"/>
+        </addColumn>
+
+        <addColumn catalogName="ainnotateservice"
+                   schemaName= "ainnotateservice"
+                   tableName="user" >
+            <column name="mobile_number"
+                    type="TEXT"/>
+        </addColumn>
+        <addColumn catalogName="ainnotateservice"
+                   schemaName= "ainnotateservice"
+                   tableName="user_aud" >
+            <column name="mobile_number"
+                    type="TEXT"/>
+        </addColumn>
+
+        <addColumn catalogName="ainnotateservice"
+                   schemaName= "ainnotateservice"
+                   tableName="user" >
+            <column name="time_zone"
+                    type="TEXT"/>
+        </addColumn>
+        <addColumn catalogName="ainnotateservice"
+                   schemaName= "ainnotateservice"
+                   tableName="user_aud" >
+            <column name="time_zone"
+                    type="TEXT"/>
+        </addColumn>
+
+    </changeSet>
+</databaseChangeLog>

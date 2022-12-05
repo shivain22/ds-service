@@ -160,8 +160,52 @@ public class User extends AbstractAuditingEntity implements Serializable {
     @Column(nullable = true,columnDefinition = "integer default 1")
     private Integer activated = 1;
 
-    @Column(name = "lang_key", length = 10)
+    @Column(name = "lang_key", length = 100)
     private String langKey;
+
+    @Column(name = "country", length = 100)
+    private String country;
+
+    @Column(name = "state", length = 100)
+    private String state;
+
+    @Column(name = "time_zone", length = 100)
+    private String time_zone;
+
+    @Column(name = "mobile_number", length = 100)
+    private String mobileNumber;
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
+    }
+
+    public String getTime_zone() {
+        return time_zone;
+    }
+
+    public void setTime_zone(String time_zone) {
+        this.time_zone = time_zone;
+    }
+
+    public String getMobileNumber() {
+        return mobileNumber;
+    }
+
+    public void setMobileNumber(String mobileNumber) {
+        this.mobileNumber = mobileNumber;
+    }
 
     @Column(name = "image_url", length = 256)
     private String imageUrl;

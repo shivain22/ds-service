@@ -84,7 +84,7 @@ spring:
       discovery:
         enabled: true
   keycloak:
-    server-url: http://keycloak:9080/auth
+    server-url: http://aidas-auth.atparui.com:1080/auth/
     realm: master
     client-id: admin-cli
     client-secret:

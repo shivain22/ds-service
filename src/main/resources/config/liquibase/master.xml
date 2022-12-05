@@ -31,5 +31,6 @@
     <include file="config/liquibase/changelog/upload-add-cols.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/project-add-cols.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/user-vendor-mapping-project-mapping-add-cols.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/user-add-cols.xml" relativeToChangelogFile="false"/>
 
 </databaseChangeLog>

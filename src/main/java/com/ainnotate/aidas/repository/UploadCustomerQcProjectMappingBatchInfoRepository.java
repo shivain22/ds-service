@@ -1,6 +1,7 @@
 package com.ainnotate.aidas.repository;
 
 import com.ainnotate.aidas.domain.Authority;
+import com.ainnotate.aidas.domain.Upload;
 import com.ainnotate.aidas.domain.UploadCustomerQcProjectMappingBatchInfo;
 import com.ainnotate.aidas.dto.QcResultDTO;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -73,5 +74,10 @@ public interface UploadCustomerQcProjectMappingBatchInfoRepository extends JpaRe
     @Query(value="select ucbi.upload_id from upload_cqpm_batch_info ucbi,  customer_qc_project_mapping cqpm where  ucbi.customer_qc_project_mapping_id=cqpm.id and ucbi.qc_status=2 and cqpm.project_id=?1 and cqpm.qc_level=?2 and cqpm.id=?3 and ucbi.batch_number=?4 and ucbi.show_to_qc=1",nativeQuery = true)
     List<Long> getAllPendingBatchInfoForProjectAndLevelForLoggedInUserGreaterThanLevel1(Long projectId, Integer level,Long customerQcProjectMappingId, Integer batchNumber);
 
+    @Query(value="select count(*) from upload_cqpm_batch_info ucbi where ucbi.customer_qc_project_mapping_id=?1 and ucbi.batch_number=?2 and ucbi.qc_status=2",nativeQuery = true)
+    Integer getQcPendingCountInCurrentBatch(Long customerQcProjectMappingId, Integer batchNumber);
+
+    @Query(value="select u.* from upload_cqpm_batch_info ucbi,upload u where ucbi.customer_qc_project_mapping_id=?1 and ucbi.batch_number=?2 and ucbi.upload_id=u.id",nativeQuery = true)
+    List<Upload> getUploadByBatchNumber(Long customerQcProjectMappingId, Integer batchNumber);
 
 }
