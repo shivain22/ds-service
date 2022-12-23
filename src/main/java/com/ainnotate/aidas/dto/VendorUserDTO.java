@@ -1,5 +1,7 @@
 package com.ainnotate.aidas.dto;
 
+import com.ainnotate.aidas.domain.UsersOfVendor;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -8,9 +10,9 @@ public class VendorUserDTO {
 
     private Long vendorId;
     private String name;
-    private List<UserDTO> userDTOs=new ArrayList<>();
+    private List<UsersOfVendor> userDTOs=new ArrayList<>();
 
-    public VendorUserDTO(Long vendorId, String name, List<UserDTO> userDTOs) {
+    public VendorUserDTO(Long vendorId, String name, List<UsersOfVendor> userDTOs) {
         this.vendorId = vendorId;
         this.name = name;
         this.userDTOs = userDTOs;
@@ -57,11 +59,11 @@ public class VendorUserDTO {
         this.name = name;
     }
 
-    public List<UserDTO> getUserDTOs() {
+    public List<UsersOfVendor> getUserDTOs() {
         return userDTOs;
     }
 
-    public void setUserDTOs(List<UserDTO> userDTOs) {
+    public void setUserDTOs(List<UsersOfVendor> userDTOs) {
         this.userDTOs = userDTOs;
     }
 }

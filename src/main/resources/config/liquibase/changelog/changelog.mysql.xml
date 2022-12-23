@@ -785,6 +785,7 @@
             <column name="upload_url" type="VARCHAR(255)"/>
             <column name="qc_done_by_id" type="BIGINT"/>
             <column name="rework_upload_id" type="BIGINT"/>
+            <column name="previous_qc_status" type="BIGINT"/>
             <column name="user_vendor_mapping_object_mapping_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
@@ -820,6 +821,7 @@
             <column name="upload_url" type="VARCHAR(255)"/>
             <column name="qc_done_by_id" type="BIGINT"/>
             <column name="rework_upload_id" type="BIGINT"/>
+            <column name="previous_qc_status" type="BIGINT"/>
             <column name="user_vendor_mapping_object_mapping_id" type="BIGINT"/>
         </createTable>
     </changeSet>

@@ -32,5 +32,9 @@
     <include file="config/liquibase/changelog/project-add-cols.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/user-vendor-mapping-project-mapping-add-cols.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/user-add-cols.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/upload-add-col-show-to-qc.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/customer_qc_mapping_batch_mapping.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/users-of-vendors-view.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/qc_users-of-customers-view.xml" relativeToChangelogFile="false"/>
 
 </databaseChangeLog>

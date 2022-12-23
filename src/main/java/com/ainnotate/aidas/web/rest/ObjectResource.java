@@ -14,7 +14,6 @@ import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
-import java.util.stream.Collectors;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -24,7 +23,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.beans.support.PagedListHolder;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -154,9 +152,19 @@ public class ObjectResource {
         p.setNumberOfUploadsRequired(p.getNumberOfUploadsRequired()+result.getNumberOfUploadsRequired());
         p.setTotalRequired(p.getTotalRequired()+result.getNumberOfUploadsRequired());
         projectRepository.save(p);
-        objectAddingTask.setObject(result);
+        /*objectAddingTask.setObject(result);
         objectAddingTask.setDummy(false);
-        objectAddingTask.run();
+        objectAddingTask.run();*/
+        List<UserVendorMappingProjectMapping> uvmpms = userVendorMappingProjectMappingRepository.getAllUserVendorMappingProjectMappingByProjectId(p.getId());
+        List<UserVendorMappingObjectMapping> uvmoms = new ArrayList<>();
+        for(UserVendorMappingProjectMapping uvmpm:uvmpms){
+            UserVendorMappingObjectMapping uvmom = new UserVendorMappingObjectMapping();
+            uvmom.setObject(result);
+            uvmom.setUserVendorMapping(uvmpm.getUserVendorMapping());
+            uvmom.setStatus(uvmpm.getStatus());
+            uvmoms.add(uvmom);
+        }
+        userVendorMappingObjectMappingRepository.saveAll(uvmoms);
         return ResponseEntity
             .created(new URI("/api/aidas-objects/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
@@ -182,7 +190,7 @@ public class ObjectResource {
         Object object = objectRepository.getById(objectVendorMappingDTO.getObjectId());
         for(VendorUserDTO vendorUserDTO:objectVendorMappingDTO.getVendorDTOs()){
             Vendor v = vendorRepository.getById(vendorUserDTO.getVendorId());
-            for(UserDTO userDTO: vendorUserDTO.getUserDTOs()){
+            for(UsersOfVendor userDTO: vendorUserDTO.getUserDTOs()){
                 User u = userRepository.getById(userDTO.getUserId());
                 UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserObject(userDTO.getUserId(),objectVendorMappingDTO.getObjectId());
                 if(uvmom!=null){

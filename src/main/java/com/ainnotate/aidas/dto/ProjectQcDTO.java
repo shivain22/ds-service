@@ -1,5 +1,7 @@
 package com.ainnotate.aidas.dto;
 
+import com.ainnotate.aidas.domain.QcUsersOfCustomer;
+
 import java.util.List;
 
 public class ProjectQcDTO {
@@ -10,13 +12,13 @@ public class ProjectQcDTO {
 
     private List<UserDTO> qcUsers;
 
-    private List<UserDTO> qcUsers1;
+    private List<QcUsersOfCustomer> qcUsers1;
 
-    public List<UserDTO> getQcUsers1() {
+    public List<QcUsersOfCustomer> getQcUsers1() {
         return qcUsers1;
     }
 
-    public void setQcUsers1(List<UserDTO> qcUsers1) {
+    public void setQcUsers1(List<QcUsersOfCustomer> qcUsers1) {
         this.qcUsers1 = qcUsers1;
     }
 

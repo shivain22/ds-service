@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.5.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+    <changeSet author="shiva (generated)" id="1657539087463-7">
+        <createView  catalogName="ainnotateservice"
+                     encoding="UTF-8"
+                     replaceIfExists="true"
+                     schemaName="ainnotateservice"
+                     viewName="users_of_vendor">
+            select uuid() as id, uvmpm.project_id,u.id as user_id,u.first_name,u.last_name,u.login,v.name as vendor_name,uvm.id as user_vendor_mapping_id,v.id as vendor_id,uvmpm.id as user_vendor_mapping_project_mapping_id,uvmpm.status from user u, user_vendor_mapping uvm, user_vendor_mapping_project_mapping uvmpm,vendor v
+            where uvmpm.user_vendor_mapping_id=uvm.id and uvm.user_id=u.id and uvm.vendor_id=v.id
+            union
+            select uuid() as id,p.id as project_id,u.id as user_id,u.first_name,u.last_name,u.login,v.name as vendor_name,uvm.id as user_vendor_mapping_id,v.id as vendor_id,-2 as user_vendor_mapping_project_mapping_id,0 as status from user u, user_vendor_mapping uvm, vendor v,project p
+            where uvm.user_id=u.id and uvm.vendor_id=v.id and concat(p.id,uvm.id) not in (
+            select concat(uvmpm.project_id,uvm.id) from user u, user_vendor_mapping uvm, user_vendor_mapping_project_mapping uvmpm,vendor v
+            where uvmpm.user_vendor_mapping_id=uvm.id and uvm.user_id=u.id and uvm.vendor_id=v.id
+            )
+        </createView>
+    </changeSet>
+</databaseChangeLog>

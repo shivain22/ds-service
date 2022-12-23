@@ -107,6 +107,27 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
     private UserVendorMappingObjectMapping userVendorMappingObjectMapping;
     @Column(name ="current_qc_level",columnDefinition = "integer default 1")
     private Integer currentQcLevel=1;
+    @Column(name ="previous_qc_status",columnDefinition = "integer default 1")
+    private Integer previouQcStatus=2;
+
+    public Integer getPreviouQcStatus() {
+        return previouQcStatus;
+    }
+
+    public void setPreviouQcStatus(Integer previouQcStatus) {
+        this.previouQcStatus = previouQcStatus;
+    }
+
+    @Column(name="show_to_qc")
+    private Integer showToQc=1;
+
+    public Integer getShowToQc() {
+        return showToQc;
+    }
+
+    public void setShowToQc(Integer showToQc) {
+        this.showToQc = showToQc;
+    }
 
     @Column(name ="current_batch_number",columnDefinition = "integer default 1")
     private Integer currentBatchNumber=0;

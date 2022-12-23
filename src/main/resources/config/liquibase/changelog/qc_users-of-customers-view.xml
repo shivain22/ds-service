@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.5.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+    <changeSet author="shiva (generated)" id="1657539087464-7">
+        <createView  catalogName="ainnotateservice"
+                     encoding="UTF-8"
+                     replaceIfExists="true"
+                     schemaName="ainnotateservice"
+                     viewName="qc_users_of_customer">
+            select uuid() as id, u.id as user_id,u.first_name,u.last_name,u.login,cqpm.qc_level,cqpm.project_id,ucm.id as user_customer_mapping_id,cqpm.status,p.customer_id from user u, user_customer_mapping ucm, customer_qc_project_mapping cqpm,project p
+            where ucm.user_id=u.id and cqpm.user_customer_mapping_id=ucm.id and cqpm.project_id=p.id
+            union
+            select uuid() as id,u.id as user_id,u.first_name,u.last_name,u.login,pqlc.qc_level,pqlc.project_id,ucm.id as user_customer_mapping_id, 0 as status,p.customer_id from project p, project_qc_level_configurations pqlc,user_customer_mapping ucm,user_authority_mapping uam,user u, customer c
+            where pqlc.project_id=p.id and ucm.user_id=u.id and uam.user_id=u.id and uam.authority_id=6 and p.customer_id=c.id and ucm.customer_id=c.id
+            and concat(p.id,pqlc.qc_level,ucm.id,u.id) not in (
+            select concat(cqpm.project_id,cqpm.qc_level,ucm.id,u.id) from user u, user_customer_mapping ucm, customer_qc_project_mapping cqpm
+            where ucm.user_id=u.id and cqpm.user_customer_mapping_id=ucm.id
+            )
+        </createView>
+    </changeSet>
+</databaseChangeLog>

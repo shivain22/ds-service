@@ -1,13 +1,9 @@
 package com.ainnotate.aidas.web.rest;
 
-import com.ainnotate.aidas.domain.AppProperty;
-import com.ainnotate.aidas.domain.Property;
-import com.ainnotate.aidas.domain.User;
-import com.ainnotate.aidas.domain.Vendor;
-import com.ainnotate.aidas.dto.IUserDTO;
-import com.ainnotate.aidas.dto.UserDTO;
+import com.ainnotate.aidas.domain.*;
 import com.ainnotate.aidas.dto.VendorUserDTO;
 import com.ainnotate.aidas.repository.AppPropertyRepository;
+import com.ainnotate.aidas.repository.UsersOfVendorRepository;
 import com.ainnotate.aidas.repository.UserRepository;
 import com.ainnotate.aidas.repository.VendorRepository;
 import com.ainnotate.aidas.repository.search.VendorSearchRepository;
@@ -19,7 +15,6 @@ import java.util.stream.Collectors;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import liquibase.pro.packaged.V;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +52,9 @@ public class VendorResource {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private UsersOfVendorRepository userOfVendorRepository;
 
     private final VendorSearchRepository aidasVendorSearchRepository;
 
@@ -187,7 +185,7 @@ public class VendorResource {
      *
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of aidasVendors in body.
      */
-    @GetMapping("/aidas-vendors/vendors-with-users")
+    /*@GetMapping("/aidas-vendors/vendors-with-users")
     public ResponseEntity<List<VendorUserDTO>> getAllVendorsWithUsers() {
         log.debug("REST request to get a page of AidasVendors");
         List<VendorUserDTO> vendorUserDtos = new ArrayList<>();
@@ -211,7 +209,7 @@ public class VendorResource {
             vendorUserDtos.add(vendorUserDto);
         }
         return ResponseEntity.ok().body(vendorUserDtos);
-    }
+    }*/
 
     /**
      * {@code GET  /aidas-vendors} : get all the aidasVendors.
@@ -222,8 +220,9 @@ public class VendorResource {
     public ResponseEntity<List<VendorUserDTO>> getAllVendorsWithUsersProject(@PathVariable(value = "projectId", required = false) final Long projectId) {
         log.debug("REST request to get a page of AidasVendors");
         List<VendorUserDTO> vendorUserDtos = new ArrayList<>();
-        List<UserDTO> vendorUsers = userRepository.findAllUsersOfVendorWithProject(projectId);
-        Map<VendorUserDTO, List<UserDTO>> userPerVendor = vendorUsers.stream().collect(Collectors.groupingBy(item->{return new VendorUserDTO(item.getVendorId(),item.getVendorName());}));
+        //List<UserDTO> vendorUsers = userRepository.findAllUsersOfVendorWithProject(projectId);
+        List<UsersOfVendor> vendorUsers = userOfVendorRepository.getUserOfVendor(projectId);
+        Map<VendorUserDTO, List<UsersOfVendor>> userPerVendor = vendorUsers.stream().collect(Collectors.groupingBy(item->{return new VendorUserDTO(item.getVendorId(),item.getVendorName());}));
         userPerVendor.forEach((k, v) -> {k.setUserDTOs(v); vendorUserDtos.add(k);});
         return ResponseEntity.ok().body(vendorUserDtos);
     }
@@ -233,7 +232,7 @@ public class VendorResource {
      *
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of aidasVendors in body.
      */
-    @GetMapping("/aidas-vendors/vendors-with-users-object/{objectId}")
+    /*@GetMapping("/aidas-vendors/vendors-with-users-object/{objectId}")
     public ResponseEntity<List<VendorUserDTO>> getAllVendorsWithUsersObject(@PathVariable(value = "objectId", required = false) final Long objectId) {
         log.debug("REST request to get a page of AidasVendors");
         List<VendorUserDTO> vendorUserDtos = new ArrayList<>();
@@ -241,7 +240,7 @@ public class VendorResource {
         Map<VendorUserDTO, List<UserDTO>> userPerVendor = vendorUsers.stream().collect(Collectors.groupingBy(item->{return new VendorUserDTO(item.getVendorId(),item.getVendorName());}));
         userPerVendor.forEach((k, v) -> {k.setUserDTOs(v); vendorUserDtos.add(k);});
         return ResponseEntity.ok().body(vendorUserDtos);
-    }
+    }*/
 
     /**
      * {@code GET  /aidas-vendors} : get all the aidasVendors.

@@ -187,6 +187,7 @@ public class ProjectResource {
             }
             if(isQcLevelConfigsAdded) {
                 Project result = projectRepository.save(project);
+                objectAddingTask.runQcUserAdd();
                 {
                     Object obj = new Object();
                     obj.setName(result.getName() + " - Dummy Object");
@@ -215,9 +216,9 @@ public class ProjectResource {
                         }
                     }
                     objectRepository.save(obj);
-                    objectAddingTask.setDummy(true);
+                   /* objectAddingTask.setDummy(true);
                     objectAddingTask.setObject(obj);
-                    objectAddingTask.run();
+                    objectAddingTask.run();*/
                 }
                 List<Object> dynaObjects = new ArrayList<>();
                 if (result.getAutoCreateObjects() != null && result.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)) {
@@ -263,9 +264,9 @@ public class ProjectResource {
                         Object resultObj = objectRepository.save(obj);
                         dynaObjects.add(resultObj);
                     }
-                    objectAddingTask.setDummy(false);
+                    /*objectAddingTask.setDummy(false);
                     objectAddingTask.setDynamicObjects(dynaObjects);
-                    objectAddingTask.runBulkObjects();
+                    objectAddingTask.runBulkObjects();*/
                     //
                     int numOfUploadRequired = project.getNumberOfUploadsRequired();
                     int numOfObjects = project.getNumberOfObjects();
@@ -401,12 +402,18 @@ public class ProjectResource {
     public ResponseEntity<String> addQcToProject(@Valid @RequestBody ProjectQcDTO projectQcDTO) throws URISyntaxException {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to add AidasQcUsers : {}", projectQcDTO);
+        Project project = projectRepository.getById(projectQcDTO.getProjectId());
         for(UserDTO userDTO: projectQcDTO.getQcUsers()){
             //the uservendormappingid coming from the frontend is actually qpc.id -- check the method which fetch list of qc users for project.
-            CustomerQcProjectMapping qpc = customerQcProjectMappingRepository.getById(userDTO.getUserCustomerMappingId());
-            qpc.setStatus(userDTO.getStatus());
-            qpc.setQcLevel(userDTO.getQcLevel());
-            customerQcProjectMappingRepository.save(qpc);
+            CustomerQcProjectMapping cqpm = customerQcProjectMappingRepository.getQcProjectMappingByProjectAndCustomerAndUserAndLevel(projectQcDTO.getProjectId(),userDTO.getUserCustomerMappingId(),userDTO.getQcLevel());
+            if(cqpm==null){
+                cqpm = new CustomerQcProjectMapping();
+                cqpm.setProject(project);
+                cqpm.setUserCustomerMapping(userCustomerMappingRepository.getById(userDTO.getUserCustomerMappingId()));
+            }
+            cqpm.setStatus(userDTO.getStatus());
+            cqpm.setQcLevel(userDTO.getQcLevel());
+            customerQcProjectMappingRepository.save(cqpm);
         }
         return ResponseEntity.ok().body("Successfully added project qc level");
     }
@@ -426,24 +433,35 @@ public class ProjectResource {
         if (projectVendorMappingDTO.getProjectId() == null) {
             throw new BadRequestAlertException("A new project cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        List<Long>userVendorMappingIds = new ArrayList<>();
-        Map<Long,Integer>userVendorMappingStatusMap = new HashMap<>();
+        List<UserVendorMappingProjectMapping> uvmpms = new ArrayList<>();
+        List<UserVendorMappingObjectMapping> uvmoms = new ArrayList<>();
         for(VendorUserDTO vendorUserDTO:projectVendorMappingDTO.getVendors()){
-            for(UserDTO userDTO: vendorUserDTO.getUserDTOs()){
-                userVendorMappingIds.add(userDTO.getUserVendorMappingId());
-                userVendorMappingStatusMap.put(userDTO.getUserVendorMappingId(),userDTO.getStatus());
+            for(UsersOfVendor userDTO: vendorUserDTO.getUserDTOs()){
+                UserVendorMappingProjectMapping uvmpm=null;
+                if(userDTO.getUserVendorMappingProjectMappingId()!=null && userDTO.getUserVendorMappingProjectMappingId()!=-2){
+                    uvmpm = userVendorMappingProjectMappingRepository.getById(userDTO.getUserVendorMappingProjectMappingId());
+                }else{
+                    uvmpm = new UserVendorMappingProjectMapping();
+                    uvmpm.setUserVendorMapping(userVendorMappingRepository.getById(userDTO.getUserVendorMappingId()));
+                    uvmpm.setProject(projectRepository.getById(projectVendorMappingDTO.getProjectId()));
+                }
+                uvmpm.setStatus(userDTO.getStatus());
+                uvmpms.add(uvmpm);
+                List<Object> objects = objectRepository.getAllObjectsOfProject(projectVendorMappingDTO.getProjectId());
+                for(Object o:objects){
+                    UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserVendorMappingObject(userDTO.getUserVendorMappingId(),o.getId());
+                    if(uvmom==null){
+                        uvmom = new UserVendorMappingObjectMapping();
+                        uvmom.setUserVendorMapping(userVendorMappingRepository.getById(userDTO.getUserVendorMappingId()));
+                        uvmom.setObject(o);
+                    }
+                    uvmom.setStatus(userDTO.getStatus());
+                    uvmoms.add(uvmom);
+                }
             }
         }
-        List<UserVendorMappingObjectMapping> uvmoms = userVendorMappingObjectMappingRepository.getAllUserVendorMappingObjectMappingByUserVendorMappingIdsAndObjectId(projectVendorMappingDTO.getProjectId());
-        for(UserVendorMappingObjectMapping uvmom:uvmoms){
-            uvmom.setStatus(userVendorMappingStatusMap.get(uvmom.getUserVendorMapping().getId()));
-        }
-        userVendorMappingObjectMappingRepository.saveAll(uvmoms);
-        List<UserVendorMappingProjectMapping> uvmpms = userVendorMappingProjectMappingRepository.getAllUserVendorMappingProjectMappingByProjectId(projectVendorMappingDTO.getProjectId());
-        for(UserVendorMappingProjectMapping uvmpm:uvmpms){
-            uvmpm.setStatus(userVendorMappingStatusMap.get(uvmpm.getUserVendorMapping().getId()));
-        }
         userVendorMappingProjectMappingRepository.saveAll(uvmpms);
+        userVendorMappingObjectMappingRepository.saveAll(uvmoms);
         return ResponseEntity.ok().body("Successfully mapped vendors to project");
     }
 
@@ -465,7 +483,7 @@ public class ProjectResource {
         List<Long>userVendorMappingIds = new ArrayList<>();
         Map<Long,Integer>userVendorMappingStatusMap = new HashMap<>();
         for(VendorUserDTO vendorUserDTO:projectVendorMappingDTO.getVendors()){
-            for(UserDTO userDTO: vendorUserDTO.getUserDTOs()){
+            for(UsersOfVendor userDTO: vendorUserDTO.getUserDTOs()){
                 userVendorMappingIds.add(userDTO.getUserVendorMappingId());
                 userVendorMappingStatusMap.put(userDTO.getUserVendorMappingId(),userDTO.getStatus());
             }

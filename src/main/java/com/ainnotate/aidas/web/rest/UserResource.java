@@ -82,6 +82,8 @@ public class UserResource {
     private KeycloakConfig keycloakConfig;
 
     @Autowired
+    private QcUsersOfCustomerRepository qcUsersOfCustomerRepository;
+    @Autowired
     private ProjectRepository projectRepository;
 
     @Autowired
@@ -257,7 +259,7 @@ public class UserResource {
                 user.setDeleted(0);
                 User result = userRepository.save(user);
                 updateUserToKeyCloak(result);
-                if(user!=null) {
+                /*if(user!=null) {
                     userVendorMappingObjectMappingTask.setAddProperty(true);
                     userVendorMappingObjectMappingTask.setAddVendorMappingObjectMapping(false);
                     userVendorMappingObjectMappingTask.setAddCustomerMappingQcProjectMapping(false);
@@ -282,7 +284,7 @@ public class UserResource {
                         userVendorMappingObjectMappingTask.setUserCustomerMapping(userCustomerMapping);
                         userVendorMappingObjectMappingTask.run();
                     }
-                }
+                }*/
                 return ResponseEntity
                     .created(new URI("/api/aidas-users/" + result.getId()))
                     .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
@@ -963,7 +965,9 @@ public class UserResource {
         projectQcDTO.setCustomerId(project.getCustomer().getId());
         projectQcDTO.setName(project.getCustomer().getName());
         projectQcDTO.setQcUsers1(new ArrayList<>());
-        List<IUserDTO> userDTOs = userRepository.findAllByQcUsersByCustomerAndProject(projectId);
+        List<QcUsersOfCustomer> userDTOs = qcUsersOfCustomerRepository.getQcUserOfCustomer(projectId,project.getCustomer().getId());
+        projectQcDTO.setQcUsers1(userDTOs);
+        /*//List<IUserDTO> userDTOs = userRepository.findAllByQcUsersByCustomerAndProject(projectId);
         for (int j = 0; j < userDTOs.size(); j++) {
             IUserDTO u = userDTOs.get(j);
             UserDTO udto = new UserDTO();
@@ -975,7 +979,7 @@ public class UserResource {
             udto.setLogin(u.getLogin());
             udto.setStatus(u.getStatus());
             projectQcDTO.getQcUsers1().add(udto);
-        }
+        }*/
         return ResponseEntity.ok().body(projectQcDTO);
     }
 
@@ -1149,6 +1153,8 @@ public class UserResource {
         user.setEnabled(true);
         user.setUsername(myUser.getEmail());
         user.setEmail(myUser.getEmail());
+        user.setFirstName(myUser.getFirstName());
+        user.setLastName(myUser.getLastName());
         myUser.setLogin(myUser.getEmail());
         if(SecurityUtils.getCurrentUserLogin().get()!=null) {
             myUser.setCreatedBy(SecurityUtils.getCurrentUserLogin().get());
