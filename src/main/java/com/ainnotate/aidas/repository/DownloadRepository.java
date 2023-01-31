@@ -13,5 +13,4 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public interface DownloadRepository extends JpaRepository<Download, Long> {
 
-
 }

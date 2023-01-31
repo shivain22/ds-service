@@ -222,42 +222,48 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
             columns = {
                 @ColumnResult(name = "id",type = Long.class),
                 @ColumnResult(name = "name",type = String.class),
-                @ColumnResult(name = "project_type",type = String.class)
+                @ColumnResult(name = "project_type",type = String.class),
+                @ColumnResult(name = "auto_create_objects",type = Integer.class)
             })),
     @SqlResultSetMapping(name = "Mapping.findAllByAidasCustomer_AidasOrganisationForDropDown",
         classes = @ConstructorResult(targetClass = ProjectDTO.class,
             columns = {
                 @ColumnResult(name = "id",type = Long.class),
                 @ColumnResult(name = "name",type = String.class),
-                @ColumnResult(name = "project_type",type = String.class)
+                @ColumnResult(name = "project_type",type = String.class),
+                @ColumnResult(name = "auto_create_objects",type = Integer.class)
             })),
     @SqlResultSetMapping(name = "Mapping.findAllByAidasCustomerForDropDown",
         classes = @ConstructorResult(targetClass = ProjectDTO.class,
             columns = {
                 @ColumnResult(name = "id",type = Long.class),
                 @ColumnResult(name = "name",type = String.class),
-                @ColumnResult(name = "project_type",type = String.class)
+                @ColumnResult(name = "project_type",type = String.class),
+                @ColumnResult(name = "auto_create_objects",type = Integer.class)
             })),
     @SqlResultSetMapping(name = "Mapping.findAllProjectsByVendorAdminDropDown",
         classes = @ConstructorResult(targetClass = ProjectDTO.class,
             columns = {
                 @ColumnResult(name = "id",type = Long.class),
                 @ColumnResult(name = "name",type = String.class),
-                @ColumnResult(name = "project_type",type = String.class)
+                @ColumnResult(name = "project_type",type = String.class),
+                @ColumnResult(name = "auto_create_objects",type = Integer.class)
             })),
     @SqlResultSetMapping(name = "Mapping.findProjectsForCustomerQC",
         classes = @ConstructorResult(targetClass = ProjectDTO.class,
             columns = {
                 @ColumnResult(name = "id",type = Long.class),
                 @ColumnResult(name = "name",type = String.class),
-                @ColumnResult(name = "project_type",type = String.class)
+                @ColumnResult(name = "project_type",type = String.class),
+                @ColumnResult(name = "auto_create_objects",type = Integer.class)
             })),
     @SqlResultSetMapping(name = "Mapping.findProjectsForOrganisationQC",
         classes = @ConstructorResult(targetClass = ProjectDTO.class,
             columns = {
                 @ColumnResult(name = "id",type = Long.class),
                 @ColumnResult(name = "name",type = String.class),
-                @ColumnResult(name = "project_type",type = String.class)
+                @ColumnResult(name = "project_type",type = String.class),
+                @ColumnResult(name = "auto_create_objects",type = Integer.class)
             }))
 })
 

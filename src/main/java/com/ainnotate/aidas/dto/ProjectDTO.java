@@ -32,6 +32,12 @@ public class ProjectDTO extends AbstractAuditingEntity implements Serializable {
         this.name=name;
         this.projectType = projectType;
     }
+    public ProjectDTO(Long id, String name,String projectType,Integer autoCreateObjects){
+        this.id=id;
+        this.name=name;
+        this.projectType = projectType;
+        this.autoCreateObjects = autoCreateObjects;
+    }
     public ProjectDTO(Long id,
                       Integer totalRequired,
                       Integer totalUploaded,
