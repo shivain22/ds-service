@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -53,6 +54,9 @@ public class DashboardResource {
 
     @Autowired
     private UploadRepository uploadRepository;
+
+    @Autowired
+    private AppPropertyRepository appPropertyRepository;
 
     /**
      * {@code GET  /aidas-dashboard} : get all the dashboard metrics.
@@ -119,6 +123,11 @@ public class DashboardResource {
             ad.setPendingUploadCount(uploadRepository.countAidasUploadByAidasVendorUser(user.getVendor().getId(),AidasConstants.AIDAS_UPLOAD_PENDING));
              ad.setUserCount(1l);
         }
+    List<AppProperty> appProperty = appPropertyRepository.getAppPropertyLike(-1l,"version");
+        if(appProperty!=null && appProperty.size()>0){
+            ad.setVersion(appProperty.get(0).getValue());
+        }
+
         return ResponseEntity.ok().body(ad);
     }
 }

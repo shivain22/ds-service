@@ -17,6 +17,16 @@ public class Dashboard {
     private Long customerUsersCount;
     private Long vendorUsersCount;
 
+    private String version;
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
     public Long getOrgUsersCount() {
         return orgUsersCount;
     }

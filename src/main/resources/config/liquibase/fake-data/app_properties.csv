@@ -13,3 +13,4 @@ id;status;name;value;organisation_id;customer_id;vendor_id;user_id
 12;1;uploadPrefix;uploads;-1;-1;-1;-1
 13;1;fromEmail;noreply@ainnotate.com;-1;-1;-1;-1
 14;1;emailToken;PHtE6r1fQ+m5g2cq+kAEsaS5FpKtM4spqL9jKwkVuI9FD6VSTk0GqdEsw2K+rR8qAPNCHfSdzIo85eubtuyAI2nvPGxPX2qyqK3sx/VYSPOZsbq6x00ZsV8bfk3VXI7qctZr0ifRv9qX;-1;-1;-1;-1
+15;1;version;1.0.0;-1;-1;-1;-1
