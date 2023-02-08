@@ -40,13 +40,13 @@ public class UserVendorMappingObjectMapping extends AbstractAuditingEntity  impl
     @Column(name = "date_assigned")
     private ZonedDateTime dateAssigned;
 
-    @ManyToOne(optional = false,fetch = FetchType.LAZY)
+    @ManyToOne(optional = false,fetch = FetchType.EAGER)
     @NotNull
     @JsonIgnoreProperties(value = { "organisation", "customer", "vendor" }, allowSetters = true)
     @JoinColumn(name = "user_vendor_mapping_id", nullable = true, foreignKey = @ForeignKey(name="fk_uvmom_uvm"))
     private UserVendorMapping userVendorMapping;
 
-    @ManyToOne(optional = false,fetch = FetchType.LAZY)
+    @ManyToOne(optional = false,fetch = FetchType.EAGER)
     @NotNull
     @JsonIgnoreProperties(value = { "project" }, allowSetters = true)
     @JoinColumn(name = "object_id", nullable = true, foreignKey = @ForeignKey(name="fk_uvmom_object"))

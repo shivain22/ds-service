@@ -4,23 +4,23 @@ id;name;value;property_type;optional;description;default_prop;user_id;customer_i
 3;accessSecret;PjnrxkZXV1HX4wL+ycOJrnUE7LlBQwKsuRdc3OC4;1;true;AWS access secret;1;-1;-1;1;0;0
 4;region;ap-south-1;1;true;AWS S3 bucket region;1;-1;-1;1;0;0
 5;bucketName;objects-upload;1;true;AWS S3 bucket name;1;-1;-1;1;0;0
-6;resolution;1920x1080;1;true;Image Resolution, optional, defaults to devices capability;1;-1;-1;2;1;0
-7;orientation;any;1;true;Orientation of screen eg. landscape or portrait, optional. defaults to landscape;1;-1;-1;2;1;0
-8;autoFocus;on;1;true;Camera Autofocus;1;-1;-1;2;1;0
-9;flash;auto;1;true;Camera Flash options;1;-1;-1;2;1;0
-10;focusDepth;0;1;true;Will work if autofocus is off;1;-1;-1;2;1;0
-11;ratio;0;1;true;possible ratios supported by the camera that can be retieved from RNCamera library (only Android);1;-1;-1;2;1;0
-12;type;back;1;true;Front or back camera;1;-1;-1;2;1;0
-13;whiteBalance;auto;1;true;and for IOS we can specify custom temperature, tint and rgb offset values {temperature: 4000, tint: -10.0, redGainOffset: 0.0, greenGainOffset: 0.0, blueGainOffset: 0.0};1;-1;-1;2;1;0
-14;exposure;-1;1;true;Front or back camera;1;-1;-1;2;1;0
-15;zoom;0;1;true;zoom level;1;-1;-1;2;1;0
-16;imageFormat;jpeg;1;true;Image Format;1;-1;-1;2;1;0
-17;fileName;test;1;true;Filename;1;-1;-1;2;1;0
-18;os;android;1;true;Operating System;1;-1;-1;2;1;0
-19;osVersion;12;1;true;Operation System Version;1;-1;-1;1;1;0
-20;osPercentage;{android:60,iOS:40};1;true;Default platforeg. Number of object upload required in %;1;-1;-1;2;1;0
-21;phoneModel;Samsung;1;true;Samsung;1;-1;-1;2;1;0
-22;fileSize;100KB;1;true;File Size;1;-1;-1;2;1;0
+6;fileName;test;1;true;Filename;1;-1;-1;1;1;0
+7;os;android;1;true;Operating System;1;-1;-1;1;1;0
+8;osVersion;12;1;true;Operation System Version;1;-1;-1;1;1;0
+9;osPercentage;{android:60,iOS:40};1;true;Default platforeg. Number of object upload required in %;1;-1;-1;1;1;0
+10;phoneModel;Samsung;1;true;Samsung;1;-1;-1;1;1;0
+11;fileSize;100KB;1;true;File Size;1;-1;-1;1;1;0
+12;resolution;1920x1080;1;true;Image Resolution, optional, defaults to devices capability;1;-1;-1;2;1;0
+13;orientation;any;1;true;Orientation of screen eg. landscape or portrait, optional. defaults to landscape;1;-1;-1;2;1;0
+14;autoFocus;on;1;true;Camera Autofocus;1;-1;-1;2;1;0
+15;flash;auto;1;true;Camera Flash options;1;-1;-1;2;1;0
+16;focusDepth;0;1;true;Will work if autofocus is off;1;-1;-1;2;1;0
+17;ratio;0;1;true;possible ratios supported by the camera that can be retieved from RNCamera library (only Android);1;-1;-1;2;1;0
+18;type;back;1;true;Front or back camera;1;-1;-1;2;1;0
+19;whiteBalance;auto;1;true;and for IOS we can specify custom temperature, tint and rgb offset values {temperature: 4000, tint: -10.0, redGainOffset: 0.0, greenGainOffset: 0.0, blueGainOffset: 0.0};1;-1;-1;2;1;0
+20;exposure;-1;1;true;Front or back camera;1;-1;-1;2;1;0
+21;zoom;0;1;true;zoom level;1;-1;-1;2;1;0
+22;imageFormat;jpeg;1;true;Image Format;1;-1;-1;2;1;0
 23;resolution;1920x1080;1;true;Image Resolution, optional, defaults to devices capability;1;-1;-1;3;1;0
 24;orientation;any;1;true;Orientation of screen eg. landscape or portrait, optional. defaults to landscape;1;-1;-1;3;1;0
 25;autoFocus;on;1;true;Camera Autofocus;1;-1;-1;3;1;0
@@ -38,46 +38,29 @@ id;name;value;property_type;optional;description;default_prop;user_id;customer_i
 37;videoCompressionFormat;h264;1;true;Video Compression Format;1;-1;-1;3;1;0
 38;videoFps;30;1;true;Video FPS;1;-1;-1;3;1;0
 39;videoBitRate;5000kbps;1;true;Vdieo Duration;1;-1;-1;3;1;0
-40;fileName;test;1;true;Filename;1;-1;-1;3;1;0
-41;os;android;1;true;Operating System;1;-1;-1;3;1;0
-42;osVersion;12;1;true;Operation System Version;1;-1;-1;3;1;0
-43;osPercentage;{android:60,iOS:40};1;true;Default platforeg. Number of object upload required in %;1;-1;-1;3;1;0
-44;phoneModel;Samsung;1;true;Samsung;1;-1;-1;3;1;0
-45;fileSize;100KB;1;true;File Size;1;-1;-1;3;1;0
-46;resolution;1920x1080;1;true;Image Resolution, optional, defaults to devices capability;1;-1;-1;4;1;0
-47;orientation;any;1;true;Orientation of screen eg. landscape or portrait, optional. defaults to landscape;1;-1;-1;4;1;0
-48;autoFocus;on;1;true;Camera Autofocus;1;-1;-1;4;1;0
-49;flash;auto;1;true;Camera Flash options;1;-1;-1;4;1;0
-50;focusDepth;0;1;true;Will work if autofocus is off;1;-1;-1;4;1;0
-51;ratio;0;1;true;possible ratios supported by the camera that can be retieved from RNCamera library (only Android);1;-1;-1;4;1;0
-52;type;back;1;true;Front or back camera;1;-1;-1;4;1;0
-53;whiteBalance;auto;1;true;and for IOS we can specify custom temperature, tint and rgb offset values {temperature: 4000, tint: -10.0, redGainOffset: 0.0, greenGainOffset: 0.0, blueGainOffset: 0.0};1;-1;-1;4;1;0
-54;exposure;-1;1;true;Front or back camera;1;-1;-1;4;1;0
-55;zoom;0;1;true;zoom level;1;-1;-1;4;1;0
-56;videoQuality;1280x720;1;true;video quality;1;-1;-1;4;1;0
-57;captureAudio;false;1;true;Enable audio for video projects;1;-1;-1;4;1;0
-58;videoDuration;10:00;1;true;Video Duration;1;-1;-1;4;1;0
-59;imageFormat;jpeg;1;true;Image Format;1;-1;-1;4;1;0
-60;videoContainerFormat;mp4;1;true;Video Container Format;1;-1;-1;4;1;0
-61;videoCompressionFormat;h264;1;true;Video Compression Format;1;-1;-1;4;1;0
-62;videoFps;30;1;true;Video FPS;1;-1;-1;4;1;0
-63;videoBitRate;5000kbps;1;true;Vdieo Duration;1;-1;-1;4;1;0
-64;fileName;test;1;true;Filename;1;-1;-1;4;1;0
-65;os;android;1;true;Operating System;1;-1;-1;4;1;0
-66;osVersion;12;1;true;Operation System Version;1;-1;-1;4;1;0
-67;osPercentage;{android:60,iOS:40};1;true;Default platforeg. Number of object upload required in %;1;-1;-1;4;1;0
-68;phoneModel;Samsung;1;true;Samsung;1;-1;-1;4;1;0
-69;fileSize;100KB;1;true;File Size;1;-1;-1;4;1;0
-70;audioFormat;wav;1;true;Audio Format;1;-1;-1;5;1;0
-71;audioSamplingRate;44100;1;true;Audio Sampling Rate;1;-1;-1;5;1;0
-72;audioBitsPerSample;16;1;true;Audio Bits Per Sample;1;-1;-1;5;1;0
-73;audioChannels;1;1;true;Audio Channels;1;-1;-1;5;1;0
-74;numberOfParticipants;128kbps;1;true;Number of Participants;1;-1;-1;5;1;0
-75;audioDuration;-1;1;true;Audio Duration;1;-1;-1;5;1;0
-76;audioBitRate;-1;1;true;Audio Bit Rate;1;-1;-1;5;1;0
-77;fileName;test;1;true;Filename;1;-1;-1;5;1;0
-78;os;android;1;true;Operating System;1;-1;-1;5;1;0
-79;osVersion;12;1;true;Operation System Version;1;-1;-1;5;1;0
-80;osPercentage;{android:60,iOS:40};1;true;Default platforeg. Number of object upload required in %;1;-1;-1;5;1;0
-81;phoneModel;Samsung;1;true;Samsung;1;-1;-1;5;1;0
-82;fileSize;100KB;1;true;File Size;1;-1;-1;5;1;0
+40;resolution;1920x1080;1;true;Image Resolution, optional, defaults to devices capability;1;-1;-1;4;1;0
+41;orientation;any;1;true;Orientation of screen eg. landscape or portrait, optional. defaults to landscape;1;-1;-1;4;1;0
+42;autoFocus;on;1;true;Camera Autofocus;1;-1;-1;4;1;0
+43;flash;auto;1;true;Camera Flash options;1;-1;-1;4;1;0
+44;focusDepth;0;1;true;Will work if autofocus is off;1;-1;-1;4;1;0
+45;ratio;0;1;true;possible ratios supported by the camera that can be retieved from RNCamera library (only Android);1;-1;-1;4;1;0
+46;type;back;1;true;Front or back camera;1;-1;-1;4;1;0
+47;whiteBalance;auto;1;true;and for IOS we can specify custom temperature, tint and rgb offset values {temperature: 4000, tint: -10.0, redGainOffset: 0.0, greenGainOffset: 0.0, blueGainOffset: 0.0};1;-1;-1;4;1;0
+48;exposure;-1;1;true;Front or back camera;1;-1;-1;4;1;0
+49;zoom;0;1;true;zoom level;1;-1;-1;4;1;0
+50;videoQuality;1280x720;1;true;video quality;1;-1;-1;4;1;0
+51;captureAudio;false;1;true;Enable audio for video projects;1;-1;-1;4;1;0
+52;videoDuration;10:00;1;true;Video Duration;1;-1;-1;4;1;0
+53;imageFormat;jpeg;1;true;Image Format;1;-1;-1;4;1;0
+54;videoContainerFormat;mp4;1;true;Video Container Format;1;-1;-1;4;1;0
+55;videoCompressionFormat;h264;1;true;Video Compression Format;1;-1;-1;4;1;0
+56;videoFps;30;1;true;Video FPS;1;-1;-1;4;1;0
+57;videoBitRate;5000kbps;1;true;Vdieo Duration;1;-1;-1;4;1;0
+58;audioFormat;wav;1;true;Audio Format;1;-1;-1;5;1;0
+59;audioSamplingRate;44100;1;true;Audio Sampling Rate;1;-1;-1;5;1;0
+60;audioBitsPerSample;16;1;true;Audio Bits Per Sample;1;-1;-1;5;1;0
+61;audioChannels;1;1;true;Audio Channels;1;-1;-1;5;1;0
+62;numberOfParticipants;128kbps;1;true;Number of Participants;1;-1;-1;5;1;0
+63;audioDuration;-1;1;true;Audio Duration;1;-1;-1;5;1;0
+64;audioBitRate;-1;1;true;Audio Bit Rate;1;-1;-1;5;1;0
+

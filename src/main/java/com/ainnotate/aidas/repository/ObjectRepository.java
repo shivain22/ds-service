@@ -258,4 +258,12 @@ public interface ObjectRepository extends JpaRepository<Object, Long> {
     @Query(value = "select count(*)  from object o where  o.object_acquired_by_uvmom_id in (?1) and o.total_uploaded<=o.number_of_uploads_required", nativeQuery = true)
     Integer getObjectsNotCompleted(List<Long> uvmomIds);
 
+
+
+    @Query(value = "select count(*) from (\n" +
+        "    select uvmom.total_uploaded as total_uploaded, o.number_of_uploads_required as number_of_uploads_required from user_vendor_mapping_object_mapping uvmom, object o where uvmom.object_id=o.id\n" +
+        "    and uvmom.id in (?1)\n" +
+        ") a where a.total_uploaded<a.number_of_uploads_required", nativeQuery = true)
+    Integer getObjectsNotCompletedNew(List<Long> uvmomIds);
+
 }

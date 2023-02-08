@@ -105,5 +105,14 @@ public final class AidasConstants {
 
     public static final Integer OBJECT_PROPERTY_MANDATORY=0;
 
+    public static final Integer PROJECT_BUFFER_STATUS_PROJECT_LEVEL=0;
+    public static final Integer PROJECT_BUFFER_STATUS_OBJECT_LEVEL=1;
+
+    public static final Integer EQUAL_DISTRIBUTION=1;
+    public static final Integer UNEQUAL_DISTRIBUTION=0;
+
+    public static final Integer IGNORE_ALREADY_UPLOADED=1;
+    public static final Integer NOT_IGNORE_ALREADY_UPLOADED=0;
+
     private AidasConstants() {}
 }

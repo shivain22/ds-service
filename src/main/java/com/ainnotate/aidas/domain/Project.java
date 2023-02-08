@@ -78,11 +78,11 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 @NamedNativeQuery(name = "Project.findProjectWithUploadCountByUser",
     query = "select  \n" +
         "p.id as id,  \n" +
-        "p.total_required as totalRequired, \n" +
-        "uvmpm.total_uploaded as totalUploaded, \n" +
-        "uvmpm.total_approved as totalApproved, \n" +
-        "uvmpm.total_rejected as totalRejected, \n" +
-        "uvmpm.total_pending as totalPending,\n" +
+        "ceil(uvmpmv.total_required) as totalRequired, \n" +
+        "uvmpmv.total_uploaded as totalUploaded, \n" +
+        "uvmpmv.approved as totalApproved, \n" +
+        "uvmpmv.rejected as totalRejected, \n" +
+        "uvmpmv.pending as totalPending,\n" +
         "p.status ,\n" +
         "p.audio_type ,\n" +
         "p.auto_create_objects ,\n" +
@@ -100,10 +100,8 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
         "p.rework_status ,\n" +
         "p.video_type\n" +
         "from \n" +
-        "project p\n" +
-        "left join user_vendor_mapping_project_mapping uvmpm on p.id=uvmpm.project_id\n" +
-        "left join user_vendor_mapping uvm on uvm.id=uvmpm.user_vendor_mapping_id \n" +
-        "where p.status=1 and uvm.user_id=?1 and uvm.status=1 and uvmpm.status=1 order by p.id desc",
+        "project p, consolidated_user_vendor_mapping_project_mapping_view uvmpmv " +
+        "where uvmpmv.project_id=p.id and p.status=1 and uvmpmv.user_id=?1  order by p.id desc",
     resultSetMapping = "Mapping.ProjectDTO")
 
 
@@ -112,10 +110,8 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
     query ="select  \n" +
         "count(p.id) as count  \n" +
         "from \n" +
-        "project p\n" +
-        "left join user_vendor_mapping_project_mapping uvmpm on p.id=uvmpm.project_id\n" +
-        "left join user_vendor_mapping uvm on uvm.id=uvmpm.user_vendor_mapping_id \n" +
-        "where p.status=1 and uvm.user_id=?1 and uvm.status=1 and uvmpm.status=1 and p.objects_availability_status=1",resultSetMapping = "Mapping.findProjectWithUploadCountByUserCount")
+        "project p, consolidated_user_vendor_mapping_project_mapping_view uvmpmv" +
+        " where p.status=1 and uvmpmv.user_id=?1 and p.objects_availability_status=1",resultSetMapping = "Mapping.findProjectWithUploadCountByUserCount")
 
 
 @NamedNativeQuery(name = "Project.findProjectWithUploadCountByUserForAllowedProjects",
@@ -468,6 +464,39 @@ public class Project extends AbstractAuditingEntity  implements Serializable {
     private Integer numberOfUploadsRequired=0;
     @Column(name="buffer_percent")
     private Integer bufferPercent=0;
+
+    @Column(name="buffer_status")
+    private Integer bufferStatus=AidasConstants.PROJECT_BUFFER_STATUS_PROJECT_LEVEL;
+
+    @Column(name="buffer_strategy")
+    private Integer bufferStrategy=AidasConstants.EQUAL_DISTRIBUTION;
+
+    @Column(name="buffer_ignore_strategy")
+    private Integer bufferIgnoreStrategy=AidasConstants.IGNORE_ALREADY_UPLOADED;
+
+    public Integer getBufferIgnoreStrategy() {
+        return bufferIgnoreStrategy;
+    }
+
+    public void setBufferIgnoreStrategy(Integer bufferIgnoreStrategy) {
+        this.bufferIgnoreStrategy = bufferIgnoreStrategy;
+    }
+
+    public Integer getBufferStatus() {
+        return bufferStatus;
+    }
+
+    public void setBufferStatus(Integer bufferStatus) {
+        this.bufferStatus = bufferStatus;
+    }
+
+    public Integer getBufferStrategy() {
+        return bufferStrategy;
+    }
+
+    public void setBufferStrategy(Integer bufferStrategy) {
+        this.bufferStrategy = bufferStrategy;
+    }
 
     @ManyToOne(optional = true)
     @JoinColumn(name = "category_id", nullable = true, foreignKey = @ForeignKey(name="fk_project_category"))

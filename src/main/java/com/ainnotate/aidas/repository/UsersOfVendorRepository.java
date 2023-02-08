@@ -16,6 +16,6 @@ import java.util.List;
 @Transactional
 public interface UsersOfVendorRepository extends JpaRepository<UsersOfVendor, String> {
 
-    @Query(value="select * from users_of_vendor uov where uov.project_id=?1 or uov.project_id=-2", nativeQuery = true)
+    @Query(value="select * from users_of_vendor uov, user u,user_authority_mapping uam where (uov.project_id=?1 or uov.project_id=-2) and uov.user_id=u.id and u.status=1 and uam.user_id=u.id and u.authority_id=5 ", nativeQuery = true)
     List<UsersOfVendor> getUserOfVendor(Long projectId);
 }

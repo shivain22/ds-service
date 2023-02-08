@@ -56,6 +56,7 @@ public class ObjectResource {
 
     @Autowired
     private ProjectRepository projectRepository;
+
     @Autowired
     private VendorRepository vendorRepository;
 
@@ -128,9 +129,20 @@ public class ObjectResource {
         }
         object.setDummy(0);
         object.setStatus(1);
-
+        Project project = null;
+        if(object.getProject()!=null && object.getProject().getId()!=null){
+            project = projectRepository.getById(object.getProject().getId());
+        }
         if(object.getBufferPercent()==null){
-            object.setBufferPercent(20);
+            if(project!=null ) {
+                if(project.getBufferPercent()!=null) {
+                    object.setBufferPercent(project.getBufferPercent());
+                }else{
+                    object.setBufferPercent(10);
+                }
+            }else{
+                object.setBufferPercent(10);
+            }
         }
         object.setNumberOfBufferedUploadsRequired(object.getNumberOfUploadsRequired()+(object.getNumberOfUploadsRequired()*(object.getBufferPercent()/100)));
         object.setTotalRequired(object.getNumberOfBufferedUploadsRequired());
@@ -147,15 +159,28 @@ public class ObjectResource {
             object.addAidasObjectProperty(op);
         }
         result = objectRepository.save(object);
-        Project p = projectRepository.getById(result.getProject().getId());
-        p.setNumberOfBufferedUploadsdRequired(result.getNumberOfBufferedUploadsRequired());
-        p.setNumberOfUploadsRequired(p.getNumberOfUploadsRequired()+result.getNumberOfUploadsRequired());
-        p.setTotalRequired(p.getTotalRequired()+result.getNumberOfUploadsRequired());
-        projectRepository.save(p);
+        List<Integer> projectLevelUploadRequirements = projectRepository.getProjectLevelUploadRequirements(object.getProject().getId());
+        if(projectLevelUploadRequirements==null) {
+            projectLevelUploadRequirements = new ArrayList<>();
+            projectLevelUploadRequirements.add(0);
+            projectLevelUploadRequirements.add(0);
+        }
+
+            if (project.getBufferStatus() != null && project.getBufferStatus().equals(AidasConstants.PROJECT_BUFFER_STATUS_PROJECT_LEVEL)) {
+                project.setNumberOfBufferedUploadsdRequired(projectLevelUploadRequirements.get(0));
+                project.setNumberOfUploadsRequired(projectLevelUploadRequirements.get(0));
+                project.setTotalRequired(projectLevelUploadRequirements.get(0));
+            } else if (project.getBufferStatus() != null && project.getBufferStatus().equals(AidasConstants.PROJECT_BUFFER_STATUS_OBJECT_LEVEL)) {
+                project.setNumberOfBufferedUploadsdRequired(projectLevelUploadRequirements.get(1));
+                project.setNumberOfUploadsRequired(projectLevelUploadRequirements.get(1));
+                project.setTotalRequired(projectLevelUploadRequirements.get(1));
+            }
+
+        projectRepository.save(project);
         /*objectAddingTask.setObject(result);
         objectAddingTask.setDummy(false);
         objectAddingTask.run();*/
-        List<UserVendorMappingProjectMapping> uvmpms = userVendorMappingProjectMappingRepository.getAllUserVendorMappingProjectMappingByProjectId(p.getId());
+        /*List<UserVendorMappingProjectMapping> uvmpms = userVendorMappingProjectMappingRepository.getAllUserVendorMappingProjectMappingByProjectId(project.getId());
         List<UserVendorMappingObjectMapping> uvmoms = new ArrayList<>();
         for(UserVendorMappingProjectMapping uvmpm:uvmpms){
             UserVendorMappingObjectMapping uvmom = new UserVendorMappingObjectMapping();
@@ -164,7 +189,7 @@ public class ObjectResource {
             uvmom.setStatus(uvmpm.getStatus());
             uvmoms.add(uvmom);
         }
-        userVendorMappingObjectMappingRepository.saveAll(uvmoms);
+        userVendorMappingObjectMappingRepository.saveAll(uvmoms);*/
         return ResponseEntity
             .created(new URI("/api/aidas-objects/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
@@ -597,7 +622,7 @@ public class ObjectResource {
                 }
                 if(batchNumber>0){
                     log.debug("There is already one batch available Batch Number ->"+uvmomBatchMappingDTO.getBatchNumber()+" uvmomIds in batch "+uvmomBatchMappingDTO.getBatchNumber() +" are "+uvmomBatchMappingDTO.getUserVendorMappingObjectMappingIds());
-                    Integer objectsNotCompleted = objectRepository.getObjectsNotCompleted(allObjectsIds);
+                    Integer objectsNotCompleted = objectRepository.getObjectsNotCompletedNew(allObjectsIds);
                     //User have not completed all uploads required by object.
                     if(objectsNotCompleted>0){
                         log.debug("There are some objects for which uploads is not completed. objectsNotCompleted-> "+objectsNotCompleted);
@@ -624,10 +649,22 @@ public class ObjectResource {
                 }
                 for(Object o:page.getContent()){
                     UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserVendorMappingObject(uvm.getId(),o.getId());
-                    o.setTotalUploaded(uvmom.getTotalUploaded());
-                    o.setTotalApproved(uvmom.getTotalApproved());
-                    o.setTotalRejected(uvmom.getTotalRejected());
-                    o.setTotalPending(uvmom.getTotalPending());
+                    List<Integer[]> consolidatedUploads = userVendorMappingObjectMappingRepository.findByConsolidatedUpload(uvm.getId(),o.getId());
+                    if(consolidatedUploads!=null) {
+                        Integer[] consolidatedUploads1 = consolidatedUploads.get(0);
+                        o.setTotalRequired(consolidatedUploads1[0]);
+                        o.setTotalUploaded(consolidatedUploads1[1]);
+                        o.setTotalApproved(consolidatedUploads1[2]);
+                        o.setTotalRejected(consolidatedUploads1[3]);
+                        o.setTotalPending(consolidatedUploads1[4]);
+                    }else{
+                        //o.setTotalRequired(consolidatedUploads[0]);
+                        o.setTotalUploaded(uvmom.getTotalUploaded());
+                        o.setTotalApproved(uvmom.getTotalApproved());
+                        o.setTotalRejected(uvmom.getTotalRejected());
+                        o.setTotalPending(uvmom.getTotalPending());
+
+                    }
                     o.setUserVendorMappingObjectMappingId(uvmom.getId());
                     if(containFresh && o.getObjectAcquiredByUvmomId()==null) {
                         o.setObjectAcquiredByUvmomId(uvmom.getId());
@@ -650,10 +687,22 @@ public class ObjectResource {
             page = objectRepository.getAllObjectsByVendorUserProjectWithProjectId(pageable, user.getId(), projectId);
             for(Object o:page.getContent()){
                 UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserVendorMappingObject(uvm.getId(),o.getId());
-                o.setTotalUploaded(uvmom.getTotalUploaded());
-                o.setTotalApproved(uvmom.getTotalApproved());
-                o.setTotalRejected(uvmom.getTotalRejected());
-                o.setTotalPending(uvmom.getTotalPending());
+                List<Integer[]> consolidatedUploads = userVendorMappingObjectMappingRepository.findByConsolidatedUpload(uvm.getId(),o.getId());
+                if(consolidatedUploads!=null) {
+                    Integer[] consolidatedUploads1 = consolidatedUploads.get(0);
+                    o.setTotalRequired(consolidatedUploads1[0]);
+                    o.setTotalUploaded(consolidatedUploads1[1]);
+                    o.setTotalApproved(consolidatedUploads1[2]);
+                    o.setTotalRejected(consolidatedUploads1[3]);
+                    o.setTotalPending(consolidatedUploads1[4]);
+                }else{
+                    //o.setTotalRequired(consolidatedUploads[0]);
+                    o.setTotalUploaded(uvmom.getTotalUploaded());
+                    o.setTotalApproved(uvmom.getTotalApproved());
+                    o.setTotalRejected(uvmom.getTotalRejected());
+                    o.setTotalPending(uvmom.getTotalPending());
+
+                }
                 o.setUserVendorMappingObjectMappingId(uvmom.getId());
             }
             HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
@@ -661,6 +710,124 @@ public class ObjectResource {
         }
     }
 
+
+    @GetMapping("/aidas-projects/{id}/aidas-objects/details/fresh-batch")
+    public ResponseEntity<List<Object>> getAllAidasObjectsOfProjectForVendorUserFreshBatch(Pageable pageable, @PathVariable(value = "id", required = false) final Long projectId) {
+        log.debug("REST request to get a page of AidasObjects");
+        User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        Page<Object> page = null;
+        Project project = projectRepository.getById(projectId);
+        UserVendorMapping uvm = userVendorMappingRepository.findByVendorIdAndUserId(user.getVendor().getId(),user.getId());
+        UserVendorMappingProjectMapping uvmpm = userVendorMappingProjectMappingRepository.findByUserVendorMappingIdProjectId(uvm.getId(),projectId);
+        ObjectMapper mapper = new ObjectMapper();
+        UvmomBatchMappingsDTO uvmomBatchMappingsDTO = new UvmomBatchMappingsDTO();
+        UvmomBatchMappingDTO uvmomBatchMappingDTO = new UvmomBatchMappingDTO();
+        Integer batchNumber =0;
+        List<Long> allObjectsIds = new ArrayList<>();
+        boolean containFresh = false;
+        if(project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)){
+            if (uvmpm.getUvmomIds() != null) {
+                try {
+                    uvmomBatchMappingsDTO = mapper.readValue(uvmpm.getUvmomIds(), UvmomBatchMappingsDTO.class);
+                } catch (JsonProcessingException e) {
+                    e.printStackTrace();
+                }
+                uvmomBatchMappingsDTO.getUvmoms().sort(Comparator.comparing(UvmomBatchMappingDTO::getBatchNumber).reversed());
+                for(UvmomBatchMappingDTO ubmdto:uvmomBatchMappingsDTO.getUvmoms()){
+                    allObjectsIds.addAll(ubmdto.getUserVendorMappingObjectMappingIds());
+                }
+                uvmomBatchMappingDTO = uvmomBatchMappingsDTO.getUvmoms().get(0);
+                batchNumber = uvmomBatchMappingDTO.getBatchNumber();
+            }
+            if(batchNumber>0){
+                log.debug("There is already one batch available Batch Number ->"+uvmomBatchMappingDTO.getBatchNumber()+" uvmomIds in batch "+uvmomBatchMappingDTO.getBatchNumber() +" are "+uvmomBatchMappingDTO.getUserVendorMappingObjectMappingIds());
+                Integer objectsNotCompleted = objectRepository.getObjectsNotCompletedNew(allObjectsIds);
+                //User have not completed all uploads required by object.
+                //if(objectsNotCompleted>0){
+                    log.debug("There are some objects for which uploads is not completed. objectsNotCompleted-> "+objectsNotCompleted);
+                    //get all the objects which are requires more upload and already uploaded.
+                    //PageRequest pages = PageRequest.of(pageable.getPageNumber(), allObjectsIds.size(), pageable.getSort());
+                    //page = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdAndObjectAlreadyAssigned(pages,user.getId(),projectId,allObjectsIds);
+               // }else{
+                    log.debug("All uploads required by all objects are completed. Fetching new batch ");
+                    //All objects required uploads completed, so lets get new batch along with already available batches.
+                    PageRequest pages = PageRequest.of(pageable.getPageNumber(), allObjectsIds.size()+project.getNumberOfObjectsCanBeAssignedToVendorUser(), pageable.getSort());
+                    page = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdWithAlreadyCompleted(pages, user.getId(), projectId,allObjectsIds,project.getNumberOfObjectsCanBeAssignedToVendorUser());
+                    containFresh = true;
+                //}
+            }else {
+                //The user is coming for the first time.  Get new set of objects.
+                log.debug("User is coming for first time.  Fetching new batch from DB");
+                PageRequest pages = PageRequest.of(pageable.getPageNumber(), project.getNumberOfObjectsCanBeAssignedToVendorUser(), pageable.getSort());
+                page = objectRepository.getAllObjectsByVendorUserProjectWithProjectId(pages, user.getId(), projectId);
+                containFresh = true;
+            }
+            if(containFresh){
+                uvmomBatchMappingDTO=new UvmomBatchMappingDTO();
+                uvmomBatchMappingDTO.setBatchNumber(batchNumber+1);
+            }
+            for(Object o:page.getContent()){
+                UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserVendorMappingObject(uvm.getId(),o.getId());
+                List<Integer[]> consolidatedUploads = userVendorMappingObjectMappingRepository.findByConsolidatedUpload(uvm.getId(),o.getId());
+                if(consolidatedUploads!=null) {
+                    Integer[] consolidatedUploads1 = consolidatedUploads.get(0);
+                    o.setTotalRequired(consolidatedUploads1[0]);
+                    o.setTotalUploaded(consolidatedUploads1[1]);
+                    o.setTotalApproved(consolidatedUploads1[2]);
+                    o.setTotalRejected(consolidatedUploads1[3]);
+                    o.setTotalPending(consolidatedUploads1[4]);
+                }else{
+                    //o.setTotalRequired(consolidatedUploads[0]);
+                    o.setTotalUploaded(uvmom.getTotalUploaded());
+                    o.setTotalApproved(uvmom.getTotalApproved());
+                    o.setTotalRejected(uvmom.getTotalRejected());
+                    o.setTotalPending(uvmom.getTotalPending());
+
+                }
+                o.setUserVendorMappingObjectMappingId(uvmom.getId());
+                if(containFresh && o.getObjectAcquiredByUvmomId()==null) {
+                    o.setObjectAcquiredByUvmomId(uvmom.getId());
+                    uvmomBatchMappingDTO.getUserVendorMappingObjectMappingIds().add(uvmom.getId());
+                    objectRepository.save(o);
+                }
+            }
+            if(containFresh){
+                uvmomBatchMappingsDTO.getUvmoms().add(uvmomBatchMappingDTO);
+                try {
+
+                    uvmpm.setUvmomIds(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(uvmomBatchMappingsDTO));
+                } catch (JsonProcessingException e) {
+                    e.printStackTrace();
+                }
+            }
+            HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+            return ResponseEntity.ok().headers(headers).body(page.getContent());
+        }else{
+            page = objectRepository.getAllObjectsByVendorUserProjectWithProjectId(pageable, user.getId(), projectId);
+            for(Object o:page.getContent()){
+                UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserVendorMappingObject(uvm.getId(),o.getId());
+                List<Integer[]> consolidatedUploads = userVendorMappingObjectMappingRepository.findByConsolidatedUpload(uvm.getId(),o.getId());
+                if(consolidatedUploads!=null) {
+                    Integer[] consolidatedUploads1 = consolidatedUploads.get(0);
+                    o.setTotalRequired(consolidatedUploads1[0]);
+                    o.setTotalUploaded(consolidatedUploads1[1]);
+                    o.setTotalApproved(consolidatedUploads1[2]);
+                    o.setTotalRejected(consolidatedUploads1[3]);
+                    o.setTotalPending(consolidatedUploads1[4]);
+                }else{
+                    //o.setTotalRequired(consolidatedUploads[0]);
+                    o.setTotalUploaded(uvmom.getTotalUploaded());
+                    o.setTotalApproved(uvmom.getTotalApproved());
+                    o.setTotalRejected(uvmom.getTotalRejected());
+                    o.setTotalPending(uvmom.getTotalPending());
+
+                }
+                o.setUserVendorMappingObjectMappingId(uvmom.getId());
+            }
+            HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+            return ResponseEntity.ok().headers(headers).body(page.getContent());
+        }
+    }
 
 
     @GetMapping("/aidas-projects/{id}/aidas-objects/details/status")

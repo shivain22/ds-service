@@ -28,6 +28,9 @@ public interface CustomerQcProjectMappingBatchMappingRepository extends JpaRepos
     @Query(value = "select * from cqpm_batch_mapping cbm,customer_qc_project_mapping cqpm where cbm.cqpm_id = cqpm.id and cqpm.project_id=?1 and cqpm.qc_level=?2 and (cbm.batch_completion_status=1 or cbm.batch_completion_status=3) and cbm.previous_level_batch_number is null and cbm.next_level_batch_number is  null",nativeQuery = true)
     List<CustomerQcProjectMappingBatchMapping> getAllCompletedBatchNumberForQcLevelNonGrouped(Long projectId, Integer qcLevel);
 
+    @Query(value = "select * from cqpm_batch_mapping cbm,customer_qc_project_mapping cqpm where cbm.cqpm_id = cqpm.id and cqpm.project_id=?1 and cqpm.qc_level=?2 and (cbm.batch_completion_status=1 or cbm.batch_completion_status=3) and cbm.previous_level_batch_number is not null and cbm.next_level_batch_number is  null",nativeQuery = true)
+    List<CustomerQcProjectMappingBatchMapping> getAllCompletedBatchNumberForQcLevelNonGroupedGreaterThanLevel2(Long projectId, Integer qcLevel);
+
     @Query(value = "select * from cqpm_batch_mapping cbm,customer_qc_project_mapping cqpm where cbm.cqpm_id = cqpm.id and cqpm.project_id=?1 and cqpm.qc_level=?2 and cbm.batch_completion_status=1 and cbm.next_level_batch_number is null and cbm.previous_level_batch_number is not null",nativeQuery = true)
     List<CustomerQcProjectMappingBatchMapping> getAllCompletedBatchNumberForQcLevelGreaterThan1(Long projectId, Integer qcLevel);
 

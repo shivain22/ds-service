@@ -1,0 +1,459 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.5.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+    <changeSet author="shiva (generated)" id="1657539087463-17">
+        <createView  catalogName="ainnotateservice"
+                     encoding="UTF-8"
+                     replaceIfExists="true"
+                     schemaName="ainnotateservice"
+                     viewName="project_level_upload_requirements">
+            SELECT
+            `p`.`id` AS `project_id`,
+            (SUM(`o`.`number_of_uploads_required`) + ((SUM(`o`.`number_of_uploads_required`) * `p`.`buffer_percent`) / 100)) AS `number_of_upload_required_with_buffer_for_project`,
+            (SUM(`o`.`number_of_uploads_required`) + ((SUM(`o`.`number_of_uploads_required`) * SUM(`o`.`buffer_percent`)) / 100)) AS `number_of_upload_required_with_buffer_using_object_buffer`
+            FROM
+            (`ainnotateservice`.`project` `p`
+            JOIN `ainnotateservice`.`object` `o`)
+            WHERE
+            (`o`.`project_id` = `p`.`id`)
+            GROUP BY `p`.`id`
+        </createView>
+
+        <createView  catalogName="ainnotateservice"
+                     encoding="UTF-8"
+                     replaceIfExists="true"
+                     schemaName="ainnotateservice"
+                     viewName="object_level_upload_requirements">
+            SELECT
+            `p`.`id` AS `project_id`,
+            `o`.`id` AS `object_id`,
+            (`o`.`number_of_uploads_required` + ((`o`.`number_of_uploads_required` * `p`.`buffer_percent`) / 100)) AS `number_of_upload_required_with_buffer_for_object`,
+            (`o`.`number_of_uploads_required` + ((`o`.`number_of_uploads_required` * `o`.`buffer_percent`) / 100)) AS `number_of_upload_required_with_buffer_using_object_buffer`
+            FROM
+            (`ainnotateservice`.`project` `p`
+            JOIN `ainnotateservice`.`object` `o`)
+            WHERE
+            (`o`.`project_id` = `p`.`id`)
+        </createView>
+
+
+
+        <createView  catalogName="ainnotateservice"
+                     encoding="UTF-8"
+                     replaceIfExists="true"
+                     schemaName="ainnotateservice"
+                     viewName="project_level_upload_summary">
+            SELECT
+            `p`.`id` AS `project_id`,
+            COUNT(`u`.`id`) AS `total_uploaded`,
+            COALESCE(SUM((CASE
+            WHEN (`u`.`approval_status` = 0) THEN 1
+            END)),
+            0) AS `rejected`,
+            COALESCE(SUM((CASE
+            WHEN (`u`.`approval_status` = 1) THEN 1
+            END)),
+            0) AS `approved`,
+            COALESCE(SUM((CASE
+            WHEN (`u`.`approval_status` = 2) THEN 1
+            END)),
+            0) AS `pending`
+            FROM
+            (((`ainnotateservice`.`project` `p`
+            JOIN `ainnotateservice`.`object` `o`)
+            JOIN `ainnotateservice`.`user_vendor_mapping_object_mapping` `uvmom`)
+            JOIN `ainnotateservice`.`upload` `u`)
+            WHERE
+            ((`u`.`user_vendor_mapping_object_mapping_id` = `uvmom`.`id`)
+            AND (`uvmom`.`object_id` = `o`.`id`)
+            AND (`o`.`project_id` = `p`.`id`))
+            GROUP BY `p`.`id`
+        </createView>
+
+        <createView  catalogName="ainnotateservice"
+                     encoding="UTF-8"
+                     replaceIfExists="true"
+                     schemaName="ainnotateservice"
+                     viewName="object_level_upload_summary">
+            SELECT
+            `p`.`id` AS `project_id`,
+            `o`.`id` AS `object_id`,
+            COUNT(`u`.`id`) AS `total_uploaded`,
+            COALESCE(SUM((CASE
+            WHEN (`u`.`approval_status` = 0) THEN 1
+            END)),
+            0) AS `rejected`,
+            COALESCE(SUM((CASE
+            WHEN (`u`.`approval_status` = 1) THEN 1
+            END)),
+            0) AS `approved`,
+            COALESCE(SUM((CASE
+            WHEN (`u`.`approval_status` = 2) THEN 1
+            END)),
+            0) AS `pending`
+            FROM
+            (((`ainnotateservice`.`project` `p`
+            JOIN `ainnotateservice`.`object` `o`)
+            JOIN `ainnotateservice`.`user_vendor_mapping_object_mapping` `uvmom`)
+            JOIN `ainnotateservice`.`upload` `u`)
+            WHERE
+            ((`u`.`user_vendor_mapping_object_mapping_id` = `uvmom`.`id`)
+            AND (`uvmom`.`object_id` = `o`.`id`)
+            AND (`o`.`project_id` = `p`.`id`))
+            GROUP BY `o`.`id`
+        </createView>
+
+        <createView  catalogName="ainnotateservice"
+                     encoding="UTF-8"
+                     replaceIfExists="true"
+                     schemaName="ainnotateservice"
+                     viewName="project_object_uvmom_all">
+            SELECT
+            `p`.`id` AS `project_id`,
+            `o`.`id` AS `object_id`,
+            -(1) AS `uvmom_id`,
+            0 AS `total_uploaded`,
+            `uvm`.`user_id` AS `user_id`,
+            `uvm`.`id` AS `uvm_id`,
+            0 AS `uvmom_status`,
+            0 AS `rejected`,
+            0 AS `approved`,
+            0 AS `pending`,
+            0 AS `o_total_uploaded`,
+            0 AS `o_approved`,
+            0 AS `o_pending`,
+            0 AS `o_rejected`,
+            0 AS `p_total_uploaded`,
+            0 AS `p_approved`,
+            0 AS `p_pending`,
+            0 AS `p_rejected`,
+            `ainnotateservice`.`plur`.`number_of_upload_required_with_buffer_for_project` AS `number_of_upload_required_with_buffer_for_project`,
+            `ainnotateservice`.`plur`.`number_of_upload_required_with_buffer_using_object_buffer` AS `number_of_upload_required_with_buffer_using_object_buffer`,
+            `ainnotateservice`.`olur`.`number_of_upload_required_with_buffer_for_object` AS `o_number_of_upload_required_with_buffer_for_object`,
+            `ainnotateservice`.`olur`.`number_of_upload_required_with_buffer_using_object_buffer` AS `o_number_of_upload_required_with_buffer_using_object_buffer`
+            FROM
+            ((((`ainnotateservice`.`project` `p`
+            JOIN `ainnotateservice`.`object` `o`)
+            JOIN `ainnotateservice`.`user_vendor_mapping` `uvm`)
+            JOIN `ainnotateservice`.`project_level_upload_requirements` `plur`)
+            JOIN `ainnotateservice`.`object_level_upload_requirements` `olur`)
+            WHERE
+            ((`ainnotateservice`.`plur`.`project_id` = `p`.`id`)
+            AND (`ainnotateservice`.`olur`.`project_id` = `p`.`id`)
+            AND (`ainnotateservice`.`olur`.`object_id` = `o`.`id`)
+            AND (`o`.`project_id` = `p`.`id`))
+            GROUP BY `p`.`id` , `o`.`id` , `uvm`.`user_id` , `uvm`.`id`
+        </createView>
+
+        <createView  catalogName="ainnotateservice"
+                     encoding="UTF-8"
+                     replaceIfExists="true"
+                     schemaName="ainnotateservice"
+                     viewName="project_object_uvmom_mapped">
+            SELECT
+            `p`.`id` AS `project_id`,
+            `o`.`id` AS `object_id`,
+            `uvmom`.`id` AS `uvmom_id`,
+            0 AS `total_uploaded`,
+            `uvm`.`user_id` AS `user_id`,
+            `uvm`.`id` AS `uvm_id`,
+            `uvmom`.`status` AS `uvmom_status`,
+            0 AS `rejected`,
+            0 AS `approved`,
+            0 AS `pending`,
+            0 AS `o_total_uploaded`,
+            0 AS `o_approved`,
+            0 AS `o_pending`,
+            0 AS `o_rejected`,
+            0 AS `p_total_uploaded`,
+            0 AS `p_approved`,
+            0 AS `p_pending`,
+            0 AS `p_rejected`,
+            `ainnotateservice`.`plur`.`number_of_upload_required_with_buffer_for_project` AS `number_of_upload_required_with_buffer_for_project`,
+            `ainnotateservice`.`plur`.`number_of_upload_required_with_buffer_using_object_buffer` AS `number_of_upload_required_with_buffer_using_object_buffer`,
+            `ainnotateservice`.`olur`.`number_of_upload_required_with_buffer_for_object` AS `o_number_of_upload_required_with_buffer_for_object`,
+            `ainnotateservice`.`olur`.`number_of_upload_required_with_buffer_using_object_buffer` AS `o_number_of_upload_required_with_buffer_using_object_buffer`
+            FROM
+            (((((`ainnotateservice`.`project` `p`
+            JOIN `ainnotateservice`.`object` `o`)
+            JOIN `ainnotateservice`.`user_vendor_mapping` `uvm`)
+            JOIN `ainnotateservice`.`project_level_upload_requirements` `plur`)
+            JOIN `ainnotateservice`.`object_level_upload_requirements` `olur`)
+            JOIN `ainnotateservice`.`user_vendor_mapping_object_mapping` `uvmom`)
+            WHERE
+            ((`ainnotateservice`.`plur`.`project_id` = `p`.`id`)
+            AND (`ainnotateservice`.`olur`.`project_id` = `p`.`id`)
+            AND (`ainnotateservice`.`olur`.`object_id` = `o`.`id`)
+            AND (`o`.`project_id` = `p`.`id`)
+            AND (`uvmom`.`object_id` = `o`.`id`)
+            AND (`uvmom`.`user_vendor_mapping_id` = `uvm`.`id`))
+            GROUP BY `p`.`id` , `o`.`id` , `uvm`.`user_id` , `uvm`.`id`
+        </createView>
+
+
+
+        <createView  catalogName="ainnotateservice"
+                     encoding="UTF-8"
+                     replaceIfExists="true"
+                     schemaName="ainnotateservice"
+                     viewName="project_object_uvmom_mapping_summary">
+            SELECT
+            `ainnotateservice`.`project_object_uvmom_mapped`.`project_id` AS `project_id`,
+            `ainnotateservice`.`project_object_uvmom_mapped`.`object_id` AS `object_id`,
+            `ainnotateservice`.`project_object_uvmom_mapped`.`uvmom_id` AS `uvmom_id`,
+            `ainnotateservice`.`project_object_uvmom_mapped`.`total_uploaded` AS `total_uploaded`,
+            `ainnotateservice`.`project_object_uvmom_mapped`.`user_id` AS `user_id`,
+            `ainnotateservice`.`project_object_uvmom_mapped`.`uvm_id` AS `uvm_id`,
+            `ainnotateservice`.`project_object_uvmom_mapped`.`uvmom_status` AS `uvmom_status`,
+            `ainnotateservice`.`project_object_uvmom_mapped`.`rejected` AS `rejected`,
+            `ainnotateservice`.`project_object_uvmom_mapped`.`approved` AS `approved`,
+            `ainnotateservice`.`project_object_uvmom_mapped`.`pending` AS `pending`,
+            `ainnotateservice`.`project_object_uvmom_mapped`.`o_total_uploaded` AS `o_total_uploaded`,
+            `ainnotateservice`.`project_object_uvmom_mapped`.`o_approved` AS `o_approved`,
+            `ainnotateservice`.`project_object_uvmom_mapped`.`o_pending` AS `o_pending`,
+            `ainnotateservice`.`project_object_uvmom_mapped`.`o_rejected` AS `o_rejected`,
+            `ainnotateservice`.`project_object_uvmom_mapped`.`p_total_uploaded` AS `p_total_uploaded`,
+            `ainnotateservice`.`project_object_uvmom_mapped`.`p_approved` AS `p_approved`,
+            `ainnotateservice`.`project_object_uvmom_mapped`.`p_pending` AS `p_pending`,
+            `ainnotateservice`.`project_object_uvmom_mapped`.`p_rejected` AS `p_rejected`,
+            `ainnotateservice`.`project_object_uvmom_mapped`.`number_of_upload_required_with_buffer_for_project` AS `number_of_upload_required_with_buffer_for_project`,
+            `ainnotateservice`.`project_object_uvmom_mapped`.`number_of_upload_required_with_buffer_using_object_buffer` AS `number_of_upload_required_with_buffer_using_object_buffer`,
+            `ainnotateservice`.`project_object_uvmom_mapped`.`o_number_of_upload_required_with_buffer_for_object` AS `o_number_of_upload_required_with_buffer_for_object`,
+            `ainnotateservice`.`project_object_uvmom_mapped`.`o_number_of_upload_required_with_buffer_using_object_buffer` AS `o_number_of_upload_required_with_buffer_using_object_buffer`
+            FROM
+            `ainnotateservice`.`project_object_uvmom_mapped`
+            UNION SELECT
+            `ainnotateservice`.`project_object_uvmom_all`.`project_id` AS `project_id`,
+            `ainnotateservice`.`project_object_uvmom_all`.`object_id` AS `object_id`,
+            `ainnotateservice`.`project_object_uvmom_all`.`uvmom_id` AS `uvmom_id`,
+            `ainnotateservice`.`project_object_uvmom_all`.`total_uploaded` AS `total_uploaded`,
+            `ainnotateservice`.`project_object_uvmom_all`.`user_id` AS `user_id`,
+            `ainnotateservice`.`project_object_uvmom_all`.`uvm_id` AS `uvm_id`,
+            `ainnotateservice`.`project_object_uvmom_all`.`uvmom_status` AS `uvmom_status`,
+            `ainnotateservice`.`project_object_uvmom_all`.`rejected` AS `rejected`,
+            `ainnotateservice`.`project_object_uvmom_all`.`approved` AS `approved`,
+            `ainnotateservice`.`project_object_uvmom_all`.`pending` AS `pending`,
+            `ainnotateservice`.`project_object_uvmom_all`.`o_total_uploaded` AS `o_total_uploaded`,
+            `ainnotateservice`.`project_object_uvmom_all`.`o_approved` AS `o_approved`,
+            `ainnotateservice`.`project_object_uvmom_all`.`o_pending` AS `o_pending`,
+            `ainnotateservice`.`project_object_uvmom_all`.`o_rejected` AS `o_rejected`,
+            `ainnotateservice`.`project_object_uvmom_all`.`p_total_uploaded` AS `p_total_uploaded`,
+            `ainnotateservice`.`project_object_uvmom_all`.`p_approved` AS `p_approved`,
+            `ainnotateservice`.`project_object_uvmom_all`.`p_pending` AS `p_pending`,
+            `ainnotateservice`.`project_object_uvmom_all`.`p_rejected` AS `p_rejected`,
+            `ainnotateservice`.`project_object_uvmom_all`.`number_of_upload_required_with_buffer_for_project` AS `number_of_upload_required_with_buffer_for_project`,
+            `ainnotateservice`.`project_object_uvmom_all`.`number_of_upload_required_with_buffer_using_object_buffer` AS `number_of_upload_required_with_buffer_using_object_buffer`,
+            `ainnotateservice`.`project_object_uvmom_all`.`o_number_of_upload_required_with_buffer_for_object` AS `o_number_of_upload_required_with_buffer_for_object`,
+            `ainnotateservice`.`project_object_uvmom_all`.`o_number_of_upload_required_with_buffer_using_object_buffer` AS `o_number_of_upload_required_with_buffer_using_object_buffer`
+            FROM
+            `ainnotateservice`.`project_object_uvmom_all`
+            WHERE
+            (`ainnotateservice`.`project_object_uvmom_all`.`project_id` , `ainnotateservice`.`project_object_uvmom_all`.`object_id`,
+            `ainnotateservice`.`project_object_uvmom_all`.`uvm_id`) IN (SELECT DISTINCT
+            `ainnotateservice`.`project_object_uvmom_mapped`.`project_id`,
+            `ainnotateservice`.`project_object_uvmom_mapped`.`object_id`,
+            `ainnotateservice`.`project_object_uvmom_mapped`.`uvm_id`
+            FROM
+            `ainnotateservice`.`project_object_uvmom_mapped`)
+            IS FALSE
+        </createView>
+
+        <createView  catalogName="ainnotateservice"
+                     encoding="UTF-8"
+                     replaceIfExists="true"
+                     schemaName="ainnotateservice"
+                     viewName="project_object_uvmom_upload_summary">
+            SELECT
+            `p`.`id` AS `project_id`,
+            `o`.`id` AS `object_id`,
+            `uvmom`.`id` AS `uvmom_id`,
+            COUNT(`u`.`id`) AS `total_uploaded`,
+            `uvm`.`user_id` AS `user_id`,
+            `uvm`.`id` AS `uvm_id`,
+            `uvmom`.`status` AS `uvmom_status`,
+            COALESCE(SUM((CASE
+            WHEN (`u`.`approval_status` = 0) THEN 1
+            END)),
+            0) AS `rejected`,
+            COALESCE(SUM((CASE
+            WHEN (`u`.`approval_status` = 1) THEN 1
+            END)),
+            0) AS `approved`,
+            COALESCE(SUM((CASE
+            WHEN (`u`.`approval_status` = 2) THEN 1
+            END)),
+            0) AS `pending`,
+            `ainnotateservice`.`olus`.`total_uploaded` AS `o_total_uploaded`,
+            `ainnotateservice`.`olus`.`approved` AS `o_approved`,
+            `ainnotateservice`.`olus`.`pending` AS `o_pending`,
+            `ainnotateservice`.`olus`.`rejected` AS `o_rejected`,
+            `ainnotateservice`.`plus`.`total_uploaded` AS `p_total_uploaded`,
+            `ainnotateservice`.`plus`.`approved` AS `p_approved`,
+            `ainnotateservice`.`plus`.`pending` AS `p_pending`,
+            `ainnotateservice`.`plus`.`rejected` AS `p_rejected`,
+            `ainnotateservice`.`plur`.`number_of_upload_required_with_buffer_for_project` AS `number_of_upload_required_with_buffer_for_project`,
+            `ainnotateservice`.`plur`.`number_of_upload_required_with_buffer_using_object_buffer` AS `number_of_upload_required_with_buffer_using_object_buffer`,
+            `ainnotateservice`.`olur`.`number_of_upload_required_with_buffer_for_object` AS `o_number_of_upload_required_with_buffer_for_object`,
+            `ainnotateservice`.`olur`.`number_of_upload_required_with_buffer_using_object_buffer` AS `o_number_of_upload_required_with_buffer_using_object_buffer`
+            FROM
+            ((((((((`ainnotateservice`.`project` `p`
+            JOIN `ainnotateservice`.`object` `o`)
+            JOIN `ainnotateservice`.`user_vendor_mapping_object_mapping` `uvmom`)
+            JOIN `ainnotateservice`.`upload` `u`)
+            JOIN `ainnotateservice`.`user_vendor_mapping` `uvm`)
+            JOIN `ainnotateservice`.`project_level_upload_requirements` `plur`)
+            JOIN `ainnotateservice`.`object_level_upload_requirements` `olur`)
+            JOIN `ainnotateservice`.`object_level_upload_summary` `olus`)
+            JOIN `ainnotateservice`.`project_level_upload_summary` `plus`)
+            WHERE
+            ((`ainnotateservice`.`olus`.`object_id` = `o`.`id`)
+            AND (`ainnotateservice`.`plus`.`project_id` = `p`.`id`)
+            AND (`ainnotateservice`.`plur`.`project_id` = `p`.`id`)
+            AND (`ainnotateservice`.`olur`.`project_id` = `p`.`id`)
+            AND (`ainnotateservice`.`olur`.`object_id` = `o`.`id`)
+            AND (`uvmom`.`user_vendor_mapping_id` = `uvm`.`id`)
+            AND (`u`.`user_vendor_mapping_object_mapping_id` = `uvmom`.`id`)
+            AND (`uvmom`.`object_id` = `o`.`id`)
+            AND (`o`.`project_id` = `p`.`id`))
+            GROUP BY `p`.`id` , `o`.`id` , `uvmom`.`id`
+        </createView>
+
+        <createView  catalogName="ainnotateservice"
+                     encoding="UTF-8"
+                     replaceIfExists="true"
+                     schemaName="ainnotateservice"
+                     viewName="consolidated_upload_summary">
+            select * from project_object_uvmom_upload_summary
+            union
+            select * from project_object_uvmom_mapping_summary where (project_id,object_id,uvm_id,user_id) not in (select distinct project_id,object_id,uvm_id,user_id from project_object_uvmom_upload_summary)
+        </createView>
+
+        <createView  catalogName="ainnotateservice"
+                     encoding="UTF-8"
+                     replaceIfExists="true"
+                     schemaName="ainnotateservice"
+                     viewName="user_vendor_mapping_project_mapping_view">
+            SELECT
+            `a`.`project_id` AS `project_id`,
+            `a`.`uvm_id` AS `uvm_id`,
+            `a`.`user_id` AS `user_id`,
+            `a`.`total_uploaded` AS `total_uploaded`,
+            `a`.`rejected` AS `rejected`,
+            `a`.`approved` AS `approved`,
+            `a`.`pending` AS `pending`,
+            `a`.`p_total_uploaded` AS `p_total_uploaded`,
+            `a`.`p_rejected` AS `p_rejected`,
+            `a`.`total_required` AS `total_required`
+            FROM
+            (SELECT
+            `ainnotateservice`.`consolidated_upload_summary`.`project_id` AS `project_id`,
+            `ainnotateservice`.`consolidated_upload_summary`.`uvm_id` AS `uvm_id`,
+            MAX(`ainnotateservice`.`consolidated_upload_summary`.`total_uploaded`) AS `total_uploaded`,
+            MAX(`ainnotateservice`.`consolidated_upload_summary`.`rejected`) AS `rejected`,
+            MAX(`ainnotateservice`.`consolidated_upload_summary`.`approved`) AS `approved`,
+            MAX(`ainnotateservice`.`consolidated_upload_summary`.`pending`) AS `pending`,
+            MAX(`ainnotateservice`.`consolidated_upload_summary`.`p_total_uploaded`) AS `p_total_uploaded`,
+            MAX(`ainnotateservice`.`consolidated_upload_summary`.`p_rejected`) AS `p_rejected`,
+            MAX(`ainnotateservice`.`consolidated_upload_summary`.`number_of_upload_required_with_buffer_for_project`) AS `total_required`,
+            SUM(`ainnotateservice`.`consolidated_upload_summary`.`uvmom_status`) AS `uvmpm_status`,
+            `ainnotateservice`.`consolidated_upload_summary`.`user_id` AS `user_id`
+            FROM
+            `ainnotateservice`.`consolidated_upload_summary`
+            GROUP BY `ainnotateservice`.`consolidated_upload_summary`.`project_id` , `ainnotateservice`.`consolidated_upload_summary`.`user_id` , `ainnotateservice`.`consolidated_upload_summary`.`uvm_id`) `a`
+        </createView>
+        <createView  catalogName="ainnotateservice"
+                     encoding="UTF-8"
+                     replaceIfExists="true"
+                     schemaName="ainnotateservice"
+                     viewName="consolidated_user_vendor_mapping_project_mapping_view">
+            SELECT
+            `ainnotateservice`.`uvmpmv`.`project_id` AS `project_id`,
+            `ainnotateservice`.`uvmpmv`.`user_id` AS `user_id`,
+            `ainnotateservice`.`uvmpmv`.`uvm_id` AS `uvm_id`,
+            `ainnotateservice`.`uvmpmv`.`total_uploaded` AS `total_uploaded`,
+            `ainnotateservice`.`uvmpmv`.`rejected` AS `rejected`,
+            `ainnotateservice`.`uvmpmv`.`approved` AS `approved`,
+            `ainnotateservice`.`uvmpmv`.`pending` AS `pending`,
+            `ainnotateservice`.`uvmpmv`.`p_total_uploaded` AS `p_total_uploaded`,
+            `a`.`total_required` AS `total_required`
+            FROM
+            (`ainnotateservice`.`user_vendor_mapping_project_mapping_view` `uvmpmv`
+            JOIN (SELECT
+            `ainnotateservice`.`user_vendor_mapping_project_mapping_view`.`project_id` AS `project_id`,
+            MAX(
+            (`ainnotateservice`.`user_vendor_mapping_project_mapping_view`.`total_required` - `ainnotateservice`.`user_vendor_mapping_project_mapping_view`.`p_total_uploaded`)
+            +`ainnotateservice`.`user_vendor_mapping_project_mapping_view`.`p_rejected`) AS `total_required`
+            FROM
+            `ainnotateservice`.`user_vendor_mapping_project_mapping_view`
+            GROUP BY `ainnotateservice`.`user_vendor_mapping_project_mapping_view`.`project_id`) `a`)
+            WHERE
+            (`ainnotateservice`.`uvmpmv`.`project_id` = `a`.`project_id`)
+        </createView>
+        <createView  catalogName="ainnotateservice"
+                     encoding="UTF-8"
+                     replaceIfExists="true"
+                     schemaName="ainnotateservice"
+                     viewName="user_vendor_mapping_object_mapping_view">
+            SELECT
+            `a`.`project_id` AS `project_id`,
+            `a`.`uvm_id` AS `uvm_id`,
+            `a`.`object_id` AS `object_id`,
+            `a`.`user_id` AS `user_id`,
+            `a`.`total_uploaded` AS `total_uploaded`,
+            `a`.`rejected` AS `rejected`,
+            `a`.`approved` AS `approved`,
+            `a`.`pending` AS `pending`,
+            `a`.`o_total_uploaded` AS `o_total_uploaded`,
+            `a`.`total_required` AS `total_required`,
+            `a`.`o_rejected` AS `o_rejected`
+            FROM
+            (SELECT
+            `ainnotateservice`.`consolidated_upload_summary`.`project_id` AS `project_id`,
+            `ainnotateservice`.`consolidated_upload_summary`.`uvm_id` AS `uvm_id`,
+            `ainnotateservice`.`consolidated_upload_summary`.`object_id` AS `object_id`,
+            MAX(`ainnotateservice`.`consolidated_upload_summary`.`total_uploaded`) AS `total_uploaded`,
+            MAX(`ainnotateservice`.`consolidated_upload_summary`.`rejected`) AS `rejected`,
+            MAX(`ainnotateservice`.`consolidated_upload_summary`.`approved`) AS `approved`,
+            MAX(`ainnotateservice`.`consolidated_upload_summary`.`pending`) AS `pending`,
+            MAX(`ainnotateservice`.`consolidated_upload_summary`.`o_total_uploaded`) AS `o_total_uploaded`,
+            MAX(`ainnotateservice`.`consolidated_upload_summary`.`o_number_of_upload_required_with_buffer_for_object`) AS `total_required`,
+            MAX(`ainnotateservice`.`consolidated_upload_summary`.`o_rejected`) AS `o_rejected`,
+            SUM(`ainnotateservice`.`consolidated_upload_summary`.`uvmom_status`) AS `uvmom_status`,
+            `ainnotateservice`.`consolidated_upload_summary`.`user_id` AS `user_id`
+            FROM
+            `ainnotateservice`.`consolidated_upload_summary`
+            GROUP BY `ainnotateservice`.`consolidated_upload_summary`.`project_id` , `ainnotateservice`.`consolidated_upload_summary`.`object_id` , `ainnotateservice`.`consolidated_upload_summary`.`user_id` , `ainnotateservice`.`consolidated_upload_summary`.`uvm_id`) `a`
+        </createView>
+        <createView  catalogName="ainnotateservice"
+                     encoding="UTF-8"
+                     replaceIfExists="true"
+                     schemaName="ainnotateservice"
+                     viewName="consolidated_user_vendor_mapping_object_mapping_view">
+            SELECT
+            `ainnotateservice`.`uvmomv`.`project_id` AS `project_id`,
+            `ainnotateservice`.`uvmomv`.`object_id` AS `object_id`,
+            `ainnotateservice`.`uvmomv`.`uvm_id` AS `uvm_id`,
+            `ainnotateservice`.`uvmomv`.`user_id` AS `user_id`,
+            `ainnotateservice`.`uvmomv`.`total_uploaded` AS `total_uploaded`,
+            `ainnotateservice`.`uvmomv`.`rejected` AS `rejected`,
+            `ainnotateservice`.`uvmomv`.`approved` AS `approved`,
+            `ainnotateservice`.`uvmomv`.`pending` AS `pending`,
+            `ainnotateservice`.`uvmomv`.`o_total_uploaded` AS `o_total_uploaded`,
+            `a`.`total_required` AS `total_required`
+            FROM
+            (`ainnotateservice`.`user_vendor_mapping_object_mapping_view` `uvmomv`
+            JOIN (SELECT
+            `ainnotateservice`.`user_vendor_mapping_object_mapping_view`.`object_id` AS `object_id`,
+            MAX(((`ainnotateservice`.`user_vendor_mapping_object_mapping_view`.`total_required` - `ainnotateservice`.`user_vendor_mapping_object_mapping_view`.`o_total_uploaded`) + `ainnotateservice`.`user_vendor_mapping_object_mapping_view`.`o_rejected`)) AS `total_required`
+            FROM
+            `ainnotateservice`.`user_vendor_mapping_object_mapping_view`
+            GROUP BY `ainnotateservice`.`user_vendor_mapping_object_mapping_view`.`object_id`) `a`)
+            WHERE
+            (`ainnotateservice`.`uvmomv`.`object_id` = `a`.`object_id`)
+        </createView>
+    </changeSet>
+</databaseChangeLog>
