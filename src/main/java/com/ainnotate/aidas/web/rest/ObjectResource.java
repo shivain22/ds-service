@@ -180,7 +180,7 @@ public class ObjectResource {
         /*objectAddingTask.setObject(result);
         objectAddingTask.setDummy(false);
         objectAddingTask.run();*/
-        /*List<UserVendorMappingProjectMapping> uvmpms = userVendorMappingProjectMappingRepository.getAllUserVendorMappingProjectMappingByProjectId(project.getId());
+        List<UserVendorMappingProjectMapping> uvmpms = userVendorMappingProjectMappingRepository.getAllUserVendorMappingProjectMappingByProjectId(project.getId());
         List<UserVendorMappingObjectMapping> uvmoms = new ArrayList<>();
         for(UserVendorMappingProjectMapping uvmpm:uvmpms){
             UserVendorMappingObjectMapping uvmom = new UserVendorMappingObjectMapping();
@@ -189,7 +189,7 @@ public class ObjectResource {
             uvmom.setStatus(uvmpm.getStatus());
             uvmoms.add(uvmom);
         }
-        userVendorMappingObjectMappingRepository.saveAll(uvmoms);*/
+        userVendorMappingObjectMappingRepository.saveAll(uvmoms);
         return ResponseEntity
             .created(new URI("/api/aidas-objects/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))

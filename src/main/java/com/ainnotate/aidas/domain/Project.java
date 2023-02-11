@@ -78,11 +78,11 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 @NamedNativeQuery(name = "Project.findProjectWithUploadCountByUser",
     query = "select  \n" +
         "p.id as id,  \n" +
-        "ceil(uvmpmv.total_required) as totalRequired, \n" +
-        "uvmpmv.total_uploaded as totalUploaded, \n" +
-        "uvmpmv.approved as totalApproved, \n" +
-        "uvmpmv.rejected as totalRejected, \n" +
-        "uvmpmv.pending as totalPending,\n" +
+        "ceil(uvmpmv.total_required)-(select sum(cuvmpmv.total_uploaded)+sum(cuvmpmv.rejected) from consolidated_user_vendor_mapping_project_mapping_view cuvmpmv where project_id=uvmpmv.project_id group by project_id ) as totalRequired, \n" +
+        "sum(uvmpmv.total_uploaded) as totalUploaded, \n" +
+        "max(uvmpmv.approved) as totalApproved, \n" +
+        "max(uvmpmv.rejected) as totalRejected, \n" +
+        "max(uvmpmv.pending) as totalPending,\n" +
         "p.status ,\n" +
         "p.audio_type ,\n" +
         "p.auto_create_objects ,\n" +
@@ -101,7 +101,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
         "p.video_type\n" +
         "from \n" +
         "project p, consolidated_user_vendor_mapping_project_mapping_view uvmpmv " +
-        "where uvmpmv.project_id=p.id and p.status=1 and uvmpmv.user_id=?1  order by p.id desc",
+        "where uvmpmv.project_id=p.id and p.status=1 and uvmpmv.user_id=?1 group by uvmpmv.project_id,uvmpmv.user_id order by uvmpmv.project_id desc",
     resultSetMapping = "Mapping.ProjectDTO")
 
 
@@ -111,7 +111,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
         "count(p.id) as count  \n" +
         "from \n" +
         "project p, consolidated_user_vendor_mapping_project_mapping_view uvmpmv" +
-        " where p.status=1 and uvmpmv.user_id=?1 and p.objects_availability_status=1",resultSetMapping = "Mapping.findProjectWithUploadCountByUserCount")
+        " where p.status=1 and uvmpmv.user_id=?1 and p.objects_availability_status=1 group by p.id",resultSetMapping = "Mapping.findProjectWithUploadCountByUserCount")
 
 
 @NamedNativeQuery(name = "Project.findProjectWithUploadCountByUserForAllowedProjects",

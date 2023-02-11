@@ -722,77 +722,58 @@ public class UserResource {
             }
         }
         User existingUser= userRepository.getById(id);
-
         existingUser.setFirstName(user.getFirstName());
         existingUser.setLastName(user.getLastName());
-
         if(user.getOrganisationIds()!=null && user.getOrganisationIds().size()>0){
-            Organisation o =null;
             for(UserOrganisationMappingDTO oid: user.getOrganisationIds()){
                 UserOrganisationMapping uom = userOrganisationMappingRepository.findByOrganisationIdAndUserId(oid.getOrganisationId(),user.getId());
                 if(uom==null) {
                     uom=new UserOrganisationMapping();
-                    o = organisationRepository.getById(oid.getOrganisationId());
-                    uom.setOrganisation(o);
+                    uom.setOrganisation(organisationRepository.getById(oid.getOrganisationId()));
                     uom.setUser(user);
-                    uom.setStatus(oid.getStatus());
-                    existingUser.getUserOrganisationMappings().add(uom);
-                }else{
-                    UserOrganisationMapping finalUom = uom;
-                    existingUser.getUserOrganisationMappings().stream().filter(item->item.equals(finalUom)).findFirst().get().setStatus(oid.getStatus());
                 }
+                uom.setStatus(oid.getStatus());
+                userOrganisationMappingRepository.save(uom);
             }
         }
         if(user.getCustomerIds()!=null && user.getCustomerIds().size()>0){
-            Customer c =null;
             for(UserCustomerMappingDTO cid: user.getCustomerIds()){
                 UserCustomerMapping ucm = userCustomerMappingRepository.findByCustomerIdAndUserId(cid.getCustomerId(),user.getId());
                 if(ucm==null) {
                     ucm = new UserCustomerMapping();
-                    c = customerRepository.getById(cid.getCustomerId());
-                    ucm.setCustomer(c);
+                    ucm.setCustomer(customerRepository.getById(cid.getCustomerId()));
                     ucm.setUser(user);
-                    existingUser.getUserCustomerMappings().add(ucm);
-                }else{
-                    UserCustomerMapping finalUcm = ucm;
-                    existingUser.getUserCustomerMappings().stream().filter(item->item.equals(finalUcm)).findFirst().get().setStatus(cid.getStatus());
                 }
+                ucm.setStatus(cid.getStatus());
+                userCustomerMappingRepository.save(ucm);
             }
         }
         if(user.getVendorIds()!=null && user.getVendorIds().size()>0){
-            Vendor v = null;
             for(UserVendorMappingDTO vid: user.getVendorIds()){
                 UserVendorMapping uvm = userVendorMappingRepository.findByVendorIdAndUserId(vid.getVendorId(),user.getId());
                 if(uvm==null) {
                     uvm = new UserVendorMapping();
-                    v = vendorRepository.getById(vid.getVendorId());
-                    uvm.setVendor(v);
+                    uvm.setVendor(vendorRepository.getById(vid.getVendorId()));
                     uvm.setUser(user);
-                    existingUser.getUserVendorMappings().add(uvm);
-                }else{
-                    UserVendorMapping finalUvm = uvm;
-                    existingUser.getUserVendorMappings().stream().filter(item->item.equals(finalUvm)).findFirst().get().setStatus(vid.getStatus());
                 }
+                uvm.setStatus(vid.getStatus());
+                userVendorMappingRepository.save(uvm);
             }
         }
         if(user.getAuthorityIds()!=null && user.getAuthorityIds().size()>0){
-            Authority a =null;
             for(UserAuthorityMappingDTO aid: user.getAuthorityIds()){
                 UserAuthorityMapping uam = userAuthorityMappingRepository.findByAuthorityIdAndUserId(aid.getAuthorityId(),user.getId());
                 if(uam==null) {
                     uam = new UserAuthorityMapping();
-                    a = authorityRepository.getById(aid.getAuthorityId());
-                    uam.setAuthority(a);
+                    uam.setAuthority(authorityRepository.getById(aid.getAuthorityId()));
                     uam.setUser(user);
-                    existingUser.getUserAuthorityMappings().add(uam);
-                }else{
-                    UserAuthorityMapping finalUam = uam;
-                    existingUser.getUserAuthorityMappings().stream().filter(item->item.equals(finalUam)).findFirst().get().setStatus(aid.getStatus());
                 }
+                uam.setStatus(aid.getStatus());
+                userAuthorityMappingRepository.save(uam);
             }
         }
 
-        User result = userRepository.save(user);
+        User result = userRepository.save(existingUser);
         updateUserToKeyCloak(result);
         return ResponseEntity
             .ok()
@@ -966,6 +947,19 @@ public class UserResource {
         projectQcDTO.setName(project.getCustomer().getName());
         projectQcDTO.setQcUsers1(new ArrayList<>());
         List<QcUsersOfCustomer> userDTOs = qcUsersOfCustomerRepository.getQcUserOfCustomer(projectId,project.getCustomer().getId());
+        if(loggedInUser.getAuthority().getName().equals(AidasConstants.ADMIN)){
+            userDTOs = qcUsersOfCustomerRepository.getQcUserOfAdmin(projectId,project.getCustomer().getId());
+        }
+        else if(loggedInUser.getAuthority().getName().equals(AidasConstants.ORG_ADMIN)){
+            userDTOs = qcUsersOfCustomerRepository.getQcUserOfOrg(projectId,project.getCustomer().getId());
+        }
+        else if(loggedInUser.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN)){
+            userDTOs = qcUsersOfCustomerRepository.getQcUserOfCustomer(projectId,project.getCustomer().getId());
+        }
+        else if(loggedInUser.getAuthority().getName().equals(AidasConstants.VENDOR_ADMIN)){
+            userDTOs = qcUsersOfCustomerRepository.getQcUserOfVendor(projectId,project.getCustomer().getId());
+        }
+
         projectQcDTO.setQcUsers1(userDTOs);
         /*//List<IUserDTO> userDTOs = userRepository.findAllByQcUsersByCustomerAndProject(projectId);
         for (int j = 0; j < userDTOs.size(); j++) {
@@ -1024,22 +1018,22 @@ public class UserResource {
         User loggedInUser = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         User user = userRepository.getById(id);
         if(loggedInUser.getAuthority().getName().equals(AidasConstants.ORG_ADMIN) && user.getOrganisation()!=null ){
-            if(!loggedInUser.getOrganisation().equals(user.getOrganisation())){
+            if(loggedInUser.getOrganisation().equals(user.getOrganisation())){
                 throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
             }
         }
         if( loggedInUser.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN) && user.getCustomer()!=null ){
-            if(!loggedInUser.getCustomer().equals(user.getCustomer())){
+            if(loggedInUser.getCustomer().equals(user.getCustomer())){
                 throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
             }
         }
         if(loggedInUser.getAuthority().getName().equals(AidasConstants.VENDOR_ADMIN) ){
-            if(!loggedInUser.getVendor().equals(user.getVendor())){
+            if(loggedInUser.getVendor().equals(user.getVendor())){
                 throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
             }
         }
         if(loggedInUser.getAuthority().getName().equals(AidasConstants.VENDOR_USER) ){
-            if(!loggedInUser.getVendor().equals(user.getVendor())){
+            if(loggedInUser.getVendor().equals(user.getVendor())){
                 throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
             }
         }

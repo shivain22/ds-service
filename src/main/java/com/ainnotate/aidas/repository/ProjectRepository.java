@@ -97,6 +97,8 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
         "where uvm.user_id<>?1 and uvmom.status=1 and o.status=1 and o.is_dummy=0 and o.project_id=?2", nativeQuery = true)
     Integer findProjectWithAnyObjectEnabledForUser(Long userId,Long projectId);
 
+
+
     @Query(nativeQuery = true)
     List<ProjectDTO> findProjectWithUploadCountByUserForDropDown(Long userId);
 

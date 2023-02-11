@@ -25,10 +25,63 @@ public class QcUsersOfCustomer {
     private Long customerId;
     @Column(name = "user_customer_mapping_id")
     private Long userCustomerMappingId;
+    @Column(name = "user_vendor_mapping_id")
+    private Long userVendorMappingId;
+    @Column(name = "user_organisation_mapping_id")
+    private Long userOrganisationMappingId;
     @Column(name = "qc_level")
     private Integer qcLevel;
     @Column(name = "status")
     private Integer status;
+
+    @Column(name = "purpose_id")
+    private Integer purposeId;
+
+    @Column(name = "organisation_id")
+    private Integer organisationId;
+
+    @Column(name = "vendor_id")
+    private Integer vendorId;
+
+    public Long getUserVendorMappingId() {
+        return userVendorMappingId;
+    }
+
+    public void setUserVendorMappingId(Long userVendorMappingId) {
+        this.userVendorMappingId = userVendorMappingId;
+    }
+
+    public Long getUserOrganisationMappingId() {
+        return userOrganisationMappingId;
+    }
+
+    public void setUserOrganisationMappingId(Long userOrganisationMappingId) {
+        this.userOrganisationMappingId = userOrganisationMappingId;
+    }
+
+    public Integer getPurposeId() {
+        return purposeId;
+    }
+
+    public void setPurposeId(Integer purposeId) {
+        this.purposeId = purposeId;
+    }
+
+    public Integer getOrganisationId() {
+        return organisationId;
+    }
+
+    public void setOrganisationId(Integer organisationId) {
+        this.organisationId = organisationId;
+    }
+
+    public Integer getVendorId() {
+        return vendorId;
+    }
+
+    public void setVendorId(Integer vendorId) {
+        this.vendorId = vendorId;
+    }
 
     public String getId() {
         return id;

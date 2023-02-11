@@ -404,12 +404,26 @@ public class ProjectResource {
         log.debug("REST request to add AidasQcUsers : {}", projectQcDTO);
         Project project = projectRepository.getById(projectQcDTO.getProjectId());
         for(UserDTO userDTO: projectQcDTO.getQcUsers()){
+            System.out.println(userDTO.getPurposeId());
+            UserCustomerMapping ucm = null;
+            if(userDTO.getPurposeId()!=null && (userDTO.getPurposeId().equals(AidasConstants.ORG_QC_USER) || userDTO.getPurposeId().equals(AidasConstants.VENDOR_QC_USER)) ){
+                ucm = userCustomerMappingRepository.findByCustomerIdAndUserId(project.getCustomer().getId(),userDTO.getUserId());
+                if(ucm==null) {
+                    ucm = new UserCustomerMapping();
+                    ucm.setUser(userRepository.getById(userDTO.getUserId()));
+                    ucm.setCustomer(project.getCustomer());
+                    ucm.setPurpose(userDTO.getPurposeId());
+                    ucm = userCustomerMappingRepository.save(ucm);
+                }
+            }else{
+                ucm = userCustomerMappingRepository.getById(userDTO.getUserCustomerMappingId());
+            }
             //the uservendormappingid coming from the frontend is actually qpc.id -- check the method which fetch list of qc users for project.
             CustomerQcProjectMapping cqpm = customerQcProjectMappingRepository.getQcProjectMappingByProjectAndCustomerAndUserAndLevel(projectQcDTO.getProjectId(),userDTO.getUserCustomerMappingId(),userDTO.getQcLevel());
-            if(cqpm==null){
+            if(cqpm==null && ucm !=null){
                 cqpm = new CustomerQcProjectMapping();
                 cqpm.setProject(project);
-                cqpm.setUserCustomerMapping(userCustomerMappingRepository.getById(userDTO.getUserCustomerMappingId()));
+                cqpm.setUserCustomerMapping(ucm);
             }
             cqpm.setStatus(userDTO.getStatus());
             cqpm.setQcLevel(userDTO.getQcLevel());

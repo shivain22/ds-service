@@ -352,10 +352,10 @@
             (SELECT
             `ainnotateservice`.`consolidated_upload_summary`.`project_id` AS `project_id`,
             `ainnotateservice`.`consolidated_upload_summary`.`uvm_id` AS `uvm_id`,
-            MAX(`ainnotateservice`.`consolidated_upload_summary`.`total_uploaded`) AS `total_uploaded`,
-            MAX(`ainnotateservice`.`consolidated_upload_summary`.`rejected`) AS `rejected`,
-            MAX(`ainnotateservice`.`consolidated_upload_summary`.`approved`) AS `approved`,
-            MAX(`ainnotateservice`.`consolidated_upload_summary`.`pending`) AS `pending`,
+            SUM(`ainnotateservice`.`consolidated_upload_summary`.`total_uploaded`) AS `total_uploaded`,
+            SUM(`ainnotateservice`.`consolidated_upload_summary`.`rejected`) AS `rejected`,
+            SUM(`ainnotateservice`.`consolidated_upload_summary`.`approved`) AS `approved`,
+            SUM(`ainnotateservice`.`consolidated_upload_summary`.`pending`) AS `pending`,
             MAX(`ainnotateservice`.`consolidated_upload_summary`.`p_total_uploaded`) AS `p_total_uploaded`,
             MAX(`ainnotateservice`.`consolidated_upload_summary`.`p_rejected`) AS `p_rejected`,
             MAX(`ainnotateservice`.`consolidated_upload_summary`.`number_of_upload_required_with_buffer_for_project`) AS `total_required`,
@@ -448,12 +448,132 @@
             (`ainnotateservice`.`user_vendor_mapping_object_mapping_view` `uvmomv`
             JOIN (SELECT
             `ainnotateservice`.`user_vendor_mapping_object_mapping_view`.`object_id` AS `object_id`,
-            MAX(((`ainnotateservice`.`user_vendor_mapping_object_mapping_view`.`total_required` - `ainnotateservice`.`user_vendor_mapping_object_mapping_view`.`o_total_uploaded`) + `ainnotateservice`.`user_vendor_mapping_object_mapping_view`.`o_rejected`)) AS `total_required`
+            MAX(`ainnotateservice`.`user_vendor_mapping_object_mapping_view`.`total_required`) AS `total_required`
             FROM
             `ainnotateservice`.`user_vendor_mapping_object_mapping_view`
             GROUP BY `ainnotateservice`.`user_vendor_mapping_object_mapping_view`.`object_id`) `a`)
             WHERE
             (`ainnotateservice`.`uvmomv`.`object_id` = `a`.`object_id`)
         </createView>
+
+        <createView  catalogName="ainnotateservice"
+                     encoding="UTF-8"
+                     replaceIfExists="true"
+                     schemaName="ainnotateservice"
+                     viewName="customer_qc_users">
+            select uuid() as id,u.id as user_id,u.first_name,u.last_name,u.login,-1 as qc_level,-1 as project_id,
+            ucm.id as user_customer_mapping_id,-1 as user_organisation_mapping_id,-1 as user_vendor_mapping_id,
+            0 as status,c.id as customer_id ,-1 as organisation_id,-1 as vendor_id
+            from user_authority_mapping uam,user u, customer c,user_customer_mapping ucm
+            where  ucm.user_id=u.id and uam.user_id=u.id and uam.authority_id=6 and ucm.customer_id=c.id
+        </createView>
+        <createView  catalogName="ainnotateservice"
+                     encoding="UTF-8"
+                     replaceIfExists="true"
+                     schemaName="ainnotateservice"
+                     viewName="organisation_qc_users">
+            select uuid() as id,u.id as user_id,u.first_name,u.last_name,u.login,-1 as qc_level,-1 as project_id,-1 as user_customer_mapping_id,uom.id as user_organisation_mapping_id,-1 as user_vendor_mapping_id, 0 as status,-1 as customer_id ,o.id as organisation_id,-1 as vendor_id
+            from user_authority_mapping uam,user u, organisation o,user_organisation_mapping uom
+            where  uom.user_id=u.id and uam.user_id=u.id and uam.authority_id=6 and uom.organisation_id=o.id
+        </createView>
+        <createView  catalogName="ainnotateservice"
+                     encoding="UTF-8"
+                     replaceIfExists="true"
+                     schemaName="ainnotateservice"
+                     viewName="vendor_qc_users">
+            select uuid() as id,u.id as user_id,u.first_name,u.last_name,u.login,-1 as qc_level,-1 as project_id,-1 as user_customer_mapping_id,-1 as user_organisation_mapping_id,uvm.id as user_vendor_mapping_id, 0 as status,-1 as customer_id ,-1 as organisation_id,v.id as vendor_id
+            from user_authority_mapping uam,user u, vendor v,user_vendor_mapping uvm
+            where  uvm.user_id=u.id and uam.user_id=u.id and uam.authority_id=6 and uvm.vendor_id=v.id
+        </createView>
+
+        <createView  catalogName="ainnotateservice"
+                     encoding="UTF-8"
+                     replaceIfExists="true"
+                     schemaName="ainnotateservice"
+                     viewName="qc_users_of_customer">
+            select uuid() as id,
+            u.id as user_id,
+            u.first_name,
+            u.last_name,
+            u.login,
+            cqpm.qc_level,
+            cqpm.project_id,
+            ucm.id as user_customer_mapping_id,
+            -1 as user_organisation_mapping_id,
+            -1 as user_vendor_mapping_id,
+            cqpm.status,
+            p.customer_id,
+            o.id as organisation_id,
+            -1 as vendor_id,
+            ucm.purpose_id
+            from user u, user_customer_mapping ucm, customer_qc_project_mapping cqpm,project p,organisation o,customer c
+            where ucm.user_id=u.id and cqpm.user_customer_mapping_id=ucm.id and cqpm.project_id=p.id and ucm.customer_id=c.id and c.organisation_id=o.id
+
+            union
+
+            select
+            uuid() as id,
+            u.id as user_id,
+            u.first_name,
+            u.last_name,
+            u.login,
+            pqlc.qc_level,
+            pqlc.project_id,
+            ucm.id as user_customer_mapping_id,
+            -1 as user_organisation_mapping_id,
+            -1 as user_vendor_mapping_id,
+            0 as status,
+            p.customer_id ,
+            o.id as organisation_id,
+            -1 as vendor_id,
+            ucm.purpose_id
+            from project p, project_qc_level_configurations pqlc,user_customer_mapping ucm,user_authority_mapping uam,user u, customer c,organisation o
+            where pqlc.project_id=p.id and ucm.user_id=u.id and uam.user_id=u.id and uam.authority_id=6 and p.customer_id=c.id and ucm.customer_id=c.id and c.organisation_id=o.id
+            and (p.id,pqlc.qc_level,ucm.id,u.id) not in (
+            select cqpm.project_id,cqpm.qc_level,ucm.id,u.id from user u, user_customer_mapping ucm, customer_qc_project_mapping cqpm
+            where ucm.user_id=u.id and cqpm.user_customer_mapping_id=ucm.id
+            )
+
+            union
+
+            select oqc.id,
+            oqc.user_id,
+            oqc.first_name,
+            oqc.last_name,
+            oqc.login,
+            pqlc.qc_level,
+            pqlc.project_id,
+            oqc.user_customer_mapping_id,
+            oqc.user_organisation_mapping_id,
+            oqc.user_vendor_mapping_id,
+            oqc.status,
+            c.id,
+            oqc.organisation_id,
+            oqc.vendor_id,
+            1 as purpose_id
+            from organisation_qc_users oqc,project_qc_level_configurations pqlc,project p,customer c where user_id not in (
+            SELECT ucm.user_id FROM organisation_qc_users oqc,user_customer_mapping ucm where oqc.user_id=ucm.user_id) and pqlc.project_id=p.id and p.customer_id=c.id and c.organisation_id=oqc.organisation_id
+
+            union
+
+            select vqc.id,
+            vqc.user_id,
+            vqc.first_name,
+            vqc.last_name,
+            vqc.login,
+            pqlc.qc_level,
+            pqlc.project_id,
+            vqc.user_customer_mapping_id,
+            vqc.user_organisation_mapping_id,
+            vqc.user_vendor_mapping_id,
+            vqc.status,
+            c.id as customer_id,
+            o.id as organisation_id,
+            vqc.vendor_id ,
+            2 as purpose_id
+            from vendor_qc_users vqc,project_qc_level_configurations pqlc,project p, customer c, organisation o where user_id not in (
+            SELECT ucm.user_id FROM vendor_qc_users vqc,user_customer_mapping ucm where vqc.user_id=ucm.user_id) and pqlc.project_id=p.id and p.customer_id=c.id and c.organisation_id=o.id
+        </createView>
+
     </changeSet>
 </databaseChangeLog>

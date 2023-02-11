@@ -51,7 +51,16 @@ public class UserCustomerMapping extends AbstractAuditingEntity implements Seria
     @JoinColumn(name = "user_id", nullable = true, foreignKey = @ForeignKey(name="fk_ucm_user"))
     private User user;
 
+    @Column(name = "purpose_id")
+    private Long purpose=0l;
 
+    public Long getPurpose() {
+        return purpose;
+    }
+
+    public void setPurpose(Long purpose) {
+        this.purpose = purpose;
+    }
 
     public Customer getCustomer() {
         return customer;

@@ -114,5 +114,8 @@ public final class AidasConstants {
     public static final Integer IGNORE_ALREADY_UPLOADED=1;
     public static final Integer NOT_IGNORE_ALREADY_UPLOADED=0;
 
+    public static final Long ORG_QC_USER=1l;
+    public static final Long CUSTOMER_QC_USER=0l;
+    public static final Long VENDOR_QC_USER=2l;
     private AidasConstants() {}
 }

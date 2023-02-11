@@ -296,112 +296,102 @@ public class UploadResource {
             }
             Upload upload = new Upload();
             UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserObject(uploadDto.getUserId(), uploadDto.getObjectId());
-            if(uvmom!=null && uvmom.getObject()!=null){
+            Integer totalUploads = userVendorMappingObjectMappingRepository.getTotalUploaded(uploadDto.getObjectId());
+
+            if (uvmom != null && uvmom.getObject() != null) {
+
                 Object object = uvmom.getObject();
-                Project project = object.getProject();
-                Customer customer = project.getCustomer();
-                upload.setUserVendorMappingObjectMapping(uvmom);
-                upload.setDateUploaded(Instant.now());
-                upload.setName(uploadDto.getObjectKey());
-                upload.setUploadUrl(uploadDto.getUploadUrl());
-                upload.setUploadEtag(uploadDto.getEtag());
-                upload.setObjectKey(uploadDto.getObjectKey());
-                upload.setApprovalStatus(AidasConstants.AIDAS_UPLOAD_PENDING);
-                upload.setCurrentQcLevel(1);
-                Long mandatoryProjectProperties = projectPropertyRepository.countProjectPropertyByProjectAndOptional(project.getId(), AidasConstants.AIDAS_PROPERTY_REQUIRED);
-                Long mandatoryObjectProperties = objectPropertyRepository.countObjectProperties(object.getId(), AidasConstants.AIDAS_PROPERTY_REQUIRED);
-                /*if (mandatoryObjectProperties == 0 && mandatoryProjectProperties == 0) {
-                    upload.setMetadataStatus(AidasConstants.AIDAS_UPLOAD_METADATA_COMPLETED);
-                } else {
-                    upload.setMetadataStatus(AidasConstants.AIDAS_UPLOAD_METADATA_REQUIRED);
-                }*/
-                upload.setApprovalStatus(AidasConstants.AIDAS_UPLOAD_PENDING);
-                upload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
-                try {
-                    Upload result = uploadRepository.save(upload);
-                    Object o = result.getUserVendorMappingObjectMapping().getObject();
-                    Project p = o.getProject();
-                    o.setTotalUploaded(o.getTotalUploaded() + 1);
-                    o.setTotalPending(o.getTotalPending() + 1);
-                    if (o.getTotalRequired() > 0) {
-                        o.setTotalRequired(o.getTotalRequired() - 1);
-                    }
-                    p.setTotalUploaded(p.getTotalUploaded() + 1);
-                    p.setTotalPending(p.getTotalPending() + 1);
-                    if (p.getTotalRequired() > 0) {
-                        p.setTotalRequired(p.getTotalRequired() - 1);
-                    }
-                    UserVendorMappingProjectMapping uvmpm = userVendorMappingProjectMappingRepository.findByUserVendorMappingIdProjectId(upload.getUserVendorMappingObjectMapping().getUserVendorMapping().getId(), p.getId());
-                    uvmpm.setTotalUploaded(uvmpm.getTotalUploaded() + 1);
-                    uvmpm.setTotalPending(uvmpm.getTotalPending() + 1);
-                    objectRepository.save(o);
-                    projectRepository.save(p);
-                    uvmom.setTotalUploaded(uvmom.getTotalUploaded() + 1);
-                    uvmom.setTotalPending(uvmom.getTotalPending() + 1);
-                    userVendorMappingObjectMappingRepository.save(uvmom);
-                    userVendorMappingProjectMappingRepository.save(uvmpm);
-                    List<ProjectProperty> projectProperties = projectPropertyRepository.findAllProjectProperty(project.getId());
-                    List<ObjectProperty> objectProperties = objectPropertyRepository.getAllObjectPropertyForObject(object.getId());
-                    List<UploadMetaData> uploadMetaDataList = new ArrayList<>();
-                    for (ProjectProperty pp : projectProperties) {
-                        UploadMetaData umd = new UploadMetaData();
-                        umd.setProjectProperty(pp);
-                        umd.setUpload(upload);
-                        umd.setValue(" ");
-                        umd.setStatus(1);
-                        uploadMetaDataList.add(umd);
-                    }
-                    for (ObjectProperty op : objectProperties) {
-                        UploadMetaData umd = new UploadMetaData();
-                        umd.setObjectProperty(op);
-                        umd.setUpload(upload);
-                        umd.setValue(" ");
-                        umd.setStatus(1);
-                        uploadMetaDataList.add(umd);
-                    }
-                    uploadMetaDataRepository.saveAll(uploadMetaDataList);
-                    uploadMetaDataRepository.flush();
-                    for (Map.Entry<String, String> entry : uploadDto.getUploadMetadata().entrySet()) {
-                        Property property = propertyRepository.getByNameAndUserIdAndCategory(entry.getKey().trim(), customer.getId(), project.getCategory().getId());
-                        if(property==null){
-                            property = propertyRepository.getByNameAndUserIdAndCategory(entry.getKey().trim(), customer.getId(), 1l);
+                System.out.println("Object Id="+uploadDto.getObjectId()+"Total uploaded "+totalUploads );
+                if( totalUploads==null || ( totalUploads!=null && totalUploads<object.getNumberOfUploadsRequired())){
+                    Project project = object.getProject();
+                    Customer customer = project.getCustomer();
+                    upload.setUserVendorMappingObjectMapping(uvmom);
+                    upload.setDateUploaded(Instant.now());
+                    upload.setName(uploadDto.getObjectKey());
+                    upload.setUploadUrl(uploadDto.getUploadUrl());
+                    upload.setUploadEtag(uploadDto.getEtag());
+                    upload.setObjectKey(uploadDto.getObjectKey());
+                    upload.setApprovalStatus(AidasConstants.AIDAS_UPLOAD_PENDING);
+                    upload.setCurrentQcLevel(1);
+                    Long mandatoryProjectProperties = projectPropertyRepository.countProjectPropertyByProjectAndOptional(project.getId(), AidasConstants.AIDAS_PROPERTY_REQUIRED);
+                    Long mandatoryObjectProperties = objectPropertyRepository.countObjectProperties(object.getId(), AidasConstants.AIDAS_PROPERTY_REQUIRED);
+                    /*if (mandatoryObjectProperties == 0 && mandatoryProjectProperties == 0) {
+                        upload.setMetadataStatus(AidasConstants.AIDAS_UPLOAD_METADATA_COMPLETED);
+                    } else {
+                        upload.setMetadataStatus(AidasConstants.AIDAS_UPLOAD_METADATA_REQUIRED);
+                    }*/
+                    upload.setApprovalStatus(AidasConstants.AIDAS_UPLOAD_PENDING);
+                    upload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
+                    try {
+                        Upload result = uploadRepository.save(upload);
+                        Object o = result.getUserVendorMappingObjectMapping().getObject();
+                        Project p = o.getProject();
+                        o.setTotalUploaded(o.getTotalUploaded() + 1);
+                        o.setTotalPending(o.getTotalPending() + 1);
+                        if (o.getTotalRequired() > 0) {
+                            o.setTotalRequired(o.getTotalRequired() - 1);
                         }
-                        if(property!=null) {
-                            try {
-                                UploadMetaData umdpp = uploadMetaDataRepository.getUploadMetaDataByProjectPropertyId(result.getId(), property.getId());
-                                UploadMetaData umdop = uploadMetaDataRepository.getUploadMetaDataByObjectPropertyId(result.getId(), property.getId());
-                                if (umdpp != null) {
-                                    umdpp.setValue(entry.getValue().toString());
-                                    uploadMetaDataRepository.save(umdpp);
-                                }
-                                if (umdop != null) {
-                                    umdop.setValue(entry.getValue().toString());
-                                    uploadMetaDataRepository.save(umdop);
-                                }
-                            } catch (Exception ex) {
-                                ex.printStackTrace();
+                        p.setTotalUploaded(p.getTotalUploaded() + 1);
+                        p.setTotalPending(p.getTotalPending() + 1);
+                        if (p.getTotalRequired() > 0) {
+                            p.setTotalRequired(p.getTotalRequired() - 1);
+                        }
+                        UserVendorMappingProjectMapping uvmpm = userVendorMappingProjectMappingRepository.findByUserVendorMappingIdProjectId(upload.getUserVendorMappingObjectMapping().getUserVendorMapping().getId(), p.getId());
+                        uvmpm.setTotalUploaded(uvmpm.getTotalUploaded() + 1);
+                        uvmpm.setTotalPending(uvmpm.getTotalPending() + 1);
+                        objectRepository.save(o);
+                        projectRepository.save(p);
+                        uvmom.setTotalUploaded(uvmom.getTotalUploaded() + 1);
+                        uvmom.setTotalPending(uvmom.getTotalPending() + 1);
+                        userVendorMappingObjectMappingRepository.save(uvmom);
+                        userVendorMappingProjectMappingRepository.save(uvmpm);
+                        List<ProjectProperty> projectProperties = projectPropertyRepository.findAllProjectProperty(project.getId());
+                        List<ObjectProperty> objectProperties = objectPropertyRepository.getAllObjectPropertyForObject(object.getId());
+                        List<UploadMetaData> uploadMetaDataList = new ArrayList<>();
+                        for (ProjectProperty pp : projectProperties) {
+                            UploadMetaData umd = new UploadMetaData();
+                            umd.setProjectProperty(pp);
+                            umd.setUpload(upload);
+                            if (uploadDto.getUploadMetadata().get(pp.getProperty().getName().trim()) != null) {
+                                umd.setValue(uploadDto.getUploadMetadata().get(pp.getProperty().getName().trim()));
+                            } else {
+                                umd.setValue(" ");
                             }
-                        }else{
-                            System.out.println("Property with name "+ entry.getKey().trim()+" for customer with id "+customer.getId()+" with category id"+project.getCategory().getId() +" or common category id 1 is not available.");
+                            umd.setStatus(1);
+                            uploadMetaDataList.add(umd);
                         }
-                    }
-                    //Integer numberOfMandatoryProjectProperties = uploadMetaDataRepository.getUploadMetadataCountMandatoryProjectPropertyNotFilled(project.getId());
-                    //Integer numberOfMandatoryObjectProperties = uploadMetaDataRepository.getUploadMetadataCountMandatoryObjectPropertyNotFilled(object.getId());
-                    //if(numberOfMandatoryObjectProperties==0 && numberOfMandatoryProjectProperties==0){
-                      upload.setMetadataStatus(AidasConstants.AIDAS_UPLOAD_METADATA_REQUIRED);
+                        for (ObjectProperty op : objectProperties) {
+                            UploadMetaData umd = new UploadMetaData();
+                            umd.setObjectProperty(op);
+                            umd.setUpload(upload);
+                            if (uploadDto.getUploadMetadata().get(op.getProperty().getName().trim()) != null) {
+                                umd.setValue(uploadDto.getUploadMetadata().get(op.getProperty().getName().trim()));
+                            } else {
+                                umd.setValue(" ");
+                            }
+                            umd.setStatus(1);
+                            uploadMetaDataList.add(umd);
+                        }
+                        uploadMetaDataRepository.saveAll(uploadMetaDataList);
+                        uploadMetaDataRepository.flush();
+                        upload.setMetadataStatus(AidasConstants.AIDAS_UPLOAD_METADATA_REQUIRED);
                         upload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
-                   // }
-                    upload.setCurrentBatchNumber(0);
-                    uploadRepository.save(upload);
-                    return ResponseEntity
-                        .created(new URI("/api/aidas-uploads/" + result.getId()))
-                        .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
-                        .body(result);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    throw new BadRequestAlertException("Internal error occured.  Contact administrator", ENTITY_NAME, "idexists");
+                        upload.setCurrentBatchNumber(0);
+                        uploadRepository.save(upload);
+                        return ResponseEntity
+                            .created(new URI("/api/aidas-uploads/" + result.getId()))
+                            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
+                            .body(result);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        throw new BadRequestAlertException("Internal error occured.  Contact administrator", ENTITY_NAME, "idexists");
+                    }
+                }else{
+
+                    throw new BadRequestAlertException("Total uploads exceeded the limit.... ", ENTITY_NAME, "idexists");
                 }
-            }else{
+            }
+            else{
                 throw new BadRequestAlertException("Some issue with upload.... ", ENTITY_NAME, "idexists");
             }
         }

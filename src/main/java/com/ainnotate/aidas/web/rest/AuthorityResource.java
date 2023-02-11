@@ -70,7 +70,8 @@ public class AuthorityResource {
     @GetMapping("/aidas-authorities")
     public ResponseEntity<List<Authority>> getAllAidasAuthorities() {
         log.debug("REST request to get a list of AidasAuthorities");
-        List<Authority> aidasAuthorities = authorityRepository.findAll();
+        User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        List<Authority> aidasAuthorities = authorityRepository.getAllAuthority(user.getAuthority().getId());
         return ResponseEntity.ok().body(aidasAuthorities);
     }
 

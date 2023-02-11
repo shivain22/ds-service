@@ -16,6 +16,42 @@ public class UserDTO implements  IUserDTO {
     private Long vendorId;
     private String vendorName;
     private Long userVendorMappingProjectMappingId;
+    private Long userOrganisationMappingId;
+    private Long organisationId;
+    private Long customerId;
+    private Long purposeId;
+
+    public Long getUserOrganisationMappingId() {
+        return userOrganisationMappingId;
+    }
+
+    public void setUserOrganisationMappingId(Long userOrganisationMappingId) {
+        this.userOrganisationMappingId = userOrganisationMappingId;
+    }
+
+    public Long getOrganisationId() {
+        return organisationId;
+    }
+
+    public void setOrganisationId(Long organisationId) {
+        this.organisationId = organisationId;
+    }
+
+    public Long getCustomerId() {
+        return customerId;
+    }
+
+    public void setCustomerId(Long customerId) {
+        this.customerId = customerId;
+    }
+
+    public Long getPurposeId() {
+        return purposeId;
+    }
+
+    public void setPurposeId(Long purposeId) {
+        this.purposeId = purposeId;
+    }
 
     public UserDTO() {
     }
