@@ -451,7 +451,7 @@ public class ProjectResource {
         List<UserVendorMappingObjectMapping> uvmoms = new ArrayList<>();
         for(VendorUserDTO vendorUserDTO:projectVendorMappingDTO.getVendors()){
             for(UsersOfVendor userDTO: vendorUserDTO.getUserDTOs()){
-                UserVendorMappingProjectMapping uvmpm=null;
+               /* UserVendorMappingProjectMapping uvmpm=null;
                 if(userDTO.getUserVendorMappingProjectMappingId()!=null && userDTO.getUserVendorMappingProjectMappingId()!=-2){
                     uvmpm = userVendorMappingProjectMappingRepository.getById(userDTO.getUserVendorMappingProjectMappingId());
                 }else{
@@ -460,7 +460,7 @@ public class ProjectResource {
                     uvmpm.setProject(projectRepository.getById(projectVendorMappingDTO.getProjectId()));
                 }
                 uvmpm.setStatus(userDTO.getStatus());
-                uvmpms.add(uvmpm);
+                uvmpms.add(uvmpm);*/
                 List<Object> objects = objectRepository.getAllObjectsOfProject(projectVendorMappingDTO.getProjectId());
                 for(Object o:objects){
                     UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserVendorMappingObject(userDTO.getUserVendorMappingId(),o.getId());
@@ -863,12 +863,10 @@ public class ProjectResource {
     public ResponseEntity<List<ProjectDTO>> getAllAidasProjectDetails(Pageable pageable) {
         log.debug("REST request to get a page of AidasProjects");
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-        List<Long> enabledProjects = objectRepository.getObjectsEnabledForUser(user.getId());
-        Page<ProjectDTO> page = null;
+        Page<ProjectDTO> page ;
         if(user.getAuthority().getName().equals(AidasConstants.VENDOR_USER)){
             page = projectRepository.findProjectWithUploadCountByUser(pageable, user.getId());
             for(ProjectDTO p:page.getContent()){
-                Integer availableObjectCount = projectRepository.findProjectWithAnyObjectEnabledForUser(user.getId(),p.getId());
                 List<ProjectProperty> projectProperties = projectPropertyRepository.findAllProjectProperty(p.getId());
                 p.setAidasProjectProperties(projectProperties);
             }

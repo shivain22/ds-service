@@ -21,64 +21,10 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
  */
 
 
-/*@NamedNativeQuery(name = "Project.findAllByIdGreaterThanForDropDown",
-    query = "select p.id, p.name, p.project_type from project p where p.id>0 and p.status=1",
-        resultSetMapping = "Mapping.findAllByIdGreaterThanForDropDown")
-
-@NamedNativeQuery(name = "Project.findAllByAidasCustomer_AidasOrganisationForDropDown",
-    query = "select p.id, p.name, p.project_type from project p, customer c where p.id>0 and p.status=1 and p.customer_id=c.id and c.organisation_id=?1 ",
-    resultSetMapping = "Mapping.findAllByAidasCustomer_AidasOrganisationForDropDown")
-
-@NamedNativeQuery(name = "Project.findAllByAidasCustomerForDropDown",
-    query = "select p.id, p.name, p.project_type from project p where p.id>0 and p.status=1 and p.customer_id=?1 ",
-    resultSetMapping = "Mapping.findAllByAidasCustomerForDropDown")
-
-@NamedNativeQuery(name = "Project.findAllProjectsByVendorAdminDropDown",
-    query = "select p.id, p.name, p.project_type \n" +
-        "from \n" +
-        "project p,\n" +
-        "user_vendor_mapping_project_mapping uvmpm, \n" +
-        "user_vendor_mapping uvm\n" +
-        "where\n" +
-        "uvmpm.project_id=p.id and\n" +
-        "uvmpm.user_vendor_mapping_id=uvm.id and\n" +
-        "p.id>0 and p.status=1 and\n" +
-        "uvm.vendor_id=?1\n" +
-        "group by p.id ",
-    resultSetMapping = "Mapping.findAllProjectsByVendorAdminDropDown")
-
-@NamedNativeQuery(name = "Project.findProjectsForCustomerQC",
-    query = "select p.id, p.name, p.project_type \n" +
-        "from \n" +
-        "project p,\n" +
-        "customer_qc_project_mapping cqpm,\n" +
-        "user_customer_mapping ucm\n" +
-        "where\n" +
-        "cqpm.project_id=p.id and\n" +
-        "cqpm.user_customer_mapping_id=ucm.id and\n" +
-        "p.id>0 and \n" +
-        "p.status=1 and\n" +
-        "ucm.user_id=?1 ",
-    resultSetMapping = "Mapping.findProjectsForCustomerQC")
-
-@NamedNativeQuery(name = "Project.findProjectsForOrganisationQC",
-    query = "select p.id, p.name, p.project_type \n" +
-        "from \n" +
-        "project p,\n" +
-        "organisation_qc_project_mapping oqpm,\n" +
-        "user_organisation_mapping uom\n" +
-        "where\n" +
-        "oqpm.project_id=p.id and\n" +
-        "oqpm.user_organisation_mapping_id=uom.id and\n" +
-        "p.id>0 and \n" +
-        "p.status=1 and\n" +
-        "uom.user_id=?1",
-    resultSetMapping = "Mapping.findProjectsForOrganisationQC")*/
-
 @NamedNativeQuery(name = "Project.findProjectWithUploadCountByUser",
     query = "select  \n" +
         "p.id as id,  \n" +
-        "ceil(uvmpmv.total_required)-(select sum(cuvmpmv.total_uploaded)+sum(cuvmpmv.rejected) from consolidated_user_vendor_mapping_project_mapping_view cuvmpmv where project_id=uvmpmv.project_id group by project_id ) as totalRequired, \n" +
+        "(ceil(uvmpmv.total_required)-(select sum(cuvmpmv.total_uploaded) from consolidated_user_vendor_mapping_project_mapping_view cuvmpmv where project_id=uvmpmv.project_id group by project_id ))+ (select sum(cuvmpmv.rejected) from consolidated_user_vendor_mapping_project_mapping_view cuvmpmv where project_id=uvmpmv.project_id group by project_id) as totalRequired, " +
         "sum(uvmpmv.total_uploaded) as totalUploaded, \n" +
         "max(uvmpmv.approved) as totalApproved, \n" +
         "max(uvmpmv.rejected) as totalRejected, \n" +
@@ -100,8 +46,8 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
         "p.rework_status ,\n" +
         "p.video_type\n" +
         "from \n" +
-        "project p, consolidated_user_vendor_mapping_project_mapping_view uvmpmv " +
-        "where uvmpmv.project_id=p.id and p.status=1 and uvmpmv.user_id=?1 group by uvmpmv.project_id,uvmpmv.user_id order by uvmpmv.project_id desc",
+        "project p, consolidated_user_vendor_mapping_project_mapping_view uvmpmv,vendor_user_project_level_status vupls " +
+        "where uvmpmv.project_id=p.id and uvmpmv.project_id=vupls.project_id and vupls.user_id=uvmpmv.user_id and vupls.status=1 and p.status=1 and uvmpmv.user_id=?1 group by uvmpmv.project_id,uvmpmv.user_id order by uvmpmv.project_id desc",
     resultSetMapping = "Mapping.ProjectDTO")
 
 
@@ -270,10 +216,10 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
     query = "select  \n" +
         "p.id as id,  \n" +
         "p.total_required as totalRequired, \n" +
-        "uvmpm.total_uploaded as totalUploaded, \n" +
-        "uvmpm.total_approved as totalApproved, \n" +
-        "uvmpm.total_rejected as totalRejected, \n" +
-        "uvmpm.total_pending as totalPending,\n" +
+        "cuvmpmv.total_uploaded as totalUploaded, \n" +
+        "cuvmpmv.approved as totalApproved, \n" +
+        "cuvmpmv.rejected as totalRejected, \n" +
+        "cuvmpmv.pending as totalPending,\n" +
         "p.status ,\n" +
         "p.audio_type ,\n" +
         "p.auto_create_objects ,\n" +
@@ -292,9 +238,9 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
         "p.video_type\n" +
         "from \n" +
         "project p\n" +
-        "left join user_vendor_mapping_project_mapping uvmpm on p.id=uvmpm.project_id\n" +
-        "left join user_vendor_mapping uvm on uvm.id=uvmpm.user_vendor_mapping_id \n" +
-        "where uvm.user_id=?1 and uvm.status=1 and uvmpm.status=1 order by p.id desc",
+        "left join consolidated_user_vendor_mapping_project_mapping_view cuvmpmv on p.id=cuvmpmv.project_id\n" +
+        "left join user_vendor_mapping uvm on uvm.id=cuvmpmv.uvm_id \n" +
+        "where uvm.user_id=?1 and uvm.status=1  order by p.id desc",
     resultSetMapping = "Mapping.ProjectDTOForDropDown")
 
 @NamedNativeQuery(name = "Project.findProjectWithUploadCountByUserForDropDown.count",
@@ -445,6 +391,17 @@ public class Project extends AbstractAuditingEntity  implements Serializable {
     @Column(name="video_type")
     @JsonProperty
     private String videoType="";
+
+    @Column(name="uvmom_ids")
+    private String uvmomIds;
+
+    public String getUvmomIds() {
+        return uvmomIds;
+    }
+
+    public void setUvmomIds(String uvmomIds) {
+        this.uvmomIds = uvmomIds;
+    }
 
     @Column(name="audio_type")
     @JsonProperty

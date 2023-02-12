@@ -28,7 +28,7 @@ public class UsersOfVendor {
     @Column(name = "vendor_id")
     private Long vendorId;
     @Column(name = "user_vendor_mapping_project_mapping_id")
-    private Long userVendorMappingProjectMappingId;
+    private String userVendorMappingProjectMappingId;
     @Column(name = "status")
     private Integer status;
 
@@ -96,11 +96,11 @@ public class UsersOfVendor {
         this.vendorId = vendorId;
     }
 
-    public Long getUserVendorMappingProjectMappingId() {
+    public String getUserVendorMappingProjectMappingId() {
         return userVendorMappingProjectMappingId;
     }
 
-    public void setUserVendorMappingProjectMappingId(Long userVendorMappingProjectMappingId) {
+    public void setUserVendorMappingProjectMappingId(String userVendorMappingProjectMappingId) {
         this.userVendorMappingProjectMappingId = userVendorMappingProjectMappingId;
     }
 

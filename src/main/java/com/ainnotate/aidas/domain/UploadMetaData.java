@@ -48,7 +48,7 @@ import org.springframework.data.jpa.repository.Query;
     "uvmom.object_id=o.id and " +
     "umd.project_property_id=pp.id and" +
     " o.project_id=?1  and o.project_id=pr.id and" +
-    " pp.property_id=p.id" +
+    " pp.property_id=p.id and pp.add_to_metadata=1 " +
     " union " +
     "select umd.*,p.id as prop_id,o.name as objectName, pr.name as projectName " +
     "from " +
@@ -64,7 +64,7 @@ import org.springframework.data.jpa.repository.Query;
     "u.user_vendor_mapping_object_mapping_id=uvmom.id and " +
     "uvmom.object_id=o.id and " +
     " op.property_id=p.id and " +
-    "umd.object_property_id=op.id and" +
+    "umd.object_property_id=op.id and op.add_to_metadata=1 and" +
     " op.property_id not in (select property_id from project_property where project_id=?1) and" +
     " o.project_id=?1 and o.project_id=pr.id) umd order by umd.upload_id, umd.prop_id",resultSetMapping = "Mapping.UploadMetaDataDTO")
 

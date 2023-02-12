@@ -31,7 +31,7 @@ public interface UserVendorMappingObjectMappingRepository extends JpaRepository<
     @Query(value = "select * from user_vendor_mapping_object_mapping uvmom where user_vendor_mapping_id=?1 and object_id=?2", nativeQuery = true)
     UserVendorMappingObjectMapping findByUserVendorMappingObject(Long userVendorMappingId, Long objectId);
 
-    @Query(value = "select (total_required-(select sum(total_uploaded) from consolidated_user_vendor_mapping_object_mapping_view cuvmomv where object_id=?2 group by object_id) ),total_uploaded,approved,rejected,pending from consolidated_user_vendor_mapping_object_mapping_view uvmom where uvm_id=?1 and object_id=?2", nativeQuery = true)
+    @Query(value = " select ((total_required-(select sum(total_uploaded) from consolidated_user_vendor_mapping_object_mapping_view cuvmomv where object_id=?2 group by object_id))+ (select sum(rejected) from consolidated_user_vendor_mapping_object_mapping_view cuvmomv where object_id=?2 group by object_id) ),total_uploaded,approved,rejected,pending from consolidated_user_vendor_mapping_object_mapping_view uvmom where uvm_id= ?1 and object_id= ?2", nativeQuery = true)
     List<Integer[]> findByConsolidatedUpload(Long userVendorMappingId, Long objectId);
 
     @Query(value= "select count(*) from (select * from user_vendor_mapping_object_mapping uvmom, user_vendor_mapping uvm where uvmom.user_vendor_mapping_id=uvm.id and uvm.user_id  in (select id from user where vendor_id=?1) and object_id=?2) a",nativeQuery = true)
@@ -77,6 +77,14 @@ public interface UserVendorMappingObjectMappingRepository extends JpaRepository<
     List<Long> getVendorsWhoseUsersAreHavingStatusOne(Long projectId);
 
     @Query(value="select count(u.id) from upload u,user_vendor_mapping_object_mapping uvmom ,object o\n" +
-        "where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and o.id=?1 group by uvmom.object_id",nativeQuery = true)
-    Integer getTotalUploaded(Long ObjectId);
+        "where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and  u.approval_status=1 and o.id=?1 group by uvmom.object_id",nativeQuery = true)
+    Integer getTotalApproved(Long ObjectId);
+
+    @Query(value="select count(u.id) from upload u,user_vendor_mapping_object_mapping uvmom ,object o\n" +
+        "where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and o.id=?1 and u.approval_status=0 group by uvmom.object_id",nativeQuery = true)
+    Integer getTotalRejected(Long ObjectId);
+
+    @Query(value="select count(u.id) from upload u,user_vendor_mapping_object_mapping uvmom ,object o\n" +
+        "where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and o.id=?1 and u.approval_status=2 group by uvmom.object_id",nativeQuery = true)
+    Integer getTotalPending(Long ObjectId);
 }

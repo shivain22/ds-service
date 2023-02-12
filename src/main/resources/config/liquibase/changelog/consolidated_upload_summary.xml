@@ -384,9 +384,7 @@
             (`ainnotateservice`.`user_vendor_mapping_project_mapping_view` `uvmpmv`
             JOIN (SELECT
             `ainnotateservice`.`user_vendor_mapping_project_mapping_view`.`project_id` AS `project_id`,
-            MAX(
-            (`ainnotateservice`.`user_vendor_mapping_project_mapping_view`.`total_required` - `ainnotateservice`.`user_vendor_mapping_project_mapping_view`.`p_total_uploaded`)
-            +`ainnotateservice`.`user_vendor_mapping_project_mapping_view`.`p_rejected`) AS `total_required`
+            MAX(`ainnotateservice`.`user_vendor_mapping_project_mapping_view`.`total_required` ) AS `total_required`
             FROM
             `ainnotateservice`.`user_vendor_mapping_project_mapping_view`
             GROUP BY `ainnotateservice`.`user_vendor_mapping_project_mapping_view`.`project_id`) `a`)
@@ -573,6 +571,80 @@
             2 as purpose_id
             from vendor_qc_users vqc,project_qc_level_configurations pqlc,project p, customer c, organisation o where user_id not in (
             SELECT ucm.user_id FROM vendor_qc_users vqc,user_customer_mapping ucm where vqc.user_id=ucm.user_id) and pqlc.project_id=p.id and p.customer_id=c.id and c.organisation_id=o.id
+        </createView>
+
+        <createView  catalogName="ainnotateservice"
+                     encoding="UTF-8"
+                     replaceIfExists="true"
+                     schemaName="ainnotateservice"
+                     viewName="vendor_users_view">
+            select
+            uuid() as id,
+            u.id as user_id,
+            u.first_name,
+            u.last_name,
+            u.login,
+            uvm.id as user_vendor_mapping_id,
+            v.name as vendor_name,
+            v.id as vendor_id,
+            uuid() as user_vendor_mapping_project_mapping_id,
+            0 as status
+            from user u, user_vendor_mapping uvm, user_authority_mapping uam,vendor v where
+            uvm.user_id=u.id and uam.user_id=u.id and uvm.vendor_id=v.id
+        </createView>
+        <createView  catalogName="ainnotateservice"
+                     encoding="UTF-8"
+                     replaceIfExists="true"
+                     schemaName="ainnotateservice"
+                     viewName="user_vendor_mapping_project_mapping_view_for_dd">
+            select uuid() as id, o.project_id,
+            vuv.user_id,
+            u.first_name,
+            u.last_name,
+            u.login,
+            v.name as vendor_name,
+            vuv.user_vendor_mapping_id,
+            uuid() as user_vendor_mapping_project_mapping_id,
+            case when sum(uvmom.status)>0 then 1 else 0 end as uvmom_status
+            from user_vendor_mapping_object_mapping uvmom, object o, vendor_users_view vuv,user u,vendor v
+            where uvmom.object_id=o.id and vuv.user_vendor_mapping_id=uvmom.user_vendor_mapping_id and vuv.user_id=u.id and vuv.vendor_name=v.name group by o.project_id,vuv.user_vendor_mapping_id,v.name
+        </createView>
+
+        <createView  catalogName="ainnotateservice"
+                     encoding="UTF-8"
+                     replaceIfExists="true"
+                     schemaName="ainnotateservice"
+                     viewName="available_user_vendor_mapping_project_mapping">
+            select o.project_id,vuv.id,vuv.user_id,vuv.first_name,vuv.last_name,vuv.login,vuv.user_vendor_mapping_id,vuv.vendor_name,vuv.vendor_id,vuv.user_vendor_mapping_project_mapping_id,
+            case when sum(uvmom.status)>0 then 1 else 0 end as status
+            from user_vendor_mapping_object_mapping uvmom, object o, vendor_users_view vuv
+            where uvmom.object_id=o.id and vuv.user_vendor_mapping_id=uvmom.user_vendor_mapping_id
+            group by o.project_id,vuv.user_vendor_mapping_id,vuv.vendor_name
+        </createView>
+
+        <createView  catalogName="ainnotateservice"
+                     encoding="UTF-8"
+                     replaceIfExists="true"
+                     schemaName="ainnotateservice"
+                     viewName="vendor_user_project_level_status">
+            select * from available_user_vendor_mapping_project_mapping
+            union
+            select
+            p.id as project_id,
+            vuv.id,
+            vuv.user_id,
+            vuv.first_name,
+            vuv.last_name,
+            vuv.login,
+            max(vuv.user_vendor_mapping_id),
+            vuv.vendor_name,
+            vuv.vendor_id,
+            vuv.user_vendor_mapping_project_mapping_id,
+            case when sum(vuv.status) =0 then 0 else 1 end as status
+            from
+            vendor_users_view vuv, project p
+            where (p.id,vuv.user_vendor_mapping_id) not in (select project_id,user_vendor_mapping_id from available_user_vendor_mapping_project_mapping) and p.id>0
+            group by project_id,first_name,last_name,user_id,login,vendor_name,vendor_id,user_vendor_mapping_id
         </createView>
 
     </changeSet>

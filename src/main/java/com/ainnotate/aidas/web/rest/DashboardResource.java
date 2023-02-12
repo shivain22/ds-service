@@ -115,7 +115,8 @@ public class DashboardResource {
             ad.setOrganisationCount(1l);
             ad.setCustomerCount(1l);
             ad.setVendorCount(1l);
-            ad.setProjectCount(projectRepository.countAidasProjectByVendorUser(user.getId()));
+            Long projectCount = projectRepository.countAidasProjectByVendorUser(user.getId());
+            ad.setProjectCount(projectCount==null?0:projectCount);
             ad.setObjectCount(objectRepository.countAidasProjectByVendorUser(user.getId()));
             ad.setUploadCount(uploadRepository.countAidasUploadByAidasVendorUser(user.getId()));
             ad.setApprovedUploadCount(uploadRepository.countAidasUploadByAidasVendorUser(user.getVendor().getId(),AidasConstants.AIDAS_UPLOAD_APPROVED));

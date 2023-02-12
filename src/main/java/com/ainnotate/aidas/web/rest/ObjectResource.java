@@ -180,16 +180,25 @@ public class ObjectResource {
         /*objectAddingTask.setObject(result);
         objectAddingTask.setDummy(false);
         objectAddingTask.run();*/
-        List<UserVendorMappingProjectMapping> uvmpms = userVendorMappingProjectMappingRepository.getAllUserVendorMappingProjectMappingByProjectId(project.getId());
-        List<UserVendorMappingObjectMapping> uvmoms = new ArrayList<>();
-        for(UserVendorMappingProjectMapping uvmpm:uvmpms){
+        //List<UserVendorMappingProjectMapping> uvmpms = userVendorMappingProjectMappingRepository.getAllUserVendorMappingProjectMappingByProjectId(project.getId());
+        Object dummyObjectOfProject = objectRepository.getDummyObjectOfProject(project.getId());
+        List<UserVendorMappingObjectMapping> uvmoms = userVendorMappingObjectMappingRepository.getAllUserVendorMappingObjectMappingsByObjectId(dummyObjectOfProject.getId());
+        List<UserVendorMappingObjectMapping> uvmoms1 = new ArrayList<>();
+        for(UserVendorMappingObjectMapping uvmom:uvmoms){
+            UserVendorMappingObjectMapping uvmom1 = new UserVendorMappingObjectMapping();
+            uvmom1.setObject(result);
+            uvmom1.setUserVendorMapping(uvmom.getUserVendorMapping());
+            uvmom1.setStatus(uvmom.getStatus());
+            uvmoms1.add(uvmom1);
+        }
+        /*for(UserVendorMappingProjectMapping uvmpm:uvmpms){
             UserVendorMappingObjectMapping uvmom = new UserVendorMappingObjectMapping();
             uvmom.setObject(result);
             uvmom.setUserVendorMapping(uvmpm.getUserVendorMapping());
             uvmom.setStatus(uvmpm.getStatus());
             uvmoms.add(uvmom);
-        }
-        userVendorMappingObjectMappingRepository.saveAll(uvmoms);
+        }*/
+        userVendorMappingObjectMappingRepository.saveAll(uvmoms1);
         return ResponseEntity
             .created(new URI("/api/aidas-objects/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
@@ -526,10 +535,12 @@ public class ObjectResource {
             if(objects!=null && objects.size()>0){
                 for(Object object : objects){
                     IUploadDetail ud = objectRepository.countUploadsByObject(object.getId());
-                    object.setTotalUploaded(ud.getTotalUploaded());
-                    object.setTotalApproved(ud.getTotalApproved());
-                    object.setTotalRejected(ud.getTotalRejected());
-                    object.setTotalPending(ud.getTotalPending());
+                    if(ud!=null) {
+                        object.setTotalUploaded(ud.getTotalUploaded());
+                        object.setTotalApproved(ud.getTotalApproved());
+                        object.setTotalRejected(ud.getTotalRejected());
+                        object.setTotalPending(ud.getTotalPending());
+                    }
                 }
             }
         }
@@ -609,7 +620,7 @@ public class ObjectResource {
         if(project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)){
                 if (uvmpm.getUvmomIds() != null) {
                     try {
-                        uvmomBatchMappingsDTO = mapper.readValue(uvmpm.getUvmomIds(), UvmomBatchMappingsDTO.class);
+                        uvmomBatchMappingsDTO = mapper.readValue(project.getUvmomIds(), UvmomBatchMappingsDTO.class);
                     } catch (JsonProcessingException e) {
                         e.printStackTrace();
                     }
@@ -675,8 +686,7 @@ public class ObjectResource {
                 if(containFresh){
                     uvmomBatchMappingsDTO.getUvmoms().add(uvmomBatchMappingDTO);
                     try {
-
-                        uvmpm.setUvmomIds(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(uvmomBatchMappingsDTO));
+                        project.setUvmomIds(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(uvmomBatchMappingsDTO));
                     } catch (JsonProcessingException e) {
                         e.printStackTrace();
                     }

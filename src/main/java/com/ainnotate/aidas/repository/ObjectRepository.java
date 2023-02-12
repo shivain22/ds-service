@@ -46,7 +46,7 @@ public interface ObjectRepository extends JpaRepository<Object, Long> {
     Page<Object> findAllByIdGreaterThanAndAidasProject_Id(Long id, Long projectId, Pageable page);
 
 
-    @Query(value="select o.* from object o where status=1 and is_dummy=0 and project_id=?1",nativeQuery = true)
+    @Query(value="select o.* from object o where  project_id=?1",nativeQuery = true)
     List<Object> getAllObjectsOfProject(Long projectId);
 
     @Query(nativeQuery = true)

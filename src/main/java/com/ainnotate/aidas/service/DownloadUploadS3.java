@@ -216,9 +216,9 @@ public class DownloadUploadS3  implements  Runnable{
         String createDate = dateFormatter.format(new Date());
         String separator = FileSystems.getDefault().getSeparator();
         String tmpdir = System.getProperty("java.io.tmpdir");
-        this.tempFolder =  tmpdir+separator+"tmp_"+ user.getId()+"_"+ project.getId()+"_"+ project.getName()+"_"+createDate+"_"+this.status;
-        this.zipFile= tmpdir+separator+"tmp_"+ user.getId()+"_"+ project.getId()+"_"+ project.getName()+"_"+createDate+"_"+this.status+".zip";
-        this.zipFileKey = "tmp_"+ user.getId()+"_"+ project.getId()+"_"+ project.getName()+"_"+createDate+"_"+this.status+".zip";
+        this.tempFolder =  tmpdir+separator+"aidas_"+ user.getId()+"_"+ project.getId()+"_"+ project.getName()+"_"+createDate+"_"+this.status;
+        this.zipFile= tmpdir+separator+"aidas_"+ user.getId()+"_"+ project.getId()+"_"+ project.getName()+"_"+createDate+"_"+this.status+".zip";
+        this.zipFileKey = "aidas_"+ user.getId()+"_"+ project.getId()+"_"+ project.getName()+"_"+createDate+"_"+this.status+".zip";
         File f = new File(this.tempFolder);
         if(!f.exists()){
             f.mkdir();
@@ -235,9 +235,9 @@ public class DownloadUploadS3  implements  Runnable{
         String createDate = dateFormatter.format(new Date());
         String separator = FileSystems.getDefault().getSeparator();
         String tmpdir = System.getProperty("java.io.tmpdir");
-        this.tempFolder =  tmpdir+separator+"tmp_"+ user.getId()+"_"+ object.getId()+"_"+ object.getName()+"_"+createDate+"_"+this.status;
-        this.zipFile= tmpdir+separator+"tmp_"+ user.getId()+"_"+ object.getId()+"_"+ object.getName()+"_"+createDate+"_"+this.status+".zip";
-        this.zipFileKey = "tmp_"+ user.getId()+"_"+ object.getId()+"_"+ object.getName()+"_"+createDate+"_"+this.status+".zip";
+        this.tempFolder =  tmpdir+separator+"aidas_"+ user.getId()+"_"+ object.getId()+"_"+ object.getName()+"_"+createDate+"_"+this.status;
+        this.zipFile= tmpdir+separator+"aidas_"+ user.getId()+"_"+ object.getId()+"_"+ object.getName()+"_"+createDate+"_"+this.status+".zip";
+        this.zipFileKey = "aidas_"+ user.getId()+"_"+ object.getId()+"_"+ object.getName()+"_"+createDate+"_"+this.status+".zip";
         File f = new File(this.tempFolder);
         if(!f.exists()){
             f.mkdir();
@@ -253,9 +253,9 @@ public class DownloadUploadS3  implements  Runnable{
         String createDate = dateFormatter.format(new Date());
         String separator = FileSystems.getDefault().getSeparator();
         String tmpdir = System.getProperty("java.io.tmpdir");
-        this.tempFolder =  tmpdir+separator+"tmp_"+ user.getId()+"_"+createDate+"_"+this.status;
-        this.zipFile= tmpdir+separator+"tmp_"+ user.getId()+"_"+createDate+"_"+this.status+".zip";
-        this.zipFileKey = "tmp_"+ user.getId()+"_"+createDate+"_"+this.status+".zip";
+        this.tempFolder =  tmpdir+separator+"aidas_"+ user.getId()+"_"+createDate+"_"+this.status;
+        this.zipFile= tmpdir+separator+"aidas_"+ user.getId()+"_"+createDate+"_"+this.status+".zip";
+        this.zipFileKey = "aidas_"+ user.getId()+"_"+createDate+"_"+this.status+".zip";
         File f = new File(this.tempFolder);
         if(!f.exists()){
             f.mkdir();

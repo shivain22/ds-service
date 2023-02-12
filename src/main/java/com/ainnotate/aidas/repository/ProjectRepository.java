@@ -81,8 +81,8 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     @Query(value = "select count(*)from (select ap.id,count(*) from user_vendor_mapping_object_mapping uvmom,user_vendor_mapping uvm, user au, object ao, project ap where uvmom.object_id=ao.id and uvmom.user_vendor_mapping_id=uvm.id and uvm.user_id=au.id and ao.project_id=ap.id and uvm.vendor_id=?1 and ap.status=1 group by ap.id) a", nativeQuery = true)
     Long countAidasProjectByVendor(Long vendorId);
 
-    @Query(value=" select count(*) from (select p.id from consolidated_user_vendor_mapping_project_mapping_view cuvmpmv,project p, user u where cuvmpmv.project_id=p.id and p.status=1 and cuvmpmv.user_id=u.id and p.id<>-1 group by p.id)a",nativeQuery = true)
-    Long countAidasProjectByVendorUser(Long aidasVendorUserId);
+    @Query(value=" select count(*) from vendor_user_project_level_status vupls where vupls.user_id=?1  and vupls.status=1 group by vupls.user_vendor_mapping_id",nativeQuery = true)
+    Long countAidasProjectByVendorUser(Long userId);
 
     @Query(nativeQuery = true)
     Page<ProjectDTO> findProjectWithUploadCountByUser(Pageable page, Long userId);
