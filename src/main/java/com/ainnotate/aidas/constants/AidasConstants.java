@@ -117,5 +117,7 @@ public final class AidasConstants {
     public static final Long ORG_QC_USER=1l;
     public static final Long CUSTOMER_QC_USER=0l;
     public static final Long VENDOR_QC_USER=2l;
+    public static final Integer AUTO_CREATE_OBJECT_ENABLE=1;
+    public static final Integer AUTO_CREATE_OBJECT_DISABLE=0;
     private AidasConstants() {}
 }

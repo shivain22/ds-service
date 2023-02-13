@@ -274,7 +274,6 @@ public class Object extends AbstractAuditingEntity  implements Serializable {
     private Long id;
 
     @NotNull
-    @Size(min = 3, max = 500)
     @Column(name = "name", length = 500, nullable = true)
     private String name;
 

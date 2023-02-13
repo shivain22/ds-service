@@ -269,6 +269,24 @@ public class UploadResource {
             return ResponseEntity.ok().body(uploadMetadataDTOS);
     }
 
+
+    @GetMapping("/aidas-objects/{id}/more-required")
+    public ResponseEntity<Integer> getObjectStatus( @PathVariable(value = "id", required = false) final Long objectId) {
+        log.debug("REST request to get a page of AidasObjects");
+        User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        Integer totalApproved = userVendorMappingObjectMappingRepository.getTotalApproved(objectId);
+        Integer totalPending = userVendorMappingObjectMappingRepository.getTotalPending(objectId);
+        Object object = objectRepository.getById(objectId);
+        if(totalApproved==null){
+            totalApproved=0;
+        }
+        if(totalPending==null){
+            totalPending=0;
+        }
+        Integer moreRequired = object.getNumberOfUploadsRequired()-((totalApproved+totalPending));
+        return ResponseEntity.ok().body(moreRequired);
+    }
+
     /**
      * {@code POST  /aidas-uploads/dto} : Create a new upload.
      *
@@ -310,9 +328,9 @@ public class UploadResource {
             }
             if (uvmom != null && uvmom.getObject() != null) {
                 Object object = uvmom.getObject();
-                if((totalApproved+totalPending)-totalRejected<object.getNumberOfUploadsRequired()){
+                Integer moreRequired = object.getNumberOfUploadsRequired() - (totalApproved+totalPending);
+                if(moreRequired > 0){
                     Project project = object.getProject();
-                    Customer customer = project.getCustomer();
                     upload.setUserVendorMappingObjectMapping(uvmom);
                     upload.setDateUploaded(Instant.now());
                     upload.setName(uploadDto.getObjectKey());
@@ -321,38 +339,11 @@ public class UploadResource {
                     upload.setObjectKey(uploadDto.getObjectKey());
                     upload.setApprovalStatus(AidasConstants.AIDAS_UPLOAD_PENDING);
                     upload.setCurrentQcLevel(1);
-                    Long mandatoryProjectProperties = projectPropertyRepository.countProjectPropertyByProjectAndOptional(project.getId(), AidasConstants.AIDAS_PROPERTY_REQUIRED);
-                    Long mandatoryObjectProperties = objectPropertyRepository.countObjectProperties(object.getId(), AidasConstants.AIDAS_PROPERTY_REQUIRED);
-                    /*if (mandatoryObjectProperties == 0 && mandatoryProjectProperties == 0) {
-                        upload.setMetadataStatus(AidasConstants.AIDAS_UPLOAD_METADATA_COMPLETED);
-                    } else {
-                        upload.setMetadataStatus(AidasConstants.AIDAS_UPLOAD_METADATA_REQUIRED);
-                    }*/
                     upload.setApprovalStatus(AidasConstants.AIDAS_UPLOAD_PENDING);
                     upload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
                     try {
                         Upload result = uploadRepository.save(upload);
                         Object o = result.getUserVendorMappingObjectMapping().getObject();
-                        Project p = o.getProject();
-                        /*o.setTotalUploaded(o.getTotalUploaded() + 1);
-                        o.setTotalPending(o.getTotalPending() + 1);
-                        if (o.getTotalRequired() > 0) {
-                            o.setTotalRequired(o.getTotalRequired() - 1);
-                        }
-                        p.setTotalUploaded(p.getTotalUploaded() + 1);
-                        p.setTotalPending(p.getTotalPending() + 1);
-                        if (p.getTotalRequired() > 0) {
-                            p.setTotalRequired(p.getTotalRequired() - 1);
-                        }
-                        UserVendorMappingProjectMapping uvmpm = userVendorMappingProjectMappingRepository.findByUserVendorMappingIdProjectId(upload.getUserVendorMappingObjectMapping().getUserVendorMapping().getId(), p.getId());
-                        uvmpm.setTotalUploaded(uvmpm.getTotalUploaded() + 1);
-                        uvmpm.setTotalPending(uvmpm.getTotalPending() + 1);
-                        objectRepository.save(o);
-                        projectRepository.save(p);*/
-                        //uvmom.setTotalUploaded(uvmom.getTotalUploaded() + 1);
-                        //uvmom.setTotalPending(uvmom.getTotalPending() + 1);
-                        //userVendorMappingObjectMappingRepository.save(uvmom);
-                        //userVendorMappingProjectMappingRepository.save(uvmpm);
                         List<ProjectProperty> projectProperties = projectPropertyRepository.findAllProjectProperty(project.getId());
                         List<ObjectProperty> objectProperties = objectPropertyRepository.getAllObjectPropertyForObject(object.getId());
                         List<UploadMetaData> uploadMetaDataList = new ArrayList<>();
@@ -795,17 +786,21 @@ public class UploadResource {
         List<Long> allInBatch = uploadCustomerQcProjectMappingBatchInfoRepository.getAllInBatch(customerQcProjectMappingId,cqpm.getCurrentQcBatchNo());
         uploadCustomerQcProjectMappingBatchInfoRepository.save(ucqpmbi);
         List<Upload> uploadsInBatch = uploadRepository.getUploadsByIds(allInBatch);
-        if(project.getAutoCreateObjects().equals(1)){
+        if(project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)){
             for(Upload upload1:uploadsInBatch){
                 if(oldQcStatus.get(upload1.getId())!=null) {
                     oldQcStatus.put(upload1.getId(), upload1.getQcStatus());
                 }
-                if (oldQcStatus.get(upload1.getId()).equals(AidasConstants.AIDAS_UPLOAD_QC_PENDING)) {
+                if (oldQcStatus.get(upload1.getId())!=null && oldQcStatus.get(upload1.getId()).equals(AidasConstants.AIDAS_UPLOAD_QC_PENDING)) {
                     upload1.setPreviouQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
                     upload1.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_REJECTED);
                     upload1.setApprovalStatus(AidasConstants.AIDAS_UPLOAD_QC_REJECTED);
-                } else if (oldQcStatus.get(upload1.getId()).equals(AidasConstants.AIDAS_UPLOAD_QC_APPROVED)) {
+                } else if (oldQcStatus.get(upload1.getId())!=null && oldQcStatus.get(upload1.getId()).equals(AidasConstants.AIDAS_UPLOAD_QC_APPROVED)) {
                     upload1.setPreviouQcStatus(AidasConstants.AIDAS_UPLOAD_QC_APPROVED);
+                    upload1.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_REJECTED);
+                    upload1.setApprovalStatus(AidasConstants.AIDAS_UPLOAD_QC_REJECTED);
+                }else{
+                    upload1.setPreviouQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
                     upload1.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_REJECTED);
                     upload1.setApprovalStatus(AidasConstants.AIDAS_UPLOAD_QC_REJECTED);
                 }
@@ -1227,7 +1222,6 @@ public class UploadResource {
     public ResponseEntity<List<CustomerQcProjectMapping>> getNextAidasUpload(@PathVariable Long projectId) {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to get next AidasUpload : {}");
-        Authority authority = user.getAuthority();
         List<CustomerQcProjectMapping> cqpms = customerQcProjectMappingRepository.getQcProjectMappingByProjectAndCustomerAndUser(projectId,user.getCustomer().getId(),user.getId());
         return ResponseEntity.ok().body(cqpms);
     }

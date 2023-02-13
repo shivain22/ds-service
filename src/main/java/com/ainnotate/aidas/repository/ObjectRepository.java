@@ -49,6 +49,11 @@ public interface ObjectRepository extends JpaRepository<Object, Long> {
     @Query(value="select o.* from object o where  project_id=?1",nativeQuery = true)
     List<Object> getAllObjectsOfProject(Long projectId);
 
+    @Query(value="select o.* from object o where  project_id=?1 and o.is_dummy=0 and o.status=1",
+        countQuery = "select count(o.id) from object o where  project_id=?1 and o.is_dummy=0 and o.status=1",
+        nativeQuery = true)
+    Page<Object> getAllObjectsOfProjectForDisplay(Pageable pageable,Long projectId);
+
     @Query(nativeQuery = true)
     List<ObjectDTO> getAllObjectDTOsOfProject(Long projectId);
 
@@ -72,14 +77,39 @@ public interface ObjectRepository extends JpaRepository<Object, Long> {
         "from user_vendor_mapping_object_mapping uvmom  \n" +
         "left join object o on o.id=uvmom.object_id   \n" +
         "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id \n" +
-        "where uvm.user_id=?1 and uvmom.status=1 and o.status=1 and o.is_dummy=0 and o.project_id=?2 and o.object_acquired_by_uvmom_id is null",
+        "where uvm.user_id=?1 and uvmom.status=1 and o.status=1 and o.is_dummy=0 and o.project_id=?2 and o.object_acquired_by_uvmom_id is null order by o.id desc",
         countQuery = "select count(o.id) as count  \n" +
+            "from user_vendor_mapping_object_mapping uvmom  \n" +
+            "left join object o on o.id=uvmom.object_id   \n" +
+            "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id \n" +
+            "where uvm.user_id=?1 and uvmom.status=1 and o.status=1 and o.is_dummy=0 and o.project_id=?2 ",
+        nativeQuery = true)
+    Page<Object> getAllObjectsByVendorUserProjectWithProjectId(Pageable pageable, Long userId, Long projectId);
+
+    @Query( value = "select count(o.id) as count  \n" +
             "from user_vendor_mapping_object_mapping uvmom  \n" +
             "left join object o on o.id=uvmom.object_id   \n" +
             "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id \n" +
             "where uvm.user_id=?1 and uvmom.status=1 and o.status=1 and o.is_dummy=0 and o.project_id=?2 order by o.id desc",
         nativeQuery = true)
-    Page<Object> getAllObjectsByVendorUserProjectWithProjectId(Pageable pageable, Long userId, Long projectId);
+    Integer getAllObjectsByVendorUserProjectWithProjectId(Long userId, Long projectId);
+
+    @Query( value = "select \n" +
+        "o.*" +
+        "from object o  \n" +
+        "where o.status=1 and o.is_dummy=0 and o.project_id=?1 and o.object_acquired_by_uvmom_id is null",
+        countQuery = "select count(o.id) as count  \n" +
+            "from object o  \n" +
+            "where o.object_acquired_by_uvmom_id is null and o.status=1 and o.is_dummy=0 and o.project_id=?1 order by o.id desc",
+        nativeQuery = true)
+    Page<Object> getAllObjectsByVendorUserProjectWithProjectIdForGrouped(Pageable pageable, Long projectId);
+
+    @Query( value = "select \n" +
+        "o.*" +
+        "from object o  \n" +
+        "where o.status=1 and o.is_dummy=0 and o.project_id=?1 and o.object_acquired_by_uvmom_id is null limit ?2",
+        nativeQuery = true)
+    List<Object> getAllObjectsByVendorUserProjectWithProjectIdForGrouped(Long projectId,Integer numberOfObjectsCanBeAssignedToUser);
 
 
     @Query( value = "select * from ((select \n" +
@@ -107,6 +137,21 @@ public interface ObjectRepository extends JpaRepository<Object, Long> {
             "where uvm.user_id=?1 and o.status=1 and o.is_dummy=0 and o.project_id=?2 and o.object_acquired_by_uvmom_id in (?3) )) a",
         nativeQuery = true)
     Page<Object> getAllObjectsByVendorUserProjectWithProjectIdWithAlreadyCompleted(Pageable pageable, Long userId, Long projectId,List<Long> uvmomIds,Integer newObjectLimit);
+
+
+    @Query( value = "select o.* \n" +
+        "from user_vendor_mapping_object_mapping uvmom  \n" +
+        "left join object o on o.id=uvmom.object_id   \n" +
+        "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id \n" +
+        "where uvm.user_id=?1 and uvmom.status=1 and o.status=1 and o.is_dummy=0 and o.project_id=?2 order by o.id desc"
+        ,
+        countQuery = "select count(o.id) \n" +
+            "from user_vendor_mapping_object_mapping uvmom  \n" +
+            "left join object o on o.id=uvmom.object_id   \n" +
+            "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id \n" +
+            "where uvm.user_id=?1 and uvmom.status=1 and o.status=1 and o.is_dummy=0 and o.project_id=?2 ",
+        nativeQuery = true)
+    Page<Object> getAllObjectsByVendorUserProjectWithProjectIdWithAlreadyCompletedGrouped(Pageable pageable, Long userId, Long projectId);
 
     @Query(value = "select \n" +
         "o.* " +

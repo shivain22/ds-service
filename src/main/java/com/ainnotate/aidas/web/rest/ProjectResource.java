@@ -186,14 +186,12 @@ public class ProjectResource {
                     }
             }
             if(isQcLevelConfigsAdded) {
-                Project result = projectRepository.save(project);
-                objectAddingTask.runQcUserAdd();
-                {
+                project = projectRepository.save(project);
                     Object obj = new Object();
-                    obj.setName(result.getName() + " - Dummy Object");
+                    obj.setName(project.getName() + " - Dummy Object");
                     obj.setNumberOfUploadsRequired(0);
-                    obj.setDescription("Dummy object for project " + result.getName());
-                    obj.setProject(result);
+                    obj.setDescription("Dummy object for project " + project.getName());
+                    obj.setProject(project);
                     obj.setBufferPercent(0);
                     obj.setDummy(1);
                     obj.setStatus(0);
@@ -216,39 +214,34 @@ public class ProjectResource {
                         }
                     }
                     objectRepository.save(obj);
-                   /* objectAddingTask.setDummy(true);
-                    objectAddingTask.setObject(obj);
-                    objectAddingTask.run();*/
-                }
-                List<Object> dynaObjects = new ArrayList<>();
-                if (result.getAutoCreateObjects() != null && result.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)) {
-                    for (int i = 0; i < result.getNumberOfObjects(); i++) {
-                        Object obj = new Object();
+                List<Property> commonProperties = propertyRepository.findAllDefaultPropsOfCustomerAndCategory(project.getCustomer().getId(), 1l);
+                List<Property> categorySpecificProperties = propertyRepository.findAllDefaultPropsOfCustomerAndCategory(project.getCustomer().getId(), project.getCategory().getId());
+                commonProperties.addAll(categorySpecificProperties);
+                if (project.getAutoCreateObjects() != null && project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)) {
+                    project.setBufferStrategy(AidasConstants.PROJECT_BUFFER_STATUS_PROJECT_LEVEL);
+                    Float bufferedRequired = project.getBufferPercent().floatValue()/100f * project.getNumberOfObjects();
+                    int numberOfBufferedObjectsRequired = project.getNumberOfObjects()+bufferedRequired.intValue();
+                    for (int i = 0; i < numberOfBufferedObjectsRequired; i++) {
+                        obj = new Object();
                         String objName = "";
-                        if (result.getObjectPrefix() != null && result.getObjectPrefix().trim().length()>0) {
-                            objName += result.getObjectPrefix()+"_";
+                        if (project.getObjectPrefix() != null && project.getObjectPrefix().trim().length()>0) {
+                            objName += project.getObjectPrefix()+"_";
                         }
                         objName += String.valueOf(i);
-                        if (result.getObjectSuffix() != null && result.getObjectSuffix().trim().length()>0) {
-                            objName += "_"+result.getObjectSuffix();
+                        if (project.getObjectSuffix() != null && project.getObjectSuffix().trim().length()>0) {
+                            objName += "_"+project.getObjectSuffix();
                         }
                         obj.setName(objName);
-                        obj.setNumberOfUploadsRequired(result.getNumberOfUploadsRequired());
                         obj.setDescription(objName);
-                        obj.setProject(result);
-                        obj.setBufferPercent(result.getBufferPercent());
+                        obj.setProject(project);
+                        obj.setBufferPercent(0);
                         obj.setDummy(0);
                         obj.setStatus(1);
-
-                        int totalRequired = project.getNumberOfUploadsRequired();
-                        Float bufferedRequired = obj.getBufferPercent().floatValue()/100f * totalRequired;
-                        obj.setNumberOfBufferedUploadsRequired(totalRequired + bufferedRequired.intValue());
-                        obj.setTotalRequired(totalRequired + bufferedRequired.intValue());
-                        obj.setNumberOfUploadsRequired(totalRequired);
+                        obj.setNumberOfBufferedUploadsRequired(project.getNumberOfUploadsRequired());
+                        obj.setTotalRequired(project.getNumberOfUploadsRequired());
+                        obj.setNumberOfUploadsRequired(project.getNumberOfUploadsRequired());
                         if (project.getCategory() != null) {
-                            List<Property> commonProperties = propertyRepository.findAllDefaultPropsOfCustomerAndCategory(project.getCustomer().getId(), 1l);
-                            List<Property> categorySpecificProperties = propertyRepository.findAllDefaultPropsOfCustomerAndCategory(project.getCustomer().getId(), project.getCategory().getId());
-                            commonProperties.addAll(categorySpecificProperties);
+
                             for (Property p : commonProperties) {
                                 ObjectProperty op = new ObjectProperty();
                                 op.setObject(obj);
@@ -261,26 +254,18 @@ public class ProjectResource {
                                 obj.addAidasObjectProperty(op);
                             }
                         }
-                        Object resultObj = objectRepository.save(obj);
-                        dynaObjects.add(resultObj);
+                      //dynaObjects.add(obj);
+                        objectRepository.save(obj);
                     }
-                    /*objectAddingTask.setDummy(false);
-                    objectAddingTask.setDynamicObjects(dynaObjects);
-                    objectAddingTask.runBulkObjects();*/
-                    //
-                    int numOfUploadRequired = project.getNumberOfUploadsRequired();
-                    int numOfObjects = project.getNumberOfObjects();
-                    int totalRequired = numOfUploadRequired*numOfObjects;
-                    Float bufferedRequired = project.getBufferPercent().floatValue()/100f * totalRequired;
-                    project.setTotalRequired(totalRequired+bufferedRequired.intValue());
-                    project.setNumberOfBufferedUploadsdRequired(totalRequired+bufferedRequired.intValue());
-                    project.setNumberOfUploadsRequired(totalRequired);
+                    project.setTotalRequired(project.getNumberOfObjects()*project.getNumberOfUploadsRequired());
+                    project.setNumberOfBufferedUploadsdRequired(numberOfBufferedObjectsRequired*project.getNumberOfUploadsRequired());
+                    projectRepository.save(project);
                 }
 
                 return ResponseEntity
-                    .created(new URI("/api/aidas-projects/" + result.getId()))
-                    .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
-                    .body(result);
+                    .created(new URI("/api/aidas-projects/" + project.getId()))
+                    .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, project.getId().toString()))
+                    .body(project);
             }else{
                 throw new BadRequestAlertException("Qc Level configurations are required ", ENTITY_NAME, "idexists");
             }
@@ -371,7 +356,8 @@ public class ProjectResource {
                 csvData.add(umd.getValue());
                 i++;
             }
-            csvDatas.add(csvData);
+            if(csvData!=null)
+                csvDatas.add(csvData);
         }
         try {
             String fileName = CSVHelper.uploadMetaDataToCsv(csvDatas, projectId);
@@ -447,34 +433,35 @@ public class ProjectResource {
         if (projectVendorMappingDTO.getProjectId() == null) {
             throw new BadRequestAlertException("A new project cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        List<UserVendorMappingProjectMapping> uvmpms = new ArrayList<>();
         List<UserVendorMappingObjectMapping> uvmoms = new ArrayList<>();
+        Project project = projectRepository.getById(projectVendorMappingDTO.getProjectId());
         for(VendorUserDTO vendorUserDTO:projectVendorMappingDTO.getVendors()){
             for(UsersOfVendor userDTO: vendorUserDTO.getUserDTOs()){
-               /* UserVendorMappingProjectMapping uvmpm=null;
-                if(userDTO.getUserVendorMappingProjectMappingId()!=null && userDTO.getUserVendorMappingProjectMappingId()!=-2){
-                    uvmpm = userVendorMappingProjectMappingRepository.getById(userDTO.getUserVendorMappingProjectMappingId());
-                }else{
-                    uvmpm = new UserVendorMappingProjectMapping();
-                    uvmpm.setUserVendorMapping(userVendorMappingRepository.getById(userDTO.getUserVendorMappingId()));
-                    uvmpm.setProject(projectRepository.getById(projectVendorMappingDTO.getProjectId()));
-                }
-                uvmpm.setStatus(userDTO.getStatus());
-                uvmpms.add(uvmpm);*/
-                List<Object> objects = objectRepository.getAllObjectsOfProject(projectVendorMappingDTO.getProjectId());
-                for(Object o:objects){
-                    UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserVendorMappingObject(userDTO.getUserVendorMappingId(),o.getId());
-                    if(uvmom==null){
+                if(project.getAutoCreateObjects()!=null && project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)){
+                    Object dummyObject = objectRepository.getDummyObjectOfProject(projectVendorMappingDTO.getProjectId());
+                    UserVendorMappingObjectMapping uvmom  =userVendorMappingObjectMappingRepository.findByUserVendorMappingObject(userDTO.getUserVendorMappingId(), dummyObject.getId());
+                    if(uvmom==null) {
                         uvmom = new UserVendorMappingObjectMapping();
                         uvmom.setUserVendorMapping(userVendorMappingRepository.getById(userDTO.getUserVendorMappingId()));
-                        uvmom.setObject(o);
+                        uvmom.setObject(dummyObject);
                     }
                     uvmom.setStatus(userDTO.getStatus());
                     uvmoms.add(uvmom);
+                }else {
+                    List<Object> objects = objectRepository.getAllObjectsOfProject(projectVendorMappingDTO.getProjectId());
+                    for (Object o : objects) {
+                        UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserVendorMappingObject(userDTO.getUserVendorMappingId(), o.getId());
+                        if (uvmom == null) {
+                            uvmom = new UserVendorMappingObjectMapping();
+                            uvmom.setUserVendorMapping(userVendorMappingRepository.getById(userDTO.getUserVendorMappingId()));
+                            uvmom.setObject(o);
+                        }
+                        uvmom.setStatus(userDTO.getStatus());
+                        uvmoms.add(uvmom);
+                    }
                 }
             }
         }
-        userVendorMappingProjectMappingRepository.saveAll(uvmpms);
         userVendorMappingObjectMappingRepository.saveAll(uvmoms);
         return ResponseEntity.ok().body("Successfully mapped vendors to project");
     }
@@ -803,6 +790,13 @@ public class ProjectResource {
                 throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
             }
             if (page != null) {
+                for(Project p:page.getContent()){
+                    if(p.getAutoCreateObjects()!=null && p.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)){
+                        p.setActualUploadsRequired(p.getNumberOfObjects()*p.getNumberOfUploadsRequired());
+                    }else{
+                        p.setActualUploadsRequired(p.getNumberOfUploadsRequired());
+                    }
+                }
                 HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
                 return ResponseEntity.ok().headers(headers).body(page.getContent());
             }else{
@@ -867,6 +861,13 @@ public class ProjectResource {
         if(user.getAuthority().getName().equals(AidasConstants.VENDOR_USER)){
             page = projectRepository.findProjectWithUploadCountByUser(pageable, user.getId());
             for(ProjectDTO p:page.getContent()){
+                if(p.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)){
+                    p.setTotalRequired(p.getTotalRequired()/(p.getNumOfUploadsReqd()));
+                    p.setTotalUploaded(p.getTotalUploaded()/p.getNumOfObjects());
+                    p.setTotalApproved(p.getTotalApproved()/p.getNumOfObjects());
+                    p.setTotalRejected(p.getTotalRejected()/p.getNumOfObjects());
+                    p.setTotalPending(p.getTotalPending()/p.getNumOfObjects());
+                }
                 List<ProjectProperty> projectProperties = projectPropertyRepository.findAllProjectProperty(p.getId());
                 p.setAidasProjectProperties(projectProperties);
             }

@@ -403,6 +403,18 @@ public class Project extends AbstractAuditingEntity  implements Serializable {
         this.uvmomIds = uvmomIds;
     }
 
+    @Transient
+    @JsonProperty
+    Integer actualUploadsRequired;
+
+    public Integer getActualUploadsRequired() {
+        return actualUploadsRequired;
+    }
+
+    public void setActualUploadsRequired(Integer actualUploadsRequired) {
+        this.actualUploadsRequired = actualUploadsRequired;
+    }
+
     @Column(name="audio_type")
     @JsonProperty
     private String audioType="";

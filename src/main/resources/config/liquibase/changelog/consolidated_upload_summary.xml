@@ -13,7 +13,7 @@
                      viewName="project_level_upload_requirements">
             SELECT
             `p`.`id` AS `project_id`,
-            (SUM(`o`.`number_of_uploads_required`) + ((SUM(`o`.`number_of_uploads_required`) * `p`.`buffer_percent`) / 100)) AS `number_of_upload_required_with_buffer_for_project`,
+            (SUM(`o`.`number_of_uploads_required`) ) AS `number_of_upload_required_with_buffer_for_project`,
             (SUM(`o`.`number_of_uploads_required`) + ((SUM(`o`.`number_of_uploads_required`) * SUM(`o`.`buffer_percent`)) / 100)) AS `number_of_upload_required_with_buffer_using_object_buffer`
             FROM
             (`ainnotateservice`.`project` `p`
@@ -31,7 +31,7 @@
             SELECT
             `p`.`id` AS `project_id`,
             `o`.`id` AS `object_id`,
-            (`o`.`number_of_uploads_required` + ((`o`.`number_of_uploads_required` * `p`.`buffer_percent`) / 100)) AS `number_of_upload_required_with_buffer_for_object`,
+            (`o`.`number_of_uploads_required`) AS `number_of_upload_required_with_buffer_for_object`,
             (`o`.`number_of_uploads_required` + ((`o`.`number_of_uploads_required` * `o`.`buffer_percent`) / 100)) AS `number_of_upload_required_with_buffer_using_object_buffer`
             FROM
             (`ainnotateservice`.`project` `p`
