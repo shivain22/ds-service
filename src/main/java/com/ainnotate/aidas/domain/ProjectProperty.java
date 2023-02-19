@@ -51,7 +51,7 @@ public class ProjectProperty extends AbstractAuditingEntity  implements Serializ
     @Column(name = "default_prop")
     private Integer defaultProp;
     @Column(name="passed_from_app",columnDefinition = "integer default 0")
-    private Integer passedFromApp;
+    private Integer passedFromApp=0;
     @Column(name="add_to_metadata")
     private Integer addToMetadata;
 

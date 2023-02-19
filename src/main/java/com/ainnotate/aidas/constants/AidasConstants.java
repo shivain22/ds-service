@@ -42,6 +42,8 @@ public final class AidasConstants {
     public static final Integer AIDAS_UPLOAD_QC_REJECTED=0;
 
     public static final Integer AIDAS_UPLOAD_QC_APPROVED=1;
+    
+    public static final Integer AIDAS_UPLOAD_QC_STARTED=1;
 
     /*public static final Integer AIDAS_UPLOAD_QC_COMPLETED=1;*/
 
@@ -119,5 +121,7 @@ public final class AidasConstants {
     public static final Long VENDOR_QC_USER=2l;
     public static final Integer AUTO_CREATE_OBJECT_ENABLE=1;
     public static final Integer AUTO_CREATE_OBJECT_DISABLE=0;
+    
+    public static final Integer CQPM_BATCH_NOT_YET_STARTED=0;
     private AidasConstants() {}
 }

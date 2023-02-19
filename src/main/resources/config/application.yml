@@ -246,3 +246,13 @@ kafka:
 # ===================================================================
 
 # application:
+decorator:
+  datasource:
+    p6spy:
+      enable-logging: true
+
+hazelcast:
+  network:
+    join:
+      multicast:
+        enabled: true

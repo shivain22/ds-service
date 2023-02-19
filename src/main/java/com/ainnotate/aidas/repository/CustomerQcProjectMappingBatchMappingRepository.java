@@ -16,7 +16,7 @@ import java.util.List;
 @Transactional
 public interface CustomerQcProjectMappingBatchMappingRepository extends JpaRepository<CustomerQcProjectMappingBatchMapping, Long> {
 
-    @Query(value="select * from cqpm_batch_mapping cbm where cbm.cqpm_id = ?1 and cbm.batch_no = ?2",nativeQuery = true)
+    @Query(value="select * from cqpm_batch_mapping cbm where cbm.cqpm_id = ?1 and cbm.batch_no = ?2 and batch_completion_status=2",nativeQuery = true)
     CustomerQcProjectMappingBatchMapping findByCustomerQcProjectMappingIdAndBatchNumber(Long customerQcProjectMappingId, Integer batchNumber);
 
     @Query(value="select * from cqpm_batch_mapping cbm where cbm.cqpm_id = ?1 and cbm.batch_no = ?2 and cbm.batch_completion_status=1",nativeQuery = true)

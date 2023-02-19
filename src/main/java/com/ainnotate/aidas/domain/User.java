@@ -110,7 +110,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 public class User extends AbstractAuditingEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    @OneToMany(fetch = FetchType.EAGER)
+    @OneToMany
     Set<AppProperty> appProperties=new HashSet<>();
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -209,7 +209,7 @@ public class User extends AbstractAuditingEntity implements Serializable {
 
     @Column(name = "image_url", length = 256)
     private String imageUrl;
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne
     @Field(type = FieldType.Nested)
     @JoinColumn(name = "authority_id", nullable = true, foreignKey = @ForeignKey(name="fk_user_authority"))
     private Authority authority;
@@ -218,22 +218,22 @@ public class User extends AbstractAuditingEntity implements Serializable {
         this.authorities = authorities;
     }
 
-    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
     @JsonIgnoreProperties(value = { "user" }, allowSetters = true)
     @Field(type = FieldType.Nested)
     private Set<UserAuthorityMapping> userAuthorityMappings = new HashSet<>();
 
-    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
     @JsonIgnoreProperties(value = { "user" }, allowSetters = true)
     @Field(type = FieldType.Nested)
     private Set<UserOrganisationMapping> userOrganisationMappings = new HashSet<>();
 
-    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
     @JsonIgnoreProperties(value = { "user" }, allowSetters = true)
     @Field(type = FieldType.Nested)
     private Set<UserCustomerMapping> userCustomerMappings = new HashSet<>();
 
-    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
     @JsonIgnoreProperties(value = { "user" }, allowSetters = true)
     @Field(type = FieldType.Nested)
     private Set<UserVendorMapping> userVendorMappings = new HashSet<>();
@@ -370,12 +370,12 @@ public class User extends AbstractAuditingEntity implements Serializable {
     }
 
     public Set<Organisation> getOrganisations() {
-        if(userOrganisationMappings !=null && userOrganisationMappings.size()>0){
-            for(UserOrganisationMapping auaom: userOrganisationMappings){
-                if(auaom.getStatus().equals(1))
-                    organisations.add(auaom.getOrganisation());
-            }
-        }
+		/*
+		 * if(userOrganisationMappings !=null && userOrganisationMappings.size()>0){
+		 * for(UserOrganisationMapping auaom: userOrganisationMappings){
+		 * if(auaom.getStatus().equals(1)) organisations.add(auaom.getOrganisation()); }
+		 * }
+		 */
         return organisations;
     }
 
@@ -384,12 +384,11 @@ public class User extends AbstractAuditingEntity implements Serializable {
     }
 
     public Set<Customer> getCustomers() {
-        if(userCustomerMappings !=null && userCustomerMappings.size()>0){
-            for(UserCustomerMapping auacm: userCustomerMappings){
-                if(auacm.getStatus().equals(1))
-                    customers.add(auacm.getCustomer());
-            }
-        }
+		/*
+		 * if(userCustomerMappings !=null && userCustomerMappings.size()>0){
+		 * for(UserCustomerMapping auacm: userCustomerMappings){
+		 * if(auacm.getStatus().equals(1)) customers.add(auacm.getCustomer()); } }
+		 */
         return customers;
     }
 
@@ -398,12 +397,11 @@ public class User extends AbstractAuditingEntity implements Serializable {
     }
 
     public Set<Vendor> getVednors() {
-        if(userVendorMappings !=null && userVendorMappings.size()>0){
-            for(UserVendorMapping auavm: userVendorMappings){
-                if(auavm.getStatus().equals(1))
-                    vendors.add(auavm.getVendor());
-            }
-        }
+		/*
+		 * if(userVendorMappings !=null && userVendorMappings.size()>0){
+		 * for(UserVendorMapping auavm: userVendorMappings){
+		 * if(auavm.getStatus().equals(1)) vendors.add(auavm.getVendor()); } }
+		 */
         return vendors;
     }
 
@@ -555,12 +553,12 @@ public class User extends AbstractAuditingEntity implements Serializable {
     }
 
     public Set<Authority> getAuthorities() {
-        if(userAuthorityMappings !=null && userAuthorityMappings.size()>0){
-            for(UserAuthorityMapping auaam: userAuthorityMappings){
-                if(auaam.getStatus().equals(1))
-                    authorities.add(auaam.getAuthority());
-            }
-        }
+		/*
+		 * try { if(userAuthorityMappings !=null && userAuthorityMappings.size()>0){
+		 * for(UserAuthorityMapping auaam: userAuthorityMappings){
+		 * if(auaam.getStatus().equals(1)) authorities.add(auaam.getAuthority()); } }
+		 * }catch(Exception e) { e.printStackTrace(); }
+		 */
         return authorities;
     }
 

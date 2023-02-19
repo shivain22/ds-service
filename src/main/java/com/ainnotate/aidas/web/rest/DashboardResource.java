@@ -75,7 +75,7 @@ public class DashboardResource {
             ad.setVendorCount(vendorRepository.countAllVendorsForSuperAdmin());
             ad.setProjectCount(projectRepository.countAllProjectsForSuperAdmin());
             ad.setObjectCount(objectRepository.countAllObjectsForSuperAdmin());
-            //ad.setUploadCount(uploadRepository.countAllUploadsForSuperAdmin());
+            ad.setUploadCount(uploadRepository.countAllUploadsForSuperAdmin());
             ad.setUserCount(userRepository.countAllForSuperAdmin());
         }
         if(authority.getName().equals(AidasConstants.ORG_ADMIN)){
@@ -84,7 +84,7 @@ public class DashboardResource {
             ad.setVendorCount(vendorRepository.countAllVendorsForOrgAdmin());
             ad.setProjectCount(projectRepository.countAidasProjectByAidasCustomer_AidasOrganisation(user.getOrganisation().getId()));
             ad.setObjectCount(objectRepository.countAidasObjectByAidasProject_AidasCustomer_AidasOrganisation(user.getOrganisation().getId()));
-            //ad.setUploadCount(uploadRepository.countAidasUploadByAidasOrganisation(user.getOrganisation().getId()));
+            ad.setUploadCount(uploadRepository.countAidasUploadByAidasOrganisation(user.getOrganisation().getId()));
             ad.setOrgUsersCount(userRepository.countAllByOrganisation(user.getOrganisation().getId()));
             ad.setCustomerUsersCount(userRepository.countAllByCustomer_Organisation(user.getOrganisation().getId()));
             ad.setAllVendorUsersCount(userRepository.countAllVendorUsers());
@@ -96,7 +96,7 @@ public class DashboardResource {
             ad.setVendorCount(vendorRepository.countAllVendorsForCustomerAdmin());
             ad.setProjectCount(projectRepository.countAidasProjectByAidasCustomer(user.getCustomer().getId()));
             ad.setObjectCount(objectRepository.countAidasObjectByAidasProject_AidasCustomer(user.getCustomer().getId()));
-            //ad.setUploadCount(uploadRepository.countAidasUploadByAidasCustomer(user.getCustomer().getId()));
+            ad.setUploadCount(uploadRepository.countAidasUploadByAidasCustomer(user.getCustomer().getId()));
             ad.setOrgUsersCount(1l);
             ad.setCustomerUsersCount(userRepository.countAllByCustomer(user.getCustomer().getId()));
             ad.setAllVendorUsersCount(userRepository.countAllVendorUsers());
@@ -108,7 +108,7 @@ public class DashboardResource {
             ad.setVendorCount(1l);
             ad.setProjectCount(projectRepository.countAidasProjectByVendor(user.getVendor().getId()));
             ad.setObjectCount(objectRepository.countAidasObjectByVendor(user.getVendor().getId()));
-            //ad.setUploadCount(uploadRepository.countAidasUploadByAidasVendor(user.getCustomer().getId()));
+            ad.setUploadCount(uploadRepository.countAidasUploadByAidasVendor(user.getCustomer().getId()));
             ad.setVendorUsersCount(userRepository.countAllByVendor(user.getVendor().getId()));
             ad.setUserCount(userRepository.countAllByVendor(user.getVendor().getId()));
         }if(authority.getName().equals(AidasConstants.VENDOR_USER)){
@@ -124,11 +124,11 @@ public class DashboardResource {
             ad.setPendingUploadCount(uploadRepository.countAidasUploadByAidasVendorUser(user.getVendor().getId(),AidasConstants.AIDAS_UPLOAD_PENDING));
              ad.setUserCount(1l);
         }
-    List<AppProperty> appProperty = appPropertyRepository.getAppPropertyLike(-1l,"version");
-        if(appProperty!=null && appProperty.size()>0){
-            ad.setVersion(appProperty.get(0).getValue());
-        }
-
+		/*
+		 * List<AppProperty> appProperty =
+		 * appPropertyRepository.getAppPropertyLike(-1l,"version"); if(appProperty!=null
+		 * && appProperty.size()>0){ ad.setVersion(appProperty.get(0).getValue()); }
+		 */
         return ResponseEntity.ok().body(ad);
     }
 }

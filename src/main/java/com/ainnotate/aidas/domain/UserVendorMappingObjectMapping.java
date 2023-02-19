@@ -72,6 +72,27 @@ public class UserVendorMappingObjectMapping extends AbstractAuditingEntity  impl
     @JsonProperty
     private Integer totalRequired=0;
 
+    @Column(name ="qc_start_status",columnDefinition = "integer default 0")
+    @JsonProperty
+    private Integer qcStartStatus=0;
+    @Column(name="current_qc_level" ,columnDefinition = "integer default null")
+    private Integer currentQcLevel=0;
+
+    public Integer getCurrentQcLevel() {
+		return currentQcLevel;
+	}
+
+	public void setCurrentQcLevel(Integer currentQcLevel) {
+		this.currentQcLevel = currentQcLevel;
+	}
+    public Integer getQcStartStatus() {
+        return qcStartStatus;
+    }
+
+    public void setQcStartStatus(Integer qcStartStatus) {
+        this.qcStartStatus = qcStartStatus;
+    }
+
     public Integer getTotalUploaded() {
         return totalUploaded;
     }

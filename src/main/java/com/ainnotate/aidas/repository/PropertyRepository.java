@@ -42,8 +42,8 @@ public interface PropertyRepository extends JpaRepository<Property, Long> {
     List<Property>findAllStandardProperties();
 
     @Modifying
-    @Query(value="insert into property (is_sample_data, status, add_to_metadata, default_prop, description, name, optional, property_type, system_property, value, customer_id)  (select is_sample_data, status, add_to_metadata, default_prop, description, name, optional, property_type, system_property, value,?1 from property where user_id=-1 )",nativeQuery = true)
-    void addNewProperty(Long customerId);
+    @Query(value="insert into property (is_sample_data, status, add_to_metadata, default_prop, description, name, optional, property_type, value, customer_id,created_by,last_modified_by,created_date,last_modified_date,category_id)  (select is_sample_data, status, add_to_metadata, default_prop, description, name, optional, property_type, value,?1,?2,?2,now(),now(),category_id from property where customer_id=-1 )",nativeQuery = true)
+    void addCustomerProperties(Long customerId,Long userId);
 
     @Query(value = "select * from property where is_sample_data=1",nativeQuery = true)
     List<Property> getAllSampleProperties();
@@ -54,4 +54,8 @@ public interface PropertyRepository extends JpaRepository<Property, Long> {
     @Modifying
     @Query(value = "delete from property where is_sample_data=1 order by id desc",nativeQuery = true)
     void deleteAllSampleProperties();
+
+
+
+
 }

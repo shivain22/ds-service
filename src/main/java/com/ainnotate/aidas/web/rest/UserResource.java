@@ -259,32 +259,6 @@ public class UserResource {
                 user.setDeleted(0);
                 User result = userRepository.save(user);
                 updateUserToKeyCloak(result);
-                /*if(user!=null) {
-                    userVendorMappingObjectMappingTask.setAddProperty(true);
-                    userVendorMappingObjectMappingTask.setAddVendorMappingObjectMapping(false);
-                    userVendorMappingObjectMappingTask.setAddCustomerMappingQcProjectMapping(false);
-                    userVendorMappingObjectMappingTask.setUser(user);
-                    userVendorMappingObjectMappingTask.run();
-                }
-                if(user.getAuthority().getName().equals(AidasConstants.VENDOR_USER)) {
-                    if (userVendorMapping != null) {
-                        userVendorMappingObjectMappingTask.setAddProperty(false);
-                        userVendorMappingObjectMappingTask.setAddVendorMappingObjectMapping(true);
-                        userVendorMappingObjectMappingTask.setAddCustomerMappingQcProjectMapping(false);
-                        userVendorMappingObjectMappingTask.setUserVendorMapping(userVendorMapping);
-                        userVendorMappingObjectMappingTask.run();
-                    }
-                }
-
-                if(user.getAuthority().getName().equals(AidasConstants.QC_USER)) {
-                    if (userCustomerMapping != null) {
-                        userVendorMappingObjectMappingTask.setAddProperty(false);
-                        userVendorMappingObjectMappingTask.setAddVendorMappingObjectMapping(false);
-                        userVendorMappingObjectMappingTask.setAddCustomerMappingQcProjectMapping(true);
-                        userVendorMappingObjectMappingTask.setUserCustomerMapping(userCustomerMapping);
-                        userVendorMappingObjectMappingTask.run();
-                    }
-                }*/
                 return ResponseEntity
                     .created(new URI("/api/aidas-users/" + result.getId()))
                     .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
@@ -329,25 +303,20 @@ public class UserResource {
         if (user.getId() != null) {
             throw new BadRequestAlertException("A new user cannot already have an ID", ENTITY_NAME, "idexists");
         }
-
         registerNewUser(user);
         user.setDeleted(0);
         Vendor defaultVendor = vendorRepository.getById(-1l);
         user.setVendor(defaultVendor);
         User result = userRepository.save(user);
-
         Object defaultObject = objectRepository.getById(-1l);
-
         UserVendorMappingObjectMapping auao = new UserVendorMappingObjectMapping();
         UserVendorMapping auavm = new UserVendorMapping();
         auavm.setUser(result);
         auavm.setVendor(defaultVendor);
         auavm = userVendorMappingRepository.save(auavm);
-
         auao.setUserVendorMapping(auavm);
         auao.setObject(defaultObject);
         userVendorMappingObjectMappingRepository.save(auao);
-        //aidasUserSearchRepository.save(result);
         updateUserToKeyCloak(result);
         return ResponseEntity
             .created(new URI("/api/aidas-users/" + result.getId()))

@@ -38,11 +38,11 @@ public class CustomerQcProjectMappingBatchMapping extends AbstractAuditingEntity
 
 
     @Column(name="batch_no")
-    private Integer batchNo;
+    private Integer batchNo=0;
 
 
     @Column(name="batch_completion_status")
-    private Integer batchCompletionStatus;
+    private Integer batchCompletionStatus=2;
 
     @Column(name="previous_level_batch_number")
     private Long previousLevelBatchNumber;

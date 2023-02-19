@@ -18,7 +18,7 @@ import org.hibernate.envers.Audited;
 /**
  * A AidasObject.
  */
-@NamedNativeQuery(name="Object.getAllObjectsByVendorUserProject",
+/*@NamedNativeQuery(name="Object.getAllObjectsByVendorUserProject",
 query = "select \n" +
     "o.id," +
     "uvmom.id as userVendorMappingObjectMappingId,"+
@@ -41,7 +41,35 @@ query = "select \n" +
     "left join object o on o.id=uvmom.object_id   \n" +
     "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id \n" +
     "where    uvm.user_id=?1 and uvmom.status=1 and o.status=1 and o.is_dummy=0 and o.project_id=?2"
+    ,resultSetMapping = "Mapping.ObjectDTO")*/
+
+@NamedNativeQuery(name="Object.getAllObjectsByVendorUserProject",
+    query = "select\n" +
+        "    o.id,\n" +
+        "    uvmom.uvmom_id as userVendorMappingObjectMappingId,\n" +
+        "    o.project_id as projectId,\n" +
+        "    o.parent_object_id as parentObjectId,\n" +
+        "    o.number_of_uploads_required as numberOfUploadsRequired,\n" +
+        "    o.number_of_buffered_uploads_required as numberOfBufferedUploadsRequired,\n" +
+        "    ((uvmom.total_required-(select sum(cuvmomv.total_uploaded) from consolidated_user_vendor_mapping_object_mapping_view cuvmomv where object_id=609 group by object_id))\n" +
+        "    +  (select sum(cuvmomv.rejected) from consolidated_user_vendor_mapping_object_mapping_view cuvmomv where object_id=609 group by object_id)) as totalRequired,\n" +
+        "    uvmom.total_uploaded as totalUploaded,\n" +
+        "    uvmom.approved as totalApproved,\n" +
+        "    uvmom.rejected as totalRejected,\n" +
+        "    uvmom.pending as totalPending,\n" +
+        "    o.buffer_percent as bufferPercent,\n" +
+        "    o.name as name,\n" +
+        "    o.description as description,\n" +
+        "    o.image_type as imageType,\n" +
+        "    o.audio_type as audioType,\n" +
+        "    o.video_type as videoType ,\n" +
+        "    o.name\n" +
+        "    from consolidated_user_vendor_mapping_object_mapping_view uvmom,object o where uvmom.object_id=o.id and  o.project_id=?2"
     ,resultSetMapping = "Mapping.ObjectDTO")
+
+
+
+
 
 @NamedNativeQuery(name="Object.getAllObjectsByVendorUserProject.count",
     query ="select count(o.id) as count  \n" +
@@ -132,41 +160,156 @@ query = "select \n" +
 
 
 
+
+@NamedNativeQuery(name="Object.getAllObjectsByVendorUserProjectWithProjectIdForNonGrouped",
+query = "select \n" +
+    "o.id," +
+    "-1 as userVendorMappingObjectMappingId,"+
+    "o.project_id as projectId,"+
+    "o.parent_object_id parentObjectId,"+
+    "o.number_of_uploads_required as numberOfUploadsRequired," +
+    "o.number_of_buffered_uploads_required as numberOfBufferedUploadsRequired," +
+    "o.total_required as totalRequired," +
+    "0 as totalUploaded, \n" +
+    "0 as totalApproved, \n" +
+    "0 as totalRejected, \n" +
+    "0 as totalPending,\n" +
+    "o.buffer_percent as bufferPercent," +
+    "o.name as name," +
+    "o.description as description," +
+    "o.image_type as imageType," +
+    "o.audio_type as audioType," +
+    "o.video_type as videoType " +
+    "from object o \n" +
+    "where o.status=1 and o.is_dummy=0  and o.project_id=?1"
+    ,resultSetMapping = "Mapping.ObjectDTOWithProjectId")
+
+
+
+@NamedNativeQuery(name="Object.getAllObjectsByVendorUserProjectWithProjectIdForNonGrouped.count",
+query = "select count(o.id) as count  \n" +
+        "from object o  \n" +
+        "where o.status=1 and o.is_dummy=0 and o.project_id=?1",resultSetMapping = "Mapping.ObjectDTOCount"
+)
+
+
+
+
+
+
 @NamedNativeQuery(name="Object.getAllObjectsByVendorUserProjectWithProjectId",
     query = "select \n" +
         "o.id," +
-        "uvmom.id as userVendorMappingObjectMappingId,"+
+        "-1 as userVendorMappingObjectMappingId,"+
         "o.project_id as projectId,"+
         "o.parent_object_id parentObjectId,"+
         "o.number_of_uploads_required as numberOfUploadsRequired," +
         "o.number_of_buffered_uploads_required as numberOfBufferedUploadsRequired," +
         "o.total_required as totalRequired," +
-        "uvmom.id as userVendorMappingObjectMappingId," +
-        "uvmom.total_uploaded as totalUploaded, \n" +
-        "uvmom.total_approved as totalApproved, \n" +
-        "uvmom.total_rejected as totalRejected, \n" +
-        "uvmom.total_pending as totalPending,\n" +
+        "0 as totalUploaded, \n" +
+        "0 as totalApproved, \n" +
+        "0 as totalRejected, \n" +
+        "0 as totalPending,\n" +
         "o.buffer_percent as bufferPercent," +
         "o.name as name," +
         "o.description as description," +
         "o.image_type as imageType," +
         "o.audio_type as audioType," +
         "o.video_type as videoType " +
-        "from user_vendor_mapping_object_mapping uvmom  \n" +
-        "left join object o on o.id=uvmom.object_id   \n" +
-        "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id \n" +
-        "where uvm.user_id=?1 and uvmom.status=1 and o.status=1 and o.is_dummy=0  and o.project_id=?2 and o.object_acquired_by_uvmom_id is null"
+        "from object o \n" +
+        "where o.status=1 and o.is_dummy=0  and o.project_id=?1 and o.object_acquired_by_uvmom_id is null"
         ,resultSetMapping = "Mapping.ObjectDTOWithProjectId")
 
 
 
 @NamedNativeQuery(name="Object.getAllObjectsByVendorUserProjectWithProjectId.count",
     query = "select count(o.id) as count  \n" +
-            "from user_vendor_mapping_object_mapping uvmom  \n" +
-            "left join object o on o.id=uvmom.object_id   \n" +
-            "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id \n" +
-            "where uvm.user_id=?1 and uvmom.status=1 and o.status=1 and o.is_dummy=0 and o.project_id=?2",resultSetMapping = "Mapping.ObjectDTOCount"
+            "from object o  \n" +
+            "where o.status=1 and o.is_dummy=0 and o.project_id=?1",resultSetMapping = "Mapping.ObjectDTOCount"
 )
+
+
+
+
+
+
+
+
+
+
+@NamedNativeQuery(name="Object.getAllObjectsByVendorUserProjectWithProjectIdForGroupedForNewRequest",
+query = "select \n" +
+    "o.id," +
+    "uvmom.id as userVendorMappingObjectMappingId,"+
+    "o.project_id as projectId,"+
+    "o.parent_object_id parentObjectId,"+
+    "o.number_of_uploads_required as numberOfUploadsRequired," +
+    "o.number_of_buffered_uploads_required as numberOfBufferedUploadsRequired," +
+    "o.total_required as totalRequired," +
+    "uvmom.total_uploaded as totalUploaded, \n" +
+    "uvmom.total_approved as totalApproved, \n" +
+    "uvmom.total_rejected as totalRejected, \n" +
+    "uvmom.total_pending as totalPending,\n" +
+    "o.buffer_percent as bufferPercent," +
+    "o.name as name," +
+    "o.description as description," +
+    "o.image_type as imageType," +
+    "o.audio_type as audioType," +
+    "o.video_type as videoType " +
+    "from user_vendor_mapping_object_mapping uvmom  \n" +
+    "left join object o on o.id=uvmom.object_id   \n" +
+    "where uvmom.user_vendor_mapping_id=?1 and uvmom.status=1 and o.status=1 and o.is_dummy=0  and o.project_id=?2 "
+    ,resultSetMapping = "Mapping.ObjectDTOWithProjectId")
+
+
+
+@NamedNativeQuery(name="Object.getAllObjectsByVendorUserProjectWithProjectIdForGroupedForNewRequest.count",
+query = "select count(o.id) as count  \n" +
+        "from user_vendor_mapping_object_mapping uvmom  \n" +
+        "left join object o on o.id=uvmom.object_id   \n" +
+        "where uvmom.user_vendor_mapping_id=?1 and uvmom.status=1 and o.status=1 and o.is_dummy=0 and o.project_id=?2",resultSetMapping = "Mapping.ObjectDTOCount"
+)
+
+
+
+
+
+
+@NamedNativeQuery(name="Object.getAllObjectsWithUvmom",
+query = "select \n" +
+    "o.id," +
+    "uvmom.id as userVendorMappingObjectMappingId,"+
+    "o.project_id as projectId,"+
+    "o.parent_object_id parentObjectId,"+
+    "o.number_of_uploads_required as numberOfUploadsRequired," +
+    "o.number_of_buffered_uploads_required as numberOfBufferedUploadsRequired," +
+    "o.total_required as totalRequired," +
+    "uvmom.total_uploaded as totalUploaded, \n" +
+    "uvmom.total_approved as totalApproved, \n" +
+    "uvmom.total_rejected as totalRejected, \n" +
+    "uvmom.total_pending as totalPending,\n" +
+    "o.buffer_percent as bufferPercent," +
+    "o.name as name," +
+    "o.description as description," +
+    "o.image_type as imageType," +
+    "o.audio_type as audioType," +
+    "o.video_type as videoType " +
+    "from user_vendor_mapping_object_mapping uvmom  \n" +
+    "left join object o on o.id=uvmom.object_id   \n" +
+    "where uvmom.user_vendor_mapping_id=?1 and uvmom.status=1 and o.status=1 and o.is_dummy=0  and o.project_id=?2"
+    ,resultSetMapping = "Mapping.ObjectDTOWithProjectId")
+
+
+
+@NamedNativeQuery(name="Object.getAllObjectsWithUvmom.count",
+query = "select count(o.id) as count  \n" +
+        "from user_vendor_mapping_object_mapping uvmom  \n" +
+        "left join object o on o.id=uvmom.object_id   \n" +
+        "where uvmom.user_vendor_mapping_id=?1 and uvmom.status=1 and o.status=1 and o.is_dummy=0 and o.project_id=?2",resultSetMapping = "Mapping.ObjectDTOCount"
+)
+
+
+
 
 
 
@@ -198,6 +341,44 @@ query = "select \n" +
     ,resultSetMapping = "Mapping.ObjectDTOWithProjectId")
 
 @NamedNativeQuery(name="Object.getAllObjectsByVendorUserProjectWithProjectIdAndObjectAlreadyAssigned.count",
+    query = "select count(o.id) as count  \n" +
+        "from user_vendor_mapping_object_mapping uvmom  \n" +
+        "left join object o on o.id=uvmom.object_id   \n" +
+        "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id \n" +
+        "where uvm.user_id=?1 and o.status=1 and o.is_dummy=0 and o.project_id=?2 and o.object_acquired_by_uvmom_id in (?3) ",resultSetMapping = "Mapping.ObjectDTOCount"
+)
+
+
+
+
+
+@NamedNativeQuery(name="Object.getAllObjectsByVendorUserProjectWithProjectIdForGroupedDto",
+    query = "select \n" +
+        "o.id," +
+        "uvmom.id as userVendorMappingObjectMappingId,"+
+        "o.project_id as projectId,"+
+        "o.parent_object_id parentObjectId,"+
+        "o.number_of_uploads_required as numberOfUploadsRequired," +
+        "o.number_of_buffered_uploads_required as numberOfBufferedUploadsRequired," +
+        "o.total_required as totalRequired," +
+        "uvmom.id as userVendorMappingObjectMappingId," +
+        "uvmom.total_uploaded as totalUploaded, \n" +
+        "uvmom.total_approved as totalApproved, \n" +
+        "uvmom.total_rejected as totalRejected, \n" +
+        "uvmom.total_pending as totalPending,\n" +
+        "o.buffer_percent as bufferPercent," +
+        "o.name as name," +
+        "o.description as description," +
+        "o.image_type as imageType," +
+        "o.audio_type as audioType," +
+        "o.video_type as videoType " +
+        "from user_vendor_mapping_object_mapping uvmom  \n" +
+        "left join object o on o.id=uvmom.object_id   \n" +
+        "left join user_vendor_mapping uvm on uvm.id=uvmom.user_vendor_mapping_id \n" +
+        "where uvm.user_id=?1 and uvmom.status=1 and o.status=1 and o.is_dummy=0 and o.project_id=?2 and o.object_acquired_by_uvmom_id in (?3) "
+    ,resultSetMapping = "Mapping.ObjectDTOWithProjectId")
+
+@NamedNativeQuery(name="Object.getAllObjectsByVendorUserProjectWithProjectIdForGroupedDto.count",
     query = "select count(o.id) as count  \n" +
         "from user_vendor_mapping_object_mapping uvmom  \n" +
         "left join object o on o.id=uvmom.object_id   \n" +
@@ -244,13 +425,16 @@ query = "select \n" +
 
 
 @NamedNativeQuery(
-    name = "Object.getAllObjectDTOsOfProject",
+    name = "Object.getAllObjectDTOsOfProjectOld",
     query="select id,name from object where status=1 and is_dummy=0 and project_id=?1",
     resultSetMapping = "Mapping.getAllObjectDTOsOfProject"
 )
 
-
-
+@NamedNativeQuery(
+    name = "Object.getAllObjectDTOsOfProject",
+    query="select o.id,o.name from object o, consolidated_user_vendor_mapping_object_mapping_view cuvmomv where o.status=1 and o.is_dummy=0 and o.id=cuvmomv.object_id and cuvmomv.uvmom_status>0 and o.project_id=?1 ",
+    resultSetMapping = "Mapping.getAllObjectDTOsOfProject"
+)
 
 
 @Entity
@@ -343,9 +527,33 @@ public class Object extends AbstractAuditingEntity  implements Serializable {
     @Column(name="object_acquired_by_uvmom_id" ,columnDefinition = "integer default null")
     private Long objectAcquiredByUvmomId;
 
+    
+    @Column(name="qc_start_status" ,columnDefinition = "integer default null")
+    private Integer qcStartStatus=0;
+
+    @Column(name="current_qc_level" ,columnDefinition = "integer default null")
+    private Integer currentQcLevel=0;
+
+    public Integer getCurrentQcLevel() {
+		return currentQcLevel;
+	}
+
+	public void setCurrentQcLevel(Integer currentQcLevel) {
+		this.currentQcLevel = currentQcLevel;
+	}
+
+	public Integer getQcStartStatus() {
+        return qcStartStatus;
+    }
+
+    public void setQcStartStatus(Integer qcStartStatus) {
+        this.qcStartStatus = qcStartStatus;
+    }
+
     @Transient
     @JsonProperty
     private Long userVendorMappingObjectMappingId;
+
 
 
     public Long getUserVendorMappingObjectMappingId() {

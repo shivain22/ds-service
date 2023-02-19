@@ -54,7 +54,7 @@ public class Customer extends AbstractAuditingEntity  implements Serializable {
         this.setId(id);
         return this;
     }
-    @OneToMany(fetch = FetchType.EAGER)
+    @OneToMany
     Set<AppProperty> appProperties=new HashSet<>();
 
     public Set<AppProperty> getAppProperties() {

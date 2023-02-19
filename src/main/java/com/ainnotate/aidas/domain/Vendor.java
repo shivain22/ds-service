@@ -33,10 +33,10 @@ public class Vendor extends AbstractAuditingEntity  implements Serializable {
 
     @Column(name = "description")
     private String description;
-    @OneToMany(fetch = FetchType.EAGER)
+    @OneToMany
     Set<AppProperty> appProperties=new HashSet<>();
 
-    @OneToMany(fetch = FetchType.EAGER)
+    @OneToMany
     Set<User> users=new HashSet<>();
 
     public Set<AppProperty> getAppProperties() {

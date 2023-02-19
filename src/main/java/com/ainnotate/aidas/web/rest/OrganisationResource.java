@@ -93,23 +93,17 @@ public class OrganisationResource {
     @PostMapping("/aidas-organisations")
     public ResponseEntity<Organisation> createAidasOrganisation(@Valid @RequestBody Organisation organisation)
         throws URISyntaxException {
+        User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to save AidasOrganisation : {}", organisation);
         if (organisation.getId() != null) {
             throw new BadRequestAlertException("A new organisation cannot already have an ID", ENTITY_NAME, "idexists");
         }
-            Organisation result = organisationRepository.save(organisation);
-            Set<AppProperty> appProperties = appPropertyRepository.getAppPropertyOfOrganisation(-1l);
-            for(AppProperty ap:appProperties){
-                AppProperty p = new AppProperty();
-                p.setName(ap.getName());
-                p.setValue(ap.getValue());
-                p.setOrganisation(result);
-                appPropertyRepository.save(p);
-            }
-            return ResponseEntity
-                .created(new URI("/api/aidas-organisations/" + result.getId()))
-                .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
-                .body(result);
+        Organisation result = organisationRepository.save(organisation);
+        appPropertyRepository.addOrganisationAppProperties(result.getId(), user.getId());
+        return ResponseEntity
+            .created(new URI("/api/aidas-organisations/" + result.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
+            .body(result);
     }
 
     /**

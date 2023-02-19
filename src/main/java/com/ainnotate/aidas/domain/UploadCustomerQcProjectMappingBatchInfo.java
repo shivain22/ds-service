@@ -59,10 +59,10 @@ public class UploadCustomerQcProjectMappingBatchInfo extends AbstractAuditingEnt
     private Long customerQcProjectMappingId;
 
     @Column(name="batch_number")
-    private Integer batchNumber;
+    private Long batchNumber;
 
     @Column(name="qc_status")
-    private Integer qcStatus;
+    private Integer qcStatus=2;
 
     @Column(name="qc_status_other_than_level_1")
     private Integer qcStatusOtherThanLevel1;
@@ -121,11 +121,11 @@ public class UploadCustomerQcProjectMappingBatchInfo extends AbstractAuditingEnt
         this.customerQcProjectMappingId = customerQcProjectMappingId;
     }
 
-    public Integer getBatchNumber() {
+    public Long getBatchNumber() {
         return batchNumber;
     }
 
-    public void setBatchNumber(Integer batchNumber) {
+    public void setBatchNumber(Long batchNumber) {
         this.batchNumber = batchNumber;
     }
 

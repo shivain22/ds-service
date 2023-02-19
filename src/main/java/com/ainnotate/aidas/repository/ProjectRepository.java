@@ -3,9 +3,16 @@ package com.ainnotate.aidas.repository;
 import com.ainnotate.aidas.domain.*;
 import com.ainnotate.aidas.dto.IUploadDetail;
 import com.ainnotate.aidas.dto.ProjectDTO;
+import com.querydsl.core.types.dsl.StringExpression;
+import com.querydsl.core.types.dsl.StringPath;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
+import org.springframework.data.querydsl.QuerydslPredicateExecutor;
+import org.springframework.data.querydsl.binding.QuerydslBinderCustomizer;
+import org.springframework.data.querydsl.binding.QuerydslBindings;
+import org.springframework.data.querydsl.binding.SingleValueBinding;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,10 +25,13 @@ import java.util.Optional;
 @SuppressWarnings("unused")
 @Repository
 @Transactional
-public interface ProjectRepository extends JpaRepository<Project, Long> {
+public interface ProjectRepository extends JpaRepository<Project, Long>,QuerydslPredicateExecutor<Project>, QuerydslBinderCustomizer<QProject> {
 
     @Query(value="select * from project p , customer c where p.customer_id=c.id and c.organisation_id=?1 and p.status=1",nativeQuery = true)
     Page<Project> findAllByAidasCustomer_AidasOrganisation(Pageable page, Long organisationId);
+
+    @Query(value="select * from project p where ?1 like '% ?2 %'",nativeQuery = true)
+    Page<Project> search(Pageable page, String field,String value);
 
     @Query(nativeQuery = true)
     List<ProjectDTO> findAllByAidasCustomer_AidasOrganisationForDropDown(Long organisationId);
@@ -81,11 +91,13 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     @Query(value = "select count(*)from (select ap.id,count(*) from user_vendor_mapping_object_mapping uvmom,user_vendor_mapping uvm, user au, object ao, project ap where uvmom.object_id=ao.id and uvmom.user_vendor_mapping_id=uvm.id and uvm.user_id=au.id and ao.project_id=ap.id and uvm.vendor_id=?1 and ap.status=1 group by ap.id) a", nativeQuery = true)
     Long countAidasProjectByVendor(Long vendorId);
 
-    @Query(value=" select count(*) from vendor_user_project_level_status vupls where vupls.user_id=?1  and vupls.status=1 group by vupls.user_vendor_mapping_id",nativeQuery = true)
+    @Query(value=" select count(*) from user_vendor_mapping_project_mapping uvmpm,user_vendor_mapping uvm where uvmpm.user_vendor_mapping_id=uvm.id and uvm.user_id=?1 group by uvm.user_id",nativeQuery = true)
     Long countAidasProjectByVendorUser(Long userId);
+
 
     @Query(nativeQuery = true)
     Page<ProjectDTO> findProjectWithUploadCountByUser(Pageable page, Long userId);
+
 
     @Query(nativeQuery = true)
     Page<ProjectDTO> findProjectWithUploadCountByUserForAllowedProjects(Pageable page, Long userId,List<Long> enabledProjectIds);
@@ -133,4 +145,15 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     List<Integer> getProjectLevelUploadRequirements(Long projectId);
 
 
+    @Modifying
+    @Query(value = "insert into project_property (status,add_to_metadata,default_prop,optional,passed_from_app,value,category_id,project_id,property_id,project_property_type,show_to_vendor_user) (select p.status,p.add_to_metadata,p.default_prop,p.optional,p.passed_from_app,p.value,?2,?1,p.id,?2,p.show_to_vendor_user from property p where p.customer_id=?1 and (p.category_id=1 or p.category_id=?2))",nativeQuery = true)
+    void addProjectProperties(Long projectId,Long categoryId);
+
+    @Override
+    default public void customize(
+        QuerydslBindings bindings, QProject root) {
+        bindings.bind(String.class)
+            .first((SingleValueBinding<StringPath, String>) StringExpression::containsIgnoreCase);
+
+    }
 }

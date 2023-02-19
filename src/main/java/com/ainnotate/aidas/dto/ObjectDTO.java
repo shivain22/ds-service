@@ -29,6 +29,7 @@ public class ObjectDTO extends AbstractAuditingEntity implements Serializable, I
 
     private Integer count;
 
+    
     @Override
     public Integer getCount() {
         return count;
@@ -170,7 +171,7 @@ public class ObjectDTO extends AbstractAuditingEntity implements Serializable, I
         this.totalRequired = totalRequired;
     }
 
-    private List<ObjectProperty> objectProperties = new ArrayList<>();
+    private Set<ObjectProperty> objectProperties = new HashSet<>();
 
     @Override
     public String getImageType() {
@@ -273,12 +274,12 @@ public class ObjectDTO extends AbstractAuditingEntity implements Serializable, I
     }
 
     @Override
-    public List<ObjectProperty> getObjectProperties() {
+    public Set<ObjectProperty> getObjectProperties() {
         return objectProperties;
     }
 
     @Override
-    public void setObjectProperties(List<ObjectProperty> objectProperties) {
+    public void setObjectProperties(Set<ObjectProperty> objectProperties) {
         this.objectProperties = objectProperties;
     }
 

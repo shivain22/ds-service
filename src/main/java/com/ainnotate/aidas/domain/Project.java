@@ -10,6 +10,7 @@ import javax.persistence.*;
 import javax.validation.constraints.*;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.querydsl.core.annotations.QueryEntity;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.envers.Audited;
@@ -21,7 +22,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
  */
 
 
-@NamedNativeQuery(name = "Project.findProjectWithUploadCountByUser",
+/*@NamedNativeQuery(name = "Project.findProjectWithUploadCountByUser",
     query = "select  \n" +
         "p.id as id,  \n" +
         "(ceil(uvmpmv.total_required)-(select sum(cuvmpmv.total_uploaded) from consolidated_user_vendor_mapping_project_mapping_view cuvmpmv where project_id=uvmpmv.project_id group by project_id ))+ (select sum(cuvmpmv.rejected) from consolidated_user_vendor_mapping_project_mapping_view cuvmpmv where project_id=uvmpmv.project_id group by project_id) as totalRequired, " +
@@ -46,8 +47,38 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
         "p.rework_status ,\n" +
         "p.video_type\n" +
         "from \n" +
-        "project p, consolidated_user_vendor_mapping_project_mapping_view uvmpmv,vendor_user_project_level_status vupls " +
-        "where uvmpmv.project_id=p.id and uvmpmv.project_id=vupls.project_id and vupls.user_id=uvmpmv.user_id and vupls.status=1 and p.status=1 and uvmpmv.user_id=?1 group by uvmpmv.project_id,uvmpmv.user_id order by uvmpmv.project_id desc",
+        "project p, consolidated_user_vendor_mapping_project_mapping_view uvmpmv " +
+        "where uvmpmv.project_id=p.id and uvmpmv.uvmpm_status>0 and p.status=1 and uvmpmv.user_id=?1 group by uvmpmv.project_id,uvmpmv.user_id order by uvmpmv.project_id desc",
+    resultSetMapping = "Mapping.ProjectDTO")*/
+
+
+@NamedNativeQuery(name = "Project.findProjectWithUploadCountByUser",
+    query = "select  \n" +
+        "p.id as id,  \n" +
+        "case when p.auto_create_objects=1 then p.number_of_objects else p.total_required end as totalRequired," +
+        "uvmpm.total_uploaded as totalUploaded, \n" +
+        "uvmpm.total_approved as totalApproved, \n" +
+        "uvmpm.total_approved as totalRejected, \n" +
+        "uvmpm.total_pending as totalPending,\n" +
+        "p.status ,\n" +
+        "p.audio_type ,\n" +
+        "p.auto_create_objects ,\n" +
+        "p.buffer_percent ,\n" +
+        "p.description ,\n" +
+        "p.external_dataset_status ,\n" +
+        "p.image_type ,\n" +
+        "p.name ,\n" +
+        "p.number_of_objects ,\n" +
+        "p.number_of_uploads_required ,\n" +
+        "p.object_prefix ,\n" +
+        "p.object_suffix ,\n" +
+        "p.project_type ,\n" +
+        "p.qc_levels ,\n" +
+        "p.rework_status ,\n" +
+        "p.video_type\n" +
+        "from \n" +
+        "project p, user_vendor_mapping_project_mapping uvmpm,user_vendor_mapping uvm " +
+        "where uvmpm.project_id=p.id and uvmpm.status=1 and p.status=1 and uvmpm.user_vendor_mapping_id=uvm.id and uvm.user_id=?1 order by p.id desc",
     resultSetMapping = "Mapping.ProjectDTO")
 
 
@@ -56,8 +87,8 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
     query ="select  \n" +
         "count(p.id) as count  \n" +
         "from \n" +
-        "project p, consolidated_user_vendor_mapping_project_mapping_view uvmpmv" +
-        " where p.status=1 and uvmpmv.user_id=?1 and p.objects_availability_status=1 group by p.id",resultSetMapping = "Mapping.findProjectWithUploadCountByUserCount")
+        "project p, user_vendor_mapping_project_mapping uvmpm,user_vendor_mapping uvm" +
+        " where uvmpm.project_id=p.id and uvmpm.status=1 and p.status=1 and uvmpm.user_vendor_mapping_id=uvm.id and uvm.user_id=?1  ",resultSetMapping = "Mapping.findProjectWithUploadCountByUserCount")
 
 
 @NamedNativeQuery(name = "Project.findProjectWithUploadCountByUserForAllowedProjects",
@@ -237,10 +268,17 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
         "p.rework_status ,\n" +
         "p.video_type\n" +
         "from \n" +
-        "project p\n" +
-        "left join consolidated_user_vendor_mapping_project_mapping_view cuvmpmv on p.id=cuvmpmv.project_id\n" +
-        "left join user_vendor_mapping uvm on uvm.id=cuvmpmv.uvm_id \n" +
-        "where uvm.user_id=?1 and uvm.status=1  order by p.id desc",
+        "project p,\n" +
+        "consolidated_user_vendor_mapping_project_mapping_view cuvmpmv, \n" +
+        "user_vendor_mapping uvm \n" +
+        "where \n" +
+        "p.id=cuvmpmv.project_id and\n" +
+        "uvm.id=cuvmpmv.uvm_id and\n" +
+        "uvm.user_id=?1 and \n" +
+        "uvm.status=1  \n" +
+        "and p.id>0  \n" +
+        "and cuvmpmv.uvmpm_status>0\n" +
+        "order by p.id desc;\n",
     resultSetMapping = "Mapping.ProjectDTOForDropDown")
 
 @NamedNativeQuery(name = "Project.findProjectWithUploadCountByUserForDropDown.count",
@@ -398,11 +436,30 @@ public class Project extends AbstractAuditingEntity  implements Serializable {
     public String getUvmomIds() {
         return uvmomIds;
     }
+    @Column(name="current_qc_level" ,columnDefinition = "integer default null")
+    private Integer currentQcLevel=0;
 
+    public Integer getCurrentQcLevel() {
+		return currentQcLevel;
+	}
+
+	public void setCurrentQcLevel(Integer currentQcLevel) {
+		this.currentQcLevel = currentQcLevel;
+	}
     public void setUvmomIds(String uvmomIds) {
         this.uvmomIds = uvmomIds;
     }
+    @Column(name="qc_start_status" ,columnDefinition = "integer default null")
+    private Integer qcStartStatus=0;
 
+    public Integer getQcStartStatus() {
+        return qcStartStatus;
+    }
+
+    public void setQcStartStatus(Integer qcStartStatus) {
+        this.qcStartStatus = qcStartStatus;
+    }
+    
     @Transient
     @JsonProperty
     Integer actualUploadsRequired;
@@ -418,19 +475,24 @@ public class Project extends AbstractAuditingEntity  implements Serializable {
     @Column(name="audio_type")
     @JsonProperty
     private String audioType="";
+
     @ManyToOne(optional = false)
     @NotNull
     @JsonIgnoreProperties(value = { "organisation" }, allowSetters = true)
     @Field(type = FieldType.Nested,store = false,storeNullValue = false)
+    @org.springframework.data.annotation.Transient
     @JoinColumn(name = "customer_id", nullable = false, foreignKey = @ForeignKey(name="fk_project_customer"))
     private Customer customer;
 
-    @OneToMany(mappedBy = "project",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "project",cascade = CascadeType.ALL)
     @JsonIgnoreProperties(value = { "project" }, allowSetters = true)
     @Field(type=FieldType.Nested,store = false,storeNullValue = false)
+    @org.springframework.data.annotation.Transient
     private Set<ProjectProperty> projectProperties=new HashSet<>();
+
     @Column(name="number_of_uploads_required")
     private Integer numberOfUploadsRequired=0;
+
     @Column(name="buffer_percent")
     private Integer bufferPercent=0;
 
@@ -469,10 +531,12 @@ public class Project extends AbstractAuditingEntity  implements Serializable {
 
     @ManyToOne(optional = true)
     @JoinColumn(name = "category_id", nullable = true, foreignKey = @ForeignKey(name="fk_project_category"))
+    @org.springframework.data.annotation.Transient
     private Category category;
 
     @ManyToOne(optional = true)
     @JoinColumn(name = "sub_category_id", nullable = true, foreignKey = @ForeignKey(name="fk_project_sub_category"))
+    @org.springframework.data.annotation.Transient
     private SubCategory subCategory;
 
     @Column(name="user_added_status",columnDefinition = "integer default 0")
@@ -480,15 +544,16 @@ public class Project extends AbstractAuditingEntity  implements Serializable {
     @Column(name ="number_of_buffered_uploads_required",columnDefinition = "integer default 0")
     private Integer numberOfBufferedUploadsdRequired=0;
 
-    @OneToMany(mappedBy="project",cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy="project",cascade = CascadeType.ALL)
     @JsonIgnoreProperties(value = {"project","customer"})
+    @org.springframework.data.annotation.Transient
     private Set<ProjectQcLevelConfigurations> projectQcLevelConfigurations =new HashSet<>();
 
     @Column(name="objects_availability_status" ,columnDefinition = "integer default 1")
-    private Integer objectAvailabilityStatus;
+    private Integer objectAvailabilityStatus=1;
 
     @Column(name="number_of_objects_can_be_assigned_to_vuser" ,columnDefinition = "integer default 5")
-    private Integer numberOfObjectsCanBeAssignedToVendorUser;
+    private Integer numberOfObjectsCanBeAssignedToVendorUser=10;
 
     @Column(name="number_of_objects_for_qc_level" ,columnDefinition = "integer default 5")
     private Integer numberOfObjectsForQcLevel=1;

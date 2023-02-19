@@ -24,7 +24,7 @@ import org.hibernate.envers.Audited;
 public class Organisation extends AbstractAuditingEntity  implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    @OneToMany(fetch = FetchType.EAGER)
+    @OneToMany
     Set<AppProperty> appProperties=new HashSet<>();
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

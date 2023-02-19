@@ -147,128 +147,68 @@ public class ProjectResource {
                 throw new BadRequestAlertException("Not Authorized", ENTITY_NAME, "idexists");
             }
         }
-
-        if(project.getObjectAvailabilityStatus()==null){
-            project.setObjectAvailabilityStatus(1);
-        }
-        if(project.getNumberOfObjectsCanBeAssignedToVendorUser()==null){
-            project.setNumberOfObjectsCanBeAssignedToVendorUser(5);
-        }
             Category category = categoryRepository.getById(project.getCategory().getId());
             if(category!=null){
                 project.setCategory(category);
                 project.setProjectType(category.getName());
-                List<Property> commonProperties = propertyRepository.findAllDefaultPropsOfCustomerAndCategory(project.getCustomer().getId(),1l);
-                List<Property> categorySpecificProperties = propertyRepository.findAllDefaultPropsOfCustomerAndCategory(project.getCustomer().getId(),category.getId());
-                commonProperties.addAll(categorySpecificProperties);
-                for(Property p:commonProperties){
-                    ProjectProperty pp = new ProjectProperty();
-                    pp.setProject(project);
-                    pp.setProperty(p);
-                    pp.setValue(p.getValue());
-                    pp.setOptional(p.getOptional());
-                    pp.setAddToMetadata(p.getAddToMetadata());
-                    pp.setPassedFromApp(0);
-                    pp.setShowToVendorUser(p.getShowToVendorUser());
-                    pp.setStatus(1);
-                    pp.setProjectPropertyType(p.getPropertyType());
-                    project.addAidasProjectProperty(pp);
-                }
-            }
-            boolean isQcLevelConfigsAdded = false;
-            if(project.getProjectQcLevelConfigurations()!=null && project.getProjectQcLevelConfigurations().size()>0){
+                int isQcLevelConfigsAdded = 0;
+                if(project.getProjectQcLevelConfigurations()!=null && project.getProjectQcLevelConfigurations().size()>0) {
                     for (ProjectQcLevelConfigurations pqlc : project.getProjectQcLevelConfigurations()) {
-                        if(pqlc.getQcLevelAcceptancePercentage()!=null && pqlc.getQcLevelBatchSize()!=null){
-                            isQcLevelConfigsAdded = true;
+                        if (pqlc.getQcLevelAcceptancePercentage() != null && pqlc.getQcLevelBatchSize() != null) {
+                            isQcLevelConfigsAdded++;
                         }
                         pqlc.setAllocationStrategy(AidasConstants.QC_LEVEL_FCFS);
                         pqlc.setProject(project);
                     }
-            }
-            if(isQcLevelConfigsAdded) {
-                project = projectRepository.save(project);
-                    Object obj = new Object();
-                    obj.setName(project.getName() + " - Dummy Object");
-                    obj.setNumberOfUploadsRequired(0);
-                    obj.setDescription("Dummy object for project " + project.getName());
-                    obj.setProject(project);
-                    obj.setBufferPercent(0);
-                    obj.setDummy(1);
-                    obj.setStatus(0);
-                    if (project.getCategory() != null) {
-                        List<Property> commonProperties = propertyRepository.findAllDefaultPropsOfCustomerAndCategory(project.getCustomer().getId(), 1l);
-                        List<Property> categorySpecificProperties = propertyRepository.findAllDefaultPropsOfCustomerAndCategory(project.getCustomer().getId(), project.getCategory().getId());
-                        commonProperties.addAll(categorySpecificProperties);
-                        for (Property p : commonProperties) {
-                            ObjectProperty op = new ObjectProperty();
-                            op.setObject(obj);
-                            op.setProperty(p);
-                            op.setValue(p.getValue());
-                            op.setOptional(p.getOptional());
-                            op.setAddToMetadata(0);
-                            op.setShowToVendorUser(0);
-                            op.setPassedFromApp(0);
-                            op.setObjectPropertyType(p.getPropertyType());
-                            op.setStatus(1);
-                            obj.addAidasObjectProperty(op);
-                        }
-                    }
-                    objectRepository.save(obj);
-                List<Property> commonProperties = propertyRepository.findAllDefaultPropsOfCustomerAndCategory(project.getCustomer().getId(), 1l);
-                List<Property> categorySpecificProperties = propertyRepository.findAllDefaultPropsOfCustomerAndCategory(project.getCustomer().getId(), project.getCategory().getId());
-                commonProperties.addAll(categorySpecificProperties);
-                if (project.getAutoCreateObjects() != null && project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)) {
-                    project.setBufferStrategy(AidasConstants.PROJECT_BUFFER_STATUS_PROJECT_LEVEL);
-                    Float bufferedRequired = project.getBufferPercent().floatValue()/100f * project.getNumberOfObjects();
-                    int numberOfBufferedObjectsRequired = project.getNumberOfObjects()+bufferedRequired.intValue();
-                    for (int i = 0; i < numberOfBufferedObjectsRequired; i++) {
-                        obj = new Object();
-                        String objName = "";
-                        if (project.getObjectPrefix() != null && project.getObjectPrefix().trim().length()>0) {
-                            objName += project.getObjectPrefix()+"_";
-                        }
-                        objName += String.valueOf(i);
-                        if (project.getObjectSuffix() != null && project.getObjectSuffix().trim().length()>0) {
-                            objName += "_"+project.getObjectSuffix();
-                        }
-                        obj.setName(objName);
-                        obj.setDescription(objName);
+                    if(isQcLevelConfigsAdded==project.getProjectQcLevelConfigurations().size()){
+                        project.setBufferStrategy(AidasConstants.PROJECT_BUFFER_STATUS_PROJECT_LEVEL);
+                        project = projectRepository.save(project);
+                        projectRepository.addProjectProperties(project.getId(), category.getId());
+                        Object obj = new Object();
+                        obj.setName(project.getName() + " - Dummy Object");
+                        obj.setNumberOfUploadsRequired(0);
+                        obj.setDescription("Dummy object for project " + project.getName());
                         obj.setProject(project);
                         obj.setBufferPercent(0);
-                        obj.setDummy(0);
-                        obj.setStatus(1);
-                        obj.setNumberOfBufferedUploadsRequired(project.getNumberOfUploadsRequired());
-                        obj.setTotalRequired(project.getNumberOfUploadsRequired());
-                        obj.setNumberOfUploadsRequired(project.getNumberOfUploadsRequired());
-                        if (project.getCategory() != null) {
-
-                            for (Property p : commonProperties) {
-                                ObjectProperty op = new ObjectProperty();
-                                op.setObject(obj);
-                                op.setProperty(p);
-                                op.setValue(p.getValue());
-                                op.setOptional(p.getOptional());
-                                op.setAddToMetadata(0);
-                                op.setPassedFromApp(0);
-                                op.setStatus(1);
-                                obj.addAidasObjectProperty(op);
-                            }
-                        }
-                      //dynaObjects.add(obj);
+                        obj.setDummy(1);
+                        obj.setStatus(0);
                         objectRepository.save(obj);
-                    }
-                    project.setTotalRequired(project.getNumberOfObjects()*project.getNumberOfUploadsRequired());
-                    project.setNumberOfBufferedUploadsdRequired(numberOfBufferedObjectsRequired*project.getNumberOfUploadsRequired());
-                    projectRepository.save(project);
-                }
+                        if (project.getAutoCreateObjects() != null && project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)) {
 
-                return ResponseEntity
-                    .created(new URI("/api/aidas-projects/" + project.getId()))
-                    .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, project.getId().toString()))
-                    .body(project);
+                            Float bufferedRequired = project.getBufferPercent().floatValue() / 100f * project.getNumberOfObjects();
+                            int numberOfBufferedObjectsRequired = project.getNumberOfObjects() + bufferedRequired.intValue();
+                            String prefix = "";
+                            String suffix = "";
+                            if (project.getObjectPrefix() != null && project.getObjectPrefix().trim().length() > 0) {
+                                prefix = project.getObjectPrefix() + "_";
+                            }
+                            if (project.getObjectSuffix() != null && project.getObjectSuffix().trim().length() > 0) {
+                                suffix += "_" + project.getObjectSuffix();
+                            }
+                            objectRepository.createObjects(prefix, suffix, project.getId(), 0, 0, 1, project.getNumberOfUploadsRequired(), project.getNumberOfUploadsRequired(), project.getNumberOfUploadsRequired(),numberOfBufferedObjectsRequired);
+                            objectRepository.addObjectProperties(project.getId(), category.getId());
+                            project.setTotalRequired(project.getNumberOfObjects() * project.getNumberOfUploadsRequired());
+                            project.setNumberOfBufferedUploadsdRequired(numberOfBufferedObjectsRequired * project.getNumberOfUploadsRequired());
+                            project.setNumberOfObjects(numberOfBufferedObjectsRequired);
+                            projectRepository.save(project);
+                        }
+                        aidasProjectSearchRepository.save(project);
+                        return ResponseEntity
+                            .created(new URI("/api/aidas-projects/" + project.getId()))
+                            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, project.getId().toString()))
+                            .body(project);
+                }else{
+
+                        throw new BadRequestAlertException("Qc Level configurations are required ", ENTITY_NAME, "idexists");
+                    }
+                }else{
+
+                    throw new BadRequestAlertException("Qc Level configurations are required ", ENTITY_NAME, "idexists");
+                }
             }else{
                 throw new BadRequestAlertException("Qc Level configurations are required ", ENTITY_NAME, "idexists");
             }
+
     }
 
 
@@ -437,32 +377,32 @@ public class ProjectResource {
         Project project = projectRepository.getById(projectVendorMappingDTO.getProjectId());
         for(VendorUserDTO vendorUserDTO:projectVendorMappingDTO.getVendors()){
             for(UsersOfVendor userDTO: vendorUserDTO.getUserDTOs()){
-                if(project.getAutoCreateObjects()!=null && project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)){
                     Object dummyObject = objectRepository.getDummyObjectOfProject(projectVendorMappingDTO.getProjectId());
-                    UserVendorMappingObjectMapping uvmom  =userVendorMappingObjectMappingRepository.findByUserVendorMappingObject(userDTO.getUserVendorMappingId(), dummyObject.getId());
-                    if(uvmom==null) {
-                        uvmom = new UserVendorMappingObjectMapping();
-                        uvmom.setUserVendorMapping(userVendorMappingRepository.getById(userDTO.getUserVendorMappingId()));
-                        uvmom.setObject(dummyObject);
-                    }
-                    uvmom.setStatus(userDTO.getStatus());
-                    uvmoms.add(uvmom);
-                }else {
-                    List<Object> objects = objectRepository.getAllObjectsOfProject(projectVendorMappingDTO.getProjectId());
-                    for (Object o : objects) {
-                        UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserVendorMappingObject(userDTO.getUserVendorMappingId(), o.getId());
-                        if (uvmom == null) {
+                    UserVendorMapping uvm = userVendorMappingRepository.getById(userDTO.getUserVendorMappingId());
+                    if(uvm!=null && dummyObject!=null){
+                        UserVendorMappingObjectMapping uvmom  =userVendorMappingObjectMappingRepository.findAllByUserVendorMappingObject(userDTO.getUserVendorMappingId(), dummyObject.getId());
+                        UserVendorMappingProjectMapping uvmpm = userVendorMappingProjectMappingRepository.findByUserVendorMappingIdProjectId(userDTO.getUserVendorMappingId(),projectVendorMappingDTO.getProjectId());
+                        if(uvmpm==null){
+                            uvmpm = new UserVendorMappingProjectMapping();
+                            uvmpm.setProject(project);
+                            uvmpm.setUserVendorMapping(uvm);
+                            if(project.getAutoCreateObjects()!=null && project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS))
+                                uvmpm.setTotalRequired(project.getNumberOfObjects());
+                            else
+                                uvmpm.setTotalRequired(project.getNumberOfUploadsRequired());
+                            userVendorMappingProjectMappingRepository.save(uvmpm);
+                        }
+                        if(uvmom==null) {
                             uvmom = new UserVendorMappingObjectMapping();
-                            uvmom.setUserVendorMapping(userVendorMappingRepository.getById(userDTO.getUserVendorMappingId()));
-                            uvmom.setObject(o);
+                            uvmom.setUserVendorMapping(uvm);
+                            uvmom.setObject(dummyObject);
                         }
                         uvmom.setStatus(userDTO.getStatus());
-                        uvmoms.add(uvmom);
+                        userVendorMappingObjectMappingRepository.save(uvmom);
                     }
-                }
             }
         }
-        userVendorMappingObjectMappingRepository.saveAll(uvmoms);
+        //userVendorMappingObjectMappingRepository.saveAll(uvmoms);
         return ResponseEntity.ok().body("Successfully mapped vendors to project");
     }
 
@@ -860,17 +800,6 @@ public class ProjectResource {
         Page<ProjectDTO> page ;
         if(user.getAuthority().getName().equals(AidasConstants.VENDOR_USER)){
             page = projectRepository.findProjectWithUploadCountByUser(pageable, user.getId());
-            for(ProjectDTO p:page.getContent()){
-                if(p.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)){
-                    p.setTotalRequired(p.getTotalRequired()/(p.getNumOfUploadsReqd()));
-                    p.setTotalUploaded(p.getTotalUploaded()/p.getNumOfObjects());
-                    p.setTotalApproved(p.getTotalApproved()/p.getNumOfObjects());
-                    p.setTotalRejected(p.getTotalRejected()/p.getNumOfObjects());
-                    p.setTotalPending(p.getTotalPending()/p.getNumOfObjects());
-                }
-                List<ProjectProperty> projectProperties = projectPropertyRepository.findAllProjectProperty(p.getId());
-                p.setAidasProjectProperties(projectProperties);
-            }
             HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
             return ResponseEntity.ok().headers(headers).body(page.getContent());
         }
@@ -951,25 +880,7 @@ public class ProjectResource {
     public ResponseEntity<List<Project>> searchAidasProjects(@RequestParam String query, Pageable pageable) {
         log.debug("REST request to search for a page of AidasProjects for query {}", query);
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-        Page<Project> page = aidasProjectSearchRepository.search(query, pageable);
-        if(user.getAuthority().getName().equals(AidasConstants.ORG_ADMIN) && user.getOrganisation()!=null) {
-            Iterator<Project> it = page.getContent().iterator();
-            while(it.hasNext()){
-                Project project = it.next();
-                if(!project.getCustomer().getOrganisation().equals(user.getOrganisation())){
-                    it.remove();
-                }
-            }
-        }
-        if(user.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN) && user.getCustomer()!=null) {
-            Iterator<Project> it = page.getContent().iterator();
-            while(it.hasNext()){
-                Project project = it.next();
-                if(!project.getCustomer().equals(user.getCustomer())){
-                    it.remove();
-                }
-            }
-        }
+        Page<Project> page = projectRepository.search(pageable,"projectName",query);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }

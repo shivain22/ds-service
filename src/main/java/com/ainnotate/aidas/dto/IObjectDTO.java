@@ -3,6 +3,7 @@ package com.ainnotate.aidas.dto;
 import com.ainnotate.aidas.domain.ObjectProperty;
 
 import java.util.List;
+import java.util.Set;
 
 public interface IObjectDTO extends Cloneable{
     Integer getCount();
@@ -73,9 +74,9 @@ public interface IObjectDTO extends Cloneable{
 
     void setBufferPercent(Integer bufferPercent);
 
-    List<ObjectProperty> getObjectProperties();
+    Set<ObjectProperty> getObjectProperties();
 
-    void setObjectProperties(List<ObjectProperty> objectProperties);
+    void setObjectProperties(Set<ObjectProperty> objectProperties);
 
     void addAidasObjectProperty(ObjectProperty objectProperty);
 

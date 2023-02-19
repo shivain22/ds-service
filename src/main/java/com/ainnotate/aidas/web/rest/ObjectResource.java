@@ -92,6 +92,9 @@ public class ObjectResource {
     @Autowired
     private ObjectAddingTask objectAddingTask;
 
+    @Autowired
+    DownloadUploadS3 downloadUploadS3;
+    
     public ObjectResource(ObjectRepository objectRepository, ObjectSearchRepository aidasObjectSearchRepository) {
         this.objectRepository = objectRepository;
         this.aidasObjectSearchRepository = aidasObjectSearchRepository;
@@ -147,107 +150,16 @@ public class ObjectResource {
         object.setNumberOfBufferedUploadsRequired(object.getNumberOfUploadsRequired()+(object.getNumberOfUploadsRequired()*(object.getBufferPercent()/100)));
         object.setTotalRequired(object.getNumberOfBufferedUploadsRequired());
         Object result = objectRepository.save(object);
-        List<Property> commonProperties = propertyRepository.findAllDefaultPropsOfCustomerAndCategory(object.getProject().getCustomer().getId(), 1l);
-        List<Property> categorySpecificProperties = propertyRepository.findAllDefaultPropsOfCustomerAndCategory(object.getProject().getCustomer().getId(), object.getProject().getCategory().getId());
-        commonProperties.addAll(categorySpecificProperties);
-        for(Property p:commonProperties){
-            ObjectProperty op = new ObjectProperty();
-            op.setObject(object);
-            op.setProperty(p);
-            op.setValue(p.getValue());
-            op.setOptional(p.getOptional());
-            object.addAidasObjectProperty(op);
-        }
-        result = objectRepository.save(object);
-        /*List<Integer> projectLevelUploadRequirements = projectRepository.getProjectLevelUploadRequirements(object.getProject().getId());
-        if(projectLevelUploadRequirements==null) {
-            projectLevelUploadRequirements = new ArrayList<>();
-            projectLevelUploadRequirements.add(0);
-            projectLevelUploadRequirements.add(0);
-        }
-
-            if (project.getBufferStatus() != null && project.getBufferStatus().equals(AidasConstants.PROJECT_BUFFER_STATUS_PROJECT_LEVEL)) {
-                project.setNumberOfBufferedUploadsdRequired(projectLevelUploadRequirements.get(0));
-                project.setNumberOfUploadsRequired(projectLevelUploadRequirements.get(0));
-                project.setTotalRequired(projectLevelUploadRequirements.get(0));
-            } else if (project.getBufferStatus() != null && project.getBufferStatus().equals(AidasConstants.PROJECT_BUFFER_STATUS_OBJECT_LEVEL)) {
-                project.setNumberOfBufferedUploadsdRequired(projectLevelUploadRequirements.get(1));
-                project.setNumberOfUploadsRequired(projectLevelUploadRequirements.get(1));
-                project.setTotalRequired(projectLevelUploadRequirements.get(1));
-            }
-
-        projectRepository.save(project);*/
-        /*objectAddingTask.setObject(result);
-        objectAddingTask.setDummy(false);
-        objectAddingTask.run();*/
-        //List<UserVendorMappingProjectMapping> uvmpms = userVendorMappingProjectMappingRepository.getAllUserVendorMappingProjectMappingByProjectId(project.getId());
-        Object dummyObjectOfProject = objectRepository.getDummyObjectOfProject(project.getId());
-        List<UserVendorMappingObjectMapping> uvmoms = userVendorMappingObjectMappingRepository.getAllUserVendorMappingObjectMappingsByObjectId(dummyObjectOfProject.getId());
-        List<UserVendorMappingObjectMapping> uvmoms1 = new ArrayList<>();
-        for(UserVendorMappingObjectMapping uvmom:uvmoms){
-            UserVendorMappingObjectMapping uvmom1 = new UserVendorMappingObjectMapping();
-            uvmom1.setObject(result);
-            uvmom1.setUserVendorMapping(uvmom.getUserVendorMapping());
-            uvmom1.setStatus(uvmom.getStatus());
-            uvmoms1.add(uvmom1);
-        }
-        /*for(UserVendorMappingProjectMapping uvmpm:uvmpms){
-            UserVendorMappingObjectMapping uvmom = new UserVendorMappingObjectMapping();
-            uvmom.setObject(result);
-            uvmom.setUserVendorMapping(uvmpm.getUserVendorMapping());
-            uvmom.setStatus(uvmpm.getStatus());
-            uvmoms.add(uvmom);
-        }*/
-        userVendorMappingObjectMappingRepository.saveAll(uvmoms1);
+        objectRepository.addObjectProperties(project.getId(),project.getCategory().getId(),result.getId());
+        project.setNumberOfObjects(project.getNumberOfObjects()+1);
+        project.setTotalRequired(project.getTotalRequired()+result.getNumberOfUploadsRequired());
+        project.setNumberOfUploadsRequired(project.getNumberOfUploadsRequired()+object.getNumberOfUploadsRequired());
+        project.setNumberOfBufferedUploadsdRequired(project.getNumberOfBufferedUploadsdRequired()+object.getNumberOfBufferedUploadsRequired());
         return ResponseEntity
             .created(new URI("/api/aidas-objects/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
             .body(result);
     }
-
-
-    /**
-     * {@code POST  /aidas-objects/vendormapping/add} : Create a new project.
-     *
-     * @param objectVendorMappingDTO the objectVendorMappings to create.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new object, or with status {@code 400 (Bad Request)} if the project has already an ID.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
-    @Secured({AidasConstants.ADMIN, AidasConstants.ORG_ADMIN, AidasConstants.CUSTOMER_ADMIN})
-    @PostMapping("/aidas-objects/vendormapping/add")
-    public ResponseEntity<String> createAidasObjectAidasVendorMapping(@Valid @RequestBody ObjectVendorMappingDTO objectVendorMappingDTO) throws URISyntaxException {
-        User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-        log.debug("REST request to map AidasObject to AidasVendor: {}", objectVendorMappingDTO);
-        if (objectVendorMappingDTO.getObjectId() == null) {
-            throw new BadRequestAlertException("A new project cannot already have an ID", ENTITY_NAME, "idexists");
-        }
-        Object object = objectRepository.getById(objectVendorMappingDTO.getObjectId());
-        for(VendorUserDTO vendorUserDTO:objectVendorMappingDTO.getVendorDTOs()){
-            Vendor v = vendorRepository.getById(vendorUserDTO.getVendorId());
-            for(UsersOfVendor userDTO: vendorUserDTO.getUserDTOs()){
-                User u = userRepository.getById(userDTO.getUserId());
-                UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserObject(userDTO.getUserId(),objectVendorMappingDTO.getObjectId());
-                if(uvmom!=null){
-                    uvmom.setStatus(userDTO.getStatus());
-                }else{
-                    uvmom = new UserVendorMappingObjectMapping();
-                    UserVendorMapping uvm = new UserVendorMapping();
-                    uvm.setVendor(v);
-                    uvm.setUser(u);
-                    uvm.setStatus(1);
-                    uvm = userVendorMappingRepository.save(uvm);
-                    uvmom.setUserVendorMapping(uvm);
-                    uvmom.setObject(object);
-                    uvmom.setStatus(userDTO.getStatus());
-                }
-                userVendorMappingObjectMappingRepository.save(uvmom);
-            }
-        }
-        return ResponseEntity.ok().body("Successfully mapped vendors to project");
-    }
-
-
-
 
     /**
      * {@code POST  /aidas-objects/{id}} : Update aidas Object property to default value.
@@ -260,7 +172,6 @@ public class ObjectResource {
     @PostMapping("/aidas-objects/{id}")
     public ResponseEntity<Object> resetObjectPropertiesToDefaultValues(@PathVariable(value = "id", required = false) final Long id) throws URISyntaxException {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-
         log.debug("REST request to save AidasProjectProperties to default value : {}", id);
         if (id == null) {
             throw new BadRequestAlertException("A new project cannot already have an ID", ENTITY_NAME, "idexists");
@@ -290,201 +201,12 @@ public class ObjectResource {
             }
         }
         Object result = objectRepository.save(object);
-        //aidasProjectSearchRepository.save(result);
         return ResponseEntity
             .created(new URI("/api/aidas-objects/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
             .body(result);
     }
-
-    /**
-     * {@code POST  /aidas-objects/add-all-new-added-property/{id}} : Update aidas Object property to default value.
-     *
-     * @param id the object id to add new property to  object property.
-     * @return the {@link ResponseEntity} with status {@code 201 (Updated)} and with body the new object, or with status {@code 400 (Bad Request)} if the object has no ID.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
-    @Secured({AidasConstants.ADMIN, AidasConstants.ORG_ADMIN, AidasConstants.CUSTOMER_ADMIN})
-    @PostMapping("/aidas-objects/add-all-new-added-property/{id}")
-    public ResponseEntity<Object> addAllNewlyAddedProperties(@PathVariable(value = "id", required = false) final Long id) throws URISyntaxException {
-        User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-
-        log.debug("REST request to save AidasProjectProperties to default value : {}", id);
-        if (id == null) {
-            throw new BadRequestAlertException("A new project cannot already have an ID", ENTITY_NAME, "idexists");
-        }
-        Object object = objectRepository.getById(id);
-        if(user.getAuthority().getName().equals(AidasConstants.ORG_ADMIN) && user.getOrganisation()!=null ){
-            Optional<Customer> customer = customerRepository.findById(object.getProject().getCustomer().getId());
-            if(customer.isPresent()){
-                if(!object.getProject().getCustomer().equals(customer.get())){
-                    throw new BadRequestAlertException("Not Authorized", ENTITY_NAME, "idexists");
-                }
-            }else{
-                throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
-            }
-        }
-        if( user.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN)){
-            if(user.getCustomer()!=null && !user.getCustomer().equals(object.getProject().getCustomer())){
-                throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
-            }
-        }
-        List<Property> aidasProperties = propertyRepository.findAll();
-        List<Property> addedAidasProperties = new ArrayList();
-        for(ObjectProperty app1: object.getObjectProperties()){
-            addedAidasProperties.add(app1.getProperty());
-        }
-        aidasProperties.removeAll(addedAidasProperties);
-        for(Property ap:aidasProperties){
-            ObjectProperty app = new ObjectProperty();
-            app.setObject(object);
-            app.setProperty(ap);
-            app.setValue(ap.getValue());
-            object.addAidasObjectProperty(app);
-        }
-        Object result = objectRepository.save(object);
-        //aidasProjectSearchRepository.save(result);
-        return ResponseEntity
-            .created(new URI("/api/aidas-objects/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
-            .body(result);
-    }
-
-    /**
-     * {@code PUT  /aidas-objects/:id} : Updates an existing object.
-     *
-     * @param id the id of the object to save.
-     * @param object the object to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated object,
-     * or with status {@code 400 (Bad Request)} if the object is not valid,
-     * or with status {@code 500 (Internal Server Error)} if the object couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
-    @Secured({AidasConstants.ADMIN, AidasConstants.ORG_ADMIN, AidasConstants.CUSTOMER_ADMIN})
-    @PutMapping("/aidas-objects/{id}")
-    public ResponseEntity<Object> updateAidasObject(
-        @PathVariable(value = "id", required = false) final Long id,
-        @Valid @RequestBody Object object
-    ) throws URISyntaxException {
-        log.debug("REST request to update AidasObject : {}, {}", id, object);
-        User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-        if (object.getId() == null) {
-            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
-        }
-        if (!Objects.equals(id, object.getId())) {
-            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
-        }
-
-        if (!objectRepository.existsById(id)) {
-            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
-        }
-
-        if(user.getAuthority().getName().equals(AidasConstants.ORG_ADMIN) && user.getOrganisation()!=null ){
-            Customer customer = customerRepository.getById(object.getProject().getCustomer().getId());
-            //if(customer.isPresent()){
-                if(!object.getProject().getCustomer().getId().equals(customer.getId())){
-                    throw new BadRequestAlertException("Not Authorized", ENTITY_NAME, "idexists");
-                }
-           // }else{
-               // throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
-            //}
-        }
-        if( user.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN)){
-            if(user.getCustomer()!=null && !user.getCustomer().equals(object.getProject().getCustomer())){
-                throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
-            }
-        }
-
-        Object existingObject = objectRepository.getById(object.getId());
-        existingObject.setName(object.getName());
-        existingObject.setObjectProperties(object.getObjectProperties());
-        existingObject.setDescription(object.getDescription());
-        existingObject.setProject(object.getProject());
-        existingObject.setBufferPercent(object.getBufferPercent());
-        existingObject.setNumberOfUploadsRequired(object.getNumberOfUploadsRequired());
-        existingObject.setAudioType(object.getAudioType());
-        existingObject.setVideoType(object.getVideoType());
-        existingObject.setImageType(object.getImageType());
-        Object result = objectRepository.save(existingObject);
-        aidasObjectSearchRepository.save(result);
-        return ResponseEntity
-            .ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, object.getId().toString()))
-            .body(result);
-    }
-
-    /**
-     * {@code PATCH  /aidas-objects/:id} : Partial updates given fields of an existing object, field will ignore if it is null
-     *
-     * @param id the id of the object to save.
-     * @param object the object to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated object,
-     * or with status {@code 400 (Bad Request)} if the object is not valid,
-     * or with status {@code 404 (Not Found)} if the object is not found,
-     * or with status {@code 500 (Internal Server Error)} if the object couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
-    @PatchMapping(value = "/aidas-objects/{id}", consumes = { "application/json", "application/merge-patch+json" })
-    public ResponseEntity<Object> partialUpdateAidasObject(
-        @PathVariable(value = "id", required = false) final Long id,
-        @NotNull @RequestBody Object object
-    ) throws URISyntaxException {
-        log.debug("REST request to partial update AidasObject partially : {}, {}", id, object);
-        User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-        if (object.getId() == null) {
-            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
-        }
-        if (!Objects.equals(id, object.getId())) {
-            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
-        }
-
-        if (!objectRepository.existsById(id)) {
-            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
-        }
-
-        /*if(user.getAuthority().getName().equals(AidasAuthoritiesConstants.ORG_ADMIN) && user.getOrganisation()!=null ){
-            Optional<AidasCustomer> customer = aidasCustomerRepository.findById(object.getProject().getCustomer().getId());
-            if(customer.isPresent()){
-                if(!object.getProject().getCustomer().equals(customer.get())){
-                    throw new BadRequestAlertException("Not Authorized", ENTITY_NAME, "idexists");
-                }
-            }else{
-                throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
-            }
-        }
-        if( user.getAuthority().getName().equals(AidasAuthoritiesConstants.CUSTOMER_ADMIN)){
-            if(user.getCustomer()!=null && !user.getCustomer().equals(object.getProject().getCustomer())){
-                throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
-            }
-        }*/
-        Optional<Object> result = objectRepository
-            .findById(object.getId())
-            .map(existingAidasObject -> {
-                if (object.getName() != null) {
-                    existingAidasObject.setName(object.getName());
-                }
-                if (object.getDescription() != null) {
-                    existingAidasObject.setDescription(object.getDescription());
-                }
-                if (object.getNumberOfUploadsRequired() != null) {
-                    existingAidasObject.setNumberOfUploadsRequired(object.getNumberOfUploadsRequired());
-                }
-
-                return existingAidasObject;
-            })
-            .map(objectRepository::save)
-            .map(savedAidasObject -> {
-                aidasObjectSearchRepository.save(savedAidasObject);
-
-                return savedAidasObject;
-            });
-
-        return ResponseUtil.wrapOrNotFound(
-            result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, object.getId().toString())
-        );
-    }
-
+   
     /**
      * {@code GET  /aidas-objects} : get all the aidasObjects.
      *
@@ -524,129 +246,79 @@ public class ObjectResource {
         return ResponseEntity.ok().body(objects);
     }
 
-
     @GetMapping("/aidas-projects/{id}/aidas-objects")
     public ResponseEntity<List<Object>> getAllAidasObjectsOfProject(Pageable pageable, @PathVariable(value = "id", required = false) final Long projectId) {
         log.debug("REST request to get a page of AidasObjects");
-        User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         Page<Object> page = objectRepository.getAllObjectsOfProjectForDisplay(pageable,projectId);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
+    @Secured({AidasConstants.VENDOR_USER})
     @GetMapping("/aidas-projects/{id}/aidas-objects/details")
-    public synchronized ResponseEntity<List<Object>> getAllAidasObjectsOfProjectForVendorUser(Pageable pageable, @PathVariable(value = "id", required = false) final Long projectId) {
+    public ResponseEntity<List<ObjectDTO>> getAllAidasObjectsOfProjectForVendorUser(Pageable pageable, @PathVariable(value = "id", required = false) final Long projectId) {
         log.debug("REST request to get a page of AidasObjects");
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-        Page<Object> page = null;
+        if(user.getVendor()==null) {
+        	throw new BadRequestAlertException("Vendor is not mapped", ENTITY_NAME, "vendoridnotexists");
+        }
+        Page<ObjectDTO> page = null;
         Project project = projectRepository.getById(projectId);
         UserVendorMapping uvm = userVendorMappingRepository.findByVendorIdAndUserId(user.getVendor().getId(),user.getId());
-        ObjectMapper mapper = new ObjectMapper();
-        UvmomBatchMappingsDTO uvmomBatchMappingsDTO = new UvmomBatchMappingsDTO();
-        UvmomBatchMappingDTO uvmomBatchMappingDTO = new UvmomBatchMappingDTO();
-        Integer batchNumber =0;
-        List<Long> allObjectsIds = new ArrayList<>();
-        boolean containFresh = false;
+        Integer numOfObjectsAlreadyAssigned = 0;
         if(project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)){
-                if (project.getUvmomIds() != null) {
-                    try {
-                        uvmomBatchMappingsDTO = mapper.readValue(project.getUvmomIds(), UvmomBatchMappingsDTO.class);
-                    } catch (JsonProcessingException e) {
-                        e.printStackTrace();
-                    }
-                    uvmomBatchMappingsDTO.getUvmoms().sort(Comparator.comparing(UvmomBatchMappingDTO::getBatchNumber).reversed());
-                    for(UvmomBatchMappingDTO ubmdto:uvmomBatchMappingsDTO.getUvmoms()){
-                        allObjectsIds.addAll(ubmdto.getUserVendorMappingObjectMappingIds());
-                    }
-                    uvmomBatchMappingDTO = uvmomBatchMappingsDTO.getUvmoms().get(0);
-                    batchNumber = uvmomBatchMappingDTO.getBatchNumber();
+        	PageRequest pages = PageRequest.of(0, pageable.getPageSize(), pageable.getSort());
+        	numOfObjectsAlreadyAssigned = objectRepository.getAllObjectsByVendorUserProjectWithProjectId(uvm.getId(),projectId,pageable.getPageSize(),0);
+        	if(numOfObjectsAlreadyAssigned==0) {
+        		page = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdForGroupedDto(pageable,projectId);
+        		setProps(page.getContent());
+        	}else {
+        		page = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdForGroupedForNewRequest(pages,uvm.getId(),projectId);
+        		setProps(page.getContent());
+        		HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+                return ResponseEntity.ok().headers(headers).body(page.getContent());
+        	}
+        	
+        }else {
+        	numOfObjectsAlreadyAssigned = objectRepository.getAllObjectsByVendorUserProjectWithProjectId(uvm.getId(),projectId,pageable.getPageSize(),pageable.getPageNumber());
+        	page = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdForNonGrouped(pageable,projectId);
+        	setProps(page.getContent());
+        	HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+            return ResponseEntity.ok().headers(headers).body(page.getContent());
+        }
+        if((numOfObjectsAlreadyAssigned==null ||( numOfObjectsAlreadyAssigned!=null && numOfObjectsAlreadyAssigned==0))) {
+            for(ObjectDTO o:page.getContent()){
+                UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserVendorMappingObject(uvm.getId(),o.getId());
+                Object object = objectRepository.getById(o.getId());
+                if(uvmom==null){
+                    uvmom  = new UserVendorMappingObjectMapping();
+                    uvmom.setUserVendorMapping(uvm);
+                    uvmom.setStatus(AidasConstants.AUTO_CREATE_OBJECT_ENABLE);
+                    uvmom.setObject(object);
+                    userVendorMappingObjectMappingRepository.save(uvmom);
                 }
-                    log.debug("User is coming for first time.  Fetching new batch from DB");
-                    Integer numOfObjectsAlreadyAssigned = objectRepository.getAllObjectsByVendorUserProjectWithProjectId(user.getId(),projectId);
-                    if(numOfObjectsAlreadyAssigned==0) {
-                        PageRequest pages = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
-                        List<Object> objs = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdForGrouped(projectId,project.getNumberOfObjectsCanBeAssignedToVendorUser());
-                        for(Object o:objs){
-                            UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserVendorMappingObject(uvm.getId(),o.getId());
-                            if(uvmom==null){
-                                uvmom  = new UserVendorMappingObjectMapping();
-                                uvmom.setUserVendorMapping(uvm);
-                                uvmom.setObject(o);
-                                uvmom.setStatus(AidasConstants.AUTO_CREATE_OBJECT_ENABLE);
-                                uvmom = userVendorMappingObjectMappingRepository.save(uvmom);
-                            }
-                            o.setUserVendorMappingObjectMappingId(uvmom.getId());
-                            o.setObjectAcquiredByUvmomId(uvmom.getId());
-                            objectRepository.save(o);
-                        }
-                        page = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdWithAlreadyCompletedGrouped(pages,user.getId(), projectId);
-                        containFresh = true;
-                    }else{
-                        PageRequest pages = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
-                        page = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdWithAlreadyCompletedGrouped(pages,user.getId(), projectId);
-                        containFresh = false;
-                    }
-
-                if(containFresh){
-                    uvmomBatchMappingDTO=new UvmomBatchMappingDTO();
-                    uvmomBatchMappingDTO.setBatchNumber(batchNumber+1);
+                if(project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)){
+                	object.setUserVendorMappingObjectMappingId(uvmom.getId());
+                	object.setObjectAcquiredByUvmomId(uvmom.getId());
+	                objectRepository.save(object);
                 }
-                for(Object o:page.getContent()){
-                    UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserVendorMappingObject(uvm.getId(),o.getId());
-                    if(uvmom==null){
-                        uvmom  = new UserVendorMappingObjectMapping();
-                        uvmom.setUserVendorMapping(uvm);
-                        uvmom.setObject(o);
-                        uvmom.setStatus(AidasConstants.AUTO_CREATE_OBJECT_ENABLE);
-                        uvmom = userVendorMappingObjectMappingRepository.save(uvmom);
-                    }
-                    List<Integer[]> consolidatedUploads = userVendorMappingObjectMappingRepository.findByConsolidatedUpload(uvm.getId(),o.getId());
-                    if(consolidatedUploads!=null) {
-                        Integer[] consolidatedUploads1 = consolidatedUploads.get(0);
-                        o.setTotalRequired(consolidatedUploads1[0]);
-                        o.setTotalUploaded(consolidatedUploads1[1]);
-                        o.setTotalApproved(consolidatedUploads1[2]);
-                        o.setTotalRejected(consolidatedUploads1[3]);
-                        o.setTotalPending(consolidatedUploads1[4]);
-                    }
-                    o.setUserVendorMappingObjectMappingId(uvmom.getId());
-                    if(containFresh && o.getObjectAcquiredByUvmomId()==null) {
-                        o.setObjectAcquiredByUvmomId(uvmom.getId());
-                        uvmomBatchMappingDTO.getUserVendorMappingObjectMappingIds().add(uvmom.getId());
-                        objectRepository.save(o);
-                    }
-                }
-                if(containFresh){
-                    uvmomBatchMappingsDTO.getUvmoms().add(uvmomBatchMappingDTO);
-                    uvmomBatchMappingsDTO.setUserVendorMappingId(uvm.getId());
-                    try {
-                        project.setUvmomIds(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(uvmomBatchMappingsDTO));
-                    } catch (JsonProcessingException e) {
-                        e.printStackTrace();
-                    }
-                }
+            }
+            setProps(page.getContent());
             HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
             return ResponseEntity.ok().headers(headers).body(page.getContent());
-        }else{
-            page = objectRepository.getAllObjectsByVendorUserProjectWithProjectId(pageable, user.getId(), projectId);
-            for(Object o:page.getContent()){
-                UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserVendorMappingObject(uvm.getId(),o.getId());
-                List<Integer[]> consolidatedUploads = userVendorMappingObjectMappingRepository.findByConsolidatedUpload(uvm.getId(),o.getId());
-                if(consolidatedUploads!=null) {
-                    Integer[] consolidatedUploads1 = consolidatedUploads.get(0);
-                    o.setTotalRequired(consolidatedUploads1[0]);
-                    o.setTotalUploaded(consolidatedUploads1[1]);
-                    o.setTotalApproved(consolidatedUploads1[2]);
-                    o.setTotalRejected(consolidatedUploads1[3]);
-                    o.setTotalPending(consolidatedUploads1[4]);
-                }
-                o.setUserVendorMappingObjectMappingId(uvmom.getId());
-            }
+        }else {
+        	page = objectRepository.getAllObjectsWithUvmom(pageable,user.getId(), projectId);
+        	setProps(page.getContent());
             HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
             return ResponseEntity.ok().headers(headers).body(page.getContent());
         }
     }
-
+    
+    private void setProps(List<ObjectDTO> objectDTOs) {
+    	for(ObjectDTO o:objectDTOs) {
+    		o.setObjectProperties(objectPropertyRepository.findAllByObjectId(o.getId()));
+    	}
+    }
 
     @GetMapping("/aidas-projects/{id}/aidas-objects/details/fresh-batch")
     public synchronized ResponseEntity<List<Object>> getAllAidasObjectsOfProjectForVendorUserFreshBatch(Pageable pageable, @PathVariable(value = "id", required = false) final Long projectId) {
@@ -655,28 +327,11 @@ public class ObjectResource {
         Page<Object> page = null;
         Project project = projectRepository.getById(projectId);
         UserVendorMapping uvm = userVendorMappingRepository.findByVendorIdAndUserId(user.getVendor().getId(),user.getId());
-        ObjectMapper mapper = new ObjectMapper();
-        UvmomBatchMappingsDTO uvmomBatchMappingsDTO = new UvmomBatchMappingsDTO();
-        UvmomBatchMappingDTO uvmomBatchMappingDTO = new UvmomBatchMappingDTO();
-        Integer batchNumber =0;
-        List<Long> allObjectsIds = new ArrayList<>();
-        boolean containFresh = false;
-        if(project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)){
-            if (project.getUvmomIds() != null) {
-                try {
-                    uvmomBatchMappingsDTO = mapper.readValue(project.getUvmomIds(), UvmomBatchMappingsDTO.class);
-                } catch (JsonProcessingException e) {
-                    e.printStackTrace();
-                }
-                uvmomBatchMappingsDTO.getUvmoms().sort(Comparator.comparing(UvmomBatchMappingDTO::getBatchNumber).reversed());
-                for(UvmomBatchMappingDTO ubmdto:uvmomBatchMappingsDTO.getUvmoms()){
-                    allObjectsIds.addAll(ubmdto.getUserVendorMappingObjectMappingIds());
-                }
-                uvmomBatchMappingDTO = uvmomBatchMappingsDTO.getUvmoms().get(0);
-                batchNumber = uvmomBatchMappingDTO.getBatchNumber();
-            }
-            List<Object> objs = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdForGrouped(projectId,project.getNumberOfObjectsCanBeAssignedToVendorUser());
-            for(Object o:objs){
+        List<UserVendorMappingObjectMapping> uvmoms = new LinkedList<>();
+        List<Object> objects = new LinkedList<>();
+            PageRequest pages = PageRequest.of(0, pageable.getPageSize(), pageable.getSort());
+            page = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdForGrouped(pages,projectId);
+            for(Object o:page.getContent()){
                 UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserVendorMappingObject(uvm.getId(),o.getId());
                 if(uvmom==null){
                     uvmom  = new UserVendorMappingObjectMapping();
@@ -687,122 +342,13 @@ public class ObjectResource {
                 }
                 o.setUserVendorMappingObjectMappingId(uvmom.getId());
                 o.setObjectAcquiredByUvmomId(uvmom.getId());
-                objectRepository.save(o);
+                objects.add(o);
+                uvmoms.add(uvmom);
             }
-            PageRequest pages = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
-            page = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdWithAlreadyCompletedGrouped(pages,user.getId(), projectId);
-            containFresh = true;
-            if(containFresh){
-                uvmomBatchMappingDTO=new UvmomBatchMappingDTO();
-                uvmomBatchMappingDTO.setBatchNumber(batchNumber+1);
-            }
-            for(Object o:page.getContent()){
-                UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserVendorMappingObject(uvm.getId(),o.getId());
-                List<Integer[]> consolidatedUploads = userVendorMappingObjectMappingRepository.findByConsolidatedUpload(uvm.getId(),o.getId());
-                if(uvmom==null){
-                    uvmom  = new UserVendorMappingObjectMapping();
-                    uvmom.setUserVendorMapping(uvm);
-                    uvmom.setObject(o);
-                    uvmom.setStatus(AidasConstants.AUTO_CREATE_OBJECT_ENABLE);
-                    uvmom = userVendorMappingObjectMappingRepository.save(uvmom);
-                }
-                if(consolidatedUploads!=null) {
-                    Integer[] consolidatedUploads1 = consolidatedUploads.get(0);
-                    o.setTotalRequired(consolidatedUploads1[0]);
-                    o.setTotalUploaded(consolidatedUploads1[1]);
-                    o.setTotalApproved(consolidatedUploads1[2]);
-                    o.setTotalRejected(consolidatedUploads1[3]);
-                    o.setTotalPending(consolidatedUploads1[4]);
-                }
-                o.setUserVendorMappingObjectMappingId(uvmom.getId());
-                if(containFresh && o.getObjectAcquiredByUvmomId()==null) {
-                    o.setObjectAcquiredByUvmomId(uvmom.getId());
-                    uvmomBatchMappingDTO.getUserVendorMappingObjectMappingIds().add(uvmom.getId());
-                    objectRepository.save(o);
-                }
-            }
-            if(containFresh){
-                uvmomBatchMappingsDTO.getUvmoms().add(uvmomBatchMappingDTO);
-                uvmomBatchMappingsDTO.setUserVendorMappingId(uvm.getId());
-                try {
-                    project.setUvmomIds(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(uvmomBatchMappingsDTO));
-                } catch (JsonProcessingException e) {
-                    e.printStackTrace();
-                }
-            }
-            HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
-            return ResponseEntity.ok().headers(headers).body(page.getContent());
-        }else{
-            page = objectRepository.getAllObjectsByVendorUserProjectWithProjectId(pageable, user.getId(), projectId);
-            for(Object o:page.getContent()){
-                UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserVendorMappingObject(uvm.getId(),o.getId());
-                List<Integer[]> consolidatedUploads = userVendorMappingObjectMappingRepository.findByConsolidatedUpload(uvm.getId(),o.getId());
-                if(consolidatedUploads!=null) {
-                    Integer[] consolidatedUploads1 = consolidatedUploads.get(0);
-                    o.setTotalRequired(consolidatedUploads1[0]);
-                    o.setTotalUploaded(consolidatedUploads1[1]);
-                    o.setTotalApproved(consolidatedUploads1[2]);
-                    o.setTotalRejected(consolidatedUploads1[3]);
-                    o.setTotalPending(consolidatedUploads1[4]);
-                }
-                o.setUserVendorMappingObjectMappingId(uvmom.getId());
-            }
-            HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
-            return ResponseEntity.ok().headers(headers).body(page.getContent());
-        }
-    }
-
-
-    @GetMapping("/aidas-projects/{id}/aidas-objects/details/status")
-    public ResponseEntity<Boolean> getAllAidasObjectsOfProjectForVendorUserStatus( @PathVariable(value = "id", required = false) final Long projectId) {
-        log.debug("REST request to get a page of AidasObjects");
-        User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-        Page<Object> page = null;
-        Project project = projectRepository.getById(projectId);
-        UserVendorMapping uvm = userVendorMappingRepository.findByVendorIdAndUserId(user.getVendor().getId(),user.getId());
-        UserVendorMappingProjectMapping uvmpm = userVendorMappingProjectMappingRepository.findByUserVendorMappingIdProjectId(uvm.getId(),projectId);
-        ObjectMapper mapper = new ObjectMapper();
-        UvmomBatchMappingsDTO uvmomBatchMappingsDTO = new UvmomBatchMappingsDTO();
-        UvmomBatchMappingDTO uvmomBatchMappingDTO = new UvmomBatchMappingDTO();
-        Integer batchNumber =0;
-        List<Long> allObjectsIds = new ArrayList<>();
-        boolean containFresh = false;
-        if(project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)){
-            if (uvmpm.getUvmomIds() != null) {
-                try {
-                    uvmomBatchMappingsDTO = mapper.readValue(uvmpm.getUvmomIds(), UvmomBatchMappingsDTO.class);
-                } catch (JsonProcessingException e) {
-                    e.printStackTrace();
-                }
-                uvmomBatchMappingsDTO.getUvmoms().sort(Comparator.comparing(UvmomBatchMappingDTO::getBatchNumber).reversed());
-                for(UvmomBatchMappingDTO ubmdto:uvmomBatchMappingsDTO.getUvmoms()){
-                    allObjectsIds.addAll(ubmdto.getUserVendorMappingObjectMappingIds());
-                }
-                uvmomBatchMappingDTO = uvmomBatchMappingsDTO.getUvmoms().get(0);
-                batchNumber = uvmomBatchMappingDTO.getBatchNumber();
-            }
-            if(batchNumber>0){
-                log.debug("There is already one batch available Batch Number ->"+uvmomBatchMappingDTO.getBatchNumber()+" uvmomIds in batch "+uvmomBatchMappingDTO.getBatchNumber() +" are "+uvmomBatchMappingDTO.getUserVendorMappingObjectMappingIds());
-                Integer objectsNotCompleted = objectRepository.getObjectsNotCompleted(allObjectsIds);
-                //User have not completed all uploads required by object.
-                if(objectsNotCompleted>0){
-                    log.debug("There are some objects for which uploads is not completed. objectsNotCompleted-> "+objectsNotCompleted);
-                    //get all the objects which are requires more upload and already uploaded.
-                    return ResponseEntity.ok().body(true);
-                }else{
-                    log.debug("All uploads required by all objects are completed. Fetching new batch ");
-                    //All objects required uploads completed, so lets get new batch along with already available batches.
-                    return ResponseEntity.ok().body(false);
-                }
-            }else {
-                //The user is coming for the first time.  Get new set of objects.
-                log.debug("User is coming for first time.  Fetching new batch from DB");
-                return ResponseEntity.ok().body(false);
-            }
-
-        }else{
-            return ResponseEntity.ok().body(false);
-        }
+            objectRepository.saveAll(objects);
+            userVendorMappingObjectMappingRepository.saveAll(uvmoms);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
     /**
@@ -816,79 +362,7 @@ public class ObjectResource {
         log.debug("REST request to get AidasObject : {}", id);
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         Optional<Object> object = objectRepository.findById(id);
-        if(user.getAuthority().getName().equals(AidasConstants.ADMIN) ){
-            return ResponseUtil.wrapOrNotFound(object);
-        }
-        if(user.getAuthority().getName().equals(AidasConstants.ORG_ADMIN) && user.getOrganisation()!=null ){
-            if(object.isPresent()){
-                if(object.get().getProject().getCustomer().getOrganisation().equals(user.getOrganisation())){
-                    return ResponseUtil.wrapOrNotFound(object);
-                }
-            }else{
-                throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
-            }
-        }
-        if( user.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN) && user.getCustomer()!=null ){
-            if(object.isPresent()){
-                if(object.get().getProject().getCustomer().equals(user.getCustomer())){
-                    return ResponseUtil.wrapOrNotFound(object);
-                }
-            }else{
-                throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
-            }
-        }
-        if( user.getAuthority().getName().equals(AidasConstants.VENDOR_ADMIN)){
-            Integer count = userVendorMappingObjectMappingRepository.getCountOfAidasObjectMappingForVendorAdmin(user.getVendor().getId(),id);
-            if(count>0){
-                if(object.isPresent()){
-                    return ResponseUtil.wrapOrNotFound(object);
-                }else{
-                    throw new BadRequestAlertException("The object is not assigned to this vendor admin", ENTITY_NAME, "idexists");
-                }
-            }
-            throw new BadRequestAlertException("The object is not assigned to this vendor admin", ENTITY_NAME, "idexists");
-        }
-        if( user.getAuthority().getName().equals(AidasConstants.VENDOR_USER)){
-            UserVendorMappingObjectMapping auao =  userVendorMappingObjectMappingRepository.findByUserObject(user.getId(),id);
-            if(auao!=null){
-                if(object.isPresent()){
-                        return ResponseUtil.wrapOrNotFound(object);
-                }else{
-                    throw new BadRequestAlertException("The object is not assigned to this vendor user", ENTITY_NAME, "idexists");
-                }
-            }
-            throw new BadRequestAlertException("The object is not assigned to this vendor user", ENTITY_NAME, "idexists");
-        }
-
-        throw new BadRequestAlertException("The object is not assigned  user", ENTITY_NAME, "idexists");
-
-    }
-
-
-    /**
-     * {@code GET  /aidas-objects/:id} : get the "id" object.
-     *
-     * @param objectId the id of the object to retrieve.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the object, or with status {@code 404 (Not Found)}.
-     */
-    @GetMapping("/aidas-objects/assinged-users/{objectId}")
-    public ResponseEntity<List<User>> getAssignedAidasUser(@PathVariable Long objectId) {
-        log.debug("REST request to get assigned users for AidasObject : {}", objectId);
-        List<User> assignedUsers = userRepository.getUsersByAssignedToObject(objectId);
-        return ResponseEntity.ok().body(assignedUsers);
-    }
-
-    /**
-     * {@code GET  /aidas-objects/:id} : get the "id" object.
-     *
-     * @param objectId the id of the object to retrieve.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the object, or with status {@code 404 (Not Found)}.
-     */
-    @GetMapping("/aidas-objects/unassinged-users/{objectId}")
-    public ResponseEntity<List<User>> getUnAssignedAidasUser(@PathVariable Long objectId) {
-        log.debug("REST request to get unassigned users for AidasObject : {}", objectId);
-        List<User> unAssignedUsers = userRepository.getUsersByNotAssignedToObject(objectId);
-        return ResponseEntity.ok().body(unAssignedUsers);
+        return ResponseUtil.wrapOrNotFound(object);
     }
 
 
@@ -902,25 +376,7 @@ public class ObjectResource {
     @DeleteMapping("/aidas-objects/{id}")
     public ResponseEntity<Void> deleteAidasObject(@PathVariable Long id) {
         log.debug("REST request to delete AidasObject : {}", id);
-        User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         Object object = objectRepository.getById(id);
-        //aidasObjectRepository.deleteById(id);
-        //aidasObjectSearchRepository.deleteById(id);
-        if(user.getAuthority().getName().equals(AidasConstants.ORG_ADMIN) && user.getOrganisation()!=null ){
-            Optional<Customer> customer = customerRepository.findById(object.getProject().getCustomer().getId());
-            if(customer.isPresent()){
-                if(!object.getProject().getCustomer().equals(customer.get())){
-                    throw new BadRequestAlertException("Not Authorized", ENTITY_NAME, "idexists");
-                }
-            }else{
-                throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
-            }
-        }
-        if( user.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN)){
-            if(user.getCustomer()!=null && !user.getCustomer().equals(object.getProject().getCustomer())){
-                throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
-            }
-        }
         if(object !=null) {
             object.setStatus(0);
             objectRepository.save(object);
@@ -930,46 +386,7 @@ public class ObjectResource {
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
             .build();
     }
-
-    /**
-     * {@code SEARCH  /_search/aidas-objects?query=:query} : search for the object corresponding
-     * to the query.
-     *
-     * @param query the query of the object search.
-     * @param pageable the pagination information.
-     * @return the result of the search.
-     */
-    @GetMapping("/_search/aidas-objects")
-    public ResponseEntity<List<Object>> searchAidasObjects(@RequestParam String query, Pageable pageable) {
-        log.debug("REST request to search for a page of AidasObjects for query {}", query);
-        Page<Object> page = aidasObjectSearchRepository.search(query, pageable);
-        User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-        if(user.getAuthority().getName().equals(AidasConstants.ORG_ADMIN) && user.getOrganisation()!=null) {
-            Iterator<Object> it = page.getContent().iterator();
-            while(it.hasNext()){
-                Object object = it.next();
-                if(!object.getProject().getCustomer().getOrganisation().equals(user.getOrganisation())){
-                    it.remove();
-                }
-            }
-        }
-        if(user.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN) && user.getCustomer()!=null) {
-            Iterator<Object> it = page.getContent().iterator();
-            while(it.hasNext()){
-                Object object = it.next();
-                if(!object.getProject().getCustomer().equals(user.getCustomer())){
-                    it.remove();
-                }
-            }
-        }
-        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
-        return ResponseEntity.ok().headers(headers).body(page.getContent());
-    }
-
-
-
-    @Autowired
-    DownloadUploadS3 downloadUploadS3;
+    
     /**
      * {@code GET  /download/:id/:status} : download objects with the "id" object and provided status.  User "all" for download both.
      *

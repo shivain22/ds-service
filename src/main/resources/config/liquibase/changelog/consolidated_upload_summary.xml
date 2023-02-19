@@ -347,7 +347,8 @@
             `a`.`pending` AS `pending`,
             `a`.`p_total_uploaded` AS `p_total_uploaded`,
             `a`.`p_rejected` AS `p_rejected`,
-            `a`.`total_required` AS `total_required`
+            `a`.`total_required` AS `total_required`,
+            `a`.`uvmpm_status` AS `uvmpm_status`
             FROM
             (SELECT
             `ainnotateservice`.`consolidated_upload_summary`.`project_id` AS `project_id`,
@@ -379,12 +380,13 @@
             `ainnotateservice`.`uvmpmv`.`approved` AS `approved`,
             `ainnotateservice`.`uvmpmv`.`pending` AS `pending`,
             `ainnotateservice`.`uvmpmv`.`p_total_uploaded` AS `p_total_uploaded`,
+            `ainnotateservice`.`uvmpmv`.`uvmpm_status` AS `uvmpm_status`,
             `a`.`total_required` AS `total_required`
             FROM
             (`ainnotateservice`.`user_vendor_mapping_project_mapping_view` `uvmpmv`
             JOIN (SELECT
             `ainnotateservice`.`user_vendor_mapping_project_mapping_view`.`project_id` AS `project_id`,
-            MAX(`ainnotateservice`.`user_vendor_mapping_project_mapping_view`.`total_required` ) AS `total_required`
+            MAX(`ainnotateservice`.`user_vendor_mapping_project_mapping_view`.`total_required`) AS `total_required`
             FROM
             `ainnotateservice`.`user_vendor_mapping_project_mapping_view`
             GROUP BY `ainnotateservice`.`user_vendor_mapping_project_mapping_view`.`project_id`) `a`)
@@ -407,7 +409,9 @@
             `a`.`pending` AS `pending`,
             `a`.`o_total_uploaded` AS `o_total_uploaded`,
             `a`.`total_required` AS `total_required`,
-            `a`.`o_rejected` AS `o_rejected`
+            `a`.`o_rejected` AS `o_rejected`,
+            `a`.`uvmom_status` AS `uvmom_status`
+
             FROM
             (SELECT
             `ainnotateservice`.`consolidated_upload_summary`.`project_id` AS `project_id`,
@@ -441,7 +445,8 @@
             `ainnotateservice`.`uvmomv`.`approved` AS `approved`,
             `ainnotateservice`.`uvmomv`.`pending` AS `pending`,
             `ainnotateservice`.`uvmomv`.`o_total_uploaded` AS `o_total_uploaded`,
-            `a`.`total_required` AS `total_required`
+            `a`.`total_required` AS `total_required`,
+            `ainnotateservice`.`uvmomv`.`uvmom_status` AS `uvmom_status`
             FROM
             (`ainnotateservice`.`user_vendor_mapping_object_mapping_view` `uvmomv`
             JOIN (SELECT
@@ -590,7 +595,7 @@
             uuid() as user_vendor_mapping_project_mapping_id,
             0 as status
             from user u, user_vendor_mapping uvm, user_authority_mapping uam,vendor v where
-            uvm.user_id=u.id and uam.user_id=u.id and uvm.vendor_id=v.id
+            uvm.user_id=u.id and uam.user_id=u.id and uvm.vendor_id=v.id and uam.authority_id=5
         </createView>
         <createView  catalogName="ainnotateservice"
                      encoding="UTF-8"
