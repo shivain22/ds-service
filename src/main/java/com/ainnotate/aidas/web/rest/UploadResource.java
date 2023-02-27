@@ -302,8 +302,7 @@ public class UploadResource {
 	public ResponseEntity<Integer> getObjectStatus(@PathVariable(value = "id", required = false) final Long objectId) {
 		log.debug("REST request to get a page of AidasObjects");
 		Object object = objectRepository.getById(objectId);
-		Integer moreRequired = object.getNumberOfUploadsRequired()
-				- ((object.getTotalApproved() + object.getTotalPending()));
+		Integer moreRequired = object.getNumberOfUploadsRequired() - ((object.getTotalApproved() + object.getTotalPending()));
 		return ResponseEntity.ok().body(moreRequired);
 	}
 

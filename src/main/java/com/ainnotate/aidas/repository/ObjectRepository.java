@@ -327,7 +327,7 @@ public interface ObjectRepository
 	}
 	
 	@Modifying
-	@Query(value = "update object set total_uploaded=total_uploaded+1, total_pending=total_pending-1, total_required=total_required-1 where id=?1", nativeQuery = true)
+	@Query(value = "update object set total_uploaded=total_uploaded+1, total_pending=total_pending+1, total_required=total_required-1 where id=?1", nativeQuery = true)
 	void addUploadedAddPendingSubtractRequiredFromObject(Long objectId);
 
 	
