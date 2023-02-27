@@ -21,6 +21,9 @@ public interface UserVendorMappingObjectMappingRepository extends JpaRepository<
 
     @Query(value = "select uvmom.* from user_vendor_mapping_object_mapping uvmom,user_vendor_mapping uvm where uvmom.user_vendor_mapping_id=uvm.id and uvm.user_id=?1 and object_id=?2", nativeQuery = true)
     UserVendorMappingObjectMapping findByUserObject(Long userId, Long objectId);
+    
+    @Query(value = "select uvmom.* from user_vendor_mapping_object_mapping uvmom,user_vendor_mapping uvm where uvmom.user_vendor_mapping_id=uvm.id and uvm.user_id=?1 and object_id=?2 for update", nativeQuery = true)
+    UserVendorMappingObjectMapping findByUserObjectForUpload(Long userId, Long objectId);
 
     @Query(value = "select * from user_vendor_mapping_object_mapping uvmom,user_vendor_mapping uvm,object o where uvmom.object_id=o.id and uvmom.user_vendor_mapping_id=uvm.id and uvm.user_id<>?1 and object_id=?2 and uvmom.status=1 and o.project_id=?3", nativeQuery = true)
     List<UserVendorMappingObjectMapping> findByOtherUsersAndObject(Long userId, Long objectId,Long projectId);
@@ -62,6 +65,10 @@ public interface UserVendorMappingObjectMappingRepository extends JpaRepository<
     @Modifying
     @Query(value = "delete from user_vendor_mapping_object_mapping where is_sample_data=1 order by id desc",nativeQuery = true)
     void deleteAllSampleUserVendorMappingObjectMappings();
+    
+    @Modifying
+    @Query(value = "update user_vendor_mapping_object_mapping set total_uploaded=total_uploaded+1, total_pending=total_pending+1 where id=?1",nativeQuery = true)
+    void addTotalUploadedAndAddTotalPending(Long id);
 
     @Query(value = "",nativeQuery = true)
     List<UserVendorMappingObjectMapping> getUserVendorMappingObjectMappingByObjectId(Long objectId);
@@ -89,4 +96,7 @@ public interface UserVendorMappingObjectMappingRepository extends JpaRepository<
 
     @Query(value="select pending from object_level_upload_summary where object_id=?1",nativeQuery = true)
     Integer getTotalPending(Long ObjectId);
+    
+    @Query(value="select * from user_vendor_mapping_object_mapping uvmom where uvmom.id=?1",nativeQuery = true)
+    UserVendorMappingObjectMapping getUvmom(Long id);
 }

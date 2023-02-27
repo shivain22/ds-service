@@ -4,6 +4,7 @@ import com.ainnotate.aidas.domain.*;
 import com.ainnotate.aidas.domain.Object;
 import com.ainnotate.aidas.dto.*;
 import com.ainnotate.aidas.repository.*;
+import com.ainnotate.aidas.repository.predicates.ProjectPredicatesBuilder;
 import com.ainnotate.aidas.repository.search.ProjectSearchRepository;
 import com.ainnotate.aidas.constants.AidasConstants;
 import com.ainnotate.aidas.security.SecurityUtils;
@@ -11,6 +12,7 @@ import com.ainnotate.aidas.service.CSVHelper;
 import com.ainnotate.aidas.service.DownloadUploadS3;
 import com.ainnotate.aidas.service.ObjectAddingTask;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
+import com.querydsl.core.types.dsl.BooleanExpression;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -18,6 +20,9 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -163,7 +168,7 @@ public class ProjectResource {
                     if(isQcLevelConfigsAdded==project.getProjectQcLevelConfigurations().size()){
                         project.setBufferStrategy(AidasConstants.PROJECT_BUFFER_STATUS_PROJECT_LEVEL);
                         project = projectRepository.save(project);
-                        projectRepository.addProjectProperties(project.getId(), category.getId());
+                        projectRepository.addProjectProperties(project.getId(), category.getId(),project.getCustomer().getId());
                         Object obj = new Object();
                         obj.setName(project.getName() + " - Dummy Object");
                         obj.setNumberOfUploadsRequired(0);
@@ -187,12 +192,16 @@ public class ProjectResource {
                             }
                             objectRepository.createObjects(prefix, suffix, project.getId(), 0, 0, 1, project.getNumberOfUploadsRequired(), project.getNumberOfUploadsRequired(), project.getNumberOfUploadsRequired(),numberOfBufferedObjectsRequired);
                             objectRepository.addObjectProperties(project.getId(), category.getId());
-                            project.setTotalRequired(project.getNumberOfObjects() * project.getNumberOfUploadsRequired());
+                            if(project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)) {
+                            	project.setTotalRequired(project.getNumberOfObjects());
+                            }else {
+                            	project.setTotalRequired(project.getNumberOfObjects() * project.getNumberOfUploadsRequired());	
+                            }
                             project.setNumberOfBufferedUploadsdRequired(numberOfBufferedObjectsRequired * project.getNumberOfUploadsRequired());
                             project.setNumberOfObjects(numberOfBufferedObjectsRequired);
                             projectRepository.save(project);
                         }
-                        aidasProjectSearchRepository.save(project);
+                       
                         return ResponseEntity
                             .created(new URI("/api/aidas-projects/" + project.getId()))
                             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, project.getId().toString()))
@@ -818,14 +827,9 @@ public class ProjectResource {
     @GetMapping("/aidas-projects/{id}")
     public ResponseEntity<Project> getProject(@PathVariable Long id) {
         log.debug("REST request to get AidasProject : {}", id);
-        User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-        Project project =projectRepository.findById(id).get();
-        if(project!=null) {
-            return ResponseEntity.ok().body(project);
-        }else{
-
-            throw new BadRequestAlertException("Not Authorised", ENTITY_NAME, "idexists");
-        }
+        Project project =projectRepository.getById(id);
+        project.setProjectProperties(projectPropertyRepository.findAllByAidasProjectIdGreaterThanForDropDown(id));
+        return ResponseEntity.ok().body(project);
     }
 
     /**
@@ -881,6 +885,24 @@ public class ProjectResource {
         log.debug("REST request to search for a page of AidasProjects for query {}", query);
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         Page<Project> page = projectRepository.search(pageable,"projectName",query);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+    
+    @GetMapping(value = "/search/projects")
+    @ResponseBody
+    public ResponseEntity<List<Project>> search(@RequestParam(value = "search") String search, Pageable pageable) {
+        ProjectPredicatesBuilder builder = new ProjectPredicatesBuilder();
+
+        if (search != null) {
+            Pattern pattern = Pattern.compile("(\\w+?)(:|<|>)(\\w+?),");
+            Matcher matcher = pattern.matcher(search + ",");
+            while (matcher.find()) {
+                builder.with(matcher.group(1), matcher.group(2), matcher.group(3));
+            }
+        }
+        BooleanExpression exp = builder.build();
+        Page<Project> page = projectRepository.findAll(exp,pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }

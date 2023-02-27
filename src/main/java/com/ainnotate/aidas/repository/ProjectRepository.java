@@ -145,9 +145,17 @@ public interface ProjectRepository extends JpaRepository<Project, Long>,Querydsl
     List<Integer> getProjectLevelUploadRequirements(Long projectId);
 
 
-    @Modifying
-    @Query(value = "insert into project_property (status,add_to_metadata,default_prop,optional,passed_from_app,value,category_id,project_id,property_id,project_property_type,show_to_vendor_user) (select p.status,p.add_to_metadata,p.default_prop,p.optional,p.passed_from_app,p.value,?2,?1,p.id,?2,p.show_to_vendor_user from property p where p.customer_id=?1 and (p.category_id=1 or p.category_id=?2))",nativeQuery = true)
-    void addProjectProperties(Long projectId,Long categoryId);
+    @Modifying(flushAutomatically = true,clearAutomatically = true)
+    @Query(value = "insert into project_property (status,add_to_metadata,default_prop,optional,passed_from_app,value,category_id,project_id,property_id,project_property_type,show_to_vendor_user) select p.status,p.add_to_metadata,p.default_prop,p.optional,p.passed_from_app,p.value,?2,?1,p.id,?2,p.show_to_vendor_user from property p where p.customer_id=?3 and (p.category_id=1 or p.category_id=?2)",nativeQuery = true)
+    void addProjectProperties(Long projectId,Long categoryId, Long customerId);
+    
+    @Modifying(flushAutomatically = true,clearAutomatically = true)
+    @Query(value = "update project set total_uploaded=total_uploaded+1, total_pending=total_pending+1, total_required=total_required-1 where id=?1",nativeQuery = true)
+    void addUploadedAddPendingSubtractRequired(Long projectId);
+    
+    @Modifying(flushAutomatically = true,clearAutomatically = true)
+    @Query(value = "update project set number_of_objects=number_of_objects-1 where id=?1",nativeQuery = true)
+    void subtractNumberOfObjects(Long projectId);
 
     @Override
     default public void customize(
@@ -156,4 +164,7 @@ public interface ProjectRepository extends JpaRepository<Project, Long>,Querydsl
             .first((SingleValueBinding<StringPath, String>) StringExpression::containsIgnoreCase);
 
     }
+    
+    @Query(value="select * from project p, object o where o.project_id=p.id and o.id=?1 for update",nativeQuery = true)
+    Project getByIdForUpload(Long objectId);
 }

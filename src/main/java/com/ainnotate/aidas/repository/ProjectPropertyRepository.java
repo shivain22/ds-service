@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Spring Data SQL repository for the AidasProjectProperty entity.
@@ -21,7 +22,7 @@ public interface ProjectPropertyRepository extends JpaRepository<ProjectProperty
     Page<ProjectProperty> findAllByAidasProjectIdGreaterThan(Pageable page, Long projectId);
 
     @Query(value = "select * from project_property app where app.project_id=?1",nativeQuery = true)
-    List<ProjectProperty> findAllByAidasProjectIdGreaterThanForDropDown(Long projectId);
+    Set<ProjectProperty> findAllByAidasProjectIdGreaterThanForDropDown(Long projectId);
 
     @Query(value="select * from project_property pp where pp.project_id=?1 and pp.project_property_type=2 and pp.show_to_vendor_user=1",nativeQuery = true)
     List<ProjectProperty> findAllMetaDataToBeFilledByVendorUser(Long projectId);

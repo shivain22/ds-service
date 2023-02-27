@@ -49,4 +49,7 @@ public interface ObjectPropertyRepository extends JpaRepository<ObjectProperty, 
 
     @Query(value = "select count(*) from object_property op where op.object_id=?1 and op.optional=0",nativeQuery = true)
     Integer getMandatoryPropertyCountForObject(Long objectId);
+    
+    @Query(value = "select * from object_property op,object o where op.object_id=o.id and o.project_id=?1 and op.property_id=?2",nativeQuery = true)
+    List<ObjectProperty> getAllObjectPropertiesOfProject(Long projectId,Long propertyId);
 }

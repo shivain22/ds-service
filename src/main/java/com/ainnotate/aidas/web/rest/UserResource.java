@@ -5,6 +5,7 @@ import com.ainnotate.aidas.domain.*;
 import com.ainnotate.aidas.domain.Object;
 import com.ainnotate.aidas.dto.*;
 import com.ainnotate.aidas.repository.*;
+import com.ainnotate.aidas.repository.predicates.ProjectPredicatesBuilder;
 import com.ainnotate.aidas.repository.search.UserSearchRepository;
 import com.ainnotate.aidas.constants.AidasConstants;
 import com.ainnotate.aidas.security.SecurityUtils;
@@ -17,6 +18,8 @@ import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.time.Instant;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -24,6 +27,8 @@ import javax.ws.rs.core.Response;
 
 import com.ainnotate.aidas.web.rest.vm.ChangePasswordUserVM;
 import com.ainnotate.aidas.web.rest.vm.ManagedUserVM;
+import com.querydsl.core.types.dsl.BooleanExpression;
+
 /*import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
@@ -145,7 +150,7 @@ public class UserResource {
     public ResponseEntity<User> createAidasUser(@Valid @RequestBody User user) throws URISyntaxException {
         log.debug("REST request to save AidasUser : {}", user);
         User loggedInUser = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-        User tmp = userRepository.getAidasUserByLogin(user.getEmail());
+        User tmp = userRepository.getUserByEmail(user.getEmail());
         if(tmp!=null){
             throw new BadRequestAlertException("User with login is already available in the system.  Please contact admin to reset your account.", ENTITY_NAME, "idexists");
         }
@@ -272,7 +277,7 @@ public class UserResource {
             }
         }catch(Exception e){
             e.printStackTrace();
-            throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
+            throw new BadRequestAlertException("User already exists in the DB.", ENTITY_NAME, "idexists");
         }
     }
 
@@ -1214,5 +1219,23 @@ public class UserResource {
             user.setAttributes(userAttrs);
         }
         userResource.update(user);
+    }
+    
+    @GetMapping(value = "/search/users")
+    @ResponseBody
+    public ResponseEntity<List<User>> search(@RequestParam(value = "search") String search, Pageable pageable) {
+        ProjectPredicatesBuilder builder = new ProjectPredicatesBuilder();
+
+        if (search != null) {
+            Pattern pattern = Pattern.compile("(\\w+?)(:|<|>)(\\w+?),");
+            Matcher matcher = pattern.matcher(search + ",");
+            while (matcher.find()) {
+                builder.with(matcher.group(1), matcher.group(2), matcher.group(3));
+            }
+        }
+        BooleanExpression exp = builder.build();
+        Page<User> page = userRepository.findAll(exp,pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 }

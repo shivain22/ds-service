@@ -1,5 +1,6 @@
 package com.ainnotate.aidas.repository.predicates;
 
+import com.ainnotate.aidas.domain.Customer;
 import com.ainnotate.aidas.domain.Project;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.NumberPath;
@@ -8,15 +9,15 @@ import com.querydsl.core.types.dsl.StringPath;
 
 import static org.apache.commons.lang3.StringUtils.isNumeric;
 
-public class ProjectPredicate {
-    public ProjectPredicate(SearchCriteria criteria) {
+public class CustomerPredicate {
+    public CustomerPredicate(SearchCriteria criteria) {
         this.criteria = criteria;
     }
 
     private SearchCriteria criteria;
 
     public BooleanExpression getPredicate() {
-        PathBuilder<Project> entityPath = new PathBuilder<>(Project.class, "project");
+        PathBuilder<Object> entityPath = new PathBuilder<>(Customer.class, "customer");
 
         if (isNumeric(criteria.getValue().toString())) {
         	if(!criteria.getKey().equals("name")) {
@@ -31,11 +32,11 @@ public class ProjectPredicate {
 	                    return path.loe(value);
 	            }
         	}else {
-        		StringPath path = entityPath.getString(criteria.getKey());
+                StringPath path = entityPath.getString(criteria.getKey());
                 if (criteria.getOperation().equalsIgnoreCase(":")) {
                     return path.containsIgnoreCase(criteria.getValue().toString());
                 }
-        	}
+            }
         }
         else {
             StringPath path = entityPath.getString(criteria.getKey());

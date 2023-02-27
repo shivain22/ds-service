@@ -71,13 +71,13 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
 
     @Column(name = "object_key",  nullable = true)
     private String objectKey;
-    @OneToMany(mappedBy = "upload",fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "upload",cascade = CascadeType.ALL)
     @Fetch(FetchMode.SUBSELECT)
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     @JsonIgnoreProperties(value = { "upload","project","object" }, allowSetters = true)
     private Set<UploadMetaData> uploadMetaDataSet = new HashSet<>();
     @Column(name="status", nullable=false)
-    private Integer status;
+    private Integer status=1;
     @Column(name="approval_status",nullable = true)
     private Integer approvalStatus=2;
     @Column(name="qc_status", nullable=true)
@@ -100,11 +100,11 @@ public class Upload extends AbstractAuditingEntity  implements Serializable {
     private transient String uploadMetaData;
     @Transient
     private Integer reworkCount;
+    
     @ManyToOne(optional = false,fetch = FetchType.EAGER)
-    @JsonIgnoreProperties(value = { "user", "object", "aidasUploads" }, allowSetters = true)
-    @JsonIgnore
     @JoinColumn(name = "user_vendor_mapping_object_mapping_id", nullable = true, foreignKey = @ForeignKey(name="fk_upload_uvmom"))
     private UserVendorMappingObjectMapping userVendorMappingObjectMapping;
+    
     @Column(name ="current_qc_level",columnDefinition = "integer default 1")
     private Integer currentQcLevel=1;
     @Column(name ="previous_qc_status",columnDefinition = "integer default 1")

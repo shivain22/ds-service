@@ -1,19 +1,26 @@
 package com.ainnotate.aidas.web.rest;
 
 import com.ainnotate.aidas.domain.AppProperty;
+import com.ainnotate.aidas.domain.Object;
 import com.ainnotate.aidas.domain.Organisation;
 import com.ainnotate.aidas.domain.User;
 import com.ainnotate.aidas.repository.AppPropertyRepository;
 import com.ainnotate.aidas.repository.OrganisationRepository;
 import com.ainnotate.aidas.repository.UserRepository;
+import com.ainnotate.aidas.repository.predicates.ProjectPredicatesBuilder;
 import com.ainnotate.aidas.repository.search.OrganisationSearchRepository;
 import com.ainnotate.aidas.constants.AidasConstants;
 import com.ainnotate.aidas.security.SecurityUtils;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
+import com.querydsl.core.types.dsl.BooleanExpression;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -324,6 +331,24 @@ public class OrganisationResource {
         log.debug("REST request to search for a page of AidasOrganisations for query {}", query);
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         Page<Organisation> page = aidasOrganisationSearchRepository.search(query, pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+    
+    @GetMapping(value = "/search/organisations")
+    @ResponseBody
+    public ResponseEntity<List<Organisation>> search(@RequestParam(value = "search") String search, Pageable pageable) {
+        ProjectPredicatesBuilder builder = new ProjectPredicatesBuilder();
+
+        if (search != null) {
+            Pattern pattern = Pattern.compile("(\\w+?)(:|<|>)(\\w+?),");
+            Matcher matcher = pattern.matcher(search + ",");
+            while (matcher.find()) {
+                builder.with(matcher.group(1), matcher.group(2), matcher.group(3));
+            }
+        }
+        BooleanExpression exp = builder.build();
+        Page<Organisation> page = organisationRepository.findAll(exp,pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }

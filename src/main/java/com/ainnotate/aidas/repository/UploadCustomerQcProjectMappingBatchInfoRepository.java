@@ -122,8 +122,10 @@ public interface UploadCustomerQcProjectMappingBatchInfoRepository extends JpaRe
     @Query(value="select * from upload_cqpm_batch_info ucbi where ucbi.upload_id=?1 and ucbi.customer_qc_project_mapping_id=?2 and ucbi.batch_number=?3",nativeQuery = true)
     UploadCustomerQcProjectMappingBatchInfo findByUploadIdAndCustomerQcProjectMappingId(Long uploadId,Long customerQcProjectMappingId,Integer batchNumber);
     
-    @Query(value="select u.*  from upload_cqpm_batch_info ucbi,upload u where ucbi.upload_id =u.id and ucbi.batch_number=?1",nativeQuery = true)
-    List<Upload> getUploadIdsInBatch(Long batchNumber);
+    
+    
+    @Query(value="select count(*)  from upload_cqpm_batch_info ucbi where ucbi.qc_status=1 and ucbi.batch_number in (?1)",nativeQuery = true)
+    Integer getApprovedUploadsCount(List<Long> batchNumber);
     
     @Query(value="select * from upload_cqpm_batch_info ucbi where ucbi.upload_id=?1",nativeQuery = true)
     UploadCustomerQcProjectMappingBatchInfo getByUploadId(Long uploadId);

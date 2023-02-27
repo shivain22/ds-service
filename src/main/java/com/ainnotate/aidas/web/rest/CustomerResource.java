@@ -2,19 +2,26 @@ package com.ainnotate.aidas.web.rest;
 
 import com.ainnotate.aidas.domain.AppProperty;
 import com.ainnotate.aidas.domain.Customer;
+import com.ainnotate.aidas.domain.Organisation;
 import com.ainnotate.aidas.domain.Property;
 import com.ainnotate.aidas.domain.User;
 import com.ainnotate.aidas.repository.AppPropertyRepository;
 import com.ainnotate.aidas.repository.CustomerRepository;
 import com.ainnotate.aidas.repository.PropertyRepository;
 import com.ainnotate.aidas.repository.UserRepository;
+import com.ainnotate.aidas.repository.predicates.ProjectPredicatesBuilder;
 import com.ainnotate.aidas.repository.search.CustomerSearchRepository;
 import com.ainnotate.aidas.constants.AidasConstants;
 import com.ainnotate.aidas.security.SecurityUtils;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
+import com.querydsl.core.types.dsl.BooleanExpression;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
@@ -266,6 +273,24 @@ public class CustomerResource {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to search for a page of AidasCustomers for query {}", query);
         Page<Customer> page = aidasCustomerSearchRepository.search(query, pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+    
+    @GetMapping(value = "/search/customers")
+    @ResponseBody
+    public ResponseEntity<List<Customer>> search(@RequestParam(value = "search") String search, Pageable pageable) {
+        ProjectPredicatesBuilder builder = new ProjectPredicatesBuilder();
+
+        if (search != null) {
+            Pattern pattern = Pattern.compile("(\\w+?)(:|<|>)(\\w+?),");
+            Matcher matcher = pattern.matcher(search + ",");
+            while (matcher.find()) {
+                builder.with(matcher.group(1), matcher.group(2), matcher.group(3));
+            }
+        }
+        BooleanExpression exp = builder.build();
+        Page<Customer> page = customerRepository.findAll(exp,pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }

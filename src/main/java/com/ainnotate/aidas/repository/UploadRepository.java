@@ -302,16 +302,16 @@ public interface UploadRepository extends JpaRepository<Upload, Long> {
         "    u.current_qc_level=1",nativeQuery = true)
     List<Long[]> findObjectsWithUvmomQcNotStarted(Long projectId,Integer qcLevel);
     
+    @Query(value="select u.* from upload u where u.user_vendor_mapping_object_mapping_id in (?1) order by u.user_vendor_mapping_object_mapping_id,u.id limit ?2",nativeQuery = true)
+    List<Upload> findAllUploadIdsNonGrouped(List<Long> uvmomIds,Integer batchSize);
+    
     @Query(value="select u.* from upload u where u.user_vendor_mapping_object_mapping_id in (?1) order by u.user_vendor_mapping_object_mapping_id,u.id",nativeQuery = true)
-    List<Upload> findAllUploadIds(List<Long> uvmomIds);
+    List<Upload> findAllUploadIdsGrouped(List<Long> uvmomIds);
     
     @Query(value="select o.id from object o where o.qc_start_status=0 and o.project_id=?1 and o.current_qc_level=?2 order by o.id limit ?3",nativeQuery = true)
     List<Long> findAllObjectsQcNotStarted(Long projectId,Integer qcLevel,Integer batchSize);
     
-    @Query(value="select uvmom.id from user_vendor_mapping_object_mapping uvmom where uvmom.qc_start_status=0 and uvmom.object_id in (?1) and uvmom.current_qc_level=?2 order by uvmom.id limit ?3",nativeQuery = true)
-    List<Long> findAllUvmomsQcNotStarted(List<Long> objectIds,Integer qcLevel,Integer batchSize);
-    
-    @Query(value="select uvmom.id from user_vendor_mapping_object_mapping uvmom,object o where uvmom.object_id=o.id and o.project_id=?1 and uvmom.qc_start_status=0  and uvmom.current_qc_level=?1 order by uvmom.id limit ?3",nativeQuery = true)
+    @Query(value="select uvmom.id from user_vendor_mapping_object_mapping uvmom,object o where uvmom.object_id=o.id and o.project_id=?1 and uvmom.qc_start_status=0  and uvmom.current_qc_level=?2 and o.is_dummy=0 order by uvmom.id limit ?3",nativeQuery = true)
     List<Long> findAllUvmomsQcNotStarted(Long projectId,Integer qcLevel,Integer batchSize);
 
     @Query(value="select u.* from upload u, user_vendor_mapping_object_mapping uvmom, object o where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and o.project_id=?1 and  u.metadata_status=1 and u.current_qc_level=?2 and o.id=?4 and u.user_vendor_mapping_object_mapping_id=?5 order by uvmom.id, o.id limit ?3  ",nativeQuery = true)
@@ -363,10 +363,31 @@ public interface UploadRepository extends JpaRepository<Upload, Long> {
     @Modifying
     @Query(value = "update upload set metadata_status=?2 where id=?1",nativeQuery = true)
     void updateMetadataStatus(Long id,Integer status);
+    
+    @Modifying
+    @Query(value = "update user_vendor_mapping_object_mapping set qc_start_status=0,current_qc_level=1 where id=?1",nativeQuery = true)
+    void updateUvmomQcStatus(Long uvmomId);
+    
+    
+    @Modifying
+    @Query(value = "update object set qc_start_status=0,current_qc_level=1 where id=?1",nativeQuery = true)
+    void updateObjectQcStatus(Long objectId);
+    
+    @Modifying
+    @Query(value = "update project set qc_start_status=0,current_qc_level=1 where id=?1",nativeQuery = true)
+    void updateProjectQcStatus(Long projectId);
 
     @Query(value="select u.* from upload u, user_vendor_mapping_object_mapping uvmom, object o where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and o.project_id=?1",nativeQuery = true)
     List<Upload> findAllUploadByProject(Long projectId);
 
-
+    @Query(value="select u.*  from upload_cqpm_batch_info ucbi,upload u where ucbi.upload_id =u.id and ucbi.batch_number=?1",nativeQuery = true)
+    List<Upload> getUploadIdsInBatch(Long batchNumber);
+    
+    @Query(value="select u.id as upload_id, o.id as object_id,u.user_vendor_mapping_object_mapping_id as uvmomvId, o.name as object_name   from object o,user_vendor_mapping_object_mapping uvom, "
+    		+ " upload_cqpm_batch_info ucbi,upload u where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and  ucbi.upload_id =u.id and ucbi.batch_number=?1",nativeQuery = true)
+    List<String[]> getUploadIdsInBatchDto(Long batchNumber);
+    
+    
+    
 
 }

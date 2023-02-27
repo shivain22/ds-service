@@ -64,6 +64,9 @@ spring:
         prepStmtCacheSqlLimit: 2048
         useServerPrepStmts: true
   jpa:
+    properties:
+      spring.jpa.properties.hibernate.dialect: org.hibernate.dialect.MySQL8Dialect
+      spring.jpa.properties.hibernate.dialect.storage_engine: innodb
   elasticsearch:
     rest:
       uris: http://localhost:9200

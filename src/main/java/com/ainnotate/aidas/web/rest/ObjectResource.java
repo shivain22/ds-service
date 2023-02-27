@@ -4,6 +4,8 @@ import com.ainnotate.aidas.domain.*;
 import com.ainnotate.aidas.domain.Object;
 import com.ainnotate.aidas.dto.*;
 import com.ainnotate.aidas.repository.*;
+import com.ainnotate.aidas.repository.predicates.ObjectPredicatesBuilder;
+import com.ainnotate.aidas.repository.predicates.ProjectPredicatesBuilder;
 import com.ainnotate.aidas.repository.search.ObjectSearchRepository;
 import com.ainnotate.aidas.constants.AidasConstants;
 import com.ainnotate.aidas.security.SecurityUtils;
@@ -14,11 +16,16 @@ import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.querydsl.core.types.dsl.BooleanExpression;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -254,7 +261,7 @@ public class ObjectResource {
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
-    @Secured({AidasConstants.VENDOR_USER})
+    
     @GetMapping("/aidas-projects/{id}/aidas-objects/details")
     public ResponseEntity<List<ObjectDTO>> getAllAidasObjectsOfProjectForVendorUser(Pageable pageable, @PathVariable(value = "id", required = false) final Long projectId) {
         log.debug("REST request to get a page of AidasObjects");
@@ -267,22 +274,44 @@ public class ObjectResource {
         UserVendorMapping uvm = userVendorMappingRepository.findByVendorIdAndUserId(user.getVendor().getId(),user.getId());
         Integer numOfObjectsAlreadyAssigned = 0;
         if(project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)){
-        	PageRequest pages = PageRequest.of(0, pageable.getPageSize(), pageable.getSort());
         	numOfObjectsAlreadyAssigned = objectRepository.getAllObjectsByVendorUserProjectWithProjectId(uvm.getId(),projectId,pageable.getPageSize(),0);
         	if(numOfObjectsAlreadyAssigned==0) {
-        		page = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdForGroupedDto(pageable,projectId);
-        		setProps(page.getContent());
+        		page = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdForGroupedDto(pageable,projectId,pageable.getPageSize());
         	}else {
-        		page = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdForGroupedForNewRequest(pages,uvm.getId(),projectId);
-        		setProps(page.getContent());
+        		page = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdForGroupedForNewRequest(pageable,uvm.getId(),projectId);
         		HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
                 return ResponseEntity.ok().headers(headers).body(page.getContent());
         	}
         	
         }else {
         	numOfObjectsAlreadyAssigned = objectRepository.getAllObjectsByVendorUserProjectWithProjectId(uvm.getId(),projectId,pageable.getPageSize(),pageable.getPageNumber());
-        	page = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdForNonGrouped(pageable,projectId);
-        	setProps(page.getContent());
+        	if(numOfObjectsAlreadyAssigned==0) {
+        		page = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdForGroupedDto(pageable,projectId,pageable.getPageSize());
+        	}else {
+        		page = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdForNonGroupedForNewRequest(pageable,uvm.getId(),projectId);
+				/*
+				 * HttpHeaders headers =
+				 * PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.
+				 * fromCurrentRequest(), page); return
+				 * ResponseEntity.ok().headers(headers).body(page.getContent());
+				 */
+        	}
+        	for(ObjectDTO o:page.getContent()){
+                UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserVendorMappingObject(uvm.getId(),o.getId());
+                Object object = objectRepository.getById(o.getId());
+                if(uvmom==null){
+                    uvmom  = new UserVendorMappingObjectMapping();
+                    uvmom.setUserVendorMapping(uvm);
+                    uvmom.setStatus(AidasConstants.AUTO_CREATE_OBJECT_ENABLE);
+                    uvmom.setObject(object);
+                    userVendorMappingObjectMappingRepository.save(uvmom);
+                }
+                if(project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)){
+                	object.setUserVendorMappingObjectMappingId(uvmom.getId());
+                	object.setObjectAcquiredByUvmomId(uvmom.getId());
+	                objectRepository.save(object);
+                }
+            }
         	HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
             return ResponseEntity.ok().headers(headers).body(page.getContent());
         }
@@ -303,12 +332,10 @@ public class ObjectResource {
 	                objectRepository.save(object);
                 }
             }
-            setProps(page.getContent());
             HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
             return ResponseEntity.ok().headers(headers).body(page.getContent());
         }else {
         	page = objectRepository.getAllObjectsWithUvmom(pageable,user.getId(), projectId);
-        	setProps(page.getContent());
             HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
             return ResponseEntity.ok().headers(headers).body(page.getContent());
         }
@@ -321,32 +348,34 @@ public class ObjectResource {
     }
 
     @GetMapping("/aidas-projects/{id}/aidas-objects/details/fresh-batch")
-    public synchronized ResponseEntity<List<Object>> getAllAidasObjectsOfProjectForVendorUserFreshBatch(Pageable pageable, @PathVariable(value = "id", required = false) final Long projectId) {
+    public synchronized ResponseEntity<List<ObjectDTO>> getAllAidasObjectsOfProjectForVendorUserFreshBatch(Pageable pageable, @PathVariable(value = "id", required = false) final Long projectId) {
         log.debug("REST request to get a page of AidasObjects");
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-        Page<Object> page = null;
+        Page<ObjectDTO> page = null;
         Project project = projectRepository.getById(projectId);
         UserVendorMapping uvm = userVendorMappingRepository.findByVendorIdAndUserId(user.getVendor().getId(),user.getId());
         List<UserVendorMappingObjectMapping> uvmoms = new LinkedList<>();
         List<Object> objects = new LinkedList<>();
             PageRequest pages = PageRequest.of(0, pageable.getPageSize(), pageable.getSort());
-            page = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdForGrouped(pages,projectId);
-            for(Object o:page.getContent()){
+            page = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdForGroupedDtoFresh(pageable,projectId,pageable.getPageSize(),uvm.getId());
+            for(ObjectDTO o:page.getContent()){
                 UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserVendorMappingObject(uvm.getId(),o.getId());
+                Object object = objectRepository.getById(o.getId());
                 if(uvmom==null){
                     uvmom  = new UserVendorMappingObjectMapping();
                     uvmom.setUserVendorMapping(uvm);
-                    uvmom.setObject(o);
+                    uvmom.setObject(object);
                     uvmom.setStatus(AidasConstants.AUTO_CREATE_OBJECT_ENABLE);
                     uvmom = userVendorMappingObjectMappingRepository.save(uvmom);
                 }
-                o.setUserVendorMappingObjectMappingId(uvmom.getId());
-                o.setObjectAcquiredByUvmomId(uvmom.getId());
-                objects.add(o);
+                object.setUserVendorMappingObjectMappingId(uvmom.getId());
+                object.setObjectAcquiredByUvmomId(uvmom.getId());
+                objects.add(object);
                 uvmoms.add(uvmom);
             }
             objectRepository.saveAll(objects);
             userVendorMappingObjectMappingRepository.saveAll(uvmoms);
+            setProps(page.getContent());
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
@@ -361,11 +390,30 @@ public class ObjectResource {
     public ResponseEntity<Object> getObject(@PathVariable Long id) {
         log.debug("REST request to get AidasObject : {}", id);
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-        Optional<Object> object = objectRepository.findById(id);
-        return ResponseUtil.wrapOrNotFound(object);
+        Object object = objectRepository.getById(id);
+        object.setObjectProperties(objectPropertyRepository.findAllByObjectId(object.getId()));
+        return ResponseEntity.ok().body(object);
     }
 
+    @GetMapping(value = "/search/objects/{projectId}")
+    @ResponseBody
+    public ResponseEntity<List<Object>> search(@RequestParam(value = "search") String search, Pageable pageable,@PathVariable(value = "projectId" ) Long projectId) {
+        ObjectPredicatesBuilder builder = new ObjectPredicatesBuilder();
 
+        if (search != null) {
+            Pattern pattern = Pattern.compile("(\\w+?)(:|<|>)(\\w+?),");
+            Matcher matcher = pattern.matcher(search + ",");
+            while (matcher.find()) {
+                builder.with(matcher.group(1), matcher.group(2), matcher.group(3));
+            }
+        }
+        builder.with("project.id", ":",projectId);
+        BooleanExpression exp = builder.build();
+        Page<Object> page = objectRepository.findAll(exp,pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+    
     /**
      * {@code DELETE  /aidas-objects/:id} : delete the "id" object.
      *

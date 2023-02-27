@@ -22,35 +22,6 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
  */
 
 
-/*@NamedNativeQuery(name = "Project.findProjectWithUploadCountByUser",
-    query = "select  \n" +
-        "p.id as id,  \n" +
-        "(ceil(uvmpmv.total_required)-(select sum(cuvmpmv.total_uploaded) from consolidated_user_vendor_mapping_project_mapping_view cuvmpmv where project_id=uvmpmv.project_id group by project_id ))+ (select sum(cuvmpmv.rejected) from consolidated_user_vendor_mapping_project_mapping_view cuvmpmv where project_id=uvmpmv.project_id group by project_id) as totalRequired, " +
-        "sum(uvmpmv.total_uploaded) as totalUploaded, \n" +
-        "max(uvmpmv.approved) as totalApproved, \n" +
-        "max(uvmpmv.rejected) as totalRejected, \n" +
-        "max(uvmpmv.pending) as totalPending,\n" +
-        "p.status ,\n" +
-        "p.audio_type ,\n" +
-        "p.auto_create_objects ,\n" +
-        "p.buffer_percent ,\n" +
-        "p.description ,\n" +
-        "p.external_dataset_status ,\n" +
-        "p.image_type ,\n" +
-        "p.name ,\n" +
-        "p.number_of_objects ,\n" +
-        "p.number_of_uploads_required ,\n" +
-        "p.object_prefix ,\n" +
-        "p.object_suffix ,\n" +
-        "p.project_type ,\n" +
-        "p.qc_levels ,\n" +
-        "p.rework_status ,\n" +
-        "p.video_type\n" +
-        "from \n" +
-        "project p, consolidated_user_vendor_mapping_project_mapping_view uvmpmv " +
-        "where uvmpmv.project_id=p.id and uvmpmv.uvmpm_status>0 and p.status=1 and uvmpmv.user_id=?1 group by uvmpmv.project_id,uvmpmv.user_id order by uvmpmv.project_id desc",
-    resultSetMapping = "Mapping.ProjectDTO")*/
-
 
 @NamedNativeQuery(name = "Project.findProjectWithUploadCountByUser",
     query = "select  \n" +
@@ -58,7 +29,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
         "case when p.auto_create_objects=1 then p.number_of_objects else p.total_required end as totalRequired," +
         "uvmpm.total_uploaded as totalUploaded, \n" +
         "uvmpm.total_approved as totalApproved, \n" +
-        "uvmpm.total_approved as totalRejected, \n" +
+        "uvmpm.total_rejected as totalRejected, \n" +
         "uvmpm.total_pending as totalPending,\n" +
         "p.status ,\n" +
         "p.audio_type ,\n" +
@@ -489,8 +460,19 @@ public class Project extends AbstractAuditingEntity  implements Serializable {
     @Field(type=FieldType.Nested,store = false,storeNullValue = false)
     @org.springframework.data.annotation.Transient
     private Set<ProjectProperty> projectProperties=new HashSet<>();
+    
+    
+    @OneToMany(mappedBy = "project",cascade = CascadeType.ALL)
+    private Set<UserVendorMappingProjectMapping> userVendorMappingProjectMappings=new HashSet<>();
 
-    @Column(name="number_of_uploads_required")
+    public Set<UserVendorMappingProjectMapping> getUserVendorMappingProjectMappings() {
+		return userVendorMappingProjectMappings;
+	}
+
+	public void setUserVendorMappingProjectMappings(Set<UserVendorMappingProjectMapping> userVendorMappingProjectMappings) {
+		this.userVendorMappingProjectMappings = userVendorMappingProjectMappings;
+	}
+	@Column(name="number_of_uploads_required")
     private Integer numberOfUploadsRequired=0;
 
     @Column(name="buffer_percent")

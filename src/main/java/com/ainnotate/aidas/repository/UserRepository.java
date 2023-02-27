@@ -3,9 +3,16 @@ package com.ainnotate.aidas.repository;
 import com.ainnotate.aidas.domain.*;
 import com.ainnotate.aidas.dto.IUserDTO;
 import com.ainnotate.aidas.dto.UserDTO;
+import com.querydsl.core.types.dsl.StringExpression;
+import com.querydsl.core.types.dsl.StringPath;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
+import org.springframework.data.querydsl.QuerydslPredicateExecutor;
+import org.springframework.data.querydsl.binding.QuerydslBinderCustomizer;
+import org.springframework.data.querydsl.binding.QuerydslBindings;
+import org.springframework.data.querydsl.binding.SingleValueBinding;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,14 +25,18 @@ import java.util.Optional;
 @SuppressWarnings("unused")
 @Repository
 @Transactional
-public interface UserRepository extends JpaRepository<User, Long> {
+public interface UserRepository extends JpaRepository<User, Long>,QuerydslPredicateExecutor<User>, QuerydslBinderCustomizer<QUser> {
 
 
 
     Optional<User> findByLogin(String login);
  
 
-    User getAidasUserByLogin(String login);
+    @Query(value="select * from user u where u.login=?1 for update",nativeQuery = true)
+    User getUserByLogin(String login);
+    
+    @Query(value="select * from user u where u.email=?1",nativeQuery = true)
+    User getUserByEmail(String email);
 
     @Query(value = "select * from user u where id=?1",nativeQuery = true)
     User getById(Long id);
@@ -184,4 +195,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query(value = "delete from user where is_sample_data=1",nativeQuery = true)
     void deleteAllSampleUsers();
 
+
+    @Override
+    default public void customize(
+        QuerydslBindings bindings, QUser root) {
+        bindings.bind(String.class)
+            .first((SingleValueBinding<StringPath, String>) StringExpression::containsIgnoreCase);
+
+    }
 }

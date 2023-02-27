@@ -11,9 +11,12 @@ import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import org.slf4j.Logger;
@@ -288,23 +291,22 @@ public class ProjectPropertyResource {
     public ResponseEntity<String> updateAidasProjectProperties(@Valid @RequestBody List<ProjectProperty> projectPropertys)
         throws URISyntaxException {
         int i=0;
+        List<ProjectProperty> projectProperties = new ArrayList<>();
+        List<ObjectProperty> objectProperties = new ArrayList<>();
         try {
             for(ProjectProperty projectProperty : projectPropertys) {
                 ProjectProperty projectProperty1 = projectPropertyRepository.getById(projectProperty.getId());
                 projectProperty1.setAddToMetadata(projectProperty.getAddToMetadata());
                 projectProperty1.setValue(projectProperty.getValue());
-                projectPropertyRepository.save(projectProperty1);
-                List<Object> objects = objectRepository.getAllObjectsOfProject(projectProperty1.getProject().getId());
-                for(Object object:objects) {
-                    List<ObjectProperty> objectProperties = objectPropertyRepository.getAllObjectPropertyForObject(object.getId());
-                    for(ObjectProperty objectProperty:objectProperties){
-                        if(objectProperty.getProperty().getId().equals(projectProperty1.getProperty().getId())){
-                            objectProperty.setValue(projectProperty.getValue());
-                            objectPropertyRepository.save(objectProperty);
-                        }
-                    }
+                projectProperties.add(projectProperty1);
+                List<ObjectProperty> ops = objectPropertyRepository.getAllObjectPropertiesOfProject(projectProperty1.getProject().getId(),projectProperty1.getProperty().getId());
+                for(ObjectProperty op:ops) {
+                	op.setValue(projectProperty.getValue());
+                    objectProperties.add(op);
                 }
             }
+            projectPropertyRepository.saveAll(projectProperties);
+            objectPropertyRepository.saveAll(objectProperties);
         }
         catch(Exception e){
             e.printStackTrace();
@@ -419,9 +421,9 @@ public class ProjectPropertyResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of projectProperties in body.
      */
     @GetMapping("/aidas-project-property/{projectId}/dropdown")
-    public ResponseEntity<List<ProjectProperty>> getAllAidasProjectProperties(@PathVariable(value = "projectId", required = false) final Long projectId) {
+    public ResponseEntity<Set<ProjectProperty>> getAllAidasProjectProperties(@PathVariable(value = "projectId", required = false) final Long projectId) {
         log.debug("REST request to get a page of AidasProjectProperties");
-        List<ProjectProperty> page = projectPropertyRepository.findAllByAidasProjectIdGreaterThanForDropDown(projectId);
+        Set<ProjectProperty> page = projectPropertyRepository.findAllByAidasProjectIdGreaterThanForDropDown(projectId);
         return ResponseEntity.ok().body(page);
     }
 
