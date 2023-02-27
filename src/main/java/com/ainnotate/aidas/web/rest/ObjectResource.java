@@ -137,6 +137,7 @@ public class ObjectResource {
                 throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
             }
         }
+        try {
         object.setDummy(0);
         object.setStatus(1);
         Project project = null;
@@ -166,6 +167,9 @@ public class ObjectResource {
             .created(new URI("/api/aidas-objects/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
             .body(result);
+        }catch(Exception e) {
+        	throw new BadRequestAlertException(e.getMessage(), ENTITY_NAME, "idexists");
+        }
     }
 
     /**

@@ -97,14 +97,17 @@ public class CustomerResource {
         }
         if( user.getAuthority().getName().equals(AidasConstants.ADMIN) ||
             (user.getAuthority().getName().equals(AidasConstants.ORG_ADMIN) && user.getOrganisation()!=null && user.getOrganisation().equals(customer.getOrganisation()))){
-            Customer result = customerRepository.save(customer);
-            Set<AppProperty> appProperties = appPropertyRepository.getAppPropertyOfCustomer(-1l);
-            propertyRepository.addCustomerProperties(result.getId(),user.getId());
-            appPropertyRepository.addCustomerAppProperties(result.getId(),user.getId());
-            return ResponseEntity
-                .created(new URI("/api/aidas-customers/" + result.getId()))
-                .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
-                .body(result);
+            try {
+	        	Customer result = customerRepository.save(customer);
+	            propertyRepository.addCustomerProperties(result.getId(),user.getId());
+	            appPropertyRepository.addCustomerAppProperties(result.getId(),user.getId());
+	            return ResponseEntity
+	                .created(new URI("/api/aidas-customers/" + result.getId()))
+	                .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
+	                .body(result);
+            }catch(Exception e) {
+            	throw new BadRequestAlertException("Customer already exists.  Please change the name of Customer.", ENTITY_NAME, "idinvalid");
+            }
         }else{
             throw new BadRequestAlertException("Not Authorised", ENTITY_NAME, "idinvalid");
         }

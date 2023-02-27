@@ -151,6 +151,7 @@ public class UserResource {
         log.debug("REST request to save AidasUser : {}", user);
         User loggedInUser = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         User tmp = userRepository.getUserByEmail(user.getEmail());
+        try {
         if(tmp!=null){
             throw new BadRequestAlertException("User with login is already available in the system.  Please contact admin to reset your account.", ENTITY_NAME, "idexists");
         }
@@ -276,8 +277,10 @@ public class UserResource {
                 }
             }
         }catch(Exception e){
-            e.printStackTrace();
-            throw new BadRequestAlertException("User already exists in the DB.", ENTITY_NAME, "idexists");
+            throw new BadRequestAlertException(e.getMessage(), ENTITY_NAME, "idexists");
+        }
+        }catch(Exception e) {
+        	throw new BadRequestAlertException(e.getMessage(), ENTITY_NAME, "idexists");
         }
     }
 
