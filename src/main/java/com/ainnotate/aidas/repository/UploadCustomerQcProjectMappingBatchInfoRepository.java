@@ -50,7 +50,7 @@ public interface UploadCustomerQcProjectMappingBatchInfoRepository extends JpaRe
     List<Long> getAllInBatchGrouped(Long customerQcProjectMappingId,Long objectId, Integer batchNumber);
 
 
-    @Query(value="select u.id from upload_cqpm_batch_info ucbi,upload u where ucbi.customer_qc_project_mapping_id=?1 and ucbi.batch_number=?2 and ucbi.qc_status=2 and ucbi.upload_id=u.id",nativeQuery = true)
+    @Query(value="select u.id from upload_cqpm_batch_info ucbi,upload u where ucbi.customer_qc_project_mapping_id=?1 and ucbi.batch_number=?2 and ucbi.qc_status=2  and ucbi.upload_id=u.id",nativeQuery = true)
     List<Long> getRemainingUploadsInBatchIncludingCurrentUpload(Long customerQcProjectMappingId, Integer batchNumber);
 
     @Query(value="select u.id from upload_cqpm_batch_info ucbi,upload u where ucbi.customer_qc_project_mapping_id=?1 and ucbi.batch_number=?2 and ucbi.qc_status=2 and ucbi.upload_id=u.id and ucbi.upload_id not in (?3)",nativeQuery = true)
@@ -129,6 +129,8 @@ public interface UploadCustomerQcProjectMappingBatchInfoRepository extends JpaRe
     
     @Query(value="select * from upload_cqpm_batch_info ucbi where ucbi.upload_id=?1",nativeQuery = true)
     UploadCustomerQcProjectMappingBatchInfo getByUploadId(Long uploadId);
+    
+    
     
     
 

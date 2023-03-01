@@ -978,6 +978,10 @@ public class UserResource {
         log.debug("REST request to get AidasUser : {}", id);
         User loggedInUser = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         User user = userRepository.getById(id);
+        Set<UserAuthorityMapping> uams = userAuthorityMappingRepository.findByUserId(id);
+        for(UserAuthorityMapping uam:uams) {
+        	user.getAuthorities().add(uam.getAuthority());
+        }
          return ResponseEntity.ok().body(user);
     }
 

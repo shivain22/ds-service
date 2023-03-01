@@ -3,7 +3,7 @@ package com.ainnotate.aidas.dto;
 import javax.persistence.Column;
 import javax.validation.constraints.NotNull;
 
-public class ProperyProjectPropertyDTO {
+public class PropertyProjectPropertyDTO {
 
 
     private String name;

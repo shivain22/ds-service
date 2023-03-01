@@ -11,8 +11,10 @@ public class UploadsMetadataDTO {
 
     @JsonIgnoreProperties(value = {"userVendorMappingObjecMapping","uploadRejectReasonMappings","uploadMetaDataSet"})
     UploadDTO uploadDTO;
+    
     @JsonIgnoreProperties(value = {"project","customer"})
     List<ProjectPropertyDTO> projectProperties;
+    
     @JsonIgnoreProperties(value = {"object","project"})
     List<ObjectPropertyDTO> objectProperties;
 

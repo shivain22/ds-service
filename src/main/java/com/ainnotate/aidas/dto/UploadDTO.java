@@ -1,6 +1,7 @@
 package com.ainnotate.aidas.dto;
 
 import java.util.HashMap;
+import java.util.Objects;
 
 public class UploadDTO {
 
@@ -75,7 +76,25 @@ public class UploadDTO {
         return etag;
     }
 
-    public void setEtag(String etag) {
+    @Override
+	public int hashCode() {
+		return Objects.hash(name, objectKey, uploadId);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		UploadDTO other = (UploadDTO) obj;
+		return Objects.equals(name, other.name) && Objects.equals(objectKey, other.objectKey)
+				&& Objects.equals(uploadId, other.uploadId);
+	}
+
+	public void setEtag(String etag) {
         this.etag = etag;
     }
 }

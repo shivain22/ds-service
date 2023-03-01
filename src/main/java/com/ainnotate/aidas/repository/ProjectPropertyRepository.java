@@ -1,6 +1,8 @@
 package com.ainnotate.aidas.repository;
 
 import com.ainnotate.aidas.domain.ProjectProperty;
+import com.ainnotate.aidas.dto.ProjectPropertyDTO;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
@@ -42,4 +44,10 @@ public interface ProjectPropertyRepository extends JpaRepository<ProjectProperty
 
     @Query(value = "select count(*) from project_property pp where pp.project_id=?1 and pp.optional=0",nativeQuery = true)
     Integer getMandatoryPropertyCountForProject(Long projectId);
+    
+    @Query(nativeQuery = true)
+    List<ProjectPropertyDTO>getAllUploadMetaDataForProjectProperty(Long uploadId);
+    
+    @Query(value="select optional from project_property where id=?1",nativeQuery = true)
+    Integer getOptionalOfProjectProperty(Long projectPropertyId);
 }

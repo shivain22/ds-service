@@ -63,4 +63,33 @@ public interface UploadMetaDataRepository extends JpaRepository<UploadMetaData, 
 
     @Query(value="select count(*) from upload_meta_data umd,project_property pp where umd.upload_id=?1 and umd.project_property_id=pp.property_id and (umd.value is null or length(trim(umd.value))=0) and pp.optional=0 and pp.add_to_metadata=0 ",nativeQuery = true)
     Integer getUploadMetadataCountMandatoryObjectPropertyNotFilled(Long uploadId);
+    
+    @Modifying
+    @Query(value = "insert into upload_meta_data (upload_id,project_property_id) (select ?1, pp.id from  project_property pp where pp.project_id=?2)",nativeQuery = true)
+    void insertUploadMetaDataForProjectProperties(Long uploadId,Long projectId);
+    
+    @Modifying
+    @Query(value = "insert into upload_meta_data (upload_id,object_property_id) (select ?1, op.id from object_property op where op.object_id=?2)",nativeQuery = true)
+    void insertUploadMetaDataForObjectProperties(Long uploadId,Long objectId);
+    
+    @Modifying
+    @Query(value = "insert into upload_meta_data (upload_id,project_property_id,value) (select u.id,?1,?3 from upload u, user_vendor_mapping_object_mapping uvmom, object o where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and o.project_id=?2)",nativeQuery = true)
+    void insertUploadMetaDataForCustomProperties(Long projectPropertyId,Long projectId,String value);
+    
+    
+    @Modifying
+    @Query(value = "update upload_meta_data set value=?1 where upload_id=?2 and project_property_id=?3",nativeQuery = true)
+    void updateUploadMetadataProjectProperty(String value, Long uploadId,Long projectPropertyId);
+    
+    @Modifying
+    @Query(value = "update upload_meta_data set value=?1 where upload_id=?2 and object_property_id=?3",nativeQuery = true)
+    void updateUploadMetadataObjectProperty(String value, Long uploadId,Long objectPropertyId);
+    
+    @Query(nativeQuery = true)
+    List<UploadMetadataDTO> getAllUploadMetadataProjectProperties(Long userVendorMappingId, Long objectId);
+    
+    @Query(nativeQuery = true)
+    List<UploadMetadataDTO> getAllUploadMetadataObjectProperties(Long userVendorMappingId, Long objectId);
+    
+    
 }

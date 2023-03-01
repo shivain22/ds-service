@@ -44,7 +44,19 @@ public class CustomerQcProjectMappingBatchMapping extends AbstractAuditingEntity
     @Column(name="batch_completion_status")
     private Integer batchCompletionStatus=2;
 
-    @Column(name="previous_level_batch_number")
+    
+    @Column(name="current_page_number")
+    private Integer currentPageNumber=0;
+    
+    public Integer getCurrentPageNumber() {
+		return currentPageNumber;
+	}
+
+	public void setCurrentPageNumber(Integer currentPageNumber) {
+		this.currentPageNumber = currentPageNumber;
+	}
+
+	@Column(name="previous_level_batch_number")
     private Long previousLevelBatchNumber;
 
     @Column(name="next_level_batch_number")

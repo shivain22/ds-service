@@ -16,6 +16,7 @@ import java.util.List;
 public interface AuthorityRepository extends JpaRepository<Authority, Long> {
 
     Authority findByName(String name);
+    
     @Query(nativeQuery = true,value = "select * from authority where id>=?1")
     List<Authority> getAllAuthority(Long currentAuthID);
 

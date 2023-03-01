@@ -4,7 +4,7 @@ import com.ainnotate.aidas.constants.AidasConstants;
 import com.ainnotate.aidas.domain.*;
 import com.ainnotate.aidas.domain.Object;
 import com.ainnotate.aidas.dto.ProjectPropertyDTO;
-import com.ainnotate.aidas.dto.ProperyProjectPropertyDTO;
+import com.ainnotate.aidas.dto.PropertyProjectPropertyDTO;
 import com.ainnotate.aidas.repository.*;
 import com.ainnotate.aidas.repository.search.ProjectPropertySearchRepository;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
@@ -193,12 +193,12 @@ public class ProjectPropertyResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/aidas-property-aidas-project-property/dto")
-    public ResponseEntity<String> createAidasPropertiesAidasProjectProperties(@Valid @RequestBody List<ProperyProjectPropertyDTO> properyProjectPropertyDTOS)
+    public ResponseEntity<String> createAidasPropertiesAidasProjectProperties(@Valid @RequestBody List<PropertyProjectPropertyDTO> properyProjectPropertyDTOS)
         throws URISyntaxException {
         log.debug("REST request to save AidasProjectProperty : {}", properyProjectPropertyDTOS);
         int i=0;
         try {
-            for(ProperyProjectPropertyDTO properyProjectPropertyDTO : properyProjectPropertyDTOS) {
+            for(PropertyProjectPropertyDTO properyProjectPropertyDTO : properyProjectPropertyDTOS) {
                 Project project = projectRepository.getById(properyProjectPropertyDTO.getAidasProjectId());
                 Property property = new Property();
                 if (project != null && property != null) {
@@ -227,17 +227,7 @@ public class ProjectPropertyResource {
                     projectProperty.setProjectPropertyType(AidasConstants.AIDAS_METADATA_PROPERTY);
                     ProjectProperty result = projectPropertyRepository.save(projectProperty);
                     i++;
-
-                    List<Upload> uploads = uploadRepository.findAllUploadByProject(project.getId());
-                    List<UploadMetaData> umds = new ArrayList<>();
-                    for(Upload upload:uploads){
-                        UploadMetaData umd = new UploadMetaData();
-                        umd.setProjectProperty(projectProperty);
-                        umd.setUpload(upload);
-                        umd.setValue(" ");
-                        umds.add(umd);
-                    }
-                    uploadMetaDataRepository.saveAll(umds);
+                    uploadMetaDataRepository.insertUploadMetaDataForCustomProperties(projectProperty.getId(),project.getId(),"");
                 }
             }
         }

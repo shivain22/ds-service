@@ -37,15 +37,29 @@ public interface CustomerQcProjectMappingBatchMappingRepository extends JpaRepos
     @Query(value = "select * from cqpm_batch_mapping cbm,customer_qc_project_mapping cqpm where cbm.cqpm_id = cqpm.id and cqpm.project_id=?1 and cqpm.qc_level=?2 and (cbm.batch_completion_status=1 or cbm.batch_completion_status=3) and cbm.next_level_batch_number is null and cbm.previous_level_batch_number is not null",nativeQuery = true)
     List<CustomerQcProjectMappingBatchMapping> getAllCompletedBatchNumberForQcLevelGreaterThan1NonGrouped(Long projectId, Integer qcLevel);
     
-    @Query(value="select cbm.id from cqpm_batch_mapping cbm,customer_qc_project_mapping cqpm where cbm.cqpm_id=cqpm.id and cqpm.project_id=?1 and cqpm.qc_level=?2 and cbm.batch_completion_status=1 ",nativeQuery = true)
-    List<Long> getQcApprovedBatches(Long projectId,Integer qcLevel);
+    @Query(value="select cbm.id,count(ucbi.id) from cqpm_batch_mapping cbm,customer_qc_project_mapping cqpm,upload_cqpm_batch_info ucbi where ucbi.batch_number=cbm.id and cbm.cqpm_id=cqpm.id and cqpm.project_id=?1 and cqpm.qc_level=?2 and cbm.batch_completion_status=1 group by cbm.id",nativeQuery = true)
+    List<Integer[]> getQcApprovedBatches(Long projectId,Integer qcLevel);
     
-    @Query(value="select cbm.id from cqpm_batch_mapping cbm,customer_qc_project_mapping cqpm where cbm.cqpm_id=cqpm.id and cqpm.project_id=?1 and cqpm.qc_level=?2 and (cbm.batch_completion_status=1 or cbm.batch_completion_status=3) ",nativeQuery = true)
-    List<Long> getQcMixedBatches(Long projectId,Integer qcLevel);
+    @Query(value="select cbm.id,count(ucbi.id) from cqpm_batch_mapping cbm,customer_qc_project_mapping cqpm,upload_cqpm_batch_info ucbi where ucbi.batch_number=cbm.id and cbm.cqpm_id=cqpm.id and cqpm.project_id=?1 and cqpm.qc_level=?2 and (cbm.batch_completion_status=1 or cbm.batch_completion_status=3) group by cbm.id",nativeQuery = true)
+    List<Integer[]> getQcMixedBatches(Long projectId,Integer qcLevel);
     
     @Query(value="select cbm.id from cqpm_batch_mapping cbm,customer_qc_project_mapping cqpm where cbm.cqpm_id=cqpm.id and cqpm.project_id=?1 and cqpm.qc_level=?2 and cbm.batch_completion_status=3 ",nativeQuery = true)
     List<Long> getQcRejectedBatches(Long projectId,Integer qcLevel);
     
-    @Query(value="select cqpm.id from cqpm_batch_mapping cbm,customer_qc_project_mapping cqpm where cbm.cqpm_id=cqpm.id and cqpm.project_id=?1 and cqpm.qc_level=?2 and cbm.batch_completion_status=2",nativeQuery = true)
-    List<Long> getQcNotCompletedBatches(Long projectId,Integer qcLevel);
+    @Query(value="select cbm.id,\n"
+    		+ "count(case when ucbi.qc_status=1 then 1 end )as approved, \n"
+    		+ "count(case when ucbi.qc_status=0 then 1 end)as rejected,\n"
+    		+ "count(case when ucbi.qc_status=2 then 2 end)as pending \n"
+    		+ "from \n"
+    		+ "cqpm_batch_mapping cbm,\n"
+    		+ "customer_qc_project_mapping cqpm,\n"
+    		+ "upload_cqpm_batch_info ucbi \n"
+    		+ "where \n"
+    		+ "ucbi.batch_number=cbm.id and \n"
+    		+ "cqpm.id=?3 and \n"
+    		+ "cbm.cqpm_id=cqpm.id and \n"
+    		+ "cqpm.project_id=?1 and \n"
+    		+ "cqpm.qc_level=?2 and \n"
+    		+ "cbm.batch_completion_status=2 group by cbm.id",nativeQuery = true)
+    List<Long[]> getQcNotCompletedBatches(Long projectId,Integer qcLevel,Long cqpmId);
 }

@@ -1,6 +1,9 @@
 package com.ainnotate.aidas.repository;
 
 import com.ainnotate.aidas.domain.ObjectProperty;
+import com.ainnotate.aidas.dto.ObjectPropertyDTO;
+import com.ainnotate.aidas.dto.ProjectPropertyDTO;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
@@ -52,4 +55,10 @@ public interface ObjectPropertyRepository extends JpaRepository<ObjectProperty, 
     
     @Query(value = "select * from object_property op,object o where op.object_id=o.id and o.project_id=?1 and op.property_id=?2",nativeQuery = true)
     List<ObjectProperty> getAllObjectPropertiesOfProject(Long projectId,Long propertyId);
+    
+    @Query(nativeQuery = true)
+    List<ObjectPropertyDTO>getAllUploadMetaDataForObjectProperty(Long uploadId);
+    
+    @Query(value="select optional from object_property where id=?1",nativeQuery = true)
+    Integer getOptionalOfObjectProperty(Long objectPropertyId);
 }

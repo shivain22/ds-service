@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Spring Data JPA repository for the {@link UserAuthorityMapping} entity.
@@ -18,6 +19,12 @@ public interface UserAuthorityMappingRepository extends JpaRepository<UserAuthor
 
     @Query(value="select * from user_authority_mapping where authority_id=?1 and user_id=?2",nativeQuery = true)
     UserAuthorityMapping findByAuthorityIdAndUserId(Long authorityId, Long userId);
+    
+    @Query(value="select * from user_authority_mapping where  user_id=?1",nativeQuery = true)
+    Set<UserAuthorityMapping> findByUserId( Long userId);
+    
+    @Query(value="select a.* from user_authority_mapping where  user_id=?1",nativeQuery = true)
+    Set<Authority> findUserAuthoritiesByUserId( Long userId);
 
     @Query(value = "select * from user_authority_mapping where is_sample_data=1",nativeQuery = true)
     List<UserAuthorityMapping> getAllSampleUserAuthorityMappings();

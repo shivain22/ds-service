@@ -16,7 +16,7 @@ id;name;value;property_type;optional;description;default_prop;user_id;customer_i
 15;flash;auto;1;true;Camera Flash options;1;-1;-1;2;1;0
 16;focusDepth;0;1;true;Will work if autofocus is off;1;-1;-1;2;1;0
 17;ratio;0;1;true;possible ratios supported by the camera that can be retieved from RNCamera library (only Android);1;-1;-1;2;1;0
-18;type;back;1;true;Front or back camera;1;-1;-1;2;1;0
+18;cameraFacing;back;1;true;Front or back camera;1;-1;-1;2;1;0
 19;whiteBalance;auto;1;true;and for IOS we can specify custom temperature, tint and rgb offset values {temperature: 4000, tint: -10.0, redGainOffset: 0.0, greenGainOffset: 0.0, blueGainOffset: 0.0};1;-1;-1;2;1;0
 20;exposure;-1;1;true;Front or back camera;1;-1;-1;2;1;0
 21;zoom;0;1;true;zoom level;1;-1;-1;2;1;0
@@ -27,7 +27,7 @@ id;name;value;property_type;optional;description;default_prop;user_id;customer_i
 26;flash;auto;1;true;Camera Flash options;1;-1;-1;3;1;0
 27;focusDepth;0;1;true;Will work if autofocus is off;1;-1;-1;3;1;0
 28;ratio;0;1;true;possible ratios supported by the camera that can be retieved from RNCamera library (only Android);1;-1;-1;3;1;0
-29;type;back;1;true;Front or back camera;1;-1;-1;3;1;0
+29;cameraFacing;back;1;true;Front or back camera;1;-1;-1;3;1;0
 30;whiteBalance;auto;1;true;and for IOS we can specify custom temperature, tint and rgb offset values {temperature: 4000, tint: -10.0, redGainOffset: 0.0, greenGainOffset: 0.0, blueGainOffset: 0.0};1;-1;-1;3;1;0
 31;exposure;-1;1;true;Front or back camera;1;-1;-1;3;1;0
 32;zoom;0;1;true;zoom level;1;-1;-1;3;1;0
@@ -44,7 +44,7 @@ id;name;value;property_type;optional;description;default_prop;user_id;customer_i
 43;flash;auto;1;true;Camera Flash options;1;-1;-1;4;1;0
 44;focusDepth;0;1;true;Will work if autofocus is off;1;-1;-1;4;1;0
 45;ratio;0;1;true;possible ratios supported by the camera that can be retieved from RNCamera library (only Android);1;-1;-1;4;1;0
-46;type;back;1;true;Front or back camera;1;-1;-1;4;1;0
+46;cameraFacing;back;1;true;Front or back camera;1;-1;-1;4;1;0
 47;whiteBalance;auto;1;true;and for IOS we can specify custom temperature, tint and rgb offset values {temperature: 4000, tint: -10.0, redGainOffset: 0.0, greenGainOffset: 0.0, blueGainOffset: 0.0};1;-1;-1;4;1;0
 48;exposure;-1;1;true;Front or back camera;1;-1;-1;4;1;0
 49;zoom;0;1;true;zoom level;1;-1;-1;4;1;0

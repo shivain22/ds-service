@@ -138,7 +138,16 @@ public interface UploadRepository extends JpaRepository<Upload, Long> {
 
     @Query(value="select au.* from upload au, user_vendor_mapping_object_mapping auavmaom,object ao, project ap,user_vendor_mapping auavm where au.approval_status=2 and au.user_vendor_mapping_object_mapping_id=auavmaom.id and auavmaom.object_id=ao.id and ao.project_id=ap.id and ao.id=?2 and auavmaom.user_vendor_mapping_id=auavm.id and auavm.user_id=?1 and au.metadata_status=0",nativeQuery = true)
     List<Upload> findAllByUserAndProjectAllForMetadataObjectWise(Long userId, Long objectId);
+    
+    
+    @Query(value="select u.id, o.name, u.upload_url from upload u, user_vendor_mapping_object_mapping uvmom, object o where u.user_vendor_mapping_object_mapping_id=uvmom.id and object_id=o.id and u.id=?1",nativeQuery = true)
+    List<java.lang.Object[]> findAllByUserAndProjectAllForMetadataObjectWiseNew(Long uploadId);
 
+    
+    @Query(value="select u.id, o.name, u.upload_url from upload u, user_vendor_mapping_object_mapping uvmom,object o, project p,user_vendor_mapping uvm where u.approval_status=2 and u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and o.project_id=p.id  and uvmom.user_vendor_mapping_id=uvm.id and uvm.user_id=?1 and o.id=?2 and u.metadata_status=0",nativeQuery = true)
+    List<java.lang.Object[]> findAllByUserAndProjectAllForMetadataUploadWiseForNew(Long userId, Long objectId);
+    
+    
     @Query(value="select au.* from upload au, user_vendor_mapping_object_mapping auavmaom,object ao, project ap,user_vendor_mapping auavm where au.approval_status=2 and au.user_vendor_mapping_object_mapping_id=auavmaom.id and auavmaom.object_id=ao.id and ao.project_id=ap.id and au.id=?2 and auavmaom.user_vendor_mapping_id=auavm.id and auavm.user_id=?1 and au.metadata_status=0",nativeQuery = true)
     List<Upload> findAllByUserAndProjectAllForMetadataUploadWise(Long userId, Long uploadId);
 
@@ -302,8 +311,15 @@ public interface UploadRepository extends JpaRepository<Upload, Long> {
         "    u.current_qc_level=1",nativeQuery = true)
     List<Long[]> findObjectsWithUvmomQcNotStarted(Long projectId,Integer qcLevel);
     
-    @Query(value="select u.* from upload u where u.user_vendor_mapping_object_mapping_id in (?1) order by u.user_vendor_mapping_object_mapping_id,u.id limit ?2",nativeQuery = true)
+    @Query(value="select u.* from upload u where u.user_vendor_mapping_object_mapping_id in (?1) and"+
+    		"    u.qc_done_by_id is null and\n" +
+            "    u.qc_start_date is null and\n" +
+            "    u.qc_end_date is null  and\n" +
+            "    (u.qc_status is null or u.qc_status=2)  and  u.metadata_status=1 " +
+    		"    order by u.user_vendor_mapping_object_mapping_id,u.id limit ?2",nativeQuery = true)
     List<Upload> findAllUploadIdsNonGrouped(List<Long> uvmomIds,Integer batchSize);
+    
+    
     
     @Query(value="select u.* from upload u where u.user_vendor_mapping_object_mapping_id in (?1) order by u.user_vendor_mapping_object_mapping_id,u.id",nativeQuery = true)
     List<Upload> findAllUploadIdsGrouped(List<Long> uvmomIds);
@@ -311,8 +327,22 @@ public interface UploadRepository extends JpaRepository<Upload, Long> {
     @Query(value="select o.id from object o where o.qc_start_status=0 and o.project_id=?1 and o.current_qc_level=?2 order by o.id limit ?3",nativeQuery = true)
     List<Long> findAllObjectsQcNotStarted(Long projectId,Integer qcLevel,Integer batchSize);
     
-    @Query(value="select uvmom.id from user_vendor_mapping_object_mapping uvmom,object o where uvmom.object_id=o.id and o.project_id=?1 and uvmom.qc_start_status=0  and uvmom.current_qc_level=?2 and o.is_dummy=0 order by uvmom.id limit ?3",nativeQuery = true)
+    @Query(value="select uvmom.id, "
+    		+ "from user_vendor_mapping_object_mapping uvmom,object o "
+    		+ "where uvmom.object_id=o.id and "
+    		+ "o.project_id=?1 and "
+    		+ "uvmom.qc_start_status=0  and "
+    		+ "uvmom.current_qc_level=?2 and "
+    		+ "o.is_dummy=0 order by uvmom.id limit ?3",nativeQuery = true)
     List<Long> findAllUvmomsQcNotStarted(Long projectId,Integer qcLevel,Integer batchSize);
+    
+    @Query(value="select distinct uvmom.id  "
+    		+ "from user_vendor_mapping_object_mapping uvmom,object o,upload u "
+    		+ "where u.user_vendor_mapping_object_mapping_id=uvmom.id and "
+    		+ "uvmom.object_id=o.id and "
+    		+ "o.project_id=?1 and "
+    		+ "o.is_dummy=0 and u.current_batch_number =0 and u.current_qc_level=?2 order by uvmom.id limit ?3",nativeQuery = true)
+    List<Long> findAllUvmomsQcNotStartedForNonGrouped(Long projectId,Integer qcLevel,Integer batchSize);
 
     @Query(value="select u.* from upload u, user_vendor_mapping_object_mapping uvmom, object o where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and o.project_id=?1 and  u.metadata_status=1 and u.current_qc_level=?2 and o.id=?4 and u.user_vendor_mapping_object_mapping_id=?5 order by uvmom.id, o.id limit ?3  ",nativeQuery = true)
     List<Upload> findTopByQcNotDoneYetForQcLevelGreaterThan1(Long projectId,Integer qcLevel, Long batchSize,Long objectId, Long uvmomId);
@@ -380,14 +410,15 @@ public interface UploadRepository extends JpaRepository<Upload, Long> {
     @Query(value="select u.* from upload u, user_vendor_mapping_object_mapping uvmom, object o where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and o.project_id=?1",nativeQuery = true)
     List<Upload> findAllUploadByProject(Long projectId);
 
-    @Query(value="select u.*  from upload_cqpm_batch_info ucbi,upload u where ucbi.upload_id =u.id and ucbi.batch_number=?1",nativeQuery = true)
-    List<Upload> getUploadIdsInBatch(Long batchNumber);
+    @Query(value="select u.*  from upload_cqpm_batch_info ucbi,upload u where ucbi.upload_id =u.id and ucbi.batch_number=?1 and ucbi.show_to_qc=1 order by u.id limit ?3 offset ?2",nativeQuery = true)
+    List<Upload> getUploadIdsInBatch(Long batchNumber,Integer pageNumber, Integer size);
     
     @Query(value="select u.id as upload_id, o.id as object_id,u.user_vendor_mapping_object_mapping_id as uvmomvId, o.name as object_name   from object o,user_vendor_mapping_object_mapping uvom, "
     		+ " upload_cqpm_batch_info ucbi,upload u where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and  ucbi.upload_id =u.id and ucbi.batch_number=?1",nativeQuery = true)
     List<String[]> getUploadIdsInBatchDto(Long batchNumber);
     
-    
+    @Query(value="select u.* from upload_cqpm_batch_info ucbi,upload u where ucbi.batch_number=?1 and ucbi.upload_id=u.id",nativeQuery = true)
+    List<Upload> getUploadByBatchNumber(Integer batchNumber);
     
 
 }

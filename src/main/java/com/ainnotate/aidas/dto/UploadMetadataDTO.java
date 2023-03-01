@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class UploadMetadataDTO {
+	
     @JsonIgnoreProperties(value = {"userVendorMappingObjecMapping","uploadRejectReasonMappings","uploadMetaDataSet"})
     UploadDTO uploadDTO;
     private Long uploadId;
@@ -16,6 +17,72 @@ public class UploadMetadataDTO {
     private Boolean projectProperty;
     private Integer propertyType;
     private Boolean failed=false;
+    
+    private String projectPropertyName;
+    private String objectPropertyName;
+    private String objectKey;
+    private Long uploadMetaDataId;
+    
+    private Integer optional;
+    
+    public Integer getOptional() {
+		return optional;
+	}
+
+	public void setOptional(Integer optional) {
+		this.optional = optional;
+	}
+
+	public String getProjectPropertyName() {
+		return projectPropertyName;
+	}
+
+	public void setProjectPropertyName(String projectPropertyName) {
+		this.projectPropertyName = projectPropertyName;
+	}
+
+	public String getObjectPropertyName() {
+		return objectPropertyName;
+	}
+
+	public void setObjectPropertyName(String objectPropertyName) {
+		this.objectPropertyName = objectPropertyName;
+	}
+
+	public String getObjectKey() {
+		return objectKey;
+	}
+
+	public void setObjectKey(String objectKey) {
+		this.objectKey = objectKey;
+	}
+
+	public Long getUploadMetaDataId() {
+		return uploadMetaDataId;
+	}
+
+	public void setUploadMetaDataId(Long uploadMetaDataId) {
+		this.uploadMetaDataId = uploadMetaDataId;
+	}
+
+	public UploadMetadataDTO(String projectName, String objectName, Long uploadId, String objectKey, Long propertyId, String propertyName, Long uploadMetaDataId, String value,Integer optional, Integer isProjectProperty) {
+    	this.projectName= projectName;
+    	this.objectName = objectName;
+    	this.uploadId = uploadId;
+    	this.objectKey = objectKey;
+    	if(isProjectProperty.equals(1)) {
+	    	this.projectPropertyId = propertyId;
+	    	this.projectPropertyName = propertyName;
+    	}else if(isProjectProperty.equals(2)) {
+    		this.objectPropertyId = propertyId;
+	    	this.objectPropertyName = propertyName;
+    	}
+    	this.uploadMetaDataId = uploadMetaDataId;
+    	this.value = value;
+    	this.optional=optional;
+    }
+	
+	
 
     private String projectName;
     private String objectName;

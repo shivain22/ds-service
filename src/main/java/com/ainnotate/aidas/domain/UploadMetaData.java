@@ -211,6 +211,86 @@ import org.springframework.data.jpa.repository.Query;
             @ColumnResult(name = "projectPropertyId",type = Long.class),
             @ColumnResult(name = "objectPropertyId",type = Long.class)
         }))
+
+
+
+
+
+@NamedNativeQuery(name = "UploadMetaData.getAllUploadMetadataProjectProperties",
+query="select\n"
+		+ "p.name as projectName,\n"
+		+ "o.name as objectName,\n"
+		+ "u.id as uploadId,\n"
+		+ "u.upload_url as objectKey, \n"
+		+ "umd.project_property_id as propertyId,\n"
+		+ "pr.name as propertyName,\n"
+		+ "umd.id as uploadMetaDataId,\n"
+		+ "umd.value as value,\n"
+		+ "pp.optional as optional,\n"
+		+ "1 as isProjectProperty\n"
+		+ "from upload_meta_data umd, upload u,project_property pp,property pr,user_vendor_mapping_object_mapping uvmom, object o,user_vendor_mapping uvm,project p\n"
+		+ "where \n"
+		+ "umd.upload_id=u.id\n"
+		+ "and u.user_vendor_mapping_object_mapping_id=uvmom.id\n"
+		+ "and uvmom.object_id=o.id\n"
+		+ "and o.project_id=p.id\n"
+		+ "and uvmom.user_vendor_mapping_id=uvm.id\n"
+		+ "and umd.project_property_id=pp.id\n"
+		+ "and pp.property_id=pr.id\n"
+		+ "and project_property_id is not null\n"
+		+ "and uvmom.object_id=?2\n"
+		+ "and uvm.id=?1\n"
+		+ "and pp.show_to_vendor_user=1 and u.metadata_status=0 order by pp.id",resultSetMapping = "Mapping.UploadMetaDataDTO1")
+
+
+@NamedNativeQuery(name = "UploadMetaData.getAllUploadMetadataObjectProperties",
+query="select\n"
+		+ "p.name as projectName,\n"
+		+ "o.name as objectName,\n"
+		+ "u.id as uploadId,\n"
+		+ "u.upload_url as objectKey, \n"
+		+ "umd.object_property_id as propertyId,\n"
+		+ "pr.name as propertyName,\n"
+		+ "umd.id as uploadMetaDataId,\n"
+		+ "umd.value as value,\n"
+		+ "op.optional as optional,\n"
+		+ "2 as isProjectProperty\n"
+		+ "from upload_meta_data umd, upload u,object_property op,property pr,user_vendor_mapping_object_mapping uvmom, object o,user_vendor_mapping uvm,project p\n"
+		+ "where \n"
+		+ "umd.upload_id=u.id\n"
+		+ "and u.user_vendor_mapping_object_mapping_id=uvmom.id\n"
+		+ "and uvmom.object_id=o.id\n"
+		+ "and o.project_id=p.id\n"
+		+ "and uvmom.user_vendor_mapping_id=uvm.id\n"
+		+ "and umd.object_property_id=op.id\n"
+		+ "and op.property_id=pr.id\n"
+		+ "and umd.object_property_id is not null\n"
+		+ "and uvmom.object_id=?2\n"
+		+ "and uvm.id=?1\n"
+		+ "and op.show_to_vendor_user=1  and u.metadata_status=0 order by op.id",resultSetMapping = "Mapping.UploadMetaDataDTO1")
+
+@SqlResultSetMapping(name = "Mapping.UploadMetaDataDTO1",
+classes = @ConstructorResult(targetClass = UploadMetadataDTO.class,
+    columns = {
+        @ColumnResult(name = "projectName",type = String.class),
+        @ColumnResult(name = "objectName",type = String.class),
+        @ColumnResult(name = "uploadId",type = Long.class),
+        @ColumnResult(name = "objectKey",type = String.class),
+        @ColumnResult(name = "propertyId",type = Long.class),
+        @ColumnResult(name = "propertyName",type = String.class),
+        @ColumnResult(name = "uploadMetaDataId",type = Long.class),
+        @ColumnResult(name = "value",type = String.class),
+        @ColumnResult(name = "optional",type = Integer.class),
+        @ColumnResult(name = "isProjectProperty",type = Integer.class)
+    }))
+
+
+
+
+
+
+
+
 @Audited
 public class UploadMetaData extends AbstractAuditingEntity  implements Serializable {
 

@@ -1,5 +1,7 @@
 package com.ainnotate.aidas.domain;
 
+import com.ainnotate.aidas.dto.ProjectPropertyDTO;
+import com.ainnotate.aidas.dto.UploadMetadataDTO;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.io.Serializable;
@@ -8,6 +10,36 @@ import javax.validation.constraints.*;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.envers.Audited;
+
+
+@NamedNativeQuery(name = "ProjectProperty.getAllUploadMetaDataForProjectProperty",
+query=" select umd.project_property_id as projectPropertyId,p.name as name,pp.optional as optional,umd.value as value " +
+    "from " +
+    "upload_meta_data umd, " +
+    "upload u, " +
+    "user_vendor_mapping_object_mapping uvmom, " +
+    "object o," +
+    "project_property pp," +
+    "property p," +
+    "project pr " +
+    " where " +
+    "umd.upload_id=u.id and " +
+    "u.user_vendor_mapping_object_mapping_id=uvmom.id and " +
+    "uvmom.object_id=o.id and " +
+    "umd.project_property_id=pp.id and" +
+    " pp.add_to_metadata=1 and" +
+    " o.project_id=p.id  and o.project_id=pr.id and" +
+    " pp.property_id=p.id and u.id=?1 order by pp.id",resultSetMapping = "Mapping.ProjectPropertyDTO")
+
+@SqlResultSetMapping(name = "Mapping.ProjectPropertyDTO",
+classes = @ConstructorResult(targetClass = ProjectPropertyDTO.class,
+    columns = {
+        @ColumnResult(name = "projectPropertyId",type = Long.class),
+        @ColumnResult(name = "name",type = String.class),
+        @ColumnResult(name = "optional",type = Integer.class),
+        @ColumnResult(name = "value",type = String.class)
+    }))
+
 
 /**
  * A AidasProjectProperty.
