@@ -342,7 +342,7 @@ public interface ObjectRepository
 	
     @Modifying
     @Query(value = "update object set total_approved=total_approved+1, total_pending=total_pending  where id=?1",nativeQuery = true)
-    void addTotalApprovedSubtractTotalPendingSubtractTotalRequired(Long id);
+    void addTotalApprovedSubtractTotalPending(Long id);
 
     
     @Modifying
