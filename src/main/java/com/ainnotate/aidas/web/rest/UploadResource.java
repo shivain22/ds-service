@@ -694,7 +694,7 @@ public class UploadResource {
 		Set<Upload> remainingUploads = new HashSet<>();
 		Integer totalAvailableInBatch = uploadCustomerQcProjectMappingBatchInfoRepository.countUploadsByCustomerQcProjectMappingAndBatchNumber(customerQcProjectMappingId,cqpm.getCurrentQcBatchNo());
 		Float countReqdBasedOnAcceptancePercent = (pqlc.getQcLevelAcceptancePercentage().floatValue() / 100f)* totalAvailableInBatch;
-		Double d = Math.ceil(countReqdBasedOnAcceptancePercent.intValue());
+		Double d = Math.ceil(countReqdBasedOnAcceptancePercent);
 		int i = d.intValue();
 		boolean lastLevel = false;
 		boolean finalApproval = false;
@@ -846,7 +846,7 @@ public class UploadResource {
 		ProjectQcLevelConfigurations pqlc = projectQcLevelConfigurationsRepository.findByProejctIdAndQcLevel(project.getId(), cqpm.getQcLevel());
 		Set<Upload> remainingUploads = new HashSet<>();
 		Float countReqdBasedOnAcceptancePercent = (pqlc.getQcLevelAcceptancePercentage().floatValue() / 100f)* totalAvailableInBatch;
-		Double d = Math.ceil(countReqdBasedOnAcceptancePercent.intValue());
+		Double d = Math.ceil(countReqdBasedOnAcceptancePercent);
 		int i = d.intValue();
 		boolean lastLevel = false;
 		boolean finalApproval = false;
@@ -1540,7 +1540,7 @@ public class UploadResource {
 				CustomerQcProjectMappingBatchMapping cqpmbm1=null;
 				if(mixedBatches!=null && mixedBatches.size()>0) {
 					approvedUploadsCount = mixedBatches.get(0)[1];
-					numOfUploadas = (pqlc.getQcLevelAcceptancePercentage().floatValue() / 100f) * approvedUploadsCount;
+					numOfUploads = (pqlc.getQcLevelAcceptancePercentage().floatValue() / 100f) * approvedUploadsCount;
 					List<Upload> tempUploads = uploadRepository.getUploadByBatchNumber(mixedBatches.get(0)[0]);
 					ceiledNumberOfuploads = Math.ceil(numOfUploads);
 					numOfUploadsToBeShown = ceiledNumberOfuploads.intValue();
@@ -1618,7 +1618,7 @@ public class UploadResource {
 					uploads = uploadRepository.findAllUploadIdsNonGrouped(uvmomIds, pqlc.getQcLevelBatchSize());
 					approvedUploadsCount = uploads.size();
 					numOfUploads = (pqlc.getQcLevelAcceptancePercentage().floatValue() / 100f) * approvedUploadsCount;
-					ceiledNumberOfuploads = Math.ceil(numOfUploads.intValue()+0.5);
+					ceiledNumberOfuploads = Math.ceil(numOfUploads);
 					numOfUploadsToBeShown = ceiledNumberOfuploads.intValue();
 					multFactor = approvedUploadsCount/ numOfUploadsToBeShown;
 					if(multFactor==0) {
