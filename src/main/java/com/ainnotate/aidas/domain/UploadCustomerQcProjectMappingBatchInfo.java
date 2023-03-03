@@ -71,7 +71,7 @@ public class UploadCustomerQcProjectMappingBatchInfo extends AbstractAuditingEnt
     private Integer showToQc=0;
 
     @Column(name="qc_seen_status")
-    private Integer qc_seen_status=0;
+    private Integer qcSeenStatus=0;
 
     public Integer getShowToQc() {
         return showToQc;
@@ -81,15 +81,16 @@ public class UploadCustomerQcProjectMappingBatchInfo extends AbstractAuditingEnt
         this.showToQc = showToQc;
     }
 
-    public Integer getQc_seen_status() {
-        return qc_seen_status;
-    }
+   
+    public Integer getQcSeenStatus() {
+		return qcSeenStatus;
+	}
 
-    public void setQc_seen_status(Integer qc_seen_status) {
-        this.qc_seen_status = qc_seen_status;
-    }
+	public void setQcSeenStatus(Integer qcSeenStatus) {
+		this.qcSeenStatus = qcSeenStatus;
+	}
 
-    public Integer getQcStatusOtherThanLevel1() {
+	public Integer getQcStatusOtherThanLevel1() {
         return qcStatusOtherThanLevel1;
     }
 

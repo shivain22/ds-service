@@ -78,6 +78,14 @@ public interface UploadMetaDataRepository extends JpaRepository<UploadMetaData, 
     
     
     @Modifying
+    @Query(value = "update upload_meta_data umd, project_property pp, property p set umd.value=?3 where  umd.project_property_id=pp.id and pp.property_id=p.id and p.name=?2 and umd.upload_id=?1   ",nativeQuery = true)
+    void updateUploadMetaDataProjectPropertyFromUpload(Long uploadId, String propertyName,String value);
+    
+    @Modifying
+    @Query(value = "update upload_meta_data umd, object_property op, property p set umd.value=?3 where  umd.object_property_id=op.id and op.property_id=p.id and p.name=?2 and umd.upload_id=?1   ",nativeQuery = true)
+    void updateUploadMetaDataObjectPropertyFromUpload(Long uploadId, String propertyName,String value);
+    
+    @Modifying
     @Query(value = "update upload_meta_data set value=?1 where upload_id=?2 and project_property_id=?3",nativeQuery = true)
     void updateUploadMetadataProjectProperty(String value, Long uploadId,Long projectPropertyId);
     

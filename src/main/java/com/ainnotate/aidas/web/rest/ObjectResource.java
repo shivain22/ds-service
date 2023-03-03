@@ -412,6 +412,8 @@ public class ObjectResource {
             }
         }
         builder.with("project.id", ":",projectId);
+        builder.with("id", ">",0);
+        builder.with("dummy", ":",0);
         BooleanExpression exp = builder.build();
         Page<Object> page = objectRepository.findAll(exp,pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);

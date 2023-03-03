@@ -340,11 +340,8 @@ public class UploadResource {
 		try {
 		Object object = objectRepository.getByIdForUpload(uploadDto.getObjectId());
 		Project project = projectRepository.getByIdForUpload(object.getId());
-		UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository
-				.findByUserObjectForUpload(uploadDto.getUserId(), uploadDto.getObjectId());
-		UserVendorMappingProjectMapping uvmpm = userVendorMappingProjectMappingRepository
-				.findByUserVendorMappingIdProjectIdForUpload(uvmom.getUserVendorMapping().getId(),
-						uvmom.getObject().getProject().getId());
+		UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserObjectForUpload(uploadDto.getUserId(), uploadDto.getObjectId());
+		UserVendorMappingProjectMapping uvmpm = userVendorMappingProjectMappingRepository.findByUserVendorMappingIdProjectIdForUpload(uvmom.getUserVendorMapping().getId(),uvmom.getObject().getProject().getId());
 		Upload upload = new Upload();
 		if (object.getTotalRequired() > 0) {
 			upload.setUserVendorMappingObjectMapping(uvmom);
@@ -368,21 +365,13 @@ public class UploadResource {
 				}
 			}
 			for (Map.Entry<String, String> entry : uploadDto.getUploadMetadata().entrySet()) {
-				UploadMetaData umdpp = uploadMetaDataRepository.getUploadMetaDataByProjectPropertyName(upload.getId(), entry.getKey());
-				UploadMetaData umdop = uploadMetaDataRepository.getUploadMetaDataByObjectPropertyName(upload.getId(), entry.getKey());
-				if (umdpp != null) {
-					umdpp.setValue(entry.getValue().toString());
-					uploadMetaDataRepository.save(umdpp);
-				}
-				if (umdop != null) {
-					umdop.setValue(entry.getValue().toString());
-					uploadMetaDataRepository.save(umdop);
-				}
+				uploadMetaDataRepository.updateUploadMetaDataProjectPropertyFromUpload(upload.getId(),entry.getKey().trim(),entry.getValue());
+				uploadMetaDataRepository.updateUploadMetaDataObjectPropertyFromUpload(upload.getId(),entry.getKey().trim(),entry.getValue());
 			}
 			userVendorMappingProjectMappingRepository.addTotalUploadedAndAddTotalPending(uvmpm.getId());
-			projectRepository.addUploadedAddPendingSubtractRequired(project.getId());
+			projectRepository.addTotalUploadedAddPendingSubtractRequired(project.getId());
 			userVendorMappingObjectMappingRepository.addTotalUploadedAndAddTotalPending(uvmom.getId());
-			objectRepository.addUploadedAddPendingSubtractRequiredFromObject(object.getId());
+			objectRepository.addTotalUploadedAddPendingSubtractRequired(object.getId());
 			return ResponseEntity.ok().body(true);
 		} else {
 			return ResponseEntity.ok().body(false);
@@ -690,102 +679,125 @@ public class UploadResource {
 			throws URISyntaxException {
 		User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
 		log.debug("REST request to approve AidasUpload : {}, {}", id);
-		Authority authority = user.getAuthority();
 		if (!uploadRepository.existsById(id)) {
 			throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
 		}
 		Upload upload = uploadRepository.getById(id);
 		UserVendorMappingObjectMapping uvmom = upload.getUserVendorMappingObjectMapping();
-
 		Object object = uvmom.getObject();
 		Project project = uvmom.getObject().getProject();
-		UserVendorMappingProjectMapping uvmpm = userVendorMappingProjectMappingRepository
-				.findByUserVendorMappingIdProjectId(uvmom.getUserVendorMapping().getId(), project.getId());
+		UserVendorMappingProjectMapping uvmpm = userVendorMappingProjectMappingRepository.findByUserVendorMappingIdProjectId(uvmom.getUserVendorMapping().getId(), project.getId());
 		CustomerQcProjectMapping cqpm = customerQcProjectMappingRepository.getById(customerQcProjectMappingId);
-		ProjectQcLevelConfigurations pqlc = projectQcLevelConfigurationsRepository
-				.findByProejctIdAndQcLevel(project.getId(), cqpm.getQcLevel());
-		List<Long> allApprovedUploads = uploadCustomerQcProjectMappingBatchInfoRepository
-				.getAllApprovedInBatch(customerQcProjectMappingId, cqpm.getCurrentQcBatchNo());
-		List<Upload> remainingUploads = new ArrayList<>();
-		Integer totalAvailableInBatch = uploadCustomerQcProjectMappingBatchInfoRepository
-				.countUploadsByCustomerQcProjectMappingAndBatchNumber(customerQcProjectMappingId,
-						cqpm.getCurrentQcBatchNo());
+		CustomerQcProjectMappingBatchMapping cqpmbm = customerQcProjectMappingBatchMappingRepository.findByCustomerQcProjectMappingIdAndBatchNumber(customerQcProjectMappingId,cqpm.getCurrentQcBatchNo());
+		ProjectQcLevelConfigurations pqlc = projectQcLevelConfigurationsRepository.findByProejctIdAndQcLevel(project.getId(), cqpm.getQcLevel());
+		List<Long> allApprovedUploads = uploadCustomerQcProjectMappingBatchInfoRepository.getAllApprovedInBatch(customerQcProjectMappingId, cqpm.getCurrentQcBatchNo());
+		Set<Upload> remainingUploads = new HashSet<>();
+		Integer totalAvailableInBatch = uploadCustomerQcProjectMappingBatchInfoRepository.countUploadsByCustomerQcProjectMappingAndBatchNumber(customerQcProjectMappingId,cqpm.getCurrentQcBatchNo());
 		Float countReqdBasedOnAcceptancePercent = (pqlc.getQcLevelAcceptancePercentage().floatValue() / 100f)* totalAvailableInBatch;
 		Double d = Math.ceil(countReqdBasedOnAcceptancePercent.intValue());
 		int i = d.intValue();
-		if (allApprovedUploads.size() + 1 >= i) {
-			List<Long> remainingUploadIds = uploadCustomerQcProjectMappingBatchInfoRepository
-					.getRemainingUploadsInBatchIncludingCurrentUpload(customerQcProjectMappingId,
-							cqpm.getCurrentQcBatchNo());
-			remainingUploads = uploadRepository.getUploadsByIds(remainingUploadIds);
-		}
-
-		if (remainingUploads != null && remainingUploads.size() == 0) {
-			remainingUploads.add(upload);
-		}
 		boolean lastLevel = false;
 		boolean finalApproval = false;
 		if (cqpm != null && project.getQcLevels().equals(cqpm.getQcLevel())) {
 			lastLevel = true;
 		}
-		if ((project.getQcLevels().equals(1) && cqpm.getQcLevel().equals(1))
-				|| (lastLevel && (allApprovedUploads.size() + 1) == countReqdBasedOnAcceptancePercent.intValue())) {
+		if ((project.getQcLevels().equals(1) && cqpm.getQcLevel().equals(1))|| (lastLevel && (allApprovedUploads.size() + 1) >=i)) {
 			finalApproval = true;
 		}
+		if (allApprovedUploads.size() + 1 >= i) {
+			List<Long> remainingUploadIds = null;
+			if(finalApproval) {
+				remainingUploadIds = uploadCustomerQcProjectMappingBatchInfoRepository.getRemainingUploadsInBatchIncludingCurrentUploadAndPreviouslyApproved(customerQcProjectMappingId,cqpm.getCurrentQcBatchNo());
+			}else {
+				//remainingUploadIds = uploadCustomerQcProjectMappingBatchInfoRepository.getRemainingUploadsInBatchIncludingCurrentUpload(customerQcProjectMappingId,cqpm.getCurrentQcBatchNo());
+			}
+			remainingUploads = uploadRepository.getUploadsByIds(remainingUploadIds);
+		}
+		remainingUploads.add(upload);
+		int k=0;
 		for (Upload upload1 : remainingUploads) {
-			UploadCustomerQcProjectMappingBatchInfo ucqpmbi = uploadCustomerQcProjectMappingBatchInfoRepository
-					.getUploadIdByCustomerQcProjectMappingAndBatchNumber(customerQcProjectMappingId,
-							cqpm.getCurrentQcBatchNo(), upload1.getId());
-			if (finalApproval && upload1.getId().equals(upload.getId())) {
+			UploadCustomerQcProjectMappingBatchInfo ucqpmbi = uploadCustomerQcProjectMappingBatchInfoRepository.getUploadIdByCustomerQcProjectMappingAndBatchNumber(customerQcProjectMappingId,cqpm.getCurrentQcBatchNo(), upload1.getId());
+			if (finalApproval) {
 				upload1.setStatus(AidasConstants.AIDAS_UPLOAD_APPROVED);
 				upload1.setApprovalStatus(AidasConstants.AIDAS_UPLOAD_APPROVED);
-
-				uvmom.setTotalApproved(uvmom.getTotalApproved() + 1);
-				uvmom.setTotalPending(uvmom.getTotalPending() - 1);
-
-				uvmpm.setTotalApproved(uvmpm.getTotalApproved() + 1);
-				uvmpm.setTotalPending(uvmpm.getTotalPending() - 1);
-
-				object.setTotalApproved(object.getTotalApproved() + 1);
-				object.setTotalPending(object.getTotalPending() - 1);
-				if (object.getTotalRequired() > 0) {
-					object.setTotalRequired(object.getTotalRequired() - 1);
-				}
-				project.setTotalApproved(project.getTotalApproved() + 1);
-				project.setTotalPending(project.getTotalPending() - 1);
-				if (project.getTotalRequired() > 0) {
-					project.setTotalRequired(project.getTotalRequired() - 1);
-				}
-
+				userVendorMappingProjectMappingRepository.addTotalApprovedSubtractTotalPendingSubtractTotalRequired(uvmpm.getId());
+				projectRepository.addTotalApprovedSubtractTotalPendingSubtractTotalRequired(project.getId());
+				userVendorMappingObjectMappingRepository.addTotalApprovedSubtractTotalPendingSubtractTotalRequired(uvmom.getId());
+				objectRepository.addTotalApprovedSubtractTotalPendingSubtractTotalRequired(object.getId());
 				if (uvmom.getTotalApproved().equals(uvmom.getTotalUploaded())) {
 					uvmom.setQcStartStatus(0);
 					uvmom.setCurrentQcLevel(cqpm.getQcLevel() + 1);
 				}
 				upload1.setCurrentBatchNumber(null);
 			}
+			if(upload1.getApprovalStatus().equals(AidasConstants.AIDAS_UPLOAD_REJECTED)) {
+				userVendorMappingProjectMappingRepository.subTotalRejectedAndSubTotalRequiredAddTotalPending(uvmpm.getId());
+				projectRepository.subTotalRejectedAndSubTotalRequiredAddTotalPending(project.getId());
+				userVendorMappingObjectMappingRepository.subTotalRejectedAndSubTotalRequiredAddTotalPending(uvmom.getId());
+				objectRepository.subTotalRejectedAndSubTotalRequiredAddTotalPending(object.getId());
+			}
 			upload1.setCurrentQcLevel(cqpm.getQcLevel() + 1);
 			upload1.setQcDoneBy(cqpm);
-			upload1.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_APPROVED);
-			upload1.setQcEndDate(Instant.now());
-			ucqpmbi.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_APPROVED);
+			ucqpmbi.setQcSeenStatus(AidasConstants.AIDAS_QC_VIWED);
+			UploadCustomerQcProjectMappingBatchInfo previousUcqpmbi=null;
+			if(cqpmbm!=null) {
+				if(cqpmbm.getPreviousLevelBatchNumber()!=null) {
+					previousUcqpmbi = uploadCustomerQcProjectMappingBatchInfoRepository.getUploadIdByBatchNumber(cqpmbm.getPreviousLevelBatchNumber().intValue(), upload1.getId());
+				}
+				if(previousUcqpmbi==null || (previousUcqpmbi!=null && previousUcqpmbi.getQcStatus().equals(AidasConstants.AIDAS_UPLOAD_QC_APPROVED))) {
+					upload1.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_APPROVED);
+					upload1.setQcEndDate(Instant.now());
+					ucqpmbi.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_APPROVED);
+				}
+			}
+			ucqpmbi.setQcSeenStatus(AidasConstants.AIDAS_QC_VIWED);
+			uploadCustomerQcProjectMappingBatchInfoRepository.save(ucqpmbi);
+			k++;
 		}
+		
+		if(cqpm.getQcLevel()>1) {
+			List<Long[]> pendingWithShowToQc = uploadCustomerQcProjectMappingBatchInfoRepository.getAllShowToQcAndPending(customerQcProjectMappingId, cqpm.getCurrentQcBatchNo());
+			if(pendingWithShowToQc !=null && pendingWithShowToQc.size()==0) {
+				List<Long[]> pendingWithNoShowToQc = uploadCustomerQcProjectMappingBatchInfoRepository.getAllNotShowToQcAndPending(customerQcProjectMappingId, cqpm.getCurrentQcBatchNo());
+				if(pendingWithNoShowToQc!=null) {
+					for(Long[] l:pendingWithNoShowToQc) {
+						Upload u = uploadRepository.getById(l[0]);
+						UploadCustomerQcProjectMappingBatchInfo ucqpmbi1 =  uploadCustomerQcProjectMappingBatchInfoRepository.getById(l[1]);
+						u.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_APPROVED);
+						ucqpmbi1.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_APPROVED);
+						ucqpmbi1.setQcSeenStatus(AidasConstants.AIDAS_QC_NOT_VIWED);
+						uploadCustomerQcProjectMappingBatchInfoRepository.save(ucqpmbi1);
+						uploadRepository.save(u);
+					}
+				}
+			}
+		}
+		
 		List<Long> remainingUploadIds = uploadCustomerQcProjectMappingBatchInfoRepository
 				.getRemainingUploadsInBatchIncludingCurrentUpload(customerQcProjectMappingId,
 						cqpm.getCurrentQcBatchNo());
 		if (remainingUploadIds.size() == 0) {
-			CustomerQcProjectMappingBatchMapping cqpmbm = customerQcProjectMappingBatchMappingRepository
-					.findByCustomerQcProjectMappingIdAndBatchNumber(customerQcProjectMappingId,
-							cqpm.getCurrentQcBatchNo());
-			if(cqpmbm!=null)
-				cqpmbm.setBatchCompletionStatus(AidasConstants.AIDAS_UPLOAD_QC_BATCH_APPROVED);
+			if(cqpmbm!=null) {
+				Integer rejectedCount = uploadCustomerQcProjectMappingBatchInfoRepository.getRejectedCount(customerQcProjectMappingId,
+						cqpm.getCurrentQcBatchNo());
+				if(rejectedCount!=null && rejectedCount>0) {
+					cqpmbm.setBatchCompletionStatus(AidasConstants.AIDAS_UPLOAD_QC_BATCH_MIXED);
+				}else {
+					cqpmbm.setBatchCompletionStatus(AidasConstants.AIDAS_UPLOAD_QC_BATCH_APPROVED);
+				}
+			}
 		}
 		if (project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)) {
 			if (totalAvailableInBatch.equals(allApprovedUploads.size())) {
-				CustomerQcProjectMappingBatchMapping cqpmbm = customerQcProjectMappingBatchMappingRepository
-						.findByCustomerQcProjectMappingIdAndBatchNumber(customerQcProjectMappingId,
-								cqpm.getCurrentQcBatchNo());
-				if(cqpmbm!=null)
-					cqpmbm.setBatchCompletionStatus(AidasConstants.AIDAS_UPLOAD_QC_BATCH_APPROVED);
+				if(cqpmbm!=null) {
+					Integer rejectedCount = uploadCustomerQcProjectMappingBatchInfoRepository.getRejectedCount(customerQcProjectMappingId,
+							cqpm.getCurrentQcBatchNo());
+					if(rejectedCount!=null && rejectedCount>0) {
+						cqpmbm.setBatchCompletionStatus(AidasConstants.AIDAS_UPLOAD_QC_BATCH_MIXED);
+					}else {
+						cqpmbm.setBatchCompletionStatus(AidasConstants.AIDAS_UPLOAD_QC_BATCH_APPROVED);
+					}
+				}
 			}
 		}
 		return ResponseEntity.ok().headers(
@@ -815,21 +827,15 @@ public class UploadResource {
 		Upload upload = uploadRepository.getById(id);
 		HashMap<Long, Integer> oldQcStatus = new HashMap<>();
 		oldQcStatus.put(upload.getId(), upload.getQcStatus());
-		UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository
-				.getUvmom(upload.getUserVendorMappingObjectMapping().getId());
+		UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.getUvmom(upload.getUserVendorMappingObjectMapping().getId());
 		Object object = uvmom.getObject();
 		Project project = uvmom.getObject().getProject();
-		UserVendorMappingProjectMapping uvmpm = userVendorMappingProjectMappingRepository
-				.findByUserVendorMappingIdProjectId(uvmom.getUserVendorMapping().getId(), project.getId());
+		UserVendorMappingProjectMapping uvmpm = userVendorMappingProjectMappingRepository.findByUserVendorMappingIdProjectId(uvmom.getUserVendorMapping().getId(), project.getId());
 		CustomerQcProjectMapping cqpm = customerQcProjectMappingRepository.getById(customerQcProjectMappingId);
-		UploadCustomerQcProjectMappingBatchInfo ucqpmbi = uploadCustomerQcProjectMappingBatchInfoRepository
-				.getUploadIdByCustomerQcProjectMappingAndBatchNumber(customerQcProjectMappingId,
-						cqpm.getCurrentQcBatchNo(), upload.getId());
-		Integer totalAvailableInBatch = uploadCustomerQcProjectMappingBatchInfoRepository
-				.countUploadsByCustomerQcProjectMappingAndBatchNumber(customerQcProjectMappingId,
-						cqpm.getCurrentQcBatchNo());
-		List<Long> allApprovedUploads = uploadCustomerQcProjectMappingBatchInfoRepository
-				.getAllApprovedInBatch(customerQcProjectMappingId, cqpm.getCurrentQcBatchNo());
+		UploadCustomerQcProjectMappingBatchInfo ucqpmbi = uploadCustomerQcProjectMappingBatchInfoRepository.getUploadIdByCustomerQcProjectMappingAndBatchNumber(customerQcProjectMappingId,cqpm.getCurrentQcBatchNo(), upload.getId());
+		Integer totalAvailableInBatch = uploadCustomerQcProjectMappingBatchInfoRepository.countUploadsByCustomerQcProjectMappingAndBatchNumber(customerQcProjectMappingId,cqpm.getCurrentQcBatchNo());
+		List<Long> allApprovedUploads = uploadCustomerQcProjectMappingBatchInfoRepository.getAllApprovedInBatch(customerQcProjectMappingId, cqpm.getCurrentQcBatchNo());
+		ProjectQcLevelConfigurations pqlc = projectQcLevelConfigurationsRepository.findByProejctIdAndQcLevel(project.getId(), cqpm.getQcLevel());
 		ucqpmbi.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_REJECTED);
 		upload.setApprovalStatus(AidasConstants.AIDAS_UPLOAD_REJECTED);
 		upload.setQcEndDate(Instant.now());
@@ -848,7 +854,6 @@ public class UploadResource {
 					upload.getUploadRejectMappings().add(uploadRejectReasonMapping);
 				}
 			} else {
-				// uploadRejectReason = uploadRejectReasonRepository.save(uploadRejectReason);
 				uploadRejectReasonMapping.setUpload(upload);
 				uploadRejectReasonMapping.setUploadRejectReason(uploadRejectReason);
 				upload.getUploadRejectMappings().add(uploadRejectReasonMapping);
@@ -861,11 +866,12 @@ public class UploadResource {
 		}
 		if (ucqpmbi != null) {
 			ucqpmbi.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_REJECTED);
+			ucqpmbi.setQcSeenStatus(AidasConstants.AIDAS_QC_VIWED);
 		}
 		List<Long> allInBatch = new ArrayList();// uploadCustomerQcProjectMappingBatchInfoRepository.getAllInBatchGrouped(customerQcProjectMappingId,upload.getUserVendorMappingObjectMapping().getObject().getId(),cqpm.getCurrentQcBatchNo());
 		allInBatch.add(upload.getId());
 		uploadCustomerQcProjectMappingBatchInfoRepository.save(ucqpmbi);
-		List<Upload> uploadsInBatch = uploadRepository.getUploadsByIds(allInBatch);
+		Set<Upload> uploadsInBatch = uploadRepository.getUploadsByIds(allInBatch);
 		if (project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)) {
 			for (Upload upload1 : uploadsInBatch) {
 				if (oldQcStatus.get(upload1.getId()) != null) {
@@ -886,27 +892,16 @@ public class UploadResource {
 					upload1.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_REJECTED);
 					upload1.setApprovalStatus(AidasConstants.AIDAS_UPLOAD_QC_REJECTED);
 				}
-				uvmom.setTotalRejected(uvmom.getTotalRejected() + 1);
-				uvmom.setTotalPending(uvmom.getTotalPending() - 1);
-
-				uvmpm.setTotalRejected(uvmpm.getTotalRejected() + 1);
-				uvmpm.setTotalPending(uvmpm.getTotalPending() - 1);
-
-				object.setTotalRejected(object.getTotalRejected() + 1);
-				object.setTotalPending(object.getTotalPending() - 1);
-				object.setTotalRequired(object.getTotalRequired() + 1);
-				project.setTotalRejected(project.getTotalRejected() + 1);
-				project.setTotalPending(project.getTotalPending() - 1);
-				project.setTotalRequired(project.getTotalRequired() + 1);
+				userVendorMappingProjectMappingRepository.addTotalRejectedAndSubtractTotalPendingAddTotalRequired(uvmpm.getId());
+				projectRepository.addTotalRejectedAndSubtractTotalPendingAddTotalRequired(project.getId());
+				userVendorMappingObjectMappingRepository.addTotalRejectedAndSubtractTotalPendingAddTotalRequired(uvmom.getId());
+				objectRepository.addTotalRejectedAndSubtractTotalPendingAddTotalRequired(object.getId());
+				ucqpmbi.setQcSeenStatus(AidasConstants.AIDAS_QC_VIWED);
 				uploadRepository.save(upload1);
 			}
-			List<Long> remainingUploadIds = uploadCustomerQcProjectMappingBatchInfoRepository
-					.getRemainingUploadsInBatchIncludingCurrentUploadNew(customerQcProjectMappingId,
-							cqpm.getCurrentQcBatchNo(), upload.getId());
+			List<Long> remainingUploadIds = uploadCustomerQcProjectMappingBatchInfoRepository.getRemainingUploadsInBatchIncludingCurrentUploadNew(customerQcProjectMappingId,cqpm.getCurrentQcBatchNo(), upload.getId());
 			if (remainingUploadIds.size() == 0) {
-				CustomerQcProjectMappingBatchMapping cqpmbm = customerQcProjectMappingBatchMappingRepository
-						.findByCustomerQcProjectMappingIdAndBatchNumber(customerQcProjectMappingId,
-								cqpm.getCurrentQcBatchNo());
+				CustomerQcProjectMappingBatchMapping cqpmbm = customerQcProjectMappingBatchMappingRepository.findByCustomerQcProjectMappingIdAndBatchNumber(customerQcProjectMappingId,cqpm.getCurrentQcBatchNo());
 				cqpmbm.setBatchCompletionStatus(AidasConstants.AIDAS_UPLOAD_QC_BATCH_REJECTED);
 				customerQcProjectMappingBatchMappingRepository.save(cqpmbm);
 			}
@@ -922,23 +917,30 @@ public class UploadResource {
 				upload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_REJECTED);
 				upload.setApprovalStatus(AidasConstants.AIDAS_UPLOAD_QC_REJECTED);
 			}
-			uvmom.setTotalApproved(uvmom.getTotalApproved() + 1);
-			uvmom.setTotalPending(uvmom.getTotalPending() - 1);
-
-			uvmpm.setTotalApproved(uvmpm.getTotalApproved() + 1);
-			uvmpm.setTotalPending(uvmpm.getTotalPending() - 1);
-
-			object.setTotalApproved(object.getTotalApproved() + 1);
-			object.setTotalPending(object.getTotalPending() - 1);
-			if (object.getTotalRequired() > 0) {
-				object.setTotalRequired(object.getTotalRequired() - 1);
+			userVendorMappingProjectMappingRepository.addTotalRejectedAndSubtractTotalPendingAddTotalRequired(uvmpm.getId());
+			projectRepository.addTotalRejectedAndSubtractTotalPendingAddTotalRequired(project.getId());
+			userVendorMappingObjectMappingRepository.addTotalRejectedAndSubtractTotalPendingAddTotalRequired(uvmom.getId());
+			objectRepository.addTotalRejectedAndSubtractTotalPendingAddTotalRequired(object.getId());
+			ucqpmbi.setQcSeenStatus(AidasConstants.AIDAS_QC_VIWED);
+			uploadRepository.save(upload);
+			uploadCustomerQcProjectMappingBatchInfoRepository.save(ucqpmbi);
+			if(cqpm.getQcLevel()>1) {
+				List<Long[]> pendingWithShowToQc = uploadCustomerQcProjectMappingBatchInfoRepository.getAllShowToQcAndPending(customerQcProjectMappingId, cqpm.getCurrentQcBatchNo());
+				if(pendingWithShowToQc !=null && pendingWithShowToQc.size()==0) {
+					List<Long[]> pendingWithNoShowToQc = uploadCustomerQcProjectMappingBatchInfoRepository.getAllNotShowToQcAndPending(customerQcProjectMappingId, cqpm.getCurrentQcBatchNo());
+					if(pendingWithNoShowToQc!=null) {
+						for(Long[] l:pendingWithNoShowToQc) {
+							Upload u = uploadRepository.getById(l[0]);
+							UploadCustomerQcProjectMappingBatchInfo ucqpmbi1 =  uploadCustomerQcProjectMappingBatchInfoRepository.getById(l[1]);
+							u.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_APPROVED);
+							ucqpmbi1.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_APPROVED);
+							ucqpmbi1.setQcSeenStatus(AidasConstants.AIDAS_QC_NOT_VIWED);
+							uploadCustomerQcProjectMappingBatchInfoRepository.save(ucqpmbi1);
+							uploadRepository.save(u);
+						}
+					}
+				}
 			}
-			project.setTotalApproved(project.getTotalApproved() + 1);
-			project.setTotalPending(project.getTotalPending() - 1);
-			if (project.getTotalRequired() > 0) {
-				project.setTotalRequired(project.getTotalRequired() - 1);
-			}
-
 			List<Long> remainingUploadIds = uploadCustomerQcProjectMappingBatchInfoRepository
 					.getRemainingUploadsInBatchIncludingCurrentUpload(customerQcProjectMappingId,
 							cqpm.getCurrentQcBatchNo());
@@ -946,14 +948,30 @@ public class UploadResource {
 				CustomerQcProjectMappingBatchMapping cqpmbm = customerQcProjectMappingBatchMappingRepository
 						.findByCustomerQcProjectMappingIdAndBatchNumber(customerQcProjectMappingId,
 								cqpm.getCurrentQcBatchNo());
-				cqpmbm.setBatchCompletionStatus(AidasConstants.AIDAS_UPLOAD_QC_BATCH_APPROVED);
+				if(cqpmbm!=null) {
+					Integer rejectedCount = uploadCustomerQcProjectMappingBatchInfoRepository.getApprovedCount(customerQcProjectMappingId,
+							cqpm.getCurrentQcBatchNo());
+					if(rejectedCount!=null && rejectedCount>0) {
+						cqpmbm.setBatchCompletionStatus(AidasConstants.AIDAS_UPLOAD_QC_BATCH_MIXED);
+					}else {
+						cqpmbm.setBatchCompletionStatus(AidasConstants.AIDAS_UPLOAD_QC_BATCH_REJECTED);
+					}
+				}
 			}
 			if (project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)) {
 				if (totalAvailableInBatch.equals(allApprovedUploads.size())) {
 					CustomerQcProjectMappingBatchMapping cqpmbm = customerQcProjectMappingBatchMappingRepository
 							.findByCustomerQcProjectMappingIdAndBatchNumber(customerQcProjectMappingId,
 									cqpm.getCurrentQcBatchNo());
-					cqpmbm.setBatchCompletionStatus(AidasConstants.AIDAS_UPLOAD_QC_BATCH_APPROVED);
+					if(cqpmbm!=null) {
+						Integer rejectedCount = uploadCustomerQcProjectMappingBatchInfoRepository.getApprovedCount(customerQcProjectMappingId,
+								cqpm.getCurrentQcBatchNo());
+						if(rejectedCount!=null && rejectedCount>0) {
+							cqpmbm.setBatchCompletionStatus(AidasConstants.AIDAS_UPLOAD_QC_BATCH_MIXED);
+						}else {
+							cqpmbm.setBatchCompletionStatus(AidasConstants.AIDAS_UPLOAD_QC_BATCH_REJECTED);
+						}
+					}
 				}
 			}
 		}
@@ -1425,7 +1443,8 @@ public class UploadResource {
 							ud.setValue(umd.getValue());
 						}
 						u.getUploadMetaDatas().add(ud);
-					} else if (umd.getObjectProperty() != null && umd.getObjectProperty().getProperty() != null
+					} 
+					/*else if (umd.getObjectProperty() != null && umd.getObjectProperty().getProperty() != null
 							&& umd.getObjectProperty().getProperty().getName() != null && umd.getValue() != null
 							&& umd.getObjectProperty().getAddToMetadata() != null
 							&& umd.getObjectProperty().getAddToMetadata().equals(1)) {
@@ -1437,7 +1456,7 @@ public class UploadResource {
 							ud.setValue(umd.getValue());
 						}
 						u.getUploadMetaDatas().add(ud);
-					}
+					}*/
 				}
 				HashMap<String, UploadMetadataDTO> singleMap = new HashMap<>();
 				for (UploadMetadataDTO umdd : u.getUploadMetaDatas()) {
@@ -1479,7 +1498,6 @@ public class UploadResource {
 		Map<String, List<Upload>> resultMap = new HashMap<>();
 		Integer multFactor = 1;
 		List<Long[]> notCompletedBatches = customerQcProjectMappingBatchMappingRepository.getQcNotCompletedBatches(project.getId(), cqpm.getQcLevel(),cqpm.getId());
-		boolean isNew = true;
 		if (notCompletedBatches != null && notCompletedBatches.size() > 0) {
 			uploads = uploadRepository.getUploadIdsInBatch(notCompletedBatches.get(0)[0],cqpmbm.getCurrentPageNumber(),pqlc.getQcLevelBatchSize());
 			for (Upload u : uploads) {
@@ -1488,25 +1506,28 @@ public class UploadResource {
 				}
 				resultMap.get(u.getUserVendorMappingObjectMapping().getObject().getId().toString() + "-"+ u.getUserVendorMappingObjectMapping().getObject().getName() + "-"+ cqpmbm.getBatchCompletionStatus()).add(u);
 			}
-			isNew = false;
 		} else {
-			//List<Long> mixedBatches;//customerQcProjectMappingBatchMappingRepository.getQcMixedBatches(project.getId(),cqpm.getQcLevel() - 1);
-			
-			List<Integer[]>approvedBatches = customerQcProjectMappingBatchMappingRepository.getQcApprovedBatches(project.getId(),cqpm.getQcLevel() - 1);
-			
 			if (project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)) {
 				
 			} else {
-				List<Integer[]>mixedBatches = customerQcProjectMappingBatchMappingRepository.getQcMixedBatches(project.getId(),cqpm.getQcLevel() - 1);
+				List<Integer[]>mixedBatches = null;
+				if(cqpm.getQcLevel()>1) {
+					mixedBatches = customerQcProjectMappingBatchMappingRepository.getQcMixedBatchesForLevelGreaterThanOne(project.getId(),cqpm.getQcLevel() - 1);
+				}else if(cqpm.getQcLevel()==2) {
+					mixedBatches = customerQcProjectMappingBatchMappingRepository.getQcMixedBatches(project.getId(),cqpm.getQcLevel() - 1);
+				}else if(cqpm.getQcLevel()>2) {
+					mixedBatches = customerQcProjectMappingBatchMappingRepository.getQcMixedBatchesForLevelGreaterThanTwo(project.getId(),cqpm.getQcLevel() - 1);
+				}
 				Integer approvedUploadsCount = 1;
 				Float numOfUploads = 1f;
 				int numOfUploadsToBeShown=1;
 				Double ceiledNumberOfuploads =1d;
+				CustomerQcProjectMappingBatchMapping cqpmbm1=null;
 				if(mixedBatches!=null && mixedBatches.size()>0) {
 					approvedUploadsCount = mixedBatches.get(0)[1];
 					numOfUploads = (pqlc.getQcLevelAcceptancePercentage().floatValue() / 100f) * approvedUploadsCount;
-					List<Upload> tempUploads = uploadRepository.getUploadByBatchNumber(approvedBatches.get(0)[0]);
-					ceiledNumberOfuploads = Math.ceil(numOfUploads.intValue()+0.5);
+					List<Upload> tempUploads = uploadRepository.getUploadByBatchNumber(mixedBatches.get(0)[0]);
+					ceiledNumberOfuploads = Math.ceil(numOfUploads.intValue());
 					numOfUploadsToBeShown = ceiledNumberOfuploads.intValue();
 					multFactor = approvedUploadsCount/ numOfUploadsToBeShown;
 					int j=0;
@@ -1515,45 +1536,67 @@ public class UploadResource {
 							cqpmbm.setCustomerQcProjectMapping(cqpm);
 							cqpmbm.setCurrentPageNumber(0);
 							customerQcProjectMappingBatchMappingRepository.save(cqpmbm);
+							if(cqpm.getQcLevel()==2) {
+								cqpmbm1 = customerQcProjectMappingBatchMappingRepository.getById(mixedBatches.get(0)[0].longValue());
+								cqpmbm1.setNextLevelBatchNumber(cqpmbm.getId());
+								cqpmbm.setPreviousLevelBatchNumber(cqpmbm1.getId());
+								customerQcProjectMappingBatchMappingRepository.save(cqpmbm1);
+							}else if(cqpm.getQcLevel()>2) {
+								cqpmbm1 = customerQcProjectMappingBatchMappingRepository.getById(mixedBatches.get(0)[0].longValue());
+								cqpmbm.setPreviousLevelBatchNumber(cqpmbm1.getId());
+								cqpmbm1.setNextLevelBatchNumber(cqpmbm.getId());
+								customerQcProjectMappingBatchMappingRepository.save(cqpmbm1);
+							}
 							cqpmbm.setBatchNo(cqpmbm.getId().intValue());
 							cqpm.setCurrentQcBatchNo(cqpmbm.getId().intValue());
 							customerQcProjectMappingRepository.save(cqpm);
+							customerQcProjectMappingBatchMappingRepository.save(cqpmbm);
 							for(Upload u:tempUploads) {
+								UploadCustomerQcProjectMappingBatchInfo previousUcqpmbi=null;
+								if(cqpmbm.getPreviousLevelBatchNumber()!=null) {
+									previousUcqpmbi = uploadCustomerQcProjectMappingBatchInfoRepository.getUploadIdByBatchNumber(cqpmbm.getPreviousLevelBatchNumber().intValue(), u.getId());
+								}
 								UploadCustomerQcProjectMappingBatchInfo ucqpmbi = new UploadCustomerQcProjectMappingBatchInfo();
 								ucqpmbi.setBatchNumber(cqpmbm.getId());
 								ucqpmbi.setUploadId(u.getId());
 								ucqpmbi.setCustomerQcProjectMappingId(cqpm.getId());
+								if(previousUcqpmbi!=null && previousUcqpmbi.getQcStatus().equals(AidasConstants.AIDAS_UPLOAD_QC_REJECTED)) {
+									ucqpmbi.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_REJECTED);
+									u.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_REJECTED);
+								}else {
+									if(j%multFactor==0) {
+										ucqpmbi.setShowToQc(AidasConstants.AIDAS_UPLOAD_SHOW_TO_QC);
+										u.setShowToQc(AidasConstants.AIDAS_UPLOAD_SHOW_TO_QC);
+										uploads.add(u);
+									} else {
+										ucqpmbi.setShowToQc(AidasConstants.AIDAS_UPLOAD_NO_SHOW_TO_QC);
+										u.setShowToQc(AidasConstants.AIDAS_UPLOAD_NO_SHOW_TO_QC);
+									}
+									j++;
+									u.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
+								}
 								uploadCustomerQcProjectMappingBatchInfoRepository.save(ucqpmbi);
 								u.setQcBatchInfo(String.valueOf(ucqpmbi.getId()));
-								u.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
 								u.setQcDoneBy(cqpm);
 								u.setQcStartDate(Instant.now());
 								u.setCurrentBatchNumber(cqpmbm.getId().intValue());
-								u.getUserVendorMappingObjectMapping().setCurrentQcLevel(cqpm.getQcLevel());
-								u.getUserVendorMappingObjectMapping().setQcStartStatus(AidasConstants.AIDAS_UPLOAD_QC_STARTED);
-								u.getUserVendorMappingObjectMapping().getObject().setCurrentQcLevel(cqpm.getQcLevel());
-								u.getUserVendorMappingObjectMapping().getObject().setQcStartStatus(AidasConstants.AIDAS_UPLOAD_QC_STARTED);
-								u.getUserVendorMappingObjectMapping().getObject().getProject().setCurrentQcLevel(cqpm.getQcLevel());
-								u.getUserVendorMappingObjectMapping().getObject().getProject().setQcStartStatus(AidasConstants.AIDAS_UPLOAD_QC_STARTED);
-								if(j%multFactor==0) {
-									ucqpmbi.setShowToQc(AidasConstants.AIDAS_UPLOAD_NO_SHOW_TO_QC);
-									u.setShowToQc(AidasConstants.AIDAS_UPLOAD_NO_SHOW_TO_QC);
-								}else {
-									ucqpmbi.setShowToQc(AidasConstants.AIDAS_UPLOAD_SHOW_TO_QC);
-									u.setShowToQc(AidasConstants.AIDAS_UPLOAD_SHOW_TO_QC);
-									uploads.add(u);
-								}
 								uploadRepository.save(u);
-								uploadCustomerQcProjectMappingBatchInfoRepository.save(ucqpmbi);
-								j++;
+								uploadCustomerQcProjectMappingBatchInfoRepository.saveAndFlush(ucqpmbi);
+								uploadCustomerQcProjectMappingBatchInfoRepository.flush();
+								
 							}
 					}
 					uploads = uploadRepository.getUploadIdsInBatch(cqpmbm.getId(),cqpmbm.getCurrentPageNumber(),pqlc.getQcLevelBatchSize());
+					j=0;
 					for (Upload u : uploads) {
 						if (resultMap.get(u.getUserVendorMappingObjectMapping().getObject().getId().toString() + "-"+ u.getUserVendorMappingObjectMapping().getObject().getName() + "-"+ cqpmbm.getBatchCompletionStatus()) == null) {
 							resultMap.put(u.getUserVendorMappingObjectMapping().getObject().getId().toString() + "-"+ u.getUserVendorMappingObjectMapping().getObject().getName() + "-"+ cqpmbm.getBatchCompletionStatus(), new ArrayList<>());
 						}
-						resultMap.get(u.getUserVendorMappingObjectMapping().getObject().getId().toString() + "-"+ u.getUserVendorMappingObjectMapping().getObject().getName() + "-"+ cqpmbm.getBatchCompletionStatus()).add(u);
+						if(u.getQcStatus()!=null && !u.getQcStatus().equals(AidasConstants.AIDAS_UPLOAD_QC_REJECTED)) {
+							if(u.getShowToQc().equals(AidasConstants.AIDAS_UPLOAD_SHOW_TO_QC)) {
+								resultMap.get(u.getUserVendorMappingObjectMapping().getObject().getId().toString() + "-"+ u.getUserVendorMappingObjectMapping().getObject().getName() + "-"+ cqpmbm.getBatchCompletionStatus()).add(u);
+							}
+						}
 					}
 				}else {
 					uvmomIds = uploadRepository.findAllUvmomsQcNotStartedForNonGrouped(projectId, cqpm.getQcLevel(),1);
@@ -1563,16 +1606,30 @@ public class UploadResource {
 					ceiledNumberOfuploads = Math.ceil(numOfUploads.intValue()+0.5);
 					numOfUploadsToBeShown = ceiledNumberOfuploads.intValue();
 					multFactor = approvedUploadsCount/ numOfUploadsToBeShown;
-					if(multFactor==0)
+					if(multFactor==0) {
 						multFactor=1;
-					if (cqpmbm == null) {
-						cqpmbm = new CustomerQcProjectMappingBatchMapping();
-						cqpmbm.setCustomerQcProjectMapping(cqpm);
-						cqpmbm.setCurrentPageNumber(0);
-						customerQcProjectMappingBatchMappingRepository.save(cqpmbm);
-						cqpmbm.setBatchNo(cqpmbm.getId().intValue());
-						cqpm.setCurrentQcBatchNo(cqpmbm.getId().intValue());
-						customerQcProjectMappingRepository.save(cqpm);
+					}
+					if(uvmomIds!=null && uvmomIds.size()>0) {
+						if (cqpmbm == null) {
+							cqpmbm = new CustomerQcProjectMappingBatchMapping();
+							cqpmbm.setCustomerQcProjectMapping(cqpm);
+							cqpmbm.setCurrentPageNumber(0);
+							customerQcProjectMappingBatchMappingRepository.save(cqpmbm);
+							if(mixedBatches!=null && mixedBatches.size()>0) {
+								if(cqpm.getQcLevel()==2) {
+									cqpmbm1 = customerQcProjectMappingBatchMappingRepository.getById(mixedBatches.get(0)[0].longValue());
+									cqpmbm1.setNextLevelBatchNumber(cqpmbm.getId());
+									cqpmbm.setPreviousLevelBatchNumber(cqpmbm1.getId());
+								}else if(cqpm.getQcLevel()>2) {
+									cqpmbm1 = customerQcProjectMappingBatchMappingRepository.getById(mixedBatches.get(0)[0].longValue());
+									cqpmbm.setPreviousLevelBatchNumber(cqpmbm1.getId());
+									cqpmbm1.setNextLevelBatchNumber(cqpmbm.getId());
+								}
+							}
+							cqpmbm.setBatchNo(cqpmbm.getId().intValue());
+							cqpm.setCurrentQcBatchNo(cqpmbm.getId().intValue());
+							customerQcProjectMappingRepository.save(cqpm);
+						}
 					}
 					int j=0;
 					for (Upload u : uploads) {
@@ -1580,26 +1637,35 @@ public class UploadResource {
 							resultMap.put(u.getUserVendorMappingObjectMapping().getObject().getId().toString() + "-"+ u.getUserVendorMappingObjectMapping().getObject().getName() + "-"+ cqpmbm.getBatchCompletionStatus(), new ArrayList<>());
 						}
 							UploadCustomerQcProjectMappingBatchInfo ucqpmbi = new UploadCustomerQcProjectMappingBatchInfo();
+							UploadCustomerQcProjectMappingBatchInfo previousUcqpmbi=null;
+							if(cqpmbm.getPreviousLevelBatchNumber()!=null) {
+								previousUcqpmbi = uploadCustomerQcProjectMappingBatchInfoRepository.getUploadIdByBatchNumber(cqpmbm.getPreviousLevelBatchNumber().intValue(), u.getId());
+							}
 							ucqpmbi.setBatchNumber(cqpmbm.getId());
 							ucqpmbi.setUploadId(u.getId());
 							ucqpmbi.setCustomerQcProjectMappingId(cqpm.getId());
+							if(previousUcqpmbi!=null && previousUcqpmbi.getQcStatus().equals(AidasConstants.AIDAS_UPLOAD_QC_REJECTED)) {
+								ucqpmbi.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_REJECTED);
+								u.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_REJECTED);
+							}else {
+								if(j%multFactor==0) {
+									ucqpmbi.setShowToQc(AidasConstants.AIDAS_UPLOAD_SHOW_TO_QC);
+									u.setShowToQc(AidasConstants.AIDAS_UPLOAD_SHOW_TO_QC);
+									resultMap.get(u.getUserVendorMappingObjectMapping().getObject().getId().toString() + "-"+ u.getUserVendorMappingObjectMapping().getObject().getName() + "-"+ cqpmbm.getBatchCompletionStatus()).add(u);
+								}else {
+									ucqpmbi.setShowToQc(AidasConstants.AIDAS_UPLOAD_NO_SHOW_TO_QC);
+									u.setShowToQc(AidasConstants.AIDAS_UPLOAD_NO_SHOW_TO_QC);
+								}
+								u.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
+								j++;
+							}
 							uploadCustomerQcProjectMappingBatchInfoRepository.save(ucqpmbi);
 							u.setQcBatchInfo(String.valueOf(ucqpmbi.getId()));
-							u.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
 							u.setQcDoneBy(cqpm);
 							u.setQcStartDate(Instant.now());
 							u.setCurrentBatchNumber(cqpmbm.getId().intValue());
-							u.getUserVendorMappingObjectMapping().setCurrentQcLevel(cqpm.getQcLevel());
-							u.getUserVendorMappingObjectMapping().setQcStartStatus(AidasConstants.AIDAS_UPLOAD_QC_STARTED);
-							u.getUserVendorMappingObjectMapping().getObject().setCurrentQcLevel(cqpm.getQcLevel());
-							u.getUserVendorMappingObjectMapping().getObject().setQcStartStatus(AidasConstants.AIDAS_UPLOAD_QC_STARTED);
-							u.getUserVendorMappingObjectMapping().getObject().getProject().setCurrentQcLevel(cqpm.getQcLevel());
-							u.getUserVendorMappingObjectMapping().getObject().getProject().setQcStartStatus(AidasConstants.AIDAS_UPLOAD_QC_STARTED);
-							ucqpmbi.setShowToQc(AidasConstants.AIDAS_UPLOAD_SHOW_TO_QC);
 							uploadRepository.save(u);
 							uploadCustomerQcProjectMappingBatchInfoRepository.save(ucqpmbi);
-							j++;
-							resultMap.get(u.getUserVendorMappingObjectMapping().getObject().getId().toString() + "-"+ u.getUserVendorMappingObjectMapping().getObject().getName() + "-"+ cqpmbm.getBatchCompletionStatus()).add(u);
 					}
 				}
 			}

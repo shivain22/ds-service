@@ -369,7 +369,7 @@ public interface UploadRepository extends JpaRepository<Upload, Long> {
     Set<Upload> getApprovedUploadForLevel(Long projectId,Long objectId, Integer qcLevel);
 
     @Query(value="select u.* from upload u where u.id in (?1)", nativeQuery = true)
-    List<Upload> getUploadsByIds(List<Long> uploadIds);
+    Set<Upload> getUploadsByIds(List<Long> uploadIds);
 
     @Query(value="select count(u.id) from upload u, user_vendor_mapping_object_mapping uvmom, object o where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and o.project_id=?2 and  u.qc_done_by_id=?1 and u.qc_status=0 and  u.metadata_status=1  limit 10",nativeQuery = true)
     Integer findPendingQcDoneByCQPM(Long customerQcProjectMappingId, Long projectId);

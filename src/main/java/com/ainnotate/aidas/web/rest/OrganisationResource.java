@@ -350,6 +350,7 @@ public class OrganisationResource {
 				builder.with(matcher.group(1), matcher.group(2), matcher.group(3));
 			}
 		}
+		builder.with("id", ">",0);
 		BooleanExpression exp = builder.build();
 		Page<Organisation> page = organisationRepository.findAll(exp, pageable);
 		HttpHeaders headers = PaginationUtil

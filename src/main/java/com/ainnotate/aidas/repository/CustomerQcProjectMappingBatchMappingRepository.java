@@ -43,6 +43,12 @@ public interface CustomerQcProjectMappingBatchMappingRepository extends JpaRepos
     @Query(value="select cbm.id,count(ucbi.id) from cqpm_batch_mapping cbm,customer_qc_project_mapping cqpm,upload_cqpm_batch_info ucbi where ucbi.batch_number=cbm.id and cbm.cqpm_id=cqpm.id and cqpm.project_id=?1 and cqpm.qc_level=?2 and (cbm.batch_completion_status=1 or cbm.batch_completion_status=3) group by cbm.id",nativeQuery = true)
     List<Integer[]> getQcMixedBatches(Long projectId,Integer qcLevel);
     
+    @Query(value="select cbm.id,count(ucbi.id) from cqpm_batch_mapping cbm,customer_qc_project_mapping cqpm,upload_cqpm_batch_info ucbi where ucbi.batch_number=cbm.id and cbm.cqpm_id=cqpm.id and cqpm.project_id=?1 and cqpm.qc_level=?2 and cbm.next_level_batch_number is null and (cbm.batch_completion_status=1 or cbm.batch_completion_status=3) group by cbm.id",nativeQuery = true)
+    List<Integer[]> getQcMixedBatchesForLevelGreaterThanOne(Long projectId,Integer qcLevel);
+    
+    @Query(value="select cbm.id,count(ucbi.id) from cqpm_batch_mapping cbm,customer_qc_project_mapping cqpm,upload_cqpm_batch_info ucbi where ucbi.batch_number=cbm.id and cbm.cqpm_id=cqpm.id and cqpm.project_id=?1 and cqpm.qc_level=?2 and cbm.next_level_batch_number is not null and cbm.previous_level_batch_number is not null and (cbm.batch_completion_status=1 or cbm.batch_completion_status=3) group by cbm.id",nativeQuery = true)
+    List<Integer[]> getQcMixedBatchesForLevelGreaterThanTwo(Long projectId,Integer qcLevel);
+    
     @Query(value="select cbm.id from cqpm_batch_mapping cbm,customer_qc_project_mapping cqpm where cbm.cqpm_id=cqpm.id and cqpm.project_id=?1 and cqpm.qc_level=?2 and cbm.batch_completion_status=3 ",nativeQuery = true)
     List<Long> getQcRejectedBatches(Long projectId,Integer qcLevel);
     

@@ -150,8 +150,25 @@ public interface ProjectRepository extends JpaRepository<Project, Long>,Querydsl
     void addProjectProperties(Long projectId,Long categoryId, Long customerId);
     
     @Modifying(flushAutomatically = true,clearAutomatically = true)
-    @Query(value = "update project set total_uploaded=total_uploaded+1, total_pending=total_pending+1, total_required=total_required-1 where id=?1",nativeQuery = true)
-    void addUploadedAddPendingSubtractRequired(Long projectId);
+    @Query(value = "update project set total_uploaded=total_uploaded+1, "
+    		+ "total_pending=total_pending+1, total_required=case when total_required>0 then total_required-1 else total_pending end where id=?1",nativeQuery = true)
+    void addTotalUploadedAddPendingSubtractRequired(Long projectId);
+    
+    @Modifying
+    @Query(value = "update project set total_rejected=total_rejected+1,total_pending= total_pending-1 ,total_required=total_required+1 where id=?1",nativeQuery = true)
+    void addTotalRejectedAndSubtractTotalPendingAddTotalRequired(Long id);
+    
+    @Modifying
+    @Query(value = "update project set total_rejected=total_rejected-1,total_required=total_required-1,total_pending=total_pending+1 where id=?1",nativeQuery = true)
+    void subTotalRejectedAndSubTotalRequiredAddTotalPending(Long id);
+    
+    @Modifying
+    @Query(value = "update project set total_approved=total_approved+1, total_pending=total_pending  where id=?1",nativeQuery = true)
+    void addTotalApprovedSubtractTotalPendingSubtractTotalRequired(Long id);
+    
+    @Modifying
+    @Query(value = "update project set total_required=total_required-1 where id=?1",nativeQuery = true)
+    void subTotalRequired(Long id);
     
     @Modifying(flushAutomatically = true,clearAutomatically = true)
     @Query(value = "update project set number_of_objects=number_of_objects-1 where id=?1",nativeQuery = true)
