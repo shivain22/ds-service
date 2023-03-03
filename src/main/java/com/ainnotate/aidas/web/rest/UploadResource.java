@@ -1472,19 +1472,6 @@ public class UploadResource {
 						}
 						u.getUploadMetaDatas().add(ud);
 					} 
-					/*else if (umd.getObjectProperty() != null && umd.getObjectProperty().getProperty() != null
-							&& umd.getObjectProperty().getProperty().getName() != null && umd.getValue() != null
-							&& umd.getObjectProperty().getAddToMetadata() != null
-							&& umd.getObjectProperty().getAddToMetadata().equals(1)) {
-						UploadMetadataDTO ud = new UploadMetadataDTO();
-						ud.setName(umd.getObjectProperty().getProperty().getName());
-						ud.setObjectPropertyId(umd.getObjectProperty().getId());
-						ud.setPropertyType(umd.getObjectProperty().getProperty().getPropertyType());
-						if (umd.getValue() != null) {
-							ud.setValue(umd.getValue());
-						}
-						u.getUploadMetaDatas().add(ud);
-					}*/
 				}
 				HashMap<String, UploadMetadataDTO> singleMap = new HashMap<>();
 				for (UploadMetadataDTO umdd : u.getUploadMetaDatas()) {
@@ -1553,9 +1540,9 @@ public class UploadResource {
 				CustomerQcProjectMappingBatchMapping cqpmbm1=null;
 				if(mixedBatches!=null && mixedBatches.size()>0) {
 					approvedUploadsCount = mixedBatches.get(0)[1];
-					numOfUploads = (pqlc.getQcLevelAcceptancePercentage().floatValue() / 100f) * approvedUploadsCount;
+					numOfUploadas = (pqlc.getQcLevelAcceptancePercentage().floatValue() / 100f) * approvedUploadsCount;
 					List<Upload> tempUploads = uploadRepository.getUploadByBatchNumber(mixedBatches.get(0)[0]);
-					ceiledNumberOfuploads = Math.ceil(numOfUploads.intValue());
+					ceiledNumberOfuploads = Math.ceil(numOfUploads);
 					numOfUploadsToBeShown = ceiledNumberOfuploads.intValue();
 					multFactor = approvedUploadsCount/ numOfUploadsToBeShown;
 					int j=0;
