@@ -25,7 +25,8 @@ import java.util.Objects;
 @NamedNativeQuery(
     query = "select u.first_name firstName," +
         "u.last_name as lastName," +
-        "ucbi.qc_status as qcStatus " +
+        "ucbi.qc_status as qcStatus,"
+        + "ucbi.qc_seen_status as qcSeenStatus " +
         "from " +
         "upload_cqpm_batch_info ucbi,customer_qc_project_mapping cqpm, user_customer_mapping ucm, user u " +
         "where ucbi.customer_qc_project_mapping_id=cqpm.id " +
@@ -39,7 +40,8 @@ import java.util.Objects;
         columns = {
             @ColumnResult(name = "firstName",type = String.class),
             @ColumnResult(name = "lastName",type = String.class),
-            @ColumnResult(name = "qcStatus",type = Integer.class)
+            @ColumnResult(name = "qcStatus",type = Integer.class),
+            @ColumnResult(name = "qcSeenStatus",type = Integer.class)
         }))
 @org.springframework.data.elasticsearch.annotations.Document(indexName = "uploadCqpmBatchInfo")
 public class UploadCustomerQcProjectMappingBatchInfo extends AbstractAuditingEntity implements Serializable {
@@ -68,7 +70,7 @@ public class UploadCustomerQcProjectMappingBatchInfo extends AbstractAuditingEnt
     private Integer qcStatusOtherThanLevel1;
 
     @Column(name="show_to_qc")
-    private Integer showToQc=0;
+    private Integer showToQc=1;
 
     @Column(name="qc_seen_status")
     private Integer qcSeenStatus=0;

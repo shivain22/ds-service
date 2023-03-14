@@ -217,7 +217,7 @@ public class OrganisationResource {
 	 * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list
 	 *         of aidasOrganisations in body.
 	 */
-	@Secured({ AidasConstants.ADMIN, AidasConstants.ORG_ADMIN, AidasConstants.CUSTOMER_ADMIN })
+	//@Secured({ AidasConstants.ADMIN, AidasConstants.ORG_ADMIN, AidasConstants.CUSTOMER_ADMIN })
 	@GetMapping("/aidas-organisations")
 	public ResponseEntity<List<Organisation>> getAllAidasOrganisations(Pageable pageable) {
 		log.debug("REST request to get a page of AidasOrganisations");
@@ -249,7 +249,7 @@ public class OrganisationResource {
 	 * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list
 	 *         of aidasOrganisations in body.
 	 */
-	@Secured({ AidasConstants.ADMIN, AidasConstants.ORG_ADMIN, AidasConstants.CUSTOMER_ADMIN })
+	//@Secured({ AidasConstants.ADMIN, AidasConstants.ORG_ADMIN, AidasConstants.CUSTOMER_ADMIN })
 	@GetMapping("/aidas-organisations/dropdown")
 	public ResponseEntity<List<Organisation>> getAllOrganisationsForDropDown() {
 		log.debug("REST request to get a page of AidasOrganisations");

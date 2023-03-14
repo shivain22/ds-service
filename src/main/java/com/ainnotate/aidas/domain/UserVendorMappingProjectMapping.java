@@ -68,8 +68,72 @@ public class UserVendorMappingProjectMapping extends AbstractAuditingEntity  imp
     @Column(name ="total_required",columnDefinition = "integer default 0")
     @JsonProperty
     private Integer totalRequired=0;
+    
+    
+    
+    @Column(name ="total_uploaded_for_grouped",columnDefinition = "integer default 0")
+    @JsonProperty
+    private Integer totalUploadedForGrouped=0;
 
-    @Column(name ="qc_start_status",columnDefinition = "integer default 0")
+    @Column(name ="total_approved_for_grouped",columnDefinition = "integer default 0")
+    @JsonProperty
+    private Integer totalApprovedForGrouped=0;
+
+    @Column(name ="total_rejected_for_grouped",columnDefinition = "integer default 0")
+    @JsonProperty
+    private Integer totalRejectedForGrouped=0;
+
+    @Column(name ="total_pending_for_grouped",columnDefinition = "integer default 0")
+    @JsonProperty
+    private Integer totalPendingForGrouped=0;
+
+    @Column(name ="total_required_for_grouped",columnDefinition = "integer default 0")
+    @JsonProperty
+    private Integer totalRequiredForGrouped=0;
+    
+    
+    
+
+    public Integer getTotalUploadedForGrouped() {
+		return totalUploadedForGrouped;
+	}
+
+	public void setTotalUploadedForGrouped(Integer totalUploadedForGrouped) {
+		this.totalUploadedForGrouped = totalUploadedForGrouped;
+	}
+
+	public Integer getTotalApprovedForGrouped() {
+		return totalApprovedForGrouped;
+	}
+
+	public void setTotalApprovedForGrouped(Integer totalApprovedForGrouped) {
+		this.totalApprovedForGrouped = totalApprovedForGrouped;
+	}
+
+	public Integer getTotalRejectedForGrouped() {
+		return totalRejectedForGrouped;
+	}
+
+	public void setTotalRejectedForGrouped(Integer totalRejectedForGrouped) {
+		this.totalRejectedForGrouped = totalRejectedForGrouped;
+	}
+
+	public Integer getTotalPendingForGrouped() {
+		return totalPendingForGrouped;
+	}
+
+	public void setTotalPendingForGrouped(Integer totalPendingForGrouped) {
+		this.totalPendingForGrouped = totalPendingForGrouped;
+	}
+
+	public Integer getTotalRequiredForGrouped() {
+		return totalRequiredForGrouped;
+	}
+
+	public void setTotalRequiredForGrouped(Integer totalRequiredForGrouped) {
+		this.totalRequiredForGrouped = totalRequiredForGrouped;
+	}
+	@Column(name ="qc_start_status",columnDefinition = "integer default 0")
     @JsonProperty
     private Integer qcStartStatus=0;
 

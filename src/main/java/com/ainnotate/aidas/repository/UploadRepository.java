@@ -4,13 +4,15 @@ import com.ainnotate.aidas.domain.Object;
 import com.ainnotate.aidas.domain.Organisation;
 import com.ainnotate.aidas.domain.Upload;
 import com.ainnotate.aidas.domain.UserVendorMappingObjectMapping;
+import com.ainnotate.aidas.dto.UploadDTOForQC;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-
+import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 
@@ -120,7 +122,7 @@ public interface UploadRepository extends JpaRepository<Upload, Long> {
 
 
     @Query(value="select * from upload au, user_vendor_mapping_object_mapping auavmaom,object ao, project ap,user_vendor_mapping auavm where au.user_vendor_mapping_object_mapping_id=auavmaom.id and auavmaom.object_id=ao.id and ao.project_id=ap.id and ap.id=?2 and auavmaom.user_vendor_mapping_id=auavm.id and auavm.user_id=?1",nativeQuery = true)
-    Page<Upload> findAllByUserAndProject(Long userId, Long projectId, Pageable pageable);
+	Page<Upload> findAllByUserAndProject(Long userId, Long projectId, Pageable pageable);
 
     @Query(value="select * from upload au, user_vendor_mapping_object_mapping auavmaom,object ao, project ap,user_vendor_mapping auavm where au.user_vendor_mapping_object_mapping_id=auavmaom.id and auavmaom.object_id=ao.id and ao.project_id=ap.id and ap.id=?2 and auavmaom.user_vendor_mapping_id=auavm.id and auavm.user_id=?1 and au.approval_status=?3",nativeQuery = true)
     Page<Upload> findAllByUserAndProject(Long userId, Long projectId, Integer approvalStatus, Pageable pageable);
@@ -317,7 +319,32 @@ public interface UploadRepository extends JpaRepository<Upload, Long> {
             "    u.qc_end_date is null  and\n" +
             "    (u.qc_status is null or u.qc_status=2)  and  u.metadata_status=1 " +
     		"    order by u.user_vendor_mapping_object_mapping_id,u.id limit ?2",nativeQuery = true)
-    List<Upload> findAllUploadIdsNonGrouped(List<Long> uvmomIds,Integer batchSize);
+    List<Upload> findAllUploadsNonGrouped(List<Long> uvmomIds,Integer batchSize);
+    
+    
+    @Query(value="select u.id from upload u where u.user_vendor_mapping_object_mapping_id in (?1) and"+
+    		"    u.qc_done_by_id is null and\n" +
+            "    u.qc_start_date is null and\n" +
+            "    u.qc_end_date is null  and\n" +
+            "    (u.qc_status is null or u.qc_status=2)  and  u.metadata_status=1 " +
+    		"    order by u.user_vendor_mapping_object_mapping_id,u.id limit ?2",nativeQuery = true)
+    List<UploadDTOForQC> findAllUploadIdsNonGrouped(List<Long> uvmomIds,Integer batchSize);
+    
+    
+    
+    @Query(value="select u.* from upload u where u.user_vendor_mapping_object_mapping_id in (?1) and"+
+    		"    u.qc_done_by_id is null and\n" +
+            "    u.qc_start_date is null and\n" +
+            "    u.qc_end_date is null  and\n" +
+            "    (u.qc_status is null or u.qc_status=2)  and  u.metadata_status=1 " +
+    		"    order by u.user_vendor_mapping_object_mapping_id,u.id",nativeQuery = true)
+    List<Upload> findAllUploadsGroupedNew(List<Long> uvmomIds);
+    
+    @Query(nativeQuery = true)
+    List<UploadDTOForQC> findAllUploadIdsGroupedNew(List<Long> uvmomIds);
+    
+    @Query(nativeQuery = true)
+    List<UploadDTOForQC> findAllUploadIdsNonGroupedNew(List<Long> uvmomIds,Integer batchSize);
     
     
     
@@ -327,14 +354,7 @@ public interface UploadRepository extends JpaRepository<Upload, Long> {
     @Query(value="select o.id from object o where o.qc_start_status=0 and o.project_id=?1 and o.current_qc_level=?2 order by o.id limit ?3",nativeQuery = true)
     List<Long> findAllObjectsQcNotStarted(Long projectId,Integer qcLevel,Integer batchSize);
     
-    @Query(value="select uvmom.id, "
-    		+ "from user_vendor_mapping_object_mapping uvmom,object o "
-    		+ "where uvmom.object_id=o.id and "
-    		+ "o.project_id=?1 and "
-    		+ "uvmom.qc_start_status=0  and "
-    		+ "uvmom.current_qc_level=?2 and "
-    		+ "o.is_dummy=0 order by uvmom.id limit ?3",nativeQuery = true)
-    List<Long> findAllUvmomsQcNotStarted(Long projectId,Integer qcLevel,Integer batchSize);
+    
     
     @Query(value="select distinct uvmom.id  "
     		+ "from user_vendor_mapping_object_mapping uvmom,object o,upload u "
@@ -342,7 +362,7 @@ public interface UploadRepository extends JpaRepository<Upload, Long> {
     		+ "uvmom.object_id=o.id and "
     		+ "o.project_id=?1 and "
     		+ "o.is_dummy=0 and u.current_batch_number =0 and u.current_qc_level=?2 order by uvmom.id limit ?3",nativeQuery = true)
-    List<Long> findAllUvmomsQcNotStartedForNonGrouped(Long projectId,Integer qcLevel,Integer batchSize);
+    List<Long> findAllUvmomsQcNotStarted(Long projectId,Integer qcLevel,Integer batchSize);
 
     @Query(value="select u.* from upload u, user_vendor_mapping_object_mapping uvmom, object o where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and o.project_id=?1 and  u.metadata_status=1 and u.current_qc_level=?2 and o.id=?4 and u.user_vendor_mapping_object_mapping_id=?5 order by uvmom.id, o.id limit ?3  ",nativeQuery = true)
     List<Upload> findTopByQcNotDoneYetForQcLevelGreaterThan1(Long projectId,Integer qcLevel, Long batchSize,Long objectId, Long uvmomId);
@@ -410,8 +430,18 @@ public interface UploadRepository extends JpaRepository<Upload, Long> {
     @Query(value="select u.* from upload u, user_vendor_mapping_object_mapping uvmom, object o where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and o.project_id=?1",nativeQuery = true)
     List<Upload> findAllUploadByProject(Long projectId);
 
-    @Query(value="select u.*  from upload_cqpm_batch_info ucbi,upload u where ucbi.upload_id =u.id and ucbi.batch_number=?1 and ucbi.show_to_qc=1 order by u.id limit ?3 offset ?2",nativeQuery = true)
+    @Query(value="select u.*  from upload_cqpm_batch_info ucbi,"
+    		+ "upload u where ucbi.upload_id =u.id and ucbi.batch_number=?1 "
+    		+ "and ucbi.show_to_qc=1 order by u.id limit ?3 offset ?2",nativeQuery = true)
     List<Upload> getUploadIdsInBatch(Long batchNumber,Integer pageNumber, Integer size);
+    
+    
+    
+    @Query(nativeQuery = true)
+    List<UploadDTOForQC> getUploadDTOForQCPendingInBatch(Long batchNumber,Integer pageNumber, Integer size);
+    
+    
+    
     
     @Query(value="select u.id as upload_id, o.id as object_id,u.user_vendor_mapping_object_mapping_id as uvmomvId, o.name as object_name   from object o,user_vendor_mapping_object_mapping uvom, "
     		+ " upload_cqpm_batch_info ucbi,upload u where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and  ucbi.upload_id =u.id and ucbi.batch_number=?1",nativeQuery = true)
@@ -419,6 +449,34 @@ public interface UploadRepository extends JpaRepository<Upload, Long> {
     
     @Query(value="select u.* from upload_cqpm_batch_info ucbi,upload u where ucbi.batch_number=?1 and ucbi.upload_id=u.id",nativeQuery = true)
     List<Upload> getUploadByBatchNumber(Integer batchNumber);
+    
+    @Query(nativeQuery = true)
+    List<UploadDTOForQC> getUploadDTOForQCInBatch(Integer batchNumber);
+    
+	/*
+	 * @Query(nativeQuery = true) List<Upload> getUploadDTOForQCForNewBatch(Integer
+	 * batchNumber);
+	 */
+    
+    @Query(value="select count(u.id) from upload u,user_vendor_mapping_object_mapping uvmom "
+    		+ "where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=?1",nativeQuery = true)
+    Integer getNumberOfUploads(Long objectId);
+    
+    @Query(value="select count(u.id) from upload u,user_vendor_mapping_object_mapping uvmom "
+    		+ "where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=?1 and u.approval_status=0",nativeQuery = true)
+    Integer getNumberOfRejectedUploads(Long objectId);
+    
+    @Query(value="select count(u.id) from upload u,user_vendor_mapping_object_mapping uvmom "
+    		+ "where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=?1 and u.approval_status=1",nativeQuery = true)
+    Integer getNumberOfApprovedUploads(Long objectId);
+    
+    
+    @Modifying
+    @Query(value = "update upload set show_to_qc=?1, qc_status=?2,qc_done_by_id=?3,qc_start_date=?4,current_batch_number=?5 where id in (?6)",nativeQuery = true)
+    void updateUploadQcStatus(Integer showToQc, Integer qcStatus, Long qcDoneBy, Instant qcStartDate, Long currentBatchNumber, List<Long> uploadId);
+    
+    
+    
     
 
 }

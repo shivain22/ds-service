@@ -1,15 +1,31 @@
 package com.ainnotate.aidas.domain;
 
-import com.ainnotate.aidas.dto.ProjectDTO;
-import com.ainnotate.aidas.dto.UploadMetadataDTO;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.io.Serializable;
-import javax.persistence.*;
+
+import javax.persistence.Column;
+import javax.persistence.ColumnResult;
+import javax.persistence.ConstructorResult;
+import javax.persistence.Entity;
+import javax.persistence.ForeignKey;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.NamedNativeQuery;
+import javax.persistence.SqlResultSetMapping;
+import javax.persistence.SqlResultSetMappings;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
+
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.envers.Audited;
-import org.springframework.data.jpa.repository.Query;
+
+import com.ainnotate.aidas.dto.UploadMetadataDTO;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * A AidasUploadMetaData.
@@ -25,8 +41,54 @@ import org.springframework.data.jpa.repository.Query;
     })
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @org.springframework.data.elasticsearch.annotations.Document(indexName = "uploadmetadata")
+
+
 @NamedNativeQuery(name = "UploadMetaData.getAllUploadMetaDataForProject",
-    query=" select id as uploadMetaDataId," +
+query=" select id as uploadMetaDataId," +
+"        projectName," +
+"        objectName," +
+"        upload_id as uploadId," +
+"        value," +
+"        project_property_id as projectPropertyId," +
+"        object_property_id as objectPropertyId" +
+"        from (select umd.*,p.id as prop_id,o.name as objectName, pr.name as projectName " +
+"from " +
+"upload_meta_data umd, " +
+"upload u, " +
+"user_vendor_mapping_object_mapping uvmom, " +
+"object o," +
+"project_property pp," +
+"property p," +
+"project pr " +
+" where " +
+"umd.upload_id=u.id and " +
+"u.user_vendor_mapping_object_mapping_id=uvmom.id and " +
+"uvmom.object_id=o.id and " +
+"umd.project_property_id=pp.id and" +
+" o.project_id=?1  and o.project_id=pr.id and" +
+" pp.property_id=p.id and pp.add_to_metadata=1 " +
+" union " +
+"select umd.*,p.id as prop_id,o.name as objectName, pr.name as projectName " +
+"from " +
+"upload_meta_data umd, " +
+"upload u, " +
+"user_vendor_mapping_object_mapping uvmom, " +
+"object o," +
+"object_property op," +
+"property p," +
+"project pr " +
+" where " +
+"umd.upload_id=u.id and " +
+"u.user_vendor_mapping_object_mapping_id=uvmom.id and " +
+"uvmom.object_id=o.id and " +
+" op.property_id=p.id and " +
+"umd.object_property_id=op.id and op.add_to_metadata=1 and" +
+" op.property_id not in (select property_id from project_property where project_id=?1) and" +
+" o.project_id=?1 and o.project_id=pr.id) umd order by umd.upload_id, umd.prop_id",resultSetMapping = "Mapping.UploadMetaDataDTO")
+
+
+@NamedNativeQuery(name = "UploadMetaData.getAllUploadMetaDataForUpload",
+query=" select id as uploadMetaDataId," +
     "        projectName," +
     "        objectName," +
     "        upload_id as uploadId," +
@@ -47,8 +109,9 @@ import org.springframework.data.jpa.repository.Query;
     "u.user_vendor_mapping_object_mapping_id=uvmom.id and " +
     "uvmom.object_id=o.id and " +
     "umd.project_property_id=pp.id and" +
-    " o.project_id=?1  and o.project_id=pr.id and" +
-    " pp.property_id=p.id and pp.add_to_metadata=1 " +
+    " pp.show_to_vendor_user=1 and" +
+    " u.id=?1  and o.project_id=pr.id and" +
+    " pp.property_id=p.id" +
     " union " +
     "select umd.*,p.id as prop_id,o.name as objectName, pr.name as projectName " +
     "from " +
@@ -63,96 +126,66 @@ import org.springframework.data.jpa.repository.Query;
     "umd.upload_id=u.id and " +
     "u.user_vendor_mapping_object_mapping_id=uvmom.id and " +
     "uvmom.object_id=o.id and " +
+    " op.show_to_vendor_user=1 and " +
     " op.property_id=p.id and " +
-    "umd.object_property_id=op.id and op.add_to_metadata=1 and" +
-    " op.property_id not in (select property_id from project_property where project_id=?1) and" +
-    " o.project_id=?1 and o.project_id=pr.id) umd order by umd.upload_id, umd.prop_id",resultSetMapping = "Mapping.UploadMetaDataDTO")
+    "umd.object_property_id=op.id and" +
+    " u.id=?1 and o.project_id=pr.id) umd order by umd.upload_id, umd.prop_id",resultSetMapping = "Mapping.UploadMetaDataDTO")
 
-@NamedNativeQuery(name = "UploadMetaData.getAllUploadMetaDataForObject",
-    query=" select id as uploadMetaDataId," +
-        "        projectName," +
-        "        objectName," +
-        "        upload_id as uploadId," +
-        "        value," +
-        "        project_property_id as projectPropertyId," +
-        "        object_property_id as objectPropertyId" +
-        "        from (select umd.*,p.id as prop_id,o.name as objectName, pr.name as projectName " +
-        "from " +
-        "upload_meta_data umd, " +
-        "upload u, " +
-        "user_vendor_mapping_object_mapping uvmom, " +
-        "object o," +
-        "project_property pp," +
-        "property p," +
-        "project pr " +
-        " where " +
-        "umd.upload_id=u.id and " +
-        "u.user_vendor_mapping_object_mapping_id=uvmom.id and " +
-        "uvmom.object_id=o.id and " +
-        "umd.project_property_id=pp.id and" +
-        " o.id=?1  and o.project_id=pr.id and" +
-        " pp.property_id=p.id" +
-        " union " +
-        "select umd.*,p.id as prop_id,o.name as objectName, pr.name as projectName " +
-        "from " +
-        "upload_meta_data umd, " +
-        "upload u, " +
-        "user_vendor_mapping_object_mapping uvmom, " +
-        "object o," +
-        "object_property op," +
-        "property p," +
-        "project pr " +
-        " where " +
-        "umd.upload_id=u.id and " +
-        "u.user_vendor_mapping_object_mapping_id=uvmom.id and " +
-        "uvmom.object_id=o.id and " +
-        " op.property_id=p.id and " +
-        "umd.object_property_id=op.id and" +
-        " o.id=?1 and o.project_id=pr.id) umd order by umd.upload_id, umd.prop_id",resultSetMapping = "Mapping.UploadMetaDataDTO")
 
-@NamedNativeQuery(name = "UploadMetaData.getAllUploadMetaDataForUpload",
-    query=" select id as uploadMetaDataId," +
-        "        projectName," +
-        "        objectName," +
-        "        upload_id as uploadId," +
-        "        value," +
-        "        project_property_id as projectPropertyId," +
-        "        object_property_id as objectPropertyId" +
-        "        from (select umd.*,p.id as prop_id,o.name as objectName, pr.name as projectName " +
-        "from " +
-        "upload_meta_data umd, " +
-        "upload u, " +
-        "user_vendor_mapping_object_mapping uvmom, " +
-        "object o," +
-        "project_property pp," +
-        "property p," +
-        "project pr " +
-        " where " +
-        "umd.upload_id=u.id and " +
-        "u.user_vendor_mapping_object_mapping_id=uvmom.id and " +
-        "uvmom.object_id=o.id and " +
-        "umd.project_property_id=pp.id and" +
-        " pp.show_to_vendor_user=1 and" +
-        " u.id=?1  and o.project_id=pr.id and" +
-        " pp.property_id=p.id" +
-        " union " +
-        "select umd.*,p.id as prop_id,o.name as objectName, pr.name as projectName " +
-        "from " +
-        "upload_meta_data umd, " +
-        "upload u, " +
-        "user_vendor_mapping_object_mapping uvmom, " +
-        "object o," +
-        "object_property op," +
-        "property p," +
-        "project pr " +
-        " where " +
-        "umd.upload_id=u.id and " +
-        "u.user_vendor_mapping_object_mapping_id=uvmom.id and " +
-        "uvmom.object_id=o.id and " +
-        " op.show_to_vendor_user=1 and " +
-        " op.property_id=p.id and " +
-        "umd.object_property_id=op.id and" +
-        " u.id=?1 and o.project_id=pr.id) umd order by umd.upload_id, umd.prop_id",resultSetMapping = "Mapping.UploadMetaDataDTO")
+
+@NamedNativeQuery(name = "UploadMetaData.getAllUploadMetaDataForProjectPropertiesForUpload",
+    query=" select umd.id as uploadMetaDataId, \n" +
+    "p.name as projectName, \n" +
+    "o.name as objectName, \n" +
+    "u.id as uploadId, \n" +
+    "umd.value as value,\n" +
+    "project_property_id as projectPropertyId,\n" +
+    "-1 as objectPropertyId,\n"+
+    "pr.name as projectPropertyName, \n"+
+    "'' as objectPropertyName,\n"+ 
+    "pr.property_type as propertyType \n" +
+    "from upload_meta_data umd, \n"+ 
+    "upload u, \n"+ 
+    "project_property pp, \n"+ 
+    "property pr, \n"+ 
+    "project p, \n"+ 
+    "object o,\n"+ 
+    "user_vendor_mapping_object_mapping uvmom  \n"+ 
+    "where  \n"+ 
+    "umd.upload_id=u.id \n"+ 
+    "and u.user_vendor_mapping_object_mapping_id=uvmom.id \n"+ 
+    "and uvmom.object_id=o.id \n"+ 
+    "and umd.project_property_id=pp.id \n"+ 
+    "and pp.property_id=pr.id \n"+ 
+    "and pp.project_id=p.id \n"+ 
+    "and o.project_id=p.id \n"+
+    "and pp.add_to_metadata=1 \n"+ 
+    "and u.id=?",
+    resultSetMapping = "Mapping.UploadMetaDataDTONew")
+
+@NamedNativeQuery(name = "UploadMetaData.getAllUploadMetaDataProjectAndObjectPropertiesForUpload",
+query=" select id as uploadMetaDataId," +
+	    "        projectName," +
+	    "        objectName," +
+	    "        upload_id as uploadId," +
+	    "        value," +
+	    "        project_property_id as projectPropertyId," +
+	    "        object_property_id as objectPropertyId,"
+	    + "'' as projectPropertyName, p.name as objectPropertyName" +
+	    "        from upload_meta_data umd, upload u, project_property pp, property p "
+	    + " where umd.upload_id=u.id and umd.project_property_id=pp.id and pp.property_id=p.id and u.id=?",resultSetMapping = "Mapping.UploadMetaDataDTONew")
+
+@NamedNativeQuery(name = "UploadMetaData.getAllUploadMetaDataForObjectPropertiesForUpload",
+query=" select id as uploadMetaDataId," +
+	    "        projectName," +
+	    "        objectName," +
+	    "        upload_id as uploadId," +
+	    "        value," +
+	    "        project_property_id as projectPropertyId," +
+	    "        object_property_id as objectPropertyId,"
+	    + " p.name as projectPropertyName" +
+	    "        from upload_meta_data umd, upload u, object_property op, property p "
+	    + " where umd.upload_id=u.id and umd.project_property_id=op.id and op.property_id=p.id and u.id=?",resultSetMapping = "Mapping.UploadMetaDataDTONew")
 
 
 @NamedNativeQuery(name = "UploadMetaData.getAllUploadMetaDataForProjectWithStatus",
@@ -200,6 +233,7 @@ import org.springframework.data.jpa.repository.Query;
         " op.property_id not in (select property_id from project_property where project_id=?1) and" +
         " o.project_id=?1 and o.project_id=pr.id and u.approval_status=?2) umd order by umd.upload_id, umd.prop_id",resultSetMapping = "Mapping.UploadMetaDataDTO")
 
+@SqlResultSetMappings(value = {
 @SqlResultSetMapping(name = "Mapping.UploadMetaDataDTO",
     classes = @ConstructorResult(targetClass = UploadMetadataDTO.class,
         columns = {
@@ -210,8 +244,38 @@ import org.springframework.data.jpa.repository.Query;
             @ColumnResult(name = "value",type = String.class),
             @ColumnResult(name = "projectPropertyId",type = Long.class),
             @ColumnResult(name = "objectPropertyId",type = Long.class)
-        }))
+        })),
 
+@SqlResultSetMapping(name = "Mapping.UploadMetaDataDTONew",
+classes = @ConstructorResult(targetClass = UploadMetadataDTO.class,
+    columns = {
+        @ColumnResult(name = "uploadMetaDataId",type = Long.class),
+        @ColumnResult(name = "projectName",type = String.class),
+        @ColumnResult(name = "objectName",type = String.class),
+        @ColumnResult(name = "uploadId",type = Long.class),
+        @ColumnResult(name = "value",type = String.class),
+        @ColumnResult(name = "projectPropertyId",type = Long.class),
+        @ColumnResult(name = "objectPropertyId",type = Long.class),
+        @ColumnResult(name = "projectPropertyName",type = String.class),
+        @ColumnResult(name = "objectPropertyName",type = String.class),
+        @ColumnResult(name = "propertyType",type = Integer.class)
+    })),
+@SqlResultSetMapping(name = "Mapping.UploadMetaDataDTO1",
+classes = @ConstructorResult(targetClass = UploadMetadataDTO.class,
+columns = {
+    @ColumnResult(name = "projectName",type = String.class),
+    @ColumnResult(name = "objectName",type = String.class),
+    @ColumnResult(name = "uploadId",type = Long.class),
+    @ColumnResult(name = "objectKey",type = String.class),
+    @ColumnResult(name = "propertyId",type = Long.class),
+    @ColumnResult(name = "propertyName",type = String.class),
+    @ColumnResult(name = "uploadMetaDataId",type = Long.class),
+    @ColumnResult(name = "value",type = String.class),
+    @ColumnResult(name = "optional",type = Integer.class),
+    @ColumnResult(name = "isProjectProperty",type = Integer.class)
+}))
+
+})
 
 
 
@@ -269,20 +333,6 @@ query="select\n"
 		+ "and uvm.id=?1\n"
 		+ "and op.show_to_vendor_user=1  and u.metadata_status=0 order by op.id",resultSetMapping = "Mapping.UploadMetaDataDTO1")
 
-@SqlResultSetMapping(name = "Mapping.UploadMetaDataDTO1",
-classes = @ConstructorResult(targetClass = UploadMetadataDTO.class,
-    columns = {
-        @ColumnResult(name = "projectName",type = String.class),
-        @ColumnResult(name = "objectName",type = String.class),
-        @ColumnResult(name = "uploadId",type = Long.class),
-        @ColumnResult(name = "objectKey",type = String.class),
-        @ColumnResult(name = "propertyId",type = Long.class),
-        @ColumnResult(name = "propertyName",type = String.class),
-        @ColumnResult(name = "uploadMetaDataId",type = Long.class),
-        @ColumnResult(name = "value",type = String.class),
-        @ColumnResult(name = "optional",type = Integer.class),
-        @ColumnResult(name = "isProjectProperty",type = Integer.class)
-    }))
 
 
 

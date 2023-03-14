@@ -336,10 +336,19 @@ public interface ObjectRepository
     
 	
 	@Modifying
+    @Query(value = "update object set total_rejected=total_rejected+?2,total_pending= total_pending-?2 ,total_required=total_required+?2 where id=?1",nativeQuery = true)
+    void addTotalRejectedAndSubtractTotalPendingAddTotalRequired(Long id,Long numToAddSub);
+    
+	
+	@Modifying
     @Query(value = "update object set total_rejected=total_rejected-1,total_required=total_required-1,total_pending=total_pending+1 where id=?1",nativeQuery = true)
     void subTotalRejectedAndSubTotalRequiredAddTotalPending(Long id);
 	
 	
+    @Modifying
+    @Query(value = "update object set total_approved=total_approved+?2, total_pending=total_pending-?2  where id=?1",nativeQuery = true)
+    void addTotalApprovedSubtractTotalPending(Long id,Long numToAddSub);
+    
     @Modifying
     @Query(value = "update object set total_approved=total_approved+1, total_pending=total_pending  where id=?1",nativeQuery = true)
     void addTotalApprovedSubtractTotalPending(Long id);

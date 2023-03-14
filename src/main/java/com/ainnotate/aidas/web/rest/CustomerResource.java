@@ -162,7 +162,7 @@ public class CustomerResource {
      * @param pageable the pagination information.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of aidasCustomers in body.
      */
-    @Secured({AidasConstants.ADMIN, AidasConstants.ORG_ADMIN, AidasConstants.CUSTOMER_ADMIN})
+    //@Secured({AidasConstants.ADMIN, AidasConstants.ORG_ADMIN, AidasConstants.CUSTOMER_ADMIN})
     @GetMapping("/aidas-customers")
     public ResponseEntity<List<Customer>> getAllAidasCustomers(Pageable pageable) {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
@@ -188,7 +188,7 @@ public class CustomerResource {
      *
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of aidasCustomers in body.
      */
-    @Secured({AidasConstants.ADMIN, AidasConstants.ORG_ADMIN, AidasConstants.CUSTOMER_ADMIN})
+    //@Secured({AidasConstants.ADMIN, AidasConstants.ORG_ADMIN, AidasConstants.CUSTOMER_ADMIN})
     @GetMapping("/aidas-customers/dropdown")
     public ResponseEntity<List<Customer>> getCustomersForDropDown() {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();

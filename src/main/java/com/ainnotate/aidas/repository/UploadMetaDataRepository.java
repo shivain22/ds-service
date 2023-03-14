@@ -26,6 +26,8 @@ public interface UploadMetaDataRepository extends JpaRepository<UploadMetaData, 
 
     @Query(value="select * from upload_meta_data where upload_id=?",nativeQuery = true)
     List<UploadMetaData> getAllUploadMetaDataForUploadForQc(Long uploadId);
+    
+    
 
     @Query(value="select project_property_id from upload_meta_data where upload_id=? and project_property_id is not null",nativeQuery = true)
     List<Long> getAllProjectPropertyIdsOfUploadMetaDataForUpload(Long uploadId);
@@ -36,12 +38,18 @@ public interface UploadMetaDataRepository extends JpaRepository<UploadMetaData, 
 
     @Query(nativeQuery = true)
     List<UploadMetadataDTO> getAllUploadMetaDataForProject(Long projectId);
+    
+    @Query(nativeQuery = true)
+    List<UploadMetadataDTO>  getAllUploadMetaDataForUpload(Long uploadId);
+    
+    @Query(nativeQuery = true)
+    List<UploadMetadataDTO> getAllUploadMetaDataForProjectPropertiesForUpload(Long uploadId);
+    
+    @Query(nativeQuery = true)
+    List<UploadMetadataDTO> getAllUploadMetaDataProjectAndObjectPropertiesForUpload(Long uploadId);
 
     @Query(nativeQuery = true)
-    List<UploadMetadataDTO> getAllUploadMetaDataForUpload(Long uploadId);
-
-    @Query(nativeQuery = true)
-    List<UploadMetadataDTO> getAllUploadMetaDataForObject(Long projectId);
+    List<UploadMetadataDTO> getAllUploadMetaDataForObjectPropertiesForUpload(Long uploadId);
 
     @Query(nativeQuery = true)
     List<UploadMetadataDTO> getAllUploadMetaDataForProjectWithStatus(Long projectId,Integer status);

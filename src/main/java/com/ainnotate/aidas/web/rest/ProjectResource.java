@@ -159,8 +159,7 @@ public class ProjectResource {
 			project.setCategory(category);
 			project.setProjectType(category.getName());
 			int isQcLevelConfigsAdded = 0;
-			if (project.getProjectQcLevelConfigurations() != null
-					&& project.getProjectQcLevelConfigurations().size() > 0) {
+			if (project.getProjectQcLevelConfigurations() != null && project.getProjectQcLevelConfigurations().size() > 0) {
 				for (ProjectQcLevelConfigurations pqlc : project.getProjectQcLevelConfigurations()) {
 					if (pqlc.getQcLevelAcceptancePercentage() != null && pqlc.getQcLevelBatchSize() != null) {
 						isQcLevelConfigsAdded++;
@@ -172,8 +171,7 @@ public class ProjectResource {
 					try {
 						project.setBufferStrategy(AidasConstants.PROJECT_BUFFER_STATUS_PROJECT_LEVEL);
 						project = projectRepository.save(project);
-						projectRepository.addProjectProperties(project.getId(), category.getId(),
-								project.getCustomer().getId());
+						projectRepository.addProjectProperties(project.getId(), category.getId(),project.getCustomer().getId());
 						Object obj = new Object();
 						obj.setName(project.getName() + " - Dummy Object");
 						obj.setNumberOfUploadsRequired(0);
@@ -183,13 +181,10 @@ public class ProjectResource {
 						obj.setDummy(1);
 						obj.setStatus(0);
 						objectRepository.save(obj);
-						if (project.getAutoCreateObjects() != null
-								&& project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)) {
-
-							Float bufferedRequired = project.getBufferPercent().floatValue() / 100f
-									* project.getNumberOfObjects();
-							int numberOfBufferedObjectsRequired = project.getNumberOfObjects()
-									+ bufferedRequired.intValue();
+						if (project.getAutoCreateObjects() != null && project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)) {
+							project.setTotalRequiredForGrouped(project.getNumberOfObjects());
+							Float bufferedRequired = project.getBufferPercent().floatValue() / 100f* project.getNumberOfObjects();
+							int numberOfBufferedObjectsRequired = project.getNumberOfObjects()+ bufferedRequired.intValue();
 							String prefix = "";
 							String suffix = "";
 							if (project.getObjectPrefix() != null && project.getObjectPrefix().trim().length() > 0) {
@@ -198,19 +193,13 @@ public class ProjectResource {
 							if (project.getObjectSuffix() != null && project.getObjectSuffix().trim().length() > 0) {
 								suffix += "_" + project.getObjectSuffix();
 							}
-							objectRepository.createObjects(prefix, suffix, project.getId(), 0, 0, 1,
-									project.getNumberOfUploadsRequired(), project.getNumberOfUploadsRequired(),
-									project.getNumberOfUploadsRequired(), numberOfBufferedObjectsRequired);
+							objectRepository.createObjects(prefix, suffix, project.getId(), 0, 0, 1,project.getNumberOfUploadsRequired(), project.getNumberOfUploadsRequired(),project.getNumberOfUploadsRequired(), numberOfBufferedObjectsRequired);
 							objectRepository.addObjectProperties(project.getId(), category.getId());
-							if (project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)) {
-								project.setTotalRequired(project.getNumberOfObjects());
-							} else {
-								project.setTotalRequired(
-										project.getNumberOfObjects() * project.getNumberOfUploadsRequired());
-							}
-							project.setNumberOfBufferedUploadsdRequired(
-									numberOfBufferedObjectsRequired * project.getNumberOfUploadsRequired());
+							project.setTotalRequired(project.getNumberOfObjects());
+							project.setTotalRequiredForGrouped(project.getNumberOfObjects());
+							project.setNumberOfBufferedUploadsdRequired(numberOfBufferedObjectsRequired * project.getNumberOfUploadsRequired());
 							project.setNumberOfObjects(numberOfBufferedObjectsRequired);
+							projectRepository.save(project);
 							return ResponseEntity.created(new URI("/api/aidas-projects/" + project.getId()))
 									.headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME,
 											project.getId().toString()))
@@ -268,6 +257,7 @@ public class ProjectResource {
 		for (int q = 1; q <= project.getQcLevels(); q++) {
 			csvData.add("QC Level " + q + " Done by");
 			csvData.add("QC Level " + q + " Status");
+			csvData.add("QC Level " + q + " Seen Status");
 			csvData.add("QC Level " + q + " Reject Reasons");
 		}
 		List<String> cols = projectRepository.getTotalPropertyNamesForExport(projectId);
@@ -299,12 +289,20 @@ public class ProjectResource {
 						} else {
 							for (QcResultDTO qcResultDTO : qcLevelStatus) {
 								csvData.add(qcResultDTO.getFirstName() + " " + qcResultDTO.getLastName());
-								if (qcResultDTO.getQcStatus().equals(0))
+								if (qcResultDTO.getQcStatus().equals(0)) {
 									csvData.add("Rejected");
-								if (qcResultDTO.getQcStatus().equals(1))
+								}
+								if (qcResultDTO.getQcStatus().equals(1)) {
 									csvData.add("Approved");
-								if (qcResultDTO.getQcStatus().equals(2))
+								}
+								if (qcResultDTO.getQcStatus().equals(2)) {
 									csvData.add("Pending");
+								}
+								if (qcResultDTO.getQcSeenStatus()!=null && qcResultDTO.getQcSeenStatus().equals(1)) {
+									csvData.add("Seen");
+								}else {
+									csvData.add("Not Seen");
+								}
 								if (qcResultDTO.getQcStatus() == 0) {
 									Upload upload = uploadRepository.getById(umd.getUploadId());
 									String rejectReasons = "";
@@ -424,11 +422,12 @@ public class ProjectResource {
 						uvmpm = new UserVendorMappingProjectMapping();
 						uvmpm.setProject(project);
 						uvmpm.setUserVendorMapping(uvm);
-						if (project.getAutoCreateObjects() != null
-								&& project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS))
+						if (project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)) {
 							uvmpm.setTotalRequired(project.getNumberOfObjects());
-						else
+							uvmpm.setTotalRequiredForGrouped(project.getNumberOfObjects());
+						}else {
 							uvmpm.setTotalRequired(project.getNumberOfUploadsRequired());
+						}
 						userVendorMappingProjectMappingRepository.save(uvmpm);
 					}
 					if (uvmom == null) {

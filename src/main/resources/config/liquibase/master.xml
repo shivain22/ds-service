@@ -47,6 +47,8 @@
 	<include file="config/liquibase/changelog/cqpm-batch-mapping-add-cols.xml" relativeToChangelogFile="false"/>
 	<include file="config/liquibase/changelog/vendor-uk.xml" relativeToChangelogFile="false"/>
 	<include file="config/liquibase/changelog/upload-metadata-uk.xml" relativeToChangelogFile="false"/>
+	<include file="config/liquibase/changelog/project-add-cols_4.xml" relativeToChangelogFile="false"/>
+	<include file="config/liquibase/changelog/uvmpm-add-cols_1.xml" relativeToChangelogFile="false"/>
 	
 
 

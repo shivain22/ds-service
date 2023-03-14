@@ -26,11 +26,11 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 @NamedNativeQuery(name = "Project.findProjectWithUploadCountByUser",
     query = "select  \n" +
         "p.id as id,  \n" +
-        "case when p.auto_create_objects=1 then p.number_of_objects else p.total_required end as totalRequired," +
-        "uvmpm.total_uploaded as totalUploaded, \n" +
-        "uvmpm.total_approved as totalApproved, \n" +
-        "uvmpm.total_rejected as totalRejected, \n" +
-        "uvmpm.total_pending as totalPending,\n" +
+        "case when p.auto_create_objects=1 then p.total_required_for_grouped else p.total_required end as totalRequired," +
+        "case when p.auto_create_objects=1 then uvmpm.total_uploaded_for_grouped else uvmpm.total_uploaded end as totalUploaded, \n" +
+        "case when p.auto_create_objects=1 then uvmpm.total_approved_for_grouped else uvmpm.total_approved end as totalApproved , \n" +
+        "case when p.auto_create_objects=1 then uvmpm.total_rejected_for_grouped else uvmpm.total_rejected end as totalRejected, \n" +
+        "case when p.auto_create_objects=1 then uvmpm.total_pending_for_grouped else uvmpm.total_pending end as totalPending,\n" +
         "p.status ,\n" +
         "p.audio_type ,\n" +
         "p.auto_create_objects ,\n" +
@@ -477,8 +477,18 @@ public class Project extends AbstractAuditingEntity  implements Serializable {
 
     @Column(name="buffer_percent")
     private Integer bufferPercent=0;
+    
+    @Column(name="total_required_for_grouped")
+    private Integer totalRequiredForGrouped=0;
 
-    @Column(name="buffer_status")
+    public Integer getTotalRequiredForGrouped() {
+		return totalRequiredForGrouped;
+	}
+
+	public void setTotalRequiredForGrouped(Integer totalRequiredForGrouped) {
+		this.totalRequiredForGrouped = totalRequiredForGrouped;
+	}
+	@Column(name="buffer_status")
     private Integer bufferStatus=AidasConstants.PROJECT_BUFFER_STATUS_PROJECT_LEVEL;
 
     @Column(name="buffer_strategy")

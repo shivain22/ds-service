@@ -184,30 +184,6 @@ public class VendorResource {
 				HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, vendor.getId().toString()));
 	}
 
-	/**
-	 * {@code GET  /aidas-vendors} : get all the aidasVendors.
-	 *
-	 * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list
-	 *         of aidasVendors in body.
-	 */
-	/*
-	 * @GetMapping("/aidas-vendors/vendors-with-users") public
-	 * ResponseEntity<List<VendorUserDTO>> getAllVendorsWithUsers() {
-	 * log.debug("REST request to get a page of AidasVendors"); List<VendorUserDTO>
-	 * vendorUserDtos = new ArrayList<>(); List<Vendor> vendors =
-	 * vendorRepository.getAllVendors(); for(Vendor v:vendors){ VendorUserDTO
-	 * vendorUserDto = new VendorUserDTO(); vendorUserDto.setVendorId(v.getId());
-	 * vendorUserDto.setName(v.getName());
-	 * 
-	 * List<IUserDTO> vendorUsers = userRepository.findAllUsersOfVendor(v.getId());
-	 * for(IUserDTO iu:vendorUsers){ UserDTO u = new UserDTO();
-	 * u.setLastName(iu.getLastName()); u.setFirstName(iu.getFirstName());
-	 * u.setUserVendorMappingId(iu.getUserVendorMappingId());
-	 * u.setUserId(iu.getUserId()); //to be modified later for getting the actual
-	 * state of the user against any object u.setStatus(0);
-	 * vendorUserDto.getUserDTOs().add(u); } vendorUserDtos.add(vendorUserDto); }
-	 * return ResponseEntity.ok().body(vendorUserDtos); }
-	 */
 
 	/**
 	 * {@code GET  /aidas-vendors} : get all the aidasVendors.
@@ -233,27 +209,6 @@ public class VendorResource {
 		});
 		return ResponseEntity.ok().body(vendorUserDtos);
 	}
-
-	/**
-	 * {@code GET  /aidas-vendors} : get all the aidasVendors.
-	 *
-	 * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list
-	 *         of aidasVendors in body.
-	 */
-	/*
-	 * @GetMapping("/aidas-vendors/vendors-with-users-object/{objectId}") public
-	 * ResponseEntity<List<VendorUserDTO>>
-	 * getAllVendorsWithUsersObject(@PathVariable(value = "objectId", required =
-	 * false) final Long objectId) {
-	 * log.debug("REST request to get a page of AidasVendors"); List<VendorUserDTO>
-	 * vendorUserDtos = new ArrayList<>(); List<UserDTO> vendorUsers =
-	 * userRepository.findAllUsersOfVendorWithObject(objectId); Map<VendorUserDTO,
-	 * List<UserDTO>> userPerVendor =
-	 * vendorUsers.stream().collect(Collectors.groupingBy(item->{return new
-	 * VendorUserDTO(item.getVendorId(),item.getVendorName());}));
-	 * userPerVendor.forEach((k, v) -> {k.setUserDTOs(v); vendorUserDtos.add(k);});
-	 * return ResponseEntity.ok().body(vendorUserDtos); }
-	 */
 
 	/**
 	 * {@code GET  /aidas-vendors} : get all the aidasVendors.
@@ -307,8 +262,6 @@ public class VendorResource {
 	@DeleteMapping("/aidas-vendors/{id}")
 	public ResponseEntity<Void> deleteAidasVendor(@PathVariable Long id) {
 		log.debug("REST request to delete AidasVendor : {}", id);
-		// aidasVendorRepository.deleteById(id);
-		// aidasVendorSearchRepository.deleteById(id);
 		Vendor vendor = vendorRepository.getById(id);
 		if (vendor != null) {
 			vendor.setStatus(0);
