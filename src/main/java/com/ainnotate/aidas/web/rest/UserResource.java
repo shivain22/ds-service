@@ -214,7 +214,6 @@ public class UserResource {
                 user.setOrganisation(o);
             }
         }
-        UserCustomerMapping userCustomerMapping = null;
         if(user.getCustomerIds()!=null && user.getCustomerIds().size()>0){
             Customer c =null;
             for(UserCustomerMappingDTO cid: user.getCustomerIds()){
@@ -223,13 +222,11 @@ public class UserResource {
                 ucm.setCustomer(c);
                 ucm.setUser(user);
                 user.getUserCustomerMappings().add(ucm);
-                userCustomerMapping = ucm;
             }
             if(c!=null){
                 user.setCustomer(c);
             }
         }
-        UserVendorMapping userVendorMapping = null;
         if(user.getVendorIds()!=null && user.getVendorIds().size()>0){
             Vendor v = null;
             for(UserVendorMappingDTO vid: user.getVendorIds()){
@@ -238,7 +235,6 @@ public class UserResource {
                 uvm.setVendor(v);
                 uvm.setUser(user);
                 user.getUserVendorMappings().add(uvm);
-                userVendorMapping = uvm;
             }
             if(v!=null){
                 user.setVendor(v);
@@ -1112,11 +1108,11 @@ public class UserResource {
         List<RoleRepresentation> roleRepresentationList = realmResource.roles().list();
         for (RoleRepresentation roleRepresentation : roleRepresentationList)
         {
-            for(Authority aa:myUser.getAuthorities()){
-                if (roleRepresentation.getName().equals(aa.getName()))
+            for(UserAuthorityMapping aa:myUser.getUserAuthorityMappings()){
+                if (roleRepresentation.getName().equals(aa.getAuthority().getName()))
                 {
                     userResource.roles().realmLevel().add(Arrays.asList(roleRepresentation));
-                    myUser.setAuthority(aa);
+                    myUser.setAuthority(aa.getAuthority());
                 }
             }
         }

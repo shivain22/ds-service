@@ -1687,8 +1687,9 @@ public class UploadResource {
 				uploadCustomerQcProjectMappingBatchInfoRepository.insertUploadCqpmBatchInfo(notShowToQcUps, cqpmbm.getId(), cqpm.getId(),
 						AidasConstants.AIDAS_UPLOAD_NO_SHOW_TO_QC, AidasConstants.AIDAS_UPLOAD_QC_PENDING);
 				uploadRepository.updateUploadQcStatus(AidasConstants.AIDAS_UPLOAD_SHOW_TO_QC,
-						AidasConstants.AIDAS_UPLOAD_PENDING, cqpm.getId(), Instant.now(), cqpmbm.getId(),
-						Stream.of(showToQcUps, notShowToQcUps, rejectedUps).flatMap(Collection::stream).toList());
+						AidasConstants.AIDAS_UPLOAD_PENDING, cqpm.getId(), Instant.now(), cqpmbm.getId(),Stream.of(notShowToQcUps, showToQcUps, rejectedUps)
+                        .flatMap(Collection::stream)
+                        .collect(Collectors.toList()));
 
 			} else {
 				List<UploadDTOForQC> uploadIds = new ArrayList<>();

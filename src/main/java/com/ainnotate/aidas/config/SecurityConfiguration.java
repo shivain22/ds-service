@@ -26,21 +26,21 @@ import tech.jhipster.config.JHipsterProperties;
 @Import(SecurityProblemSupport.class)
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
-    private final JHipsterProperties jHipsterProperties;
+	private final JHipsterProperties jHipsterProperties;
 
-    @Value("${spring.security.oauth2.client.provider.oidc.issuer-uri}")
-    private String issuerUri;
+	@Value("${spring.security.oauth2.client.provider.oidc.issuer-uri}")
+	private String issuerUri;
 
-    private final SecurityProblemSupport problemSupport;
+	private final SecurityProblemSupport problemSupport;
 
-    public SecurityConfiguration(JHipsterProperties jHipsterProperties, SecurityProblemSupport problemSupport) {
-        this.problemSupport = problemSupport;
-        this.jHipsterProperties = jHipsterProperties;
-    }
+	public SecurityConfiguration(JHipsterProperties jHipsterProperties, SecurityProblemSupport problemSupport) {
+		this.problemSupport = problemSupport;
+		this.jHipsterProperties = jHipsterProperties;
+	}
 
-    @Override
-    public void configure(HttpSecurity http) throws Exception {
-        // @formatter:off
+	@Override
+	public void configure(HttpSecurity http) throws Exception {
+		// @formatter:off
         http
             .csrf()
             .disable()
@@ -81,24 +81,25 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .and()
                 .oauth2Client();
         // @formatter:on
-    }
+	}
 
-    Converter<Jwt, AbstractAuthenticationToken> authenticationConverter() {
-        JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
-        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(new JwtGrantedAuthorityConverter());
-        return jwtAuthenticationConverter;
-    }
+	Converter<Jwt, AbstractAuthenticationToken> authenticationConverter() {
+		JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
+		jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(new JwtGrantedAuthorityConverter());
+		return jwtAuthenticationConverter;
+	}
 
-    @Bean
-    JwtDecoder jwtDecoder() {
-        NimbusJwtDecoder jwtDecoder = (NimbusJwtDecoder) JwtDecoders.fromOidcIssuerLocation(issuerUri);
+	@Bean
+	JwtDecoder jwtDecoder() {
+		NimbusJwtDecoder jwtDecoder = (NimbusJwtDecoder) JwtDecoders.fromOidcIssuerLocation(issuerUri);
 
-        OAuth2TokenValidator<Jwt> audienceValidator = new AudienceValidator(jHipsterProperties.getSecurity().getOauth2().getAudience());
-        OAuth2TokenValidator<Jwt> withIssuer = JwtValidators.createDefaultWithIssuer(issuerUri);
-        OAuth2TokenValidator<Jwt> withAudience = new DelegatingOAuth2TokenValidator<>(withIssuer, audienceValidator);
+		OAuth2TokenValidator<Jwt> audienceValidator = new AudienceValidator(
+				jHipsterProperties.getSecurity().getOauth2().getAudience());
+		OAuth2TokenValidator<Jwt> withIssuer = JwtValidators.createDefaultWithIssuer(issuerUri);
+		OAuth2TokenValidator<Jwt> withAudience = new DelegatingOAuth2TokenValidator<>(withIssuer, audienceValidator);
 
-        jwtDecoder.setJwtValidator(withAudience);
+		jwtDecoder.setJwtValidator(withAudience);
 
-        return jwtDecoder;
-    }
+		return jwtDecoder;
+	}
 }

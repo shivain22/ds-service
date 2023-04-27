@@ -121,10 +121,14 @@ public interface UploadRepository extends JpaRepository<Upload, Long> {
 
 
 
-    @Query(value="select * from upload au, user_vendor_mapping_object_mapping auavmaom,object ao, project ap,user_vendor_mapping auavm where au.user_vendor_mapping_object_mapping_id=auavmaom.id and auavmaom.object_id=ao.id and ao.project_id=ap.id and ap.id=?2 and auavmaom.user_vendor_mapping_id=auavm.id and auavm.user_id=?1",nativeQuery = true)
+    @Query(value="select * from upload au, user_vendor_mapping_object_mapping auavmaom,object ao, project ap,user_vendor_mapping auavm where au.user_vendor_mapping_object_mapping_id=auavmaom.id and auavmaom.object_id=ao.id and ao.project_id=ap.id and ap.id=?2 and auavmaom.user_vendor_mapping_id=auavm.id and auavm.user_id=?1"
+    		,countQuery = "select count(*) from upload au, user_vendor_mapping_object_mapping auavmaom,object ao, project ap,user_vendor_mapping auavm where au.user_vendor_mapping_object_mapping_id=auavmaom.id and auavmaom.object_id=ao.id and ao.project_id=ap.id and ap.id=?2 and auavmaom.user_vendor_mapping_id=auavm.id and auavm.user_id=?1"
+    		,nativeQuery = true)
 	Page<Upload> findAllByUserAndProject(Long userId, Long projectId, Pageable pageable);
 
-    @Query(value="select * from upload au, user_vendor_mapping_object_mapping auavmaom,object ao, project ap,user_vendor_mapping auavm where au.user_vendor_mapping_object_mapping_id=auavmaom.id and auavmaom.object_id=ao.id and ao.project_id=ap.id and ap.id=?2 and auavmaom.user_vendor_mapping_id=auavm.id and auavm.user_id=?1 and au.approval_status=?3",nativeQuery = true)
+    @Query(value="select * from upload au, user_vendor_mapping_object_mapping auavmaom,object ao, project ap,user_vendor_mapping auavm where au.user_vendor_mapping_object_mapping_id=auavmaom.id and auavmaom.object_id=ao.id and ao.project_id=ap.id and ap.id=?2 and auavmaom.user_vendor_mapping_id=auavm.id and auavm.user_id=?1 and au.approval_status=?3",
+    		countQuery = "select count(*) from upload au, user_vendor_mapping_object_mapping auavmaom,object ao, project ap,user_vendor_mapping auavm where au.user_vendor_mapping_object_mapping_id=auavmaom.id and auavmaom.object_id=ao.id and ao.project_id=ap.id and ap.id=?2 and auavmaom.user_vendor_mapping_id=auavm.id and auavm.user_id=?1 and au.approval_status=?3",
+    		nativeQuery = true)
     Page<Upload> findAllByUserAndProject(Long userId, Long projectId, Integer approvalStatus, Pageable pageable);
 
 
