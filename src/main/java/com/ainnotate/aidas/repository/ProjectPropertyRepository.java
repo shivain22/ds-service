@@ -50,4 +50,7 @@ public interface ProjectPropertyRepository extends JpaRepository<ProjectProperty
     
     @Query(value="select optional from project_property where id=?1",nativeQuery = true)
     Integer getOptionalOfProjectProperty(Long projectPropertyId);
+    
+    @Query(value = "select p.name, pp.value from property p, project_property pp where pp.property_id=p.id and project_id=?1",nativeQuery = true)
+    List<String[]> findAllProjectPropertyNameValue(Long projectId);
 }

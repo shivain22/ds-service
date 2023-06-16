@@ -17,6 +17,7 @@ import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 
@@ -59,7 +60,7 @@ public class ProjectDTO extends AbstractAuditingEntity implements Serializable {
                       String projectType ,
                       Integer qcLevels ,
                       Integer reworkStatus ,
-                      String videoType  ){
+                      String videoType,Integer pauseStatus, Integer consentFormStatus,Integer bypassMetatdata, String customerName ){
         this.id = id;
         this.totalRequired = totalRequired;
         this.totalUploaded = totalUploaded;
@@ -82,16 +83,60 @@ public class ProjectDTO extends AbstractAuditingEntity implements Serializable {
         this.qcLevels = qcLevels ;
         this.reworkStatus = reworkStatus ;
         this.videoType = videoType ;
-
-
+        this.pauseStatus=pauseStatus;
+        this.consentFormStatus=consentFormStatus;
+        this.bypassMetatdata=bypassMetatdata;
+        this.customerName = customerName;
     }
     private static final long serialVersionUID = 1L;
 
     private Long id;
+    
+    private String customerName;
 
-    private Integer totalRequired;
+    public String getCustomerName() {
+		return customerName;
+	}
 
-    public void setId(Long id) {
+	public void setCustomerName(String customerName) {
+		this.customerName = customerName;
+	}
+	private Integer totalRequired;
+
+    private Integer pauseStatus=0;
+    
+
+    
+    private Integer consentFormStatus=0;
+    
+    private Integer bypassMetatdata;
+    
+    public Integer getPauseStatus() {
+		return pauseStatus;
+	}
+
+	public void setPauseStatus(Integer pauseStatus) {
+		this.pauseStatus = pauseStatus;
+	}
+
+
+	public Integer getConsentFormStatus() {
+		return consentFormStatus;
+	}
+
+	public void setConsentFormStatus(Integer consentFormStatus) {
+		this.consentFormStatus = consentFormStatus;
+	}
+
+	public Integer getBypassMetatdata() {
+		return bypassMetatdata;
+	}
+
+	public void setBypassMetatdata(Integer bypassMetatdata) {
+		this.bypassMetatdata = bypassMetatdata;
+	}
+
+	public void setId(Long id) {
         this.id = id;
     }
 
@@ -217,14 +262,14 @@ public class ProjectDTO extends AbstractAuditingEntity implements Serializable {
 
     private Integer bufferPercent;
 
-    private List<ProjectProperty> aidasProjectProperties;
+    private Map<String,String> projectProperties;
 
-    public List<ProjectProperty> getAidasProjectProperties() {
-        return aidasProjectProperties;
+    public Map<String,String> getProjectProperties() {
+        return projectProperties;
     }
 
-    public void setAidasProjectProperties(List<ProjectProperty> aidasProjectProperties) {
-        this.aidasProjectProperties = aidasProjectProperties;
+    public void setProjectProperties(Map<String,String> projectProperties) {
+        this.projectProperties = projectProperties;
     }
 
     public Long getId() {

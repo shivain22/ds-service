@@ -480,7 +480,8 @@ public interface UploadRepository extends JpaRepository<Upload, Long> {
     void updateUploadQcStatus(Integer showToQc, Integer qcStatus, Long qcDoneBy, Instant qcStartDate, Long currentBatchNumber, List<Long> uploadId);
     
     
-    
+    @Query(value="select * from upload where user_vendor_mapping_object_mapping_id=?1 and object_key=?2",nativeQuery = true)
+    Upload getUploadByFileNameUvmomId(Long uvmomId,String objectKey);
     
 
 }

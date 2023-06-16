@@ -6,6 +6,7 @@ import com.ainnotate.aidas.domain.Object;
 import com.ainnotate.aidas.dto.*;
 import com.ainnotate.aidas.repository.*;
 import com.ainnotate.aidas.repository.predicates.ProjectPredicatesBuilder;
+import com.ainnotate.aidas.repository.predicates.UserPredicatesBuilder;
 import com.ainnotate.aidas.repository.search.UserSearchRepository;
 import com.ainnotate.aidas.constants.AidasConstants;
 import com.ainnotate.aidas.security.SecurityUtils;
@@ -93,6 +94,9 @@ public class UserResource {
 
     @Autowired
     private AuthorityRepository authorityRepository;
+    
+    @Autowired
+    private LanguageRepository languageRepository;
 
     @Autowired
     private ObjectRepository objectRepository;
@@ -255,6 +259,16 @@ public class UserResource {
             }
         }
 
+        if(user.getLanguageIds()!=null && user.getLanguageIds().size()>0) {
+        	Language language = null;
+        	for(UserLanguageMappingDTO ulmdto: user.getLanguageIds()) {
+        		language = languageRepository.getById(ulmdto.getLanguageId());
+        		UserLanguageMapping ulm = new UserLanguageMapping();
+        		ulm.setLanguage(language);
+        		ulm.setUser(user);
+        		user.getUserLanguageMappings().add(ulm);
+        	}
+        }
         try {
             try {
                 addUserToKeyCloak(user);
@@ -1152,7 +1166,7 @@ public class UserResource {
         passwordCred.setValue(myUser.getPassword());
         org.keycloak.admin.client.resource.UserResource userResource = usersRessource.get(userId);
         userResource.resetPassword(passwordCred);
-        //userResource.sendVerifyEmail();
+        userResource.sendVerifyEmail();
         RoleRepresentation userRealmRole = realmResource.roles().get(AidasConstants.VENDOR_USER).toRepresentation();
         userResource.roles().realmLevel().add(Arrays.asList(userRealmRole));
         Authority currentAuthority = authorityRepository.findByName("ROLE_VENDOR_USER");
@@ -1227,7 +1241,7 @@ public class UserResource {
     @GetMapping(value = "/search/users")
     @ResponseBody
     public ResponseEntity<List<User>> search(@RequestParam(value = "search") String search, Pageable pageable) {
-        ProjectPredicatesBuilder builder = new ProjectPredicatesBuilder();
+        UserPredicatesBuilder builder = new UserPredicatesBuilder();
 
         if (search != null) {
             Pattern pattern = Pattern.compile("(\\w+?)(:|<|>)(\\w+?),");
@@ -1236,7 +1250,7 @@ public class UserResource {
                 builder.with(matcher.group(1), matcher.group(2), matcher.group(3));
             }
         }
-        builder.with("id", ":",-1);
+        builder.with("id", ">",-1);
         BooleanExpression exp = builder.build();
         Page<User> page = userRepository.findAll(exp,pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);

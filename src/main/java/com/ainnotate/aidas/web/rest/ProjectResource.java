@@ -14,11 +14,17 @@ import com.ainnotate.aidas.service.ObjectAddingTask;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 import com.querydsl.core.types.dsl.BooleanExpression;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -26,6 +32,7 @@ import java.util.regex.Pattern;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -546,6 +553,67 @@ public class ProjectResource {
 				.body(result);
 	}
 
+	
+	/**
+	 * {@code POST /aidas-projects/{id}} : Update aidas Project property to default
+	 * value.
+	 *
+	 * @param id the project id to update project property to default value.
+	 * @return the {@link ResponseEntity} with status {@code 201 (Updated)} and with
+	 *         body the new project, or with status {@code 400 (Bad Request)} if the
+	 *         project has no ID.
+	 * @throws URISyntaxException if the Location URI syntax is incorrect.
+	 */
+	@Secured({ AidasConstants.ADMIN, AidasConstants.ORG_ADMIN, AidasConstants.CUSTOMER_ADMIN })
+	@PostMapping("/aidas-projects/{id}/golive")
+	public ResponseEntity<Project> projectGoLive(
+			@PathVariable(value = "id", required = true) final Long id) throws URISyntaxException {
+		User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+
+		log.debug("REST request to save AidasProjectProperties to default value : {}", id);
+		if (id == null) {
+			throw new BadRequestAlertException("A new project cannot already have an ID", ENTITY_NAME, "idexists");
+		}
+		Project project = projectRepository.getById(id);
+		project.setPauseStatus(1);
+		Project result = projectRepository.save(project);
+		// aidasProjectSearchRepository.save(result);
+		return ResponseEntity
+				.created(new URI("/api/aidas-projects/" + result.getId())).headers(HeaderUtil
+						.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
+				.body(result);
+	}
+	
+	/**
+	 * {@code POST /aidas-projects/{id}} : Update aidas Project property to default
+	 * value.
+	 *
+	 * @param id the project id to update project property to default value.
+	 * @return the {@link ResponseEntity} with status {@code 201 (Updated)} and with
+	 *         body the new project, or with status {@code 400 (Bad Request)} if the
+	 *         project has no ID.
+	 * @throws URISyntaxException if the Location URI syntax is incorrect.
+	 */
+	@Secured({ AidasConstants.ADMIN, AidasConstants.ORG_ADMIN, AidasConstants.CUSTOMER_ADMIN })
+	@PostMapping("/aidas-projects/{id}/pause")
+	public ResponseEntity<Project> pauseProject(
+			@PathVariable(value = "id", required = true) final Long id) throws URISyntaxException {
+		User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+
+		log.debug("REST request to save AidasProjectProperties to default value : {}", id);
+		if (id == null) {
+			throw new BadRequestAlertException("A new project cannot already have an ID", ENTITY_NAME, "idexists");
+		}
+		Project project = projectRepository.getById(id);
+		project.setPauseStatus(0);
+		Project result = projectRepository.save(project);
+		// aidasProjectSearchRepository.save(result);
+		return ResponseEntity
+				.created(new URI("/api/aidas-projects/" + result.getId())).headers(HeaderUtil
+						.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
+				.body(result);
+	}
+	
 	/**
 	 * {@code POST /aidas-projects/add-all-new-added-property/{id}} : Update aidas
 	 * Project property to add new property.
@@ -660,6 +728,11 @@ public class ProjectResource {
 		existingProject.setAudioType(project.getAudioType());
 		existingProject.setVideoType(project.getVideoType());
 		existingProject.setImageType(project.getImageType());
+		existingProject.setPauseStatus(project.getPauseStatus());
+		existingProject.setProjectDescriptionLink(project.getProjectDescriptionLink());
+		existingProject.setConsentFormLink(project.getConsentFormLink());
+		existingProject.setConsentFormStatus(project.getConsentFormStatus());
+		existingProject.setBypassMetatdata(project.getBypassMetatdata());
 		Project result = projectRepository.save(existingProject);
 		if (project.getProjectProperties() != null) {
 			Property ap = null;
@@ -853,6 +926,14 @@ public class ProjectResource {
 		Page<ProjectDTO> page;
 		if (user.getAuthority().getName().equals(AidasConstants.VENDOR_USER)) {
 			page = projectRepository.findProjectWithUploadCountByUser(pageable, user.getId());
+			Map<String,String> pps = new HashMap<>();
+			for(ProjectDTO pdto:page.getContent()) {
+				List<String[]> projectProperties = projectPropertyRepository.findAllProjectPropertyNameValue(pdto.getId());
+				for(String[] str:projectProperties) {
+					pps.put(str[0], str[1]);
+				}
+				pdto.setProjectProperties(pps);
+			}
 			HttpHeaders headers = PaginationUtil
 					.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
 			return ResponseEntity.ok().headers(headers).body(page.getContent());
@@ -974,5 +1055,65 @@ public class ProjectResource {
 		downloadUploadS3.setUp(project, status);
 		taskExecutor.execute(downloadUploadS3);
 	}
+	@Autowired
+    private AppPropertyRepository appPropertyRepository;
+	@PostMapping("/sendMail")
+	public void sendMail(@Valid @RequestBody Mail mail) throws IOException {
+		
+		 AppProperty app  = appPropertyRepository.getAppProperty(-1l,"fromEmail");
+         String fromEmail = app.getValue();
+         app = appPropertyRepository.getAppProperty(-1l,"emailToken");
+         String emailToken = app.getValue();
+         
+         
+        String postUrl = "https://api.zeptomail.in/v1.1/email";
+        BufferedReader br = null;
+        HttpURLConnection conn = null;
+        String output = null;
+        StringBuilder sb = new StringBuilder();
+        System.out.println(mail.getEmail());
+        try {
+            URL url = new URL(postUrl);
+            conn = (HttpURLConnection) url.openConnection();
+            conn.setDoOutput(true);
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setRequestProperty("Accept", "application/json");
+            conn.setRequestProperty("Authorization", "Zoho-enczapikey "+emailToken);
+            JSONObject object = new JSONObject("{\n" +
+                "  \"bounce_address\":\"bounce@bounce.haidata.ai\",\n" +
+                "  \"from\": { \"address\": \""+fromEmail+"\"},\n" +
+                "  \"to\": [{\"email_address\": {\"address\": \""+mail.getEmail()+"\",\"name\": \""+mail.getName()+"\"}}],\n" +
+                "  \"subject\":\""+mail.getSubject()+"\",\n" +
+                "  \"htmlbody\":\"<div><b>"+mail.getBody()+"</b></div>\"\n" +
+                "}");
+            OutputStream os = conn.getOutputStream();
+            os.write(object.toString().getBytes());
+            os.flush();
+            br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
+            while ((output = br.readLine()) != null) {
+                sb.append(output);
+            }
+            System.out.println(sb.toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (br != null) {
+                    br.close();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            try {
+                if (conn != null) {
+                    conn.disconnect();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+
+            }
+        }
+    }
 
 }

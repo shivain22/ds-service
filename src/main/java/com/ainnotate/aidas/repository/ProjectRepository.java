@@ -27,7 +27,7 @@ import java.util.Optional;
 @Transactional
 public interface ProjectRepository extends JpaRepository<Project, Long>,QuerydslPredicateExecutor<Project>, QuerydslBinderCustomizer<QProject> {
 
-    @Query(value="select * from project p , customer c where p.customer_id=c.id and c.organisation_id=?1 and p.status=1",nativeQuery = true)
+    @Query(value="select * from project p , customer c where p.customer_id=c.id and c.organisation_id=?1 and p.status=1 ",nativeQuery = true)
     Page<Project> findAllByAidasCustomer_AidasOrganisation(Pageable page, Long organisationId);
 
     @Query(value="select * from project p where ?1 like '% ?2 %'",nativeQuery = true)

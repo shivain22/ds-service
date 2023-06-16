@@ -478,7 +478,7 @@ public class DownloadUploadS3  implements  Runnable{
         HttpURLConnection conn = null;
         String output = null;
         StringBuilder sb = new StringBuilder();
-        System.out.println(email);
+        
         try {
             URL url = new URL(postUrl);
             conn = (HttpURLConnection) url.openConnection();
@@ -504,11 +504,6 @@ public class DownloadUploadS3  implements  Runnable{
             System.out.println(sb.toString());
         } catch (Exception e) {
             e.printStackTrace();
-            /*br = new BufferedReader(new InputStreamReader((conn.getErrorStream())));
-            while ((output = br.readLine()) != null) {
-                sb.append(output);
-            }
-            System.out.println(sb.toString());*/
         } finally {
             try {
                 if (br != null) {
@@ -527,4 +522,6 @@ public class DownloadUploadS3  implements  Runnable{
             }
         }
     }
+    
+    
 }

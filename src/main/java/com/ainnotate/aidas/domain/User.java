@@ -3,6 +3,7 @@ package com.ainnotate.aidas.domain;
 import com.ainnotate.aidas.dto.*;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.io.Serializable;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -127,14 +128,19 @@ public class User extends AbstractAuditingEntity implements Serializable {
     @Column(name = "email",  nullable = true, unique = false )
     private String email;
 
+    @OneToMany
+    Set<UserLanguageMapping> userLanguages=new HashSet<>();
 
     @Column(name = "alt_email",  nullable = true, unique = false)
     private String altEmail;
 
 
+    @Column(name="gender",nullable=true,unique=false)
+    private String gender;
     @Column(name = "cc_email",  nullable = true, unique = false)
     private String ccEmails;
-
+    @Column(name="dob",nullable=true,unique=false)
+    private Date dob;
     @Column(name = "keycloak_id", nullable = true, unique = false)
     private String keycloakId;
     @NotNull
@@ -222,6 +228,11 @@ public class User extends AbstractAuditingEntity implements Serializable {
     @JsonIgnoreProperties(value = { "user" }, allowSetters = true)
     @Field(type = FieldType.Nested)
     private Set<UserAuthorityMapping> userAuthorityMappings = new HashSet<>();
+    
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
+    @JsonIgnoreProperties(value = { "user" }, allowSetters = true)
+    @Field(type = FieldType.Nested)
+    private Set<UserLanguageMapping> userLanguageMappings = new HashSet<>();
 
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
     @JsonIgnoreProperties(value = { "user" }, allowSetters = true)
@@ -246,11 +257,47 @@ public class User extends AbstractAuditingEntity implements Serializable {
     @Column(length = 50, unique = false, nullable = true)
     private String login;
 
-    @Transient
+    public Set<UserLanguageMapping> getUserLanguageMappings() {
+		return userLanguageMappings;
+	}
+
+	public void setUserLanguageMappings(Set<UserLanguageMapping> userLanguageMappings) {
+		this.userLanguageMappings = userLanguageMappings;
+	}
+
+	@Transient
     @JsonProperty
     private transient List<UserOrganisationMappingDTO> organisationIds;
-
+    
     @Transient
+    @JsonProperty
+    private transient List<UserLanguageMappingDTO> languageIds;
+
+    public String getGender() {
+		return gender;
+	}
+
+	public void setGender(String gender) {
+		this.gender = gender;
+	}
+
+	public Date getDob() {
+		return dob;
+	}
+
+	public void setDob(Date dob) {
+		this.dob = dob;
+	}
+
+	public List<UserLanguageMappingDTO> getLanguageIds() {
+		return languageIds;
+	}
+
+	public void setLanguageIds(List<UserLanguageMappingDTO> languageIds) {
+		this.languageIds = languageIds;
+	}
+
+	@Transient
     @JsonProperty
     private transient List<UserCustomerMappingDTO> customerIds;
     @Transient

@@ -7,6 +7,7 @@ import com.ainnotate.aidas.repository.UsersOfVendorRepository;
 import com.ainnotate.aidas.repository.UserRepository;
 import com.ainnotate.aidas.repository.VendorRepository;
 import com.ainnotate.aidas.repository.predicates.ProjectPredicatesBuilder;
+import com.ainnotate.aidas.repository.predicates.VendorPredicatesBuilder;
 import com.ainnotate.aidas.repository.search.VendorSearchRepository;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -292,7 +293,7 @@ public class VendorResource {
 	@GetMapping(value = "/search/vendors")
 	@ResponseBody
 	public ResponseEntity<List<Vendor>> search(@RequestParam(value = "search") String search, Pageable pageable) {
-		ProjectPredicatesBuilder builder = new ProjectPredicatesBuilder();
+		VendorPredicatesBuilder builder = new VendorPredicatesBuilder();
 
 		if (search != null) {
 			Pattern pattern = Pattern.compile("(\\w+?)(:|<|>)(\\w+?),");

@@ -172,6 +172,74 @@ public class ObjectResource {
         }
     }
 
+    
+    /**
+     * {@code POST  /aidas-objects} : Create a new object.
+     *
+     * @param object the object to create.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new object, or with status {@code 400 (Bad Request)} if the object has already an ID.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @Secured({AidasConstants.ADMIN, AidasConstants.ORG_ADMIN, AidasConstants.CUSTOMER_ADMIN})
+    @PutMapping("/aidas-objects/{id}")
+    public ResponseEntity<Object> updateAidasObject(@PathVariable(value = "id", required = false) final Long id,@Valid @RequestBody Object object) throws URISyntaxException {
+        log.debug("REST request to save AidasObject : {}", object);
+        User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        
+        if(user.getAuthority().getName().equals(AidasConstants.ORG_ADMIN) && user.getOrganisation()!=null ){
+            Optional<Customer> customer = customerRepository.findById(object.getProject().getCustomer().getId());
+            if(customer.isPresent()){
+                if(!object.getProject().getCustomer().equals(customer.get())){
+                    throw new BadRequestAlertException("Not Authorized", ENTITY_NAME, "idexists");
+                }
+            }else{
+                throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
+            }
+        }
+        if( user.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN)){
+            if(user.getCustomer()!=null && !user.getCustomer().equals(object.getProject().getCustomer())){
+                throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
+            }
+        }
+        try {
+			/*
+			 * object.setDummy(0); object.setStatus(1); Project project = null;
+			 * if(object.getProject()!=null && object.getProject().getId()!=null){ project =
+			 * projectRepository.getById(object.getProject().getId()); }
+			 * if(object.getBufferPercent()==null){ if(project!=null ) {
+			 * if(project.getBufferPercent()!=null) {
+			 * object.setBufferPercent(project.getBufferPercent()); }else{
+			 * object.setBufferPercent(10); } }else{ object.setBufferPercent(10); } }
+			 * object.setNumberOfBufferedUploadsRequired(object.getNumberOfUploadsRequired()
+			 * +(object.getNumberOfUploadsRequired()*(object.getBufferPercent()/100)));
+			 * object.setTotalRequired(object.getNumberOfBufferedUploadsRequired()); Object
+			 * result = objectRepository.save(object);
+			 * objectRepository.addObjectProperties(project.getId(),project.getCategory().
+			 * getId(),result.getId());
+			 * project.setNumberOfObjects(project.getNumberOfObjects()+1);
+			 * project.setTotalRequired(project.getTotalRequired()+result.
+			 * getNumberOfUploadsRequired());
+			 * project.setNumberOfUploadsRequired(project.getNumberOfUploadsRequired()+
+			 * object.getNumberOfUploadsRequired());
+			 * project.setNumberOfBufferedUploadsdRequired(project.
+			 * getNumberOfBufferedUploadsdRequired()+object.
+			 * getNumberOfBufferedUploadsRequired());
+			 */
+        	Object object1 = objectRepository.getObjectById(object.getId());
+        	object1.setName(object.getName());
+        	System.out.println(object1.getName());
+        	object1.setDescription(object.getDescription());
+        	object1.setTotalRequired((object.getNumberOfUploadsRequired()-object1.getNumberOfUploadsRequired())-object1.getTotalRequired());
+        	Object result = objectRepository.save(object1);
+        	
+        return ResponseEntity
+            .created(new URI("/api/aidas-objects/" + result.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
+            .body(result);
+        }catch(Exception e) {
+        	throw new BadRequestAlertException(e.getMessage(), ENTITY_NAME, "idexists");
+        }
+    }
     /**
      * {@code POST  /aidas-objects/{id}} : Update aidas Object property to default value.
      *

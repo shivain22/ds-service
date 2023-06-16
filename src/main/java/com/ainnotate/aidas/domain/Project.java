@@ -46,10 +46,14 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
         "p.project_type ,\n" +
         "p.qc_levels ,\n" +
         "p.rework_status ,\n" +
-        "p.video_type\n" +
+        "p.video_type,\n" +
+        "p.pause_status,\n" +
+        "p.consent_form_status,\n" +
+        "p.bypass_metadata,\n" +
+        "c.name as customer_name\n" +
         "from \n" +
-        "project p, user_vendor_mapping_project_mapping uvmpm,user_vendor_mapping uvm " +
-        "where uvmpm.project_id=p.id and uvmpm.status=1 and p.status=1 and uvmpm.user_vendor_mapping_id=uvm.id and uvm.user_id=?1 order by p.id desc",
+        "project p, user_vendor_mapping_project_mapping uvmpm,user_vendor_mapping uvm, customer c " +
+        "where uvmpm.project_id=p.id and uvmpm.status=1 and p.status=1 and uvmpm.user_vendor_mapping_id=uvm.id and p.customer_id=c.id and uvm.user_id=?1 and p.pause_status=1 order by p.id desc",
     resultSetMapping = "Mapping.ProjectDTO")
 
 
@@ -58,8 +62,8 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
     query ="select  \n" +
         "count(p.id) as count  \n" +
         "from \n" +
-        "project p, user_vendor_mapping_project_mapping uvmpm,user_vendor_mapping uvm" +
-        " where uvmpm.project_id=p.id and uvmpm.status=1 and p.status=1 and uvmpm.user_vendor_mapping_id=uvm.id and uvm.user_id=?1  ",resultSetMapping = "Mapping.findProjectWithUploadCountByUserCount")
+        "project p, user_vendor_mapping_project_mapping uvmpm,user_vendor_mapping uvm, customer c" +
+        " where uvmpm.project_id=p.id and uvmpm.status=1 and p.status=1 and uvmpm.user_vendor_mapping_id=uvm.id and p.customer_id=c.id and uvm.user_id=?1 and p.pause_status=1 ",resultSetMapping = "Mapping.findProjectWithUploadCountByUserCount")
 
 
 @NamedNativeQuery(name = "Project.findProjectWithUploadCountByUserForAllowedProjects",
@@ -85,11 +89,16 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
         "p.project_type ,\n" +
         "p.qc_levels ,\n" +
         "p.rework_status ,\n" +
-        "p.video_type\n" +
+        "p.video_type,\n" +
+        "p.pause_status,\n" +
+        "p.consent_form_status,\n" +
+        "p.bypass_metadata,\n" +
+        "c.name as customer_name\n"+
         "from \n" +
         "project p\n" +
         "left join user_vendor_mapping_project_mapping uvmpm on p.id=uvmpm.project_id\n" +
         "left join user_vendor_mapping uvm on uvm.id=uvmpm.user_vendor_mapping_id \n" +
+        "left join customer c on p.customer_id=c.id \n" +
         "where p.status=1 and uvm.user_id=?1 and uvm.status=1 and uvmpm.status=1 and p.id in (?2)",
     resultSetMapping = "Mapping.ProjectDTO")
 
@@ -133,7 +142,12 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
                 @ColumnResult(name = "project_type",type = String.class),
                 @ColumnResult(name = "qc_levels",type = Integer.class),
                 @ColumnResult(name = "rework_status",type = Integer.class),
-                @ColumnResult(name = "video_type",type = String.class)
+                @ColumnResult(name = "video_type",type = String.class),
+                @ColumnResult(name = "pause_status",type = Integer.class),
+                @ColumnResult(name = "consent_form_status",type = Integer.class),
+                @ColumnResult(name = "bypass_metadata",type = Integer.class),
+                @ColumnResult(name = "customer_name",type = String.class)
+                
             })),
     @SqlResultSetMapping(name = "Mapping.ProjectDTOForDropDown",
         classes = @ConstructorResult(targetClass = ProjectDTO.class,
@@ -403,8 +417,60 @@ public class Project extends AbstractAuditingEntity  implements Serializable {
 
     @Column(name="uvmom_ids")
     private String uvmomIds;
+    
+    @Column(name="pause_status")
+    private Integer pauseStatus=0;
+    
+    
+    
+    public String getProjectDescriptionLink() {
+		return projectDescriptionLink;
+	}
 
-    public String getUvmomIds() {
+	public void setProjectDescriptionLink(String projectDescriptionLink) {
+		this.projectDescriptionLink = projectDescriptionLink;
+	}
+
+	public String getConsentFormLink() {
+		return consentFormLink;
+	}
+
+	public void setConsentFormLink(String consentFormLink) {
+		this.consentFormLink = consentFormLink;
+	}
+	@Column(name="consent_form_status")
+    private Integer consentFormStatus=0;
+    
+    @Column(name="bypass_metadata")
+    private Integer bypassMetatdata=0;
+
+    public Integer getPauseStatus() {
+		return pauseStatus;
+	}
+
+	public void setPauseStatus(Integer pauseStatus) {
+		this.pauseStatus = pauseStatus;
+	}
+
+	
+
+	public Integer getConsentFormStatus() {
+		return consentFormStatus;
+	}
+
+	public void setConsentFormStatus(Integer consentFormStatus) {
+		this.consentFormStatus = consentFormStatus;
+	}
+
+	public Integer getBypassMetatdata() {
+		return bypassMetatdata;
+	}
+
+	public void setBypassMetatdata(Integer bypassMetatdata) {
+		this.bypassMetatdata = bypassMetatdata;
+	}
+
+	public String getUvmomIds() {
         return uvmomIds;
     }
     @Column(name="current_qc_level" ,columnDefinition = "integer default null")
@@ -480,6 +546,12 @@ public class Project extends AbstractAuditingEntity  implements Serializable {
     
     @Column(name="total_required_for_grouped")
     private Integer totalRequiredForGrouped=0;
+    
+    @Column(name="project_description_link")
+    private String projectDescriptionLink;
+    
+    @Column(name="consent_form_link")
+    private String consentFormLink;
 
     public Integer getTotalRequiredForGrouped() {
 		return totalRequiredForGrouped;

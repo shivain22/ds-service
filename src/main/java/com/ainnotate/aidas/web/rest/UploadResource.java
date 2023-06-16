@@ -358,7 +358,8 @@ public class UploadResource {
 	@PostMapping("/aidas-uploads/dto")
 	public ResponseEntity<Boolean> createAidasUploadFromDto(@RequestBody UploadDTO uploadDto)
 			throws URISyntaxException {
-		try {
+		
+			
 			Object object = objectRepository.getByIdForUpload(uploadDto.getObjectId());
 			Project project = projectRepository.getByIdForUpload(object.getId());
 			UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository
@@ -366,57 +367,63 @@ public class UploadResource {
 			UserVendorMappingProjectMapping uvmpm = userVendorMappingProjectMappingRepository
 					.findByUserVendorMappingIdProjectIdForUpload(uvmom.getUserVendorMapping().getId(),
 							uvmom.getObject().getProject().getId());
-			Upload upload = new Upload();
-			if (object.getTotalRequired() > 0) {
-				upload.setUserVendorMappingObjectMapping(uvmom);
-				upload.setDateUploaded(Instant.now());
-				upload.setName(uploadDto.getObjectKey());
-				upload.setUploadUrl(uploadDto.getUploadUrl());
-				upload.setUploadEtag(uploadDto.getEtag());
-				upload.setObjectKey(uploadDto.getObjectKey());
-				upload.setCurrentQcLevel(1);
-				upload.setApprovalStatus(AidasConstants.AIDAS_UPLOAD_PENDING);
-				upload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
-				upload.setMetadataStatus(AidasConstants.AIDAS_UPLOAD_METADATA_REQUIRED);
-				upload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
-				upload.setCurrentBatchNumber(0);
-				upload = uploadRepository.save(upload);
-				uploadMetaDataRepository.insertUploadMetaDataForProjectProperties(upload.getId(), project.getId());
-				uploadMetaDataRepository.insertUploadMetaDataForObjectProperties(upload.getId(), object.getId());
-				for (Map.Entry<String, String> entry : uploadDto.getUploadMetadata().entrySet()) {
-					uploadMetaDataRepository.updateUploadMetaDataProjectPropertyFromUpload(upload.getId(),
-							entry.getKey().trim(), entry.getValue());
-					uploadMetaDataRepository.updateUploadMetaDataObjectPropertyFromUpload(upload.getId(),
-							entry.getKey().trim(), entry.getValue());
-				}
-				if (project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)) {
-					Integer totalUploads = uploadRepository.getNumberOfUploads(object.getId());
-					if (totalUploads == object.getNumberOfUploadsRequired()) {
-						userVendorMappingProjectMappingRepository
-								.addTotalUploadedAndAddTotalPendingForGrouped(uvmpm.getId());
-						projectRepository.addTotalUploadedAddPendingSubtractRequiredForGrouped(project.getId());
-					}
-					userVendorMappingProjectMappingRepository.addTotalUploadedAndAddTotalPending(uvmpm.getId());
-					projectRepository.addTotalUploadedAddPendingSubtractRequired(project.getId());
-					userVendorMappingObjectMappingRepository.addTotalUploadedAndAddTotalPending(uvmom.getId());
-					objectRepository.addTotalUploadedAddPendingSubtractRequired(object.getId());
-				} else {
-					userVendorMappingProjectMappingRepository.addTotalUploadedAndAddTotalPending(uvmpm.getId());
-					projectRepository.addTotalUploadedAddPendingSubtractRequired(project.getId());
-					userVendorMappingObjectMappingRepository.addTotalUploadedAndAddTotalPending(uvmom.getId());
-					objectRepository.addTotalUploadedAddPendingSubtractRequired(object.getId());
-				}
-
-				return ResponseEntity.ok().body(true);
-			} else {
-				return ResponseEntity.ok().body(false);
+			Upload upload = uploadRepository.getUploadByFileNameUvmomId(uvmom.getId(),uploadDto.getObjectKey());
+			if(upload!=null) {
+				throw new BadRequestAlertException("Upload with object key "+upload.getObjectKey()+" exists", ENTITY_NAME, "idexists");
 			}
+			try {
+				if (object.getTotalRequired() > 0 && upload==null) {
+					upload = new Upload();
+					upload.setUserVendorMappingObjectMapping(uvmom);
+					upload.setDateUploaded(Instant.now());
+					upload.setName(uploadDto.getObjectKey());
+					upload.setUploadUrl(uploadDto.getUploadUrl());
+					upload.setUploadEtag(uploadDto.getEtag());
+					upload.setObjectKey(uploadDto.getObjectKey());
+					upload.setCurrentQcLevel(1);
+					upload.setApprovalStatus(AidasConstants.AIDAS_UPLOAD_PENDING);
+					upload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
+					upload.setMetadataStatus(AidasConstants.AIDAS_UPLOAD_METADATA_REQUIRED);
+					upload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
+					upload.setCurrentBatchNumber(0);
+					upload = uploadRepository.save(upload);
+					uploadMetaDataRepository.insertUploadMetaDataForProjectProperties(upload.getId(), project.getId());
+					uploadMetaDataRepository.insertUploadMetaDataForObjectProperties(upload.getId(), object.getId());
+					for (Map.Entry<String, String> entry : uploadDto.getUploadMetadata().entrySet()) {
+						uploadMetaDataRepository.updateUploadMetaDataProjectPropertyFromUpload(upload.getId(),
+								entry.getKey().trim(), entry.getValue());
+						uploadMetaDataRepository.updateUploadMetaDataObjectPropertyFromUpload(upload.getId(),
+								entry.getKey().trim(), entry.getValue());
+					}
+					if (project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)) {
+						Integer totalUploads = uploadRepository.getNumberOfUploads(object.getId());
+						if (totalUploads == object.getNumberOfUploadsRequired()) {
+							userVendorMappingProjectMappingRepository
+									.addTotalUploadedAndAddTotalPendingForGrouped(uvmpm.getId());
+							projectRepository.addTotalUploadedAddPendingSubtractRequiredForGrouped(project.getId());
+						}
+						userVendorMappingProjectMappingRepository.addTotalUploadedAndAddTotalPending(uvmpm.getId());
+						projectRepository.addTotalUploadedAddPendingSubtractRequired(project.getId());
+						userVendorMappingObjectMappingRepository.addTotalUploadedAndAddTotalPending(uvmom.getId());
+						objectRepository.addTotalUploadedAddPendingSubtractRequired(object.getId());
+					} else {
+						userVendorMappingProjectMappingRepository.addTotalUploadedAndAddTotalPending(uvmpm.getId());
+						projectRepository.addTotalUploadedAddPendingSubtractRequired(project.getId());
+						userVendorMappingObjectMappingRepository.addTotalUploadedAndAddTotalPending(uvmom.getId());
+						objectRepository.addTotalUploadedAddPendingSubtractRequired(object.getId());
+					}
+	
+					return ResponseEntity.ok().body(true);
+				} else {
+					return ResponseEntity.ok().body(false);
+				}
 		} catch (Exception e) {
 			log.error(e.getMessage());
 			return ResponseEntity.ok().body(false);
 		}
 	}
 
+	
 	/**
 	 * {@code POST  /aidas-uploads/dtos} : Create a new upload.
 	 *

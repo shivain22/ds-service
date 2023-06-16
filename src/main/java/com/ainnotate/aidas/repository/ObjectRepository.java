@@ -357,5 +357,8 @@ public interface ObjectRepository
     @Modifying
     @Query(value = "update object set total_required=total_required-1 where id=?1",nativeQuery = true)
     void subTotalRequired(Long id);
+    
+    @Query(value="select * from object where id=?1",nativeQuery = true)
+    Object getObjectById(Long id);
 	
 }

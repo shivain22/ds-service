@@ -7,6 +7,7 @@ import com.ainnotate.aidas.domain.User;
 import com.ainnotate.aidas.repository.AppPropertyRepository;
 import com.ainnotate.aidas.repository.OrganisationRepository;
 import com.ainnotate.aidas.repository.UserRepository;
+import com.ainnotate.aidas.repository.predicates.OrganisationPredicatesBuilder;
 import com.ainnotate.aidas.repository.predicates.ProjectPredicatesBuilder;
 import com.ainnotate.aidas.repository.search.OrganisationSearchRepository;
 import com.ainnotate.aidas.constants.AidasConstants;
@@ -341,7 +342,7 @@ public class OrganisationResource {
 	@GetMapping(value = "/search/organisations")
 	@ResponseBody
 	public ResponseEntity<List<Organisation>> search(@RequestParam(value = "search") String search, Pageable pageable) {
-		ProjectPredicatesBuilder builder = new ProjectPredicatesBuilder();
+		OrganisationPredicatesBuilder builder = new OrganisationPredicatesBuilder();
 
 		if (search != null) {
 			Pattern pattern = Pattern.compile("(\\w+?)(:|<|>)(\\w+?),");

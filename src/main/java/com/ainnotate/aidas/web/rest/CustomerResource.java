@@ -9,6 +9,7 @@ import com.ainnotate.aidas.repository.AppPropertyRepository;
 import com.ainnotate.aidas.repository.CustomerRepository;
 import com.ainnotate.aidas.repository.PropertyRepository;
 import com.ainnotate.aidas.repository.UserRepository;
+import com.ainnotate.aidas.repository.predicates.CustomerPredicatesBuilder;
 import com.ainnotate.aidas.repository.predicates.ProjectPredicatesBuilder;
 import com.ainnotate.aidas.repository.search.CustomerSearchRepository;
 import com.ainnotate.aidas.constants.AidasConstants;
@@ -283,7 +284,7 @@ public class CustomerResource {
     @GetMapping(value = "/search/customers")
     @ResponseBody
     public ResponseEntity<List<Customer>> search(@RequestParam(value = "search") String search, Pageable pageable) {
-        ProjectPredicatesBuilder builder = new ProjectPredicatesBuilder();
+        CustomerPredicatesBuilder builder = new CustomerPredicatesBuilder();
 
         if (search != null) {
             Pattern pattern = Pattern.compile("(\\w+?)(:|<|>)(\\w+?),");
