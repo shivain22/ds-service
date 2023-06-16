@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.5.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+    <changeSet author="shiva (generated)" id="16575390874623-61">
+        <modifyDataType  catalogName="ainnotateservice"  
+            columnName="description"  
+            newDataType="TEXT"  
+            schemaName="ainnotateservice"  
+            tableName="object"/> 
+       <modifyDataType  catalogName="ainnotateservice"  
+            columnName="description"  
+            newDataType="TEXT"  
+            schemaName="ainnotateservice"  
+            tableName="object_aud"/> 
+
+    </changeSet>
+</databaseChangeLog>
