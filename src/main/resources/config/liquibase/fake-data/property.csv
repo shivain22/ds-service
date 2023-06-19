@@ -63,5 +63,5 @@ id;name;value;property_type;optional;description;default_prop;user_id;customer_i
 62;numberOfParticipants;1;1;true;Number of Participants;1;-1;-1;5;1;0
 63;audioDuration;-1;1;true;Audio Duration;1;-1;-1;5;1;0
 64;audioBitRate;-1;1;true;Audio Bit Rate;1;-1;-1;5;1;0
-64;saveIndividualRecordings;-1;1;false;Save Individual Recordings;1;-1;-1;5;1;0
+64;saveIndividualRecordings;-1;1;0;Save Individual Recordings;1;-1;-1;5;1;0
 

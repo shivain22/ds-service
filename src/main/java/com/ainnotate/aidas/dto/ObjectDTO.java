@@ -29,8 +29,17 @@ public class ObjectDTO extends AbstractAuditingEntity implements Serializable, I
 
     private Integer count;
 
+    private String objectDescriptionLink;
     
-    @Override
+    public String getObjectDescriptionLink() {
+		return objectDescriptionLink;
+	}
+
+	public void setObjectDescriptionLink(String objectDescriptionLink) {
+		this.objectDescriptionLink = objectDescriptionLink;
+	}
+
+	@Override
     public Integer getCount() {
         return count;
     }

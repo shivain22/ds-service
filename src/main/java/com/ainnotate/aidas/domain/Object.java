@@ -102,7 +102,8 @@ import org.hibernate.envers.Audited;
                 @ColumnResult(name = "description",type = String.class),
                 @ColumnResult(name = "imageType",type = String.class),
                 @ColumnResult(name = "audioType",type = String.class),
-                @ColumnResult(name = "videoType",type = String.class)
+                @ColumnResult(name = "videoType",type = String.class),
+                @ColumnResult(name = "objectDescriptionLink",type = String.class)
             })),
     @SqlResultSetMapping(name = "Mapping.ObjectDTOForDropdown",
         classes = @ConstructorResult(targetClass = ObjectDTO.class,
@@ -225,14 +226,16 @@ query =
 		    "a.totalApproved, \n" +
 		    "a.totalRejected, \n" +
 		    "a.totalPending,\n" +
-		    "a.bufferPercent," +
-		    "a.name," +
-		    "a.description," +
-		    "a.imageType," +
-		    "a.audioType," +
-		    "a.videoType from " +
+		    "a.bufferPercent,\n" +
+		    "a.name,\n" +
+		    "a.description,\n" +
+		    "a.imageType,\n" +
+		    "a.audioType,\n" +
+		    "a.videoType, \n" +
+		    "a.objectDescriptionLink \n"
+		    + " from " +
 		    
-    "((select \n" +
+    " ((select \n" +
     "o.id," +
     "o.project_id as projectId,"+
     "uvmom.id as userVendorMappingObjectMappingId,"+
@@ -249,11 +252,16 @@ query =
     "o.description as description," +
     "o.image_type as imageType," +
     "o.audio_type as audioType," +
-    "o.video_type as videoType " +
+    "o.video_type as videoType, " +
+    "o.object_description_link as objectDescriptionLink " +
     "from user_vendor_mapping_object_mapping uvmom  \n" +
     "left join object o on o.id=uvmom.object_id   \n" +
-    "where uvmom.user_vendor_mapping_id=?1 and uvmom.status=1 and o.status=1 and o.is_dummy=0  and o.project_id=?2 order by o.id desc )" +
-    " union" +
+    "where uvmom.user_vendor_mapping_id=?1 "
+    + "and uvmom.status=1 \n"
+    + "and o.status=1 and o.is_dummy=0  \n"
+    + "and o.project_id=?2 \n"
+    + "order by o.id desc )\n" +
+    " union \n" +
     " (select \n" +
     "o.id," +
     "-1 as userVendorMappingObjectMappingId,"+
@@ -273,7 +281,17 @@ query =
     "o.audio_type as audioType," +
     "o.video_type as videoType " +
     "from object o \n" +
-    "where o.status=1 and o.is_dummy=0  and o.project_id=?2 and o.id not in (select o.id from object o, user_vendor_mapping_object_mapping uvmom where uvmom.object_id=o.id and uvmom.user_vendor_mapping_id=?1))) a order by a.id desc"
+    "where o.status=1 \n"
+    + "and o.is_dummy=0  \n"
+    + "and o.project_id=?2 \n"
+    + "and o.id not in \n"
+    + "(select \n"
+    + "o.id \n"
+    + "from \n"
+    + "object o, \n"
+    + "user_vendor_mapping_object_mapping uvmom \n"
+    + "where uvmom.object_id=o.id \n"
+    + "and uvmom.user_vendor_mapping_id=?1))) a order by a.id desc \n"
     ,resultSetMapping = "Mapping.ObjectDTOWithProjectId")
 
 
@@ -327,7 +345,8 @@ query = "select \n" +
     "o.description as description," +
     "o.image_type as imageType," +
     "o.audio_type as audioType," +
-    "o.video_type as videoType " +
+    "o.video_type as videoType, " +
+    "o.object_description_link as objectDescriptionLink " +
     "from user_vendor_mapping_object_mapping uvmom  \n" +
     "left join object o on o.id=uvmom.object_id   \n" +
     "where uvmom.user_vendor_mapping_id=?1 and uvmom.status=1 and o.status=1 and o.is_dummy=0  and o.project_id=?2 order by o.id desc "
@@ -442,7 +461,8 @@ query = "select count(o.id) as count  \n" +
         "o.description as description," +
         "o.image_type as imageType," +
         "o.audio_type as audioType," +
-        "o.video_type as videoType " +
+        "o.video_type as videoType, " +
+        "o.object_description_link as objectDescriptionLink " +
         "from object o \n" +
         "where o.status=1 and o.is_dummy=0 and o.project_id=?1 and o.object_acquired_by_uvmom_id is null order by o.id desc"
     ,resultSetMapping = "Mapping.ObjectDTOWithProjectId")
@@ -631,7 +651,18 @@ public class Object extends AbstractAuditingEntity  implements Serializable {
     @Column(name="current_qc_level" ,columnDefinition = "integer default null")
     private Integer currentQcLevel=0;
 
-    public Integer getCurrentQcLevel() {
+    @Column(name="object_description_link")
+    private String objectDescriptionLink;
+    
+    public String getObjectDescriptionLink() {
+		return objectDescriptionLink;
+	}
+
+	public void setObjectDescriptionLink(String objectDescriptionLink) {
+		this.objectDescriptionLink = objectDescriptionLink;
+	}
+
+	public Integer getCurrentQcLevel() {
 		return currentQcLevel;
 	}
 
