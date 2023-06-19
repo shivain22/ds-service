@@ -50,7 +50,9 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
         "p.pause_status,\n" +
         "p.consent_form_status,\n" +
         "p.bypass_metadata,\n" +
-        "c.name as customer_name\n" +
+        "c.name as customer_name,\n" +
+        "p.consent_form_link as consent_form_link,\n" +
+        "p.project_description_link as project_description_link\n" +
         "from \n" +
         "project p, user_vendor_mapping_project_mapping uvmpm,user_vendor_mapping uvm, customer c " +
         "where uvmpm.project_id=p.id and uvmpm.status=1 and p.status=1 and uvmpm.user_vendor_mapping_id=uvm.id and p.customer_id=c.id and uvm.user_id=?1 and p.pause_status=1 order by p.id desc",
@@ -93,7 +95,9 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
         "p.pause_status,\n" +
         "p.consent_form_status,\n" +
         "p.bypass_metadata,\n" +
-        "c.name as customer_name\n"+
+        "c.name as customer_name,\n"+
+        "p.consent_form_link as consent_form_link,\n" +
+        "p.project_description_link as project_description_link\n" +
         "from \n" +
         "project p\n" +
         "left join user_vendor_mapping_project_mapping uvmpm on p.id=uvmpm.project_id\n" +
@@ -146,7 +150,9 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
                 @ColumnResult(name = "pause_status",type = Integer.class),
                 @ColumnResult(name = "consent_form_status",type = Integer.class),
                 @ColumnResult(name = "bypass_metadata",type = Integer.class),
-                @ColumnResult(name = "customer_name",type = String.class)
+                @ColumnResult(name = "customer_name",type = String.class),
+                @ColumnResult(name = "consent_form_link",type = String.class),
+                @ColumnResult(name = "project_description_link",type = String.class),
                 
             })),
     @SqlResultSetMapping(name = "Mapping.ProjectDTOForDropDown",

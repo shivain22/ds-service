@@ -166,7 +166,8 @@ public class ProjectResource {
 			project.setCategory(category);
 			project.setProjectType(category.getName());
 			int isQcLevelConfigsAdded = 0;
-			if (project.getProjectQcLevelConfigurations() != null && project.getProjectQcLevelConfigurations().size() > 0) {
+			if (project.getProjectQcLevelConfigurations() != null
+					&& project.getProjectQcLevelConfigurations().size() > 0) {
 				for (ProjectQcLevelConfigurations pqlc : project.getProjectQcLevelConfigurations()) {
 					if (pqlc.getQcLevelAcceptancePercentage() != null && pqlc.getQcLevelBatchSize() != null) {
 						isQcLevelConfigsAdded++;
@@ -178,7 +179,8 @@ public class ProjectResource {
 					try {
 						project.setBufferStrategy(AidasConstants.PROJECT_BUFFER_STATUS_PROJECT_LEVEL);
 						project = projectRepository.save(project);
-						projectRepository.addProjectProperties(project.getId(), category.getId(),project.getCustomer().getId());
+						projectRepository.addProjectProperties(project.getId(), category.getId(),
+								project.getCustomer().getId());
 						Object obj = new Object();
 						obj.setName(project.getName() + " - Dummy Object");
 						obj.setNumberOfUploadsRequired(0);
@@ -188,10 +190,13 @@ public class ProjectResource {
 						obj.setDummy(1);
 						obj.setStatus(0);
 						objectRepository.save(obj);
-						if (project.getAutoCreateObjects() != null && project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)) {
+						if (project.getAutoCreateObjects() != null
+								&& project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)) {
 							project.setTotalRequiredForGrouped(project.getNumberOfObjects());
-							Float bufferedRequired = project.getBufferPercent().floatValue() / 100f* project.getNumberOfObjects();
-							int numberOfBufferedObjectsRequired = project.getNumberOfObjects()+ bufferedRequired.intValue();
+							Float bufferedRequired = project.getBufferPercent().floatValue() / 100f
+									* project.getNumberOfObjects();
+							int numberOfBufferedObjectsRequired = project.getNumberOfObjects()
+									+ bufferedRequired.intValue();
 							String prefix = "";
 							String suffix = "";
 							if (project.getObjectPrefix() != null && project.getObjectPrefix().trim().length() > 0) {
@@ -200,18 +205,21 @@ public class ProjectResource {
 							if (project.getObjectSuffix() != null && project.getObjectSuffix().trim().length() > 0) {
 								suffix += "_" + project.getObjectSuffix();
 							}
-							objectRepository.createObjects(prefix, suffix, project.getId(), 0, 0, 1,project.getNumberOfUploadsRequired(), project.getNumberOfUploadsRequired(),project.getNumberOfUploadsRequired(), numberOfBufferedObjectsRequired);
+							objectRepository.createObjects(prefix, suffix, project.getId(), 0, 0, 1,
+									project.getNumberOfUploadsRequired(), project.getNumberOfUploadsRequired(),
+									project.getNumberOfUploadsRequired(), numberOfBufferedObjectsRequired);
 							objectRepository.addObjectProperties(project.getId(), category.getId());
 							project.setTotalRequired(project.getNumberOfObjects());
 							project.setTotalRequiredForGrouped(project.getNumberOfObjects());
-							project.setNumberOfBufferedUploadsdRequired(numberOfBufferedObjectsRequired * project.getNumberOfUploadsRequired());
+							project.setNumberOfBufferedUploadsdRequired(
+									numberOfBufferedObjectsRequired * project.getNumberOfUploadsRequired());
 							project.setNumberOfObjects(numberOfBufferedObjectsRequired);
 							projectRepository.save(project);
 							return ResponseEntity.created(new URI("/api/aidas-projects/" + project.getId()))
 									.headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME,
 											project.getId().toString()))
 									.body(project);
-						}else {
+						} else {
 							return ResponseEntity.created(new URI("/api/aidas-projects/" + project.getId()))
 									.headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME,
 											project.getId().toString()))
@@ -305,9 +313,9 @@ public class ProjectResource {
 								if (qcResultDTO.getQcStatus().equals(2)) {
 									csvData.add("Pending");
 								}
-								if (qcResultDTO.getQcSeenStatus()!=null && qcResultDTO.getQcSeenStatus().equals(1)) {
+								if (qcResultDTO.getQcSeenStatus() != null && qcResultDTO.getQcSeenStatus().equals(1)) {
 									csvData.add("Seen");
-								}else {
+								} else {
 									csvData.add("Not Seen");
 								}
 								if (qcResultDTO.getQcStatus() == 0) {
@@ -432,7 +440,7 @@ public class ProjectResource {
 						if (project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)) {
 							uvmpm.setTotalRequired(project.getNumberOfObjects());
 							uvmpm.setTotalRequiredForGrouped(project.getNumberOfObjects());
-						}else {
+						} else {
 							uvmpm.setTotalRequired(project.getNumberOfUploadsRequired());
 						}
 						userVendorMappingProjectMappingRepository.save(uvmpm);
@@ -553,7 +561,6 @@ public class ProjectResource {
 				.body(result);
 	}
 
-	
 	/**
 	 * {@code POST /aidas-projects/{id}} : Update aidas Project property to default
 	 * value.
@@ -566,8 +573,8 @@ public class ProjectResource {
 	 */
 	@Secured({ AidasConstants.ADMIN, AidasConstants.ORG_ADMIN, AidasConstants.CUSTOMER_ADMIN })
 	@PostMapping("/aidas-projects/{id}/golive")
-	public ResponseEntity<Project> projectGoLive(
-			@PathVariable(value = "id", required = true) final Long id) throws URISyntaxException {
+	public ResponseEntity<Project> projectGoLive(@PathVariable(value = "id", required = true) final Long id)
+			throws URISyntaxException {
 		User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
 
 		log.debug("REST request to save AidasProjectProperties to default value : {}", id);
@@ -583,7 +590,7 @@ public class ProjectResource {
 						.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
 				.body(result);
 	}
-	
+
 	/**
 	 * {@code POST /aidas-projects/{id}} : Update aidas Project property to default
 	 * value.
@@ -596,8 +603,8 @@ public class ProjectResource {
 	 */
 	@Secured({ AidasConstants.ADMIN, AidasConstants.ORG_ADMIN, AidasConstants.CUSTOMER_ADMIN })
 	@PostMapping("/aidas-projects/{id}/pause")
-	public ResponseEntity<Project> pauseProject(
-			@PathVariable(value = "id", required = true) final Long id) throws URISyntaxException {
+	public ResponseEntity<Project> pauseProject(@PathVariable(value = "id", required = true) final Long id)
+			throws URISyntaxException {
 		User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
 
 		log.debug("REST request to save AidasProjectProperties to default value : {}", id);
@@ -613,7 +620,7 @@ public class ProjectResource {
 						.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
 				.body(result);
 	}
-	
+
 	/**
 	 * {@code POST /aidas-projects/add-all-new-added-property/{id}} : Update aidas
 	 * Project property to add new property.
@@ -926,10 +933,12 @@ public class ProjectResource {
 		Page<ProjectDTO> page;
 		if (user.getAuthority().getName().equals(AidasConstants.VENDOR_USER)) {
 			page = projectRepository.findProjectWithUploadCountByUser(pageable, user.getId());
-			Map<String,String> pps = new HashMap<>();
-			for(ProjectDTO pdto:page.getContent()) {
-				List<String[]> projectProperties = projectPropertyRepository.findAllProjectPropertyNameValue(pdto.getId());
-				for(String[] str:projectProperties) {
+			
+			for (ProjectDTO pdto : page.getContent()) {
+				List<String[]> projectProperties = projectPropertyRepository
+						.findAllProjectPropertyNameValue(pdto.getId());
+				Map<String, String> pps = new HashMap<>();
+				for (String[] str : projectProperties) {
 					pps.put(str[0], str[1]);
 				}
 				pdto.setProjectProperties(pps);
@@ -1026,7 +1035,7 @@ public class ProjectResource {
 				builder.with(matcher.group(1), matcher.group(2), matcher.group(3));
 			}
 		}
-		builder.with("id", ">",0);
+		builder.with("id", ">", 0);
 		BooleanExpression exp = builder.build();
 		Page<Project> page = projectRepository.findAll(exp, pageable);
 		HttpHeaders headers = PaginationUtil
@@ -1055,65 +1064,64 @@ public class ProjectResource {
 		downloadUploadS3.setUp(project, status);
 		taskExecutor.execute(downloadUploadS3);
 	}
+
 	@Autowired
-    private AppPropertyRepository appPropertyRepository;
+	private AppPropertyRepository appPropertyRepository;
+
 	@PostMapping("/sendMail")
 	public void sendMail(@Valid @RequestBody Mail mail) throws IOException {
-		
-		 AppProperty app  = appPropertyRepository.getAppProperty(-1l,"fromEmail");
-         String fromEmail = app.getValue();
-         app = appPropertyRepository.getAppProperty(-1l,"emailToken");
-         String emailToken = app.getValue();
-         
-         
-        String postUrl = "https://api.zeptomail.in/v1.1/email";
-        BufferedReader br = null;
-        HttpURLConnection conn = null;
-        String output = null;
-        StringBuilder sb = new StringBuilder();
-        System.out.println(mail.getEmail());
-        try {
-            URL url = new URL(postUrl);
-            conn = (HttpURLConnection) url.openConnection();
-            conn.setDoOutput(true);
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/json");
-            conn.setRequestProperty("Accept", "application/json");
-            conn.setRequestProperty("Authorization", "Zoho-enczapikey "+emailToken);
-            JSONObject object = new JSONObject("{\n" +
-                "  \"bounce_address\":\"bounce@bounce.haidata.ai\",\n" +
-                "  \"from\": { \"address\": \""+fromEmail+"\"},\n" +
-                "  \"to\": [{\"email_address\": {\"address\": \""+mail.getEmail()+"\",\"name\": \""+mail.getName()+"\"}}],\n" +
-                "  \"subject\":\""+mail.getSubject()+"\",\n" +
-                "  \"htmlbody\":\"<div><b>"+mail.getBody()+"</b></div>\"\n" +
-                "}");
-            OutputStream os = conn.getOutputStream();
-            os.write(object.toString().getBytes());
-            os.flush();
-            br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
-            while ((output = br.readLine()) != null) {
-                sb.append(output);
-            }
-            System.out.println(sb.toString());
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (br != null) {
-                    br.close();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            try {
-                if (conn != null) {
-                    conn.disconnect();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
 
-            }
-        }
-    }
+		AppProperty app = appPropertyRepository.getAppProperty(-1l, "fromEmail");
+		String fromEmail = app.getValue();
+		app = appPropertyRepository.getAppProperty(-1l, "emailToken");
+		String emailToken = app.getValue();
+
+		String postUrl = "https://api.zeptomail.in/v1.1/email";
+		BufferedReader br = null;
+		HttpURLConnection conn = null;
+		String output = null;
+		StringBuilder sb = new StringBuilder();
+		System.out.println(mail.getEmail());
+		try {
+			URL url = new URL(postUrl);
+			conn = (HttpURLConnection) url.openConnection();
+			conn.setDoOutput(true);
+			conn.setRequestMethod("POST");
+			conn.setRequestProperty("Content-Type", "application/json");
+			conn.setRequestProperty("Accept", "application/json");
+			conn.setRequestProperty("Authorization", "Zoho-enczapikey " + emailToken);
+			JSONObject object = new JSONObject(
+					"{\n" + "  \"bounce_address\":\"bounce@bounce.haidata.ai\",\n" + "  \"from\": { \"address\": \""
+							+ fromEmail + "\"},\n" + "  \"to\": [{\"email_address\": {\"address\": \"" + mail.getEmail()
+							+ "\",\"name\": \"" + mail.getName() + "\"}}],\n" + "  \"subject\":\"" + mail.getSubject()
+							+ "\",\n" + "  \"htmlbody\":\"<div><b>" + mail.getBody() + "</b></div>\"\n" + "}");
+			OutputStream os = conn.getOutputStream();
+			os.write(object.toString().getBytes());
+			os.flush();
+			br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
+			while ((output = br.readLine()) != null) {
+				sb.append(output);
+			}
+			System.out.println(sb.toString());
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (br != null) {
+					br.close();
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			try {
+				if (conn != null) {
+					conn.disconnect();
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+
+			}
+		}
+	}
 
 }

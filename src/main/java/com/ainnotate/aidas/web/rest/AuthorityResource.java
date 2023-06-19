@@ -2,7 +2,9 @@ package com.ainnotate.aidas.web.rest;
 
 import com.ainnotate.aidas.domain.Authority;
 import com.ainnotate.aidas.domain.User;
+import com.ainnotate.aidas.domain.UserAuthorityMapping;
 import com.ainnotate.aidas.repository.AuthorityRepository;
+import com.ainnotate.aidas.repository.UserAuthorityMappingRepository;
 import com.ainnotate.aidas.repository.UserRepository;
 import com.ainnotate.aidas.repository.search.AuthoritySearchRepository;
 import com.ainnotate.aidas.security.SecurityUtils;
@@ -51,6 +53,9 @@ public class AuthorityResource {
 
     private final AuthoritySearchRepository aidasAuthoritySearchRepository;
 
+    @Autowired
+    private UserAuthorityMappingRepository userAuthorityMappingRepository;
+    
     public AuthorityResource(
         AuthorityRepository authorityRepository,
         AuthoritySearchRepository aidasAuthoritySearchRepository
@@ -83,7 +88,7 @@ public class AuthorityResource {
     public ResponseEntity<List<Authority>> getMyAidasAuthorityies() {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to get a list of AidasAuthorities of logged in user"+ user.getId());
-        List<Authority> myAuthorities   = user.getAuthorities().stream().collect(Collectors.toList());
+        List<Authority> myAuthorities   = userAuthorityMappingRepository.findByUserId(user.getId()).stream().map(UserAuthorityMapping::getAuthority).collect(Collectors.toList());
         return ResponseEntity.ok().body(myAuthorities);
     }
 

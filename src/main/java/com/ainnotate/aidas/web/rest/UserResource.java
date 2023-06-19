@@ -1118,18 +1118,21 @@ public class UserResource {
         passwordCred.setValue(myUser.getPassword());
         org.keycloak.admin.client.resource.UserResource userResource = usersRessource.get(userId);
         userResource.resetPassword(passwordCred);
-        //userResource.sendVerifyEmail();
+        userResource.sendVerifyEmail();
         List<RoleRepresentation> roleRepresentationList = realmResource.roles().list();
+        List<RoleRepresentation> rolesGivenForUser = new ArrayList<>();
+        
         for (RoleRepresentation roleRepresentation : roleRepresentationList)
         {
             for(UserAuthorityMapping aa:myUser.getUserAuthorityMappings()){
                 if (roleRepresentation.getName().equals(aa.getAuthority().getName()))
                 {
-                    userResource.roles().realmLevel().add(Arrays.asList(roleRepresentation));
-                    myUser.setAuthority(aa.getAuthority());
+                	rolesGivenForUser.add(new RoleRepresentation(aa.getAuthority().getName(),aa.getAuthority().getName(), false));
                 }
             }
         }
+        userResource.roles().realmLevel().add(rolesGivenForUser);
+        
     }
 
     public void registerNewUser(User myUser) {

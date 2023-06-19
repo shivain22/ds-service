@@ -60,7 +60,7 @@ public class ProjectDTO extends AbstractAuditingEntity implements Serializable {
                       String projectType ,
                       Integer qcLevels ,
                       Integer reworkStatus ,
-                      String videoType,Integer pauseStatus, Integer consentFormStatus,Integer bypassMetatdata, String customerName ){
+                      String videoType,Integer pauseStatus, Integer consentFormStatus,Integer bypassMetatdata, String customerName, String consentFormLink, String projectDescriptionLink  ){
         this.id = id;
         this.totalRequired = totalRequired;
         this.totalUploaded = totalUploaded;
@@ -87,11 +87,30 @@ public class ProjectDTO extends AbstractAuditingEntity implements Serializable {
         this.consentFormStatus=consentFormStatus;
         this.bypassMetatdata=bypassMetatdata;
         this.customerName = customerName;
+        this.projectDescriptionLink = projectDescriptionLink;
+        this.consentFormLink = consentFormLink;
     }
     private static final long serialVersionUID = 1L;
 
     private Long id;
     
+    private String consentFormLink;
+    public String getConsentFormLink() {
+		return consentFormLink;
+	}
+
+	public void setConsentFormLink(String consentFormLink) {
+		this.consentFormLink = consentFormLink;
+	}
+
+	public String getProjectDescriptionLink() {
+		return projectDescriptionLink;
+	}
+
+	public void setProjectDescriptionLink(String projectDescriptionLink) {
+		this.projectDescriptionLink = projectDescriptionLink;
+	}
+	private String projectDescriptionLink;
     private String customerName;
 
     public String getCustomerName() {
