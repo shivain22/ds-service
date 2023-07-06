@@ -11,8 +11,17 @@ public class ChangePasswordUserVM  {
 
     private String email;
     private String password;
+    private String oldPassword;
 
-    public String getEmail() {
+    public String getOldPassword() {
+		return oldPassword;
+	}
+
+	public void setOldPassword(String oldPassword) {
+		this.oldPassword = oldPassword;
+	}
+
+	public String getEmail() {
         return email;
     }
 

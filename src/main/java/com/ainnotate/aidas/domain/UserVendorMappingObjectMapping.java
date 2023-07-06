@@ -77,8 +77,19 @@ public class UserVendorMappingObjectMapping extends AbstractAuditingEntity  impl
     private Integer qcStartStatus=0;
     @Column(name="current_qc_level" ,columnDefinition = "integer default null")
     private Integer currentQcLevel=0;
+    
+    @Column(name="consent_form_url" ,columnDefinition = "integer default null")
+    private String consentFormUrl;
 
-    public Integer getCurrentQcLevel() {
+    public String getConsentFormUrl() {
+		return consentFormUrl;
+	}
+
+	public void setConsentFormUrl(String consentFormUrl) {
+		this.consentFormUrl = consentFormUrl;
+	}
+
+	public Integer getCurrentQcLevel() {
 		return currentQcLevel;
 	}
 

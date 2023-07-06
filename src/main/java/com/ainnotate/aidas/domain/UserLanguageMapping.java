@@ -40,7 +40,17 @@ public class UserLanguageMapping extends AbstractAuditingEntity implements Seria
     @JoinColumn(name = "user_id", nullable = true, foreignKey = @ForeignKey(name="fk_ulm_user"))
     private User user;
 
-    public Language getLanguage() {
+    @Column(name = "proficiency")
+    private Integer proficiency;
+    public Integer getProficiency() {
+		return proficiency;
+	}
+
+	public void setProficiency(Integer proficiency) {
+		this.proficiency = proficiency;
+	}
+
+	public Language getLanguage() {
 		return language;
 	}
 

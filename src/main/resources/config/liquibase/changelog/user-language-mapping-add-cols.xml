@@ -6,17 +6,17 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.5.xsd
                         http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
     <changeSet author="shiva (generated)" id="1657539087462-6">
-        <dropColumn catalogName="ainnotateservice"  
-            columnName="number_of_participants"  
-            schemaName="ainnotateservice"  
-            tableName="project">  
-        <column name="number_of_participants"/>  
-    </dropColumn>  
-    <dropColumn catalogName="ainnotateservice"  
-            columnName="number_of_participants"  
-            schemaName="ainnotateservice"  
-            tableName="project_aud">  
-        <column name="number_of_participants"/>  
-    </dropColumn>
+        <addColumn catalogName="ainnotateservice"
+                   schemaName= "ainnotateservice"
+                   tableName="user_language_mapping" >
+            <column name="proficiency"
+                    type="INT"/>
+        </addColumn>
+        <addColumn catalogName="ainnotateservice"
+                   schemaName= "ainnotateservice"
+                   tableName="user_language_mapping_aud" >
+            <column name="proficiency"
+                    type="INT"/>
+        </addColumn>
     </changeSet>
 </databaseChangeLog>

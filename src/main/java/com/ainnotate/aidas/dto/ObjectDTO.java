@@ -62,6 +62,7 @@ public class ObjectDTO extends AbstractAuditingEntity implements Serializable, I
         this.count = count;
     }
 
+   
     public ObjectDTO(
         Long id,
         Long userVendorMappingObjectMappingId,
@@ -79,7 +80,8 @@ public class ObjectDTO extends AbstractAuditingEntity implements Serializable, I
         String description,
         String imageType,
         String audioType,
-        String videoType
+        String videoType,
+        String objectDescriptionLink
     ) {
         this.id = id;
         this.userVendorMappingObjectMappingId = userVendorMappingObjectMappingId;
@@ -98,6 +100,7 @@ public class ObjectDTO extends AbstractAuditingEntity implements Serializable, I
         this.imageType = imageType;
         this.audioType = audioType;
         this.videoType = videoType;
+        this.objectDescriptionLink = objectDescriptionLink;
     }
 
     private Long id;

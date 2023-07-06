@@ -97,6 +97,9 @@ public class UserResource {
     
     @Autowired
     private LanguageRepository languageRepository;
+    
+    @Autowired
+    private UserLanguageMappingRepository userLanguageMappingRepository;
 
     @Autowired
     private ObjectRepository objectRepository;
@@ -307,7 +310,7 @@ public class UserResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/register")
-    public ResponseEntity<User> registerAidasUser(@Valid @RequestBody ManagedUserVM newUser) throws URISyntaxException {
+    public ResponseEntity<User> registerAidasUser(@RequestBody ManagedUserVM newUser) throws URISyntaxException {
         log.debug("REST request to save AidasUser : {}", newUser);
         User user = new User();
         user.setEmail(newUser.getEmail());
@@ -318,11 +321,21 @@ public class UserResource {
         user.setMobileNumber(newUser.getMobileNumber());
         user.setLocked(0);
         user.setPassword(newUser.getPassword());
+        
         if (user.getId() != null) {
             throw new BadRequestAlertException("A new user cannot already have an ID", ENTITY_NAME, "idexists");
         }
         registerNewUser(user);
         user.setDeleted(0);
+        if(newUser.getLanguages()!=null) {
+        	for(LanguageDTO lang :newUser.getLanguages()) {
+        		UserLanguageMapping ulm = new UserLanguageMapping();
+        		ulm.setUser(user);
+        		ulm.setLanguage(languageRepository.getById(lang.getLangId()));
+        		ulm.setProficiency(lang.getProficiency());
+        		userLanguageMappingRepository.save(ulm);
+        	}
+        }
         Vendor defaultVendor = vendorRepository.getById(-1l);
         user.setVendor(defaultVendor);
         User result = userRepository.save(user);
@@ -334,6 +347,7 @@ public class UserResource {
         auavm = userVendorMappingRepository.save(auavm);
         auao.setUserVendorMapping(auavm);
         auao.setObject(defaultObject);
+        
         userVendorMappingObjectMappingRepository.save(auao);
         updateUserToKeyCloak(result);
         return ResponseEntity
@@ -351,6 +365,31 @@ public class UserResource {
      */
     @PostMapping("/change-secret")
     public ResponseEntity<User> changePassword(@RequestBody ChangePasswordUserVM cpwd) throws URISyntaxException {
+        log.debug("REST request to save AidasUser : {}", cpwd);
+        User user =null;
+        if(cpwd.getEmail()!=null){
+            user = userRepository.getByEmail(cpwd.getEmail());
+        }
+        boolean changePassword = changePassword(user,cpwd.getPassword());
+        if(changePassword){
+        return ResponseEntity
+            .created(new URI("/api/aidas-users/" + user.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, user.getId().toString()))
+            .body(user);
+        }else{
+            throw new BadRequestAlertException("Unable to change password", ENTITY_NAME, "idexists");
+        }
+    }
+    
+    /**
+     * {@code POST  /aidas-users} : Create a new user.
+     *
+     * @param cpwd the user to create.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new user, or with status {@code 400 (Bad Request)} if the user has already an ID.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @PostMapping("/forgot-secret")
+    public ResponseEntity<User> forgotPassword(@RequestBody ChangePasswordUserVM cpwd) throws URISyntaxException {
         log.debug("REST request to save AidasUser : {}", cpwd);
         User user =null;
         if(cpwd.getEmail()!=null){
@@ -992,6 +1031,18 @@ public class UserResource {
         for(UserAuthorityMapping uam:uams) {
         	user.getAuthorities().add(uam.getAuthority());
         }
+        List<UserCustomerMapping> ucms = userCustomerMappingRepository.getAllCustomerForSelectedUser(id);
+        for(UserCustomerMapping ucm:ucms) {
+        	user.getCustomers().add(ucm.getCustomer());
+        }
+        List<UserOrganisationMapping> uoms = userOrganisationMappingRepository.getAllOrganisationForSelectedUser(id);
+        for(UserOrganisationMapping uom:uoms) {
+        	user.getOrganisations().add(uom.getOrganisation());
+        }
+        List<UserVendorMapping> uvms = userVendorMappingRepository.getAllVendorsForSelectedUser(id);
+        for(UserVendorMapping uvm:uvms) {
+        	user.getVendors().add(uvm.getVendor());
+        }
          return ResponseEntity.ok().body(user);
     }
 
@@ -1107,8 +1158,8 @@ public class UserResource {
         user.setGroups(groups);
         RealmResource realmResource = keycloak.realm(keycloakConfig.getClientRealm());
         UsersResource usersRessource = realmResource.users();
-        user.setEnabled(true);
-        user.setEmailVerified(true);
+        user.setEnabled(false);
+        user.setEmailVerified(false);
         Response response = usersRessource.create(user);
         String userId = CreatedResponseUtil.getCreatedId(response);
         myUser.setKeycloakId(userId);
@@ -1118,20 +1169,13 @@ public class UserResource {
         passwordCred.setValue(myUser.getPassword());
         org.keycloak.admin.client.resource.UserResource userResource = usersRessource.get(userId);
         userResource.resetPassword(passwordCred);
-        userResource.sendVerifyEmail();
-        List<RoleRepresentation> roleRepresentationList = realmResource.roles().list();
-        List<RoleRepresentation> rolesGivenForUser = new ArrayList<>();
+        //userResource.sendVerifyEmail();
         
-        for (RoleRepresentation roleRepresentation : roleRepresentationList)
-        {
             for(UserAuthorityMapping aa:myUser.getUserAuthorityMappings()){
-                if (roleRepresentation.getName().equals(aa.getAuthority().getName()))
-                {
-                	rolesGivenForUser.add(new RoleRepresentation(aa.getAuthority().getName(),aa.getAuthority().getName(), false));
-                }
+                RoleRepresentation rr = realmResource.roles().get(aa.getAuthority().getName()).toRepresentation();
+                userResource.roles().realmLevel().add(Arrays.asList(rr));
             }
-        }
-        userResource.roles().realmLevel().add(rolesGivenForUser);
+        
         
     }
 
@@ -1159,6 +1203,7 @@ public class UserResource {
         RealmResource realmResource = keycloak.realm(keycloakConfig.getClientRealm());
         UsersResource usersRessource = realmResource.users();
         user.setEnabled(true);
+        
         user.setEmailVerified(true);
         Response response = usersRessource.create(user);
         String userId = CreatedResponseUtil.getCreatedId(response);
@@ -1167,6 +1212,7 @@ public class UserResource {
         passwordCred.setTemporary(false);
         passwordCred.setType(CredentialRepresentation.PASSWORD);
         passwordCred.setValue(myUser.getPassword());
+        
         org.keycloak.admin.client.resource.UserResource userResource = usersRessource.get(userId);
         userResource.resetPassword(passwordCred);
         userResource.sendVerifyEmail();

@@ -950,6 +950,50 @@ public class ProjectResource {
 		throw new BadRequestAlertException("Not Authorised", ENTITY_NAME, "idexists");
 	}
 
+	
+	
+	
+	/**
+	 * {@code GET  /aidas-projects} : get all the aidasProjects.
+	 *
+	 * @param pageable the pagination information.
+	 * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list
+	 *         of aidasProjects in body.
+	 */
+
+	@GetMapping("/aidas-projects/details/search")
+	public ResponseEntity<List<ProjectDTO>> getAllAidasProjectDetails(@RequestParam(value = "search") String search,Pageable pageable) {
+		log.debug("REST request to get a page of AidasProjects");
+		User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+		String searchTerm ="";
+		if (search != null) {
+			Pattern pattern = Pattern.compile("(\\w+?)(:|<|>)(\\w+?),");
+			Matcher matcher = pattern.matcher(search + ",");
+			while (matcher.find()) {
+				searchTerm =  matcher.group(3);
+			}
+		}
+		Page<ProjectDTO> page;
+		if (user.getAuthority().getName().equals(AidasConstants.VENDOR_USER)) {
+			page = projectRepository.findProjectWithUploadCountByUserSearch(pageable, user.getId(), "%"+searchTerm+"%");
+			
+			for (ProjectDTO pdto : page.getContent()) {
+				List<String[]> projectProperties = projectPropertyRepository
+						.findAllProjectPropertyNameValue(pdto.getId());
+				Map<String, String> pps = new HashMap<>();
+				for (String[] str : projectProperties) {
+					pps.put(str[0], str[1]);
+				}
+				pdto.setProjectProperties(pps);
+			}
+			HttpHeaders headers = PaginationUtil
+					.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+			return ResponseEntity.ok().headers(headers).body(page.getContent());
+		}
+		throw new BadRequestAlertException("Not Authorised", ENTITY_NAME, "idexists");
+	}
+	
+	
 	/**
 	 * {@code GET  /aidas-projects/:id} : get the "id" project.
 	 *
@@ -1038,6 +1082,7 @@ public class ProjectResource {
 		builder.with("id", ">", 0);
 		BooleanExpression exp = builder.build();
 		Page<Project> page = projectRepository.findAll(exp, pageable);
+		
 		HttpHeaders headers = PaginationUtil
 				.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
 		return ResponseEntity.ok().headers(headers).body(page.getContent());

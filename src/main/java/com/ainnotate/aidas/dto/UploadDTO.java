@@ -32,7 +32,16 @@ public class UploadDTO {
     private String objectKey;
     private HashMap<String,String> uploadMetadata;
 
-    public String getObjectKey() {
+    private String consentFormUrl;
+    public String getConsentFormUrl() {
+		return consentFormUrl;
+	}
+
+	public void setConsentFormUrl(String consentFormUrl) {
+		this.consentFormUrl = consentFormUrl;
+	}
+
+	public String getObjectKey() {
         return objectKey;
     }
 

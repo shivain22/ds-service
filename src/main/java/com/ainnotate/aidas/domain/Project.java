@@ -5,6 +5,7 @@ import com.ainnotate.aidas.dto.ProjectDTO;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import javax.persistence.*;
 import javax.validation.constraints.*;
@@ -57,6 +58,42 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
         "project p, user_vendor_mapping_project_mapping uvmpm,user_vendor_mapping uvm, customer c " +
         "where uvmpm.project_id=p.id and uvmpm.status=1 and p.status=1 and uvmpm.user_vendor_mapping_id=uvm.id and p.customer_id=c.id and uvm.user_id=?1 and p.pause_status=1 order by p.id desc",
     resultSetMapping = "Mapping.ProjectDTO")
+
+
+@NamedNativeQuery(name = "Project.findProjectWithUploadCountByUserSearch",
+query = "select  \n" +
+    "p.id as id,  \n" +
+    "case when p.auto_create_objects=1 then p.total_required_for_grouped else p.total_required end as totalRequired," +
+    "case when p.auto_create_objects=1 then uvmpm.total_uploaded_for_grouped else uvmpm.total_uploaded end as totalUploaded, \n" +
+    "case when p.auto_create_objects=1 then uvmpm.total_approved_for_grouped else uvmpm.total_approved end as totalApproved , \n" +
+    "case when p.auto_create_objects=1 then uvmpm.total_rejected_for_grouped else uvmpm.total_rejected end as totalRejected, \n" +
+    "case when p.auto_create_objects=1 then uvmpm.total_pending_for_grouped else uvmpm.total_pending end as totalPending,\n" +
+    "p.status ,\n" +
+    "p.audio_type ,\n" +
+    "p.auto_create_objects ,\n" +
+    "p.buffer_percent ,\n" +
+    "p.description ,\n" +
+    "p.external_dataset_status ,\n" +
+    "p.image_type ,\n" +
+    "p.name ,\n" +
+    "p.number_of_objects ,\n" +
+    "p.number_of_uploads_required ,\n" +
+    "p.object_prefix ,\n" +
+    "p.object_suffix ,\n" +
+    "p.project_type ,\n" +
+    "p.qc_levels ,\n" +
+    "p.rework_status ,\n" +
+    "p.video_type,\n" +
+    "p.pause_status,\n" +
+    "p.consent_form_status,\n" +
+    "p.bypass_metadata,\n" +
+    "c.name as customer_name,\n" +
+    "p.consent_form_link as consent_form_link,\n" +
+    "p.project_description_link as project_description_link\n" +
+    "from \n" +
+    "project p, user_vendor_mapping_project_mapping uvmpm,user_vendor_mapping uvm, customer c " +
+    "where uvmpm.project_id=p.id and uvmpm.status=1 and p.status=1 and uvmpm.user_vendor_mapping_id=uvm.id and p.customer_id=c.id and uvm.user_id=?1 and p.pause_status=1 and p.name like ?2 order by p.id desc",
+resultSetMapping = "Mapping.ProjectDTO")
 
 
 

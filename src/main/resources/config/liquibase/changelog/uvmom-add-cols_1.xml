@@ -8,15 +8,17 @@
     <changeSet author="shiva (generated)" id="16575390874623-61">
         <addColumn catalogName="ainnotateservice"
                    schemaName= "ainnotateservice"
-                   tableName="object" >
-            <column name="object_description_link"
+                   tableName="user_vendor_mapping_object_mapping" >
+            <column name="consent_form_url"
                     type="TEXT"/>
         </addColumn>
         <addColumn catalogName="ainnotateservice"
                    schemaName= "ainnotateservice"
-                   tableName="object_aud" >
-            <column name="object_description_link"
+                   tableName="user_vendor_mapping_object_mapping_aud" >
+            <column name="consent_form_url"
                     type="TEXT"/>
         </addColumn>
+
+
     </changeSet>
 </databaseChangeLog>

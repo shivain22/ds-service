@@ -97,6 +97,9 @@ public interface ProjectRepository extends JpaRepository<Project, Long>,Querydsl
 
     @Query(nativeQuery = true)
     Page<ProjectDTO> findProjectWithUploadCountByUser(Pageable page, Long userId);
+    
+    @Query(nativeQuery = true)
+    Page<ProjectDTO> findProjectWithUploadCountByUserSearch(Pageable page, Long userId,String searchTerm);
 
 
     @Query(nativeQuery = true)

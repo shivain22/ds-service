@@ -368,8 +368,13 @@ public class UploadResource {
 					.findByUserVendorMappingIdProjectIdForUpload(uvmom.getUserVendorMapping().getId(),
 							uvmom.getObject().getProject().getId());
 			Upload upload = uploadRepository.getUploadByFileNameUvmomId(uvmom.getId(),uploadDto.getObjectKey());
+			if(uploadDto.getConsentFormUrl()!=null && uploadDto.getConsentFormUrl().trim().length()>0) {
+				uvmom.setConsentFormUrl(uploadDto.getConsentFormUrl());
+				userVendorMappingObjectMappingRepository.save(uvmom);
+				return ResponseEntity.ok().body(true);
+			}
 			if(upload!=null) {
-				throw new BadRequestAlertException("Upload with object key "+upload.getObjectKey()+" exists", ENTITY_NAME, "idexists");
+				throw new BadRequestAlertException("Upload with object key "+upload.getObjectKey()+" exists.  duplicate entry", ENTITY_NAME, "idexists");
 			}
 			try {
 				if (object.getTotalRequired() > 0 && upload==null) {

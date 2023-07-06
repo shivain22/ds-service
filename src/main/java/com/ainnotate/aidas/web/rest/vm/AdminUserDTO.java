@@ -5,6 +5,7 @@ package com.ainnotate.aidas.web.rest.vm;
 import com.ainnotate.aidas.config.Constants;
 import com.ainnotate.aidas.domain.Authority;
 import com.ainnotate.aidas.domain.User;
+import com.ainnotate.aidas.dto.LanguageDTO;
 
 import javax.persistence.Column;
 import javax.validation.constraints.Email;
@@ -101,7 +102,18 @@ public class AdminUserDTO {
 
     private Set<String> authorities;
 
-    public AdminUserDTO() {
+    private Set<LanguageDTO> languages;
+    
+
+	public Set<LanguageDTO> getLanguages() {
+		return languages;
+	}
+
+	public void setLanguages(Set<LanguageDTO> languages) {
+		this.languages = languages;
+	}
+
+	public AdminUserDTO() {
         // Empty constructor needed for Jackson.
     }
 

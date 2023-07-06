@@ -52,12 +52,12 @@
 	<include file="config/liquibase/changelog/project-add-cols_6.xml" relativeToChangelogFile="false"/>
 	<include file="config/liquibase/changelog/project-add-cols_7.xml" relativeToChangelogFile="false"/>
 	<include file="config/liquibase/changelog/object-add-cols_1.xml" relativeToChangelogFile="false"/>
-	<include file="config/liquibase/changelog/project-remove-cols.xml" relativeToChangelogFile="false"/>
 	<include file="config/liquibase/changelog/language-table.xml" relativeToChangelogFile="false"/>
 	<include file="config/liquibase/changelog/user-language-mapping-table.xml" relativeToChangelogFile="false"/>
 	<include file="config/liquibase/changelog/org-cust-vend-req-table.xml" relativeToChangelogFile="false"/>
 	<include file="config/liquibase/changelog/dummy-language-data-add.xml" relativeToChangelogFile="false"/>
 	<include file="config/liquibase/changelog/user-add-cols_1.xml" relativeToChangelogFile="false"/>
 	<include file="config/liquibase/changelog/object-add-cols_2.xml" relativeToChangelogFile="false"/>
+	<include file="config/liquibase/changelog/uvmom-add-cols_1.xml" relativeToChangelogFile="false"/>
 	
 </databaseChangeLog>

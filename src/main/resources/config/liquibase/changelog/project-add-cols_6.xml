@@ -31,5 +31,44 @@
             <column name="consent_form_link"
                     type="TEXT"/>
         </addColumn>
+        
+        <addColumn catalogName="ainnotateservice"
+                   schemaName= "ainnotateservice"
+                   tableName="project" >
+            <column name="consent_form_status"
+                    type="INT"/>
+        </addColumn>
+        <addColumn catalogName="ainnotateservice"
+                   schemaName= "ainnotateservice"
+                   tableName="project_aud" >
+            <column name="consent_form_status"
+                    type="INT"/>
+        </addColumn>
+        
+        <addColumn catalogName="ainnotateservice"
+                   schemaName= "ainnotateservice"
+                   tableName="project" >
+            <column name="bypass_metadata"
+                    type="INT"/>
+        </addColumn>
+        <addColumn catalogName="ainnotateservice"
+                   schemaName= "ainnotateservice"
+                   tableName="project_aud" >
+            <column name="bypass_metadata"
+                    type="INT"/>
+        </addColumn>
+        
+        <addColumn catalogName="ainnotateservice"
+                   schemaName= "ainnotateservice"
+                   tableName="project" >
+            <column name="pause_status"
+                    type="INT"/>
+        </addColumn>
+        <addColumn catalogName="ainnotateservice"
+                   schemaName= "ainnotateservice"
+                   tableName="project_aud" >
+            <column name="pause_status"
+                    type="INT"/>
+        </addColumn>
     </changeSet>
 </databaseChangeLog>

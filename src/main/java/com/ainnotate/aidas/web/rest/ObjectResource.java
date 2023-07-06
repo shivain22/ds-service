@@ -227,9 +227,10 @@ public class ObjectResource {
 			 */
         	Object object1 = objectRepository.getObjectById(object.getId());
         	object1.setName(object.getName());
-        	System.out.println(object1.getName());
+        	//System.out.println(object1.getName());
         	object1.setDescription(object.getDescription());
-        	object1.setTotalRequired((object.getNumberOfUploadsRequired()-object1.getNumberOfUploadsRequired())-object1.getTotalRequired());
+        	object1.setObjectDescriptionLink(object.getObjectDescriptionLink());
+        	//object1.setTotalRequired((object.getNumberOfUploadsRequired()-object1.getNumberOfUploadsRequired())-object1.getTotalRequired());
         	Object result = objectRepository.save(object1);
         	
         return ResponseEntity
@@ -348,9 +349,11 @@ public class ObjectResource {
         if(project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)){
         	numOfObjectsAlreadyAssigned = objectRepository.getAllObjectsByVendorUserProjectWithProjectId(uvm.getId(),projectId,pageable.getPageSize(),0);
         	if(numOfObjectsAlreadyAssigned==0) {
-        		page = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdForGroupedDto(pageable,projectId,pageable.getPageSize());
+        		//page = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdForGroupedDto(pageable,projectId,pageable.getPageSize());
+        		page = objectRepository.getNewObjectsDto(pageable,projectId,pageable.getPageSize());
         	}else {
-        		page = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdForGroupedForNewRequest(pageable,uvm.getId(),projectId);
+        		//page = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdForGroupedForNewRequest(pageable,uvm.getId(),projectId);
+        		page = objectRepository.getExistingForGrouped(pageable,uvm.getId(),projectId);
         		HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
                 return ResponseEntity.ok().headers(headers).body(page.getContent());
         	}
@@ -358,15 +361,11 @@ public class ObjectResource {
         }else {
         	numOfObjectsAlreadyAssigned = objectRepository.getAllObjectsByVendorUserProjectWithProjectId(uvm.getId(),projectId,pageable.getPageSize(),pageable.getPageNumber());
         	if(numOfObjectsAlreadyAssigned==0) {
-        		page = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdForGroupedDto(pageable,projectId,pageable.getPageSize());
+        		//page = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdForGroupedDto(pageable,projectId,pageable.getPageSize());
+        		page = objectRepository.getNewObjectsDto(pageable,projectId,pageable.getPageSize());
         	}else {
-        		page = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdForNonGroupedForNewRequest(pageable,uvm.getId(),projectId);
-				/*
-				 * HttpHeaders headers =
-				 * PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.
-				 * fromCurrentRequest(), page); return
-				 * ResponseEntity.ok().headers(headers).body(page.getContent());
-				 */
+        		//page = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdForNonGroupedForNewRequest(pageable,uvm.getId(),projectId);
+        		page = objectRepository.getExistingForNonGrouped(pageable,uvm.getId(),projectId);
         	}
         	for(ObjectDTO o:page.getContent()){
                 UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserVendorMappingObject(uvm.getId(),o.getId());
@@ -413,6 +412,90 @@ public class ObjectResource {
         }
     }
     
+    
+    
+    
+    
+    @GetMapping("/aidas-projects/{id}/aidas-objects/details/search")
+    public ResponseEntity<List<ObjectDTO>> searchAllAidasObjectsOfProjectForVendorUser(Pageable pageable, @PathVariable(value = "id", required = false) final Long projectId,
+    		@PathVariable(value = "search", required = false) final String search) {
+        log.debug("REST request to get a page of AidasObjects");
+        User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        if(user.getVendor()==null) {
+        	throw new BadRequestAlertException("Vendor is not mapped", ENTITY_NAME, "vendoridnotexists");
+        }
+        Page<ObjectDTO> page = null;
+        Project project = projectRepository.getById(projectId);
+        UserVendorMapping uvm = userVendorMappingRepository.findByVendorIdAndUserId(user.getVendor().getId(),user.getId());
+        Integer numOfObjectsAlreadyAssigned = 0;
+        if(project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)){
+        	numOfObjectsAlreadyAssigned = objectRepository.getAllObjectsByVendorUserProjectWithProjectId(uvm.getId(),projectId,pageable.getPageSize(),0);
+        	if(numOfObjectsAlreadyAssigned==0) {
+        		//page = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdForGroupedDto(pageable,projectId,pageable.getPageSize());
+        		page = objectRepository.getNewObjectsDto(pageable,projectId,pageable.getPageSize());
+        	}else {
+        		//page = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdForGroupedForNewRequest(pageable,uvm.getId(),projectId);
+        		page = objectRepository.getExistingForGrouped(pageable,uvm.getId(),projectId);
+        		HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+                return ResponseEntity.ok().headers(headers).body(page.getContent());
+        	}
+        	
+        }else {
+        	numOfObjectsAlreadyAssigned = objectRepository.getAllObjectsByVendorUserProjectWithProjectId(uvm.getId(),projectId,pageable.getPageSize(),pageable.getPageNumber());
+        	if(numOfObjectsAlreadyAssigned==0) {
+        		//page = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdForGroupedDto(pageable,projectId,pageable.getPageSize());
+        		page = objectRepository.getNewObjectsDto(pageable,projectId,pageable.getPageSize());
+        	}else {
+        		//page = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdForNonGroupedForNewRequest(pageable,uvm.getId(),projectId);
+        		page = objectRepository.getExistingForNonGrouped(pageable,uvm.getId(),projectId);
+        	}
+        	for(ObjectDTO o:page.getContent()){
+                UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserVendorMappingObject(uvm.getId(),o.getId());
+                Object object = objectRepository.getById(o.getId());
+                if(uvmom==null){
+                    uvmom  = new UserVendorMappingObjectMapping();
+                    uvmom.setUserVendorMapping(uvm);
+                    uvmom.setStatus(AidasConstants.AUTO_CREATE_OBJECT_ENABLE);
+                    uvmom.setObject(object);
+                    userVendorMappingObjectMappingRepository.save(uvmom);
+                }
+                if(project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)){
+                	object.setUserVendorMappingObjectMappingId(uvmom.getId());
+                	object.setObjectAcquiredByUvmomId(uvmom.getId());
+	                objectRepository.save(object);
+                }
+            }
+        	HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+            return ResponseEntity.ok().headers(headers).body(page.getContent());
+        }
+        if((numOfObjectsAlreadyAssigned==null ||( numOfObjectsAlreadyAssigned!=null && numOfObjectsAlreadyAssigned==0))) {
+            for(ObjectDTO o:page.getContent()){
+                UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserVendorMappingObject(uvm.getId(),o.getId());
+                Object object = objectRepository.getById(o.getId());
+                if(uvmom==null){
+                    uvmom  = new UserVendorMappingObjectMapping();
+                    uvmom.setUserVendorMapping(uvm);
+                    uvmom.setStatus(AidasConstants.AUTO_CREATE_OBJECT_ENABLE);
+                    uvmom.setObject(object);
+                    userVendorMappingObjectMappingRepository.save(uvmom);
+                }
+                if(project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)){
+                	object.setUserVendorMappingObjectMappingId(uvmom.getId());
+                	object.setObjectAcquiredByUvmomId(uvmom.getId());
+	                objectRepository.save(object);
+                }
+            }
+            HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+            return ResponseEntity.ok().headers(headers).body(page.getContent());
+        }else {
+        	page = objectRepository.getAllObjectsWithUvmom(pageable,user.getId(), projectId);
+            HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+            return ResponseEntity.ok().headers(headers).body(page.getContent());
+        }
+    }
+    
+    
+    
     private void setProps(List<ObjectDTO> objectDTOs) {
     	for(ObjectDTO o:objectDTOs) {
     		o.setObjectProperties(objectPropertyRepository.findAllByObjectId(o.getId()));
@@ -428,8 +511,7 @@ public class ObjectResource {
         UserVendorMapping uvm = userVendorMappingRepository.findByVendorIdAndUserId(user.getVendor().getId(),user.getId());
         List<UserVendorMappingObjectMapping> uvmoms = new LinkedList<>();
         List<Object> objects = new LinkedList<>();
-            PageRequest pages = PageRequest.of(0, pageable.getPageSize(), pageable.getSort());
-            page = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdForGroupedDtoFresh(pageable,projectId,pageable.getPageSize(),uvm.getId());
+            page = objectRepository.getFreshObjects(pageable,projectId,pageable.getPageSize(),uvm.getId());
             for(ObjectDTO o:page.getContent()){
                 UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserVendorMappingObject(uvm.getId(),o.getId());
                 Object object = objectRepository.getById(o.getId());
@@ -447,6 +529,14 @@ public class ObjectResource {
             }
             objectRepository.saveAll(objects);
             userVendorMappingObjectMappingRepository.saveAll(uvmoms);
+            
+			/*
+			 * if(project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS))
+			 * { page =
+			 * objectRepository.getExistingForGrouped(pageable,uvm.getId(),projectId); }
+			 * else { page =
+			 * objectRepository.getExistingForNonGrouped(pageable,uvm.getId(),projectId); }
+			 */
             setProps(page.getContent());
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());

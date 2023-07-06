@@ -85,9 +85,14 @@ public interface ObjectRepository
 					+ "where uvm.user_id=?1 and uvmom.status=1 and o.status=1 and o.is_dummy=0 and o.project_id=?2 ", nativeQuery = true)
 	Page<Object> getAllObjectsByVendorUserProjectWithProjectId(Pageable pageable, Long userId, Long projectId);
 
-	@Query(value = "select count(o.id) as count  \n" + "from user_vendor_mapping_object_mapping uvmom, object o  \n"
-			+ "where uvmom.object_id=o.id " + "and uvmom.user_vendor_mapping_id=?1 " + "and uvmom.status=1 "
-			+ "and o.status=1 " + "and o.is_dummy=0 " + "and o.project_id=?2 "
+	@Query(value = "select count(o.id) as count  \n" 
+			+ "from user_vendor_mapping_object_mapping uvmom, object o  \n"
+			+ "where uvmom.object_id=o.id " 
+			+ "and uvmom.user_vendor_mapping_id=?1 " 
+			+ "and uvmom.status=1 "
+			+ "and o.status=1 " 
+			+ "and o.is_dummy=0 " 
+			+ "and o.project_id=?2 "
 			+ "order by o.id desc limit ?3 offset ?4", nativeQuery = true)
 	Integer getAllObjectsByVendorUserProjectWithProjectId(Long userVendorMappingId, Long projectId,
 			Integer numberOfObjects, Integer startRecord);
@@ -102,19 +107,42 @@ public interface ObjectRepository
 					+ "where  o.status=1 and o.is_dummy=0 and o.project_id=?1 and o.object_acquired_by_uvmom_id is null order by o.id desc", nativeQuery = true)
 	Page<Object> getAllObjectsByVendorUserProjectWithProjectIdForGrouped(Pageable pageable, Long projectId);
 
+	/*
+	 * @Query(nativeQuery = true) Page<ObjectDTO>
+	 * getAllObjectsByVendorUserProjectWithProjectIdForGroupedDto(Pageable pageable,
+	 * Long projectId, Integer pageSize);
+	 */
+	
 	@Query(nativeQuery = true)
-	Page<ObjectDTO> getAllObjectsByVendorUserProjectWithProjectIdForGroupedDto(Pageable pageable, Long projectId,
+	Page<ObjectDTO> getNewObjectsDto(Pageable pageable, Long projectId,
 			Integer pageSize);
 
+	/*
+	 * @Query(nativeQuery = true) Page<ObjectDTO>
+	 * getAllObjectsByVendorUserProjectWithProjectIdForGroupedDtoFresh(Pageable
+	 * pageable, Long projectId, Integer pageSize, Long userVendorMappingId);
+	 */
 	@Query(nativeQuery = true)
-	Page<ObjectDTO> getAllObjectsByVendorUserProjectWithProjectIdForGroupedDtoFresh(Pageable pageable, Long projectId,
+	Page<ObjectDTO> getFreshObjects(Pageable pageable, Long projectId,
 			Integer pageSize, Long userVendorMappingId);
 
+	/*
+	 * @Query(nativeQuery = true) Page<ObjectDTO>
+	 * getAllObjectsByVendorUserProjectWithProjectIdForGroupedForNewRequest(Pageable
+	 * pageable, Long userVendorMappingId, Long projectId);
+	 */
+	/*
+	 * @Query(nativeQuery = true) Page<ObjectDTO>
+	 * getAllObjectsByVendorUserProjectWithProjectIdForNonGroupedForNewRequest(
+	 * Pageable pageable, Long userVendorMappingId, Long projectId);
+	 */
+	
+	
 	@Query(nativeQuery = true)
-	Page<ObjectDTO> getAllObjectsByVendorUserProjectWithProjectIdForGroupedForNewRequest(Pageable pageable,
+	Page<ObjectDTO> getExistingForGrouped(Pageable pageable,
 			Long userVendorMappingId, Long projectId);
 	@Query(nativeQuery = true)
-	Page<ObjectDTO>  getAllObjectsByVendorUserProjectWithProjectIdForNonGroupedForNewRequest(Pageable pageable,
+	Page<ObjectDTO>  getExistingForNonGrouped(Pageable pageable,
 			Long userVendorMappingId, Long projectId);
 	
 	@Query(nativeQuery = true)
