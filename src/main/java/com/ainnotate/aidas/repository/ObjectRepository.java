@@ -141,9 +141,18 @@ public interface ObjectRepository
 	@Query(nativeQuery = true)
 	Page<ObjectDTO> getExistingForGrouped(Pageable pageable,
 			Long userVendorMappingId, Long projectId);
+	
+	@Query(nativeQuery = true)
+	Page<ObjectDTO> getExistingForGroupedSearch(Pageable pageable,
+			Long userVendorMappingId, Long projectId,String search);
+	
 	@Query(nativeQuery = true)
 	Page<ObjectDTO>  getExistingForNonGrouped(Pageable pageable,
 			Long userVendorMappingId, Long projectId);
+	
+	@Query(nativeQuery = true)
+	Page<ObjectDTO>  getExistingForNonGroupedSearch(Pageable pageable,
+			Long userVendorMappingId, Long projectId,String search);
 	
 	@Query(nativeQuery = true)
 	Page<ObjectDTO> getAllObjectsByVendorUserProjectWithProjectIdForNonGrouped(Pageable pageable, Long projectId);

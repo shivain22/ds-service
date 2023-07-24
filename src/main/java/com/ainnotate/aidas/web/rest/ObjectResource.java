@@ -418,7 +418,7 @@ public class ObjectResource {
     
     @GetMapping("/aidas-projects/{id}/aidas-objects/details/search")
     public ResponseEntity<List<ObjectDTO>> searchAllAidasObjectsOfProjectForVendorUser(Pageable pageable, @PathVariable(value = "id", required = false) final Long projectId,
-    		@PathVariable(value = "search", required = false) final String search) {
+    		@RequestParam(value = "search", required = false) final String search) {
         log.debug("REST request to get a page of AidasObjects");
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         if(user.getVendor()==null) {
@@ -427,28 +427,13 @@ public class ObjectResource {
         Page<ObjectDTO> page = null;
         Project project = projectRepository.getById(projectId);
         UserVendorMapping uvm = userVendorMappingRepository.findByVendorIdAndUserId(user.getVendor().getId(),user.getId());
-        Integer numOfObjectsAlreadyAssigned = 0;
         if(project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)){
-        	numOfObjectsAlreadyAssigned = objectRepository.getAllObjectsByVendorUserProjectWithProjectId(uvm.getId(),projectId,pageable.getPageSize(),0);
-        	if(numOfObjectsAlreadyAssigned==0) {
-        		//page = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdForGroupedDto(pageable,projectId,pageable.getPageSize());
-        		page = objectRepository.getNewObjectsDto(pageable,projectId,pageable.getPageSize());
-        	}else {
-        		//page = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdForGroupedForNewRequest(pageable,uvm.getId(),projectId);
-        		page = objectRepository.getExistingForGrouped(pageable,uvm.getId(),projectId);
+        		page = objectRepository.getExistingForGroupedSearch(pageable,uvm.getId(),projectId,search);
         		HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
                 return ResponseEntity.ok().headers(headers).body(page.getContent());
-        	}
         	
         }else {
-        	numOfObjectsAlreadyAssigned = objectRepository.getAllObjectsByVendorUserProjectWithProjectId(uvm.getId(),projectId,pageable.getPageSize(),pageable.getPageNumber());
-        	if(numOfObjectsAlreadyAssigned==0) {
-        		//page = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdForGroupedDto(pageable,projectId,pageable.getPageSize());
-        		page = objectRepository.getNewObjectsDto(pageable,projectId,pageable.getPageSize());
-        	}else {
-        		//page = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdForNonGroupedForNewRequest(pageable,uvm.getId(),projectId);
-        		page = objectRepository.getExistingForNonGrouped(pageable,uvm.getId(),projectId);
-        	}
+        		page = objectRepository.getExistingForNonGroupedSearch(pageable,uvm.getId(),projectId,search);
         	for(ObjectDTO o:page.getContent()){
                 UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserVendorMappingObject(uvm.getId(),o.getId());
                 Object object = objectRepository.getById(o.getId());
@@ -466,30 +451,6 @@ public class ObjectResource {
                 }
             }
         	HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
-            return ResponseEntity.ok().headers(headers).body(page.getContent());
-        }
-        if((numOfObjectsAlreadyAssigned==null ||( numOfObjectsAlreadyAssigned!=null && numOfObjectsAlreadyAssigned==0))) {
-            for(ObjectDTO o:page.getContent()){
-                UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserVendorMappingObject(uvm.getId(),o.getId());
-                Object object = objectRepository.getById(o.getId());
-                if(uvmom==null){
-                    uvmom  = new UserVendorMappingObjectMapping();
-                    uvmom.setUserVendorMapping(uvm);
-                    uvmom.setStatus(AidasConstants.AUTO_CREATE_OBJECT_ENABLE);
-                    uvmom.setObject(object);
-                    userVendorMappingObjectMappingRepository.save(uvmom);
-                }
-                if(project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)){
-                	object.setUserVendorMappingObjectMappingId(uvmom.getId());
-                	object.setObjectAcquiredByUvmomId(uvmom.getId());
-	                objectRepository.save(object);
-                }
-            }
-            HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
-            return ResponseEntity.ok().headers(headers).body(page.getContent());
-        }else {
-        	page = objectRepository.getAllObjectsWithUvmom(pageable,user.getId(), projectId);
-            HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
             return ResponseEntity.ok().headers(headers).body(page.getContent());
         }
     }

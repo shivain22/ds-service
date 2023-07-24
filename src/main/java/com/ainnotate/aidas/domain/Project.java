@@ -294,20 +294,28 @@ resultSetMapping = "Mapping.ProjectDTO")
         "p.project_type ,\n" +
         "p.qc_levels ,\n" +
         "p.rework_status ,\n" +
-        "p.video_type\n" +
+        "p.video_type,\n" +
+        "p.pause_status,\n" +
+        "p.consent_form_status,\n" +
+        "p.bypass_metadata,\n" +
+        "c.name as customer_name,\n"+
+        "p.consent_form_link as consent_form_link,\n" +
+        "p.project_description_link as project_description_link\n" +
         "from \n" +
         "project p,\n" +
+        "customer c,\n" +
         "consolidated_user_vendor_mapping_project_mapping_view cuvmpmv, \n" +
         "user_vendor_mapping uvm \n" +
         "where \n" +
+        "p.customer_id=c.id and\n" +
         "p.id=cuvmpmv.project_id and\n" +
         "uvm.id=cuvmpmv.uvm_id and\n" +
         "uvm.user_id=?1 and \n" +
         "uvm.status=1  \n" +
-        "and p.id>0  \n" +
+        "and p.id>0 and p.pause_status=1  \n" +
         "and cuvmpmv.uvmpm_status>0\n" +
         "order by p.id desc;\n",
-    resultSetMapping = "Mapping.ProjectDTOForDropDown")
+    resultSetMapping = "Mapping.ProjectDTO")
 
 @NamedNativeQuery(name = "Project.findProjectWithUploadCountByUserForDropDown.count",
     query = "select count(*) from (" +

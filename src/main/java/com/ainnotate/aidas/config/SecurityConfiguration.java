@@ -65,6 +65,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .antMatchers("/api/authenticate").permitAll()
             .antMatchers("/api/languages").permitAll()
             .antMatchers("/api/forgot-secret").permitAll()
+            .antMatchers("/api/aidas-org-cust-vend-req").permitAll()
             .antMatchers("/api/auth-info").permitAll()
             .antMatchers("/api/register").permitAll()
             .antMatchers("/api/change-secret").permitAll()

@@ -24,7 +24,7 @@ public class UploadDTOForQC {
 	}
 
 
-	public UploadDTOForQC(Long uploadId,String uploadUrl,Long userVendorMappingObjectMappingId, Long objectId, Long projectId, String projectName, String objectName,Long ucbiId, Long batchNumber,String fileName,Integer qcStatus) {
+	public UploadDTOForQC(Long uploadId,String uploadUrl,Long userVendorMappingObjectMappingId, Long projectId, Long objectId, String projectName, String objectName,Long ucbiId, Long batchNumber,String fileName,Integer qcStatus) {
 		this.uploadId=uploadId;
 		this.uploadUrl=uploadUrl;
 		this.userVendorMappingObjectMappingId=userVendorMappingObjectMappingId;

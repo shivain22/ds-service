@@ -364,20 +364,19 @@ public class UserResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/change-secret")
-    public ResponseEntity<User> changePassword(@RequestBody ChangePasswordUserVM cpwd) throws URISyntaxException {
+    public ResponseEntity<String> changePassword(@RequestBody ChangePasswordUserVM cpwd) throws URISyntaxException {
         log.debug("REST request to save AidasUser : {}", cpwd);
         User user =null;
         if(cpwd.getEmail()!=null){
             user = userRepository.getByEmail(cpwd.getEmail());
         }
-        boolean changePassword = changePassword(user,cpwd.getPassword());
+        boolean changePassword=false;
+        if(user!=null)
+        	changePassword = changePassword(user,cpwd.getPassword());
         if(changePassword){
-        return ResponseEntity
-            .created(new URI("/api/aidas-users/" + user.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, user.getId().toString()))
-            .body(user);
+        return ResponseEntity.ok().body("Password reset successfully.");
         }else{
-            throw new BadRequestAlertException("Unable to change password", ENTITY_NAME, "idexists");
+        	return ResponseEntity.ok().body("Unable to reset password.");
         }
     }
     
@@ -389,20 +388,20 @@ public class UserResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/forgot-secret")
-    public ResponseEntity<User> forgotPassword(@RequestBody ChangePasswordUserVM cpwd) throws URISyntaxException {
+    public ResponseEntity<String> forgotPassword(@RequestBody ChangePasswordUserVM cpwd) throws URISyntaxException {
         log.debug("REST request to save AidasUser : {}", cpwd);
         User user =null;
         if(cpwd.getEmail()!=null){
             user = userRepository.getByEmail(cpwd.getEmail());
         }
-        boolean changePassword = changePassword(user,cpwd.getPassword());
+        boolean changePassword=false;
+        if(user!=null) {
+         changePassword = changePassword(user,cpwd.getPassword());
+        }
         if(changePassword){
-        return ResponseEntity
-            .created(new URI("/api/aidas-users/" + user.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, user.getId().toString()))
-            .body(user);
+        	return ResponseEntity.ok().body("Please check your email for reset password.");
         }else{
-            throw new BadRequestAlertException("Unable to change password", ENTITY_NAME, "idexists");
+        	return ResponseEntity.ok().body("Unable to update password.  Please enter correct email.");
         }
     }
     /**

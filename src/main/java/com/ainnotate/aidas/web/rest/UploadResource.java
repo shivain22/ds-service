@@ -9,6 +9,19 @@ import com.ainnotate.aidas.constants.AidasConstants;
 import com.ainnotate.aidas.security.SecurityUtils;
 import com.ainnotate.aidas.service.DownloadUploadS3;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
+
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.AwsCredentials;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.*;
@@ -38,6 +51,8 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
 import tech.jhipster.web.util.ResponseUtil;
+
+
 
 /**
  * REST controller for managing {@link Upload}.
@@ -1570,6 +1585,12 @@ public class UploadResource {
 		Integer multFactor = 1;
 		List<Long[]> notCompletedBatches = customerQcProjectMappingBatchMappingRepository
 				.getQcNotCompletedBatches(project.getId(), cqpm.getQcLevel(), cqpm.getId());
+		ProjectProperty accessKey = projectPropertyRepository.findByProjectAndPropertyName(projectId, "accessKey");
+		ProjectProperty accessSecret = projectPropertyRepository.findByProjectAndPropertyName(projectId, "accessSecret");
+		ProjectProperty bucket = projectPropertyRepository.findByProjectAndPropertyName(projectId, "bucketName");
+		ProjectProperty region = projectPropertyRepository.findByProjectAndPropertyName(projectId, "region");
+		S3Presigner presigner = S3Presigner.builder().credentialsProvider(StaticCredentialsProvider
+				.create(AwsBasicCredentials.create(accessKey.getValue(), accessSecret.getValue()))).region(Region.of(region.getValue())).build();
 		if (notCompletedBatches != null && notCompletedBatches.size() > 0) {
 			uploadsDTOForQc = uploadRepository.getUploadDTOForQCPendingInBatch(notCompletedBatches.get(0)[0],
 					cqpmbm.getCurrentPageNumber(), pqlc.getQcLevelBatchSize() * project.getNumberOfUploadsRequired());
@@ -1578,7 +1599,13 @@ public class UploadResource {
 			for(Long[] objStat:objCompletionStatus) {
 				map.put(objStat[2], objStat);
 			}
+			
 			for (UploadDTOForQC u : uploadsDTOForQc) {
+				GetObjectRequest getObjectRequest =GetObjectRequest.builder().bucket(bucket.getValue()).key(u.getUploadUrl()).build();
+			   	GetObjectPresignRequest getObjectPresignRequest = GetObjectPresignRequest.builder().signatureDuration(Duration.ofMinutes(10)).getObjectRequest(getObjectRequest).build();
+				PresignedGetObjectRequest presignedGetObjectRequest =presigner.presignGetObject(getObjectPresignRequest);
+			  	u.setUploadUrl(presignedGetObjectRequest.url().toString());
+			        
 				int objStatus = 2;
 				if(map.get(u.getUserVendorMappingObjectMappingId())!=null) {
 					Long pending = map.get(u.getUserVendorMappingObjectMappingId())[7];
@@ -1591,6 +1618,7 @@ public class UploadResource {
 				}
 				resultMap1.get(u.getUserVendorMappingObjectMappingId() + "-" + u.getObjectName() + "-"+ objStatus).add(u);
 			}
+			presigner.close();
 		} else {
 			List<Integer[]> mixedBatches = null;
 			List<Long> approvedUvmomIds = null;
@@ -1661,6 +1689,11 @@ public class UploadResource {
 					if (u.getQcStatus().equals(AidasConstants.AIDAS_UPLOAD_QC_REJECTED)) {
 						rejectedUps.add(u.getUploadId());
 					} else {
+						GetObjectRequest getObjectRequest =GetObjectRequest.builder().bucket(bucket.getValue()).key(u.getUploadUrl()).build();
+					   	GetObjectPresignRequest getObjectPresignRequest = GetObjectPresignRequest.builder().signatureDuration(Duration.ofMinutes(10)).getObjectRequest(getObjectRequest).build();
+						PresignedGetObjectRequest presignedGetObjectRequest =presigner.presignGetObject(getObjectPresignRequest);
+					  	u.setUploadUrl(presignedGetObjectRequest.url().toString());
+					        
 						u.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
 						u.setBatchNumber(cqpmbm.getId());
 						if (project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)) {
@@ -1752,9 +1785,13 @@ public class UploadResource {
 						customerQcProjectMappingRepository.save(cqpm);
 					}
 				}
-				
+				Iterator it=null;
 				List<Long> ups = new ArrayList<>();
 				for (UploadDTOForQC u : uploadIds) {
+					GetObjectRequest getObjectRequest =GetObjectRequest.builder().bucket(bucket.getValue()).key(u.getUploadUrl()).build();
+				   	GetObjectPresignRequest getObjectPresignRequest = GetObjectPresignRequest.builder().signatureDuration(Duration.ofMinutes(10)).getObjectRequest(getObjectRequest).build();
+					PresignedGetObjectRequest presignedGetObjectRequest =presigner.presignGetObject(getObjectPresignRequest);
+				  	u.setUploadUrl(presignedGetObjectRequest.url().toString());
 					ups.add(u.getUploadId());
 					u.setBatchNumber(cqpmbm.getId());
 					if (resultMap1.get(u.getUserVendorMappingObjectMappingId() + "-" + u.getObjectName() + "-"
