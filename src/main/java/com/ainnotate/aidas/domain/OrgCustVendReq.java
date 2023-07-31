@@ -47,14 +47,17 @@ public class OrgCustVendReq extends AbstractAuditingEntity implements Serializab
     @Column
     private String companyName;
     
-    @NotNull
     @Size(max = 50)
     @Column(length = 50)
-    private String mobileNumber;
+    private String mobileNumber="0";
     
     @NotNull
     @Column
     private String message;
+    
+    @NotNull
+    @Column
+    private String userType="Customer";
 
     
 

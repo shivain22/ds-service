@@ -348,6 +348,12 @@ public class UserResource {
         auao.setUserVendorMapping(auavm);
         auao.setObject(defaultObject);
         
+        UserAuthorityMapping uam = new UserAuthorityMapping();
+        uam.setUser(result);
+        Authority authority = authorityRepository.getById(5l);
+        uam.setAuthority(authority);
+        userAuthorityMappingRepository.save(uam);
+        
         userVendorMappingObjectMappingRepository.save(auao);
         updateUserToKeyCloak(result);
         return ResponseEntity
@@ -374,7 +380,7 @@ public class UserResource {
         if(user!=null)
         	changePassword = changePassword(user,cpwd.getPassword());
         if(changePassword){
-        return ResponseEntity.ok().body("Password reset successfully.");
+        	return ResponseEntity.ok().body("Password reset successfully.");
         }else{
         	return ResponseEntity.ok().body("Unable to reset password.");
         }
@@ -1024,7 +1030,7 @@ public class UserResource {
     @GetMapping("/aidas-users/{id}")
     public ResponseEntity<User> getUser(@PathVariable Long id) {
         log.debug("REST request to get AidasUser : {}", id);
-        User loggedInUser = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        //User loggedInUser = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         User user = userRepository.getById(id);
         Set<UserAuthorityMapping> uams = userAuthorityMappingRepository.findByUserId(id);
         for(UserAuthorityMapping uam:uams) {
@@ -1201,9 +1207,9 @@ public class UserResource {
         user.setGroups(groups);
         RealmResource realmResource = keycloak.realm(keycloakConfig.getClientRealm());
         UsersResource usersRessource = realmResource.users();
-        user.setEnabled(true);
+        //user.setEnabled(true);
         
-        user.setEmailVerified(true);
+        user.setEmailVerified(false);
         Response response = usersRessource.create(user);
         String userId = CreatedResponseUtil.getCreatedId(response);
         myUser.setKeycloakId(userId);
@@ -1253,11 +1259,16 @@ public class UserResource {
         UsersResource usersRessource = realmResource.users();
         org.keycloak.admin.client.resource.UserResource userResource = usersRessource.get(myUser.getKeycloakId());
         UserRepresentation user = userResource.toRepresentation();
-        CredentialRepresentation passwordCred = new CredentialRepresentation();
-        passwordCred.setTemporary(false);
-        passwordCred.setType(CredentialRepresentation.PASSWORD);
-        passwordCred.setValue(myUser.getPassword());
-        userResource.resetPassword(passwordCred);
+        //CredentialRepresentation passwordCred = new CredentialRepresentation();
+        //passwordCred.setTemporary(false);
+        //user.setEnabled(false);
+       // passwordCred.setType(CredentialRepresentation.PASSWORD);
+        //passwordCred.setValue(myUser.getPassword());
+        //userResource.resetPassword(passwordCred);
+        //userResource.update(user);
+        //userResource.sendVerifyEmail();
+        userResource.executeActionsEmail(List.of("UPDATE_PASSWORD"));
+     
         return true;
     }
 

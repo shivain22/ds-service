@@ -20,10 +20,10 @@
             <column name="name" type="VARCHAR(500)">
                 <constraints nullable="false"/>
             </column>
-            <column name="iso" type="VARCHAR(50)">
+            <column name="iso" defaultValue=" " type="VARCHAR(50)">
                 <constraints nullable="false"/>
             </column>
-            <column name="current_status" type="VARCHAR(50)">
+            <column name="current_status" defaultValue="active"  type="VARCHAR(50)">
                 <constraints nullable="false"/>
             </column>
         </createTable>
@@ -46,10 +46,10 @@
             <column name="name" type="VARCHAR(500)">
                 <constraints nullable="false"/>
             </column>
-            <column name="iso" type="VARCHAR(50)">
+            <column name="iso" defaultValue=" " type="VARCHAR(50)">
                 <constraints nullable="false"/>
             </column>
-            <column name="current_status" type="VARCHAR(50)">
+            <column name="current_status" defaultValue="active" type="VARCHAR(50)">
                 <constraints nullable="false"/>
             </column>
         </createTable>

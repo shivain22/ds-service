@@ -1602,7 +1602,7 @@ public class UploadResource {
 			
 			for (UploadDTOForQC u : uploadsDTOForQc) {
 				GetObjectRequest getObjectRequest =GetObjectRequest.builder().bucket(bucket.getValue()).key(u.getUploadUrl()).build();
-			   	GetObjectPresignRequest getObjectPresignRequest = GetObjectPresignRequest.builder().signatureDuration(Duration.ofMinutes(10)).getObjectRequest(getObjectRequest).build();
+			   	GetObjectPresignRequest getObjectPresignRequest = GetObjectPresignRequest.builder().signatureDuration(Duration.ofMinutes(1440)).getObjectRequest(getObjectRequest).build();
 				PresignedGetObjectRequest presignedGetObjectRequest =presigner.presignGetObject(getObjectPresignRequest);
 			  	u.setUploadUrl(presignedGetObjectRequest.url().toString());
 			        
@@ -1690,7 +1690,7 @@ public class UploadResource {
 						rejectedUps.add(u.getUploadId());
 					} else {
 						GetObjectRequest getObjectRequest =GetObjectRequest.builder().bucket(bucket.getValue()).key(u.getUploadUrl()).build();
-					   	GetObjectPresignRequest getObjectPresignRequest = GetObjectPresignRequest.builder().signatureDuration(Duration.ofMinutes(10)).getObjectRequest(getObjectRequest).build();
+					   	GetObjectPresignRequest getObjectPresignRequest = GetObjectPresignRequest.builder().signatureDuration(Duration.ofMinutes(1440)).getObjectRequest(getObjectRequest).build();
 						PresignedGetObjectRequest presignedGetObjectRequest =presigner.presignGetObject(getObjectPresignRequest);
 					  	u.setUploadUrl(presignedGetObjectRequest.url().toString());
 					        
@@ -1789,7 +1789,7 @@ public class UploadResource {
 				List<Long> ups = new ArrayList<>();
 				for (UploadDTOForQC u : uploadIds) {
 					GetObjectRequest getObjectRequest =GetObjectRequest.builder().bucket(bucket.getValue()).key(u.getUploadUrl()).build();
-				   	GetObjectPresignRequest getObjectPresignRequest = GetObjectPresignRequest.builder().signatureDuration(Duration.ofMinutes(10)).getObjectRequest(getObjectRequest).build();
+				   	GetObjectPresignRequest getObjectPresignRequest = GetObjectPresignRequest.builder().signatureDuration(Duration.ofMinutes(1440)).getObjectRequest(getObjectRequest).build();
 					PresignedGetObjectRequest presignedGetObjectRequest =presigner.presignGetObject(getObjectPresignRequest);
 				  	u.setUploadUrl(presignedGetObjectRequest.url().toString());
 					ups.add(u.getUploadId());

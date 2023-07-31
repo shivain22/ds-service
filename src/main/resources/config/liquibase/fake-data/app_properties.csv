@@ -12,5 +12,6 @@ id;status;name;value;organisation_id;customer_id;vendor_id;user_id
 11;1;uploadAccessSecret;PjnrxkZXV1HX4wL+ycOJrnUE7LlBQwKsuRdc3OC4;-1;-1;-1;-1
 12;1;uploadPrefix;uploads;-1;-1;-1;-1
 13;1;fromEmail;noreply@haidata.ai;-1;-1;-1;-1
-14;1;emailToken;PHtE6r1ZQujq2DUpoUBW5P+7FZP1Ndssqb80JFEStNkXX/ACGU1d/dl4wTC//0gtA6FGF/adz95utu6etr3Tdz28Mz5MXmqyqK3sx/VYSPOZsbq6x00cs1QcdEHdXIbod9Zu3SLQut7bNA==;-1;-1;-1;-1
+14;1;emailToken;PHtE6r0JSujviWd78kJR5vHuQ8etNNh89b8zelIS449LCPBRHU0AqNp/kWe/qRZ5XfEUQffNzo09tbiV4O6HdD24MTxIXmqyqK3sx/VYSPOZsbq6x00ZsFwbfkPcUYLpetBo1i3Qvd6X;-1;-1;-1;-1
 15;1;version;1.0.0;-1;-1;-1;-1
+16;1;adminEmail;aidac@haidata.ai;-1;-1;-1;-1

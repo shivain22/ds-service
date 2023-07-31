@@ -1100,15 +1100,36 @@ public class ProjectResource {
 	 * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body
 	 *         the object, or with status {@code 404 (Not Found)}.
 	 */
-	@GetMapping("/download/project/{id}/{status}")
+	@GetMapping("/download/project/{id}/{status}/{type}")
 	public void downloadUploadedObjectsOfProject(@PathVariable("id") Long aidasProjectId,
-			@PathVariable("status") String status) {
+			@PathVariable("status") String status,@PathVariable("type") String type ) {
 		User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
 		downloadUploadS3.setUser(user);
 		Project project = projectRepository.getById(aidasProjectId);
 		downloadUploadS3.setUp(project, status);
 		taskExecutor.execute(downloadUploadS3);
 	}
+	
+	/**
+	 * {@code GET  /download/:id/:status} : download objects with the "id" object
+	 * and provided status. User "all" for download both.
+	 *
+	 * @param aidasProjectId the id of the object to retrieve.
+	 * @param status         the id of the upload objects to retrieve and download.
+	 * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body
+	 *         the object, or with status {@code 404 (Not Found)}.
+	 */
+	@GetMapping("/download/project/json/{id}/{status}/{type}")
+	public void downloadUploadedObjectsOfProjectJson(@PathVariable("id") Long aidasProjectId,
+			@PathVariable("status") String status,@PathVariable("type") String type) {
+		User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+		downloadUploadS3.setUser(user);
+		Project project = projectRepository.getById(aidasProjectId);
+		downloadUploadS3.setUp(project, status);
+		taskExecutor.execute(downloadUploadS3);
+	}
+	
+	
 
 	@Autowired
 	private AppPropertyRepository appPropertyRepository;
@@ -1120,13 +1141,15 @@ public class ProjectResource {
 		String fromEmail = app.getValue();
 		app = appPropertyRepository.getAppProperty(-1l, "emailToken");
 		String emailToken = app.getValue();
-
+//System.out.println(emailToken);
+//System.out.println("PHtE6r0JSujviWd78kJR5vHuQ8etNNh89b8zelIS449LCPBRHU0AqNp/kWe/qRZ5XfEUQffNzo09tbiV4O6HdD24MTxIXmqyqK3sx/VYSPOZsbq6x00ZsFwbfkPcUYLpetBo1i3Qvd6X");
+		//System.out.println(emailToken.equals("PHtE6r0JSujviWd78kJR5vHuQ8etNNh89b8zelIS449LCPBRHU0AqNp/kWe/qRZ5XfEUQffNzo09tbiV4O6HdD24MTxIXmqyqK3sx/VYSPOZsbq6x00ZsFwbfkPcUYLpetBo1i3Qvd6X"));
 		String postUrl = "https://api.zeptomail.in/v1.1/email";
 		BufferedReader br = null;
 		HttpURLConnection conn = null;
 		String output = null;
 		StringBuilder sb = new StringBuilder();
-		System.out.println(mail.getEmail());
+		//System.out.println(mail.getEmail());
 		try {
 			URL url = new URL(postUrl);
 			conn = (HttpURLConnection) url.openConnection();
@@ -1134,7 +1157,7 @@ public class ProjectResource {
 			conn.setRequestMethod("POST");
 			conn.setRequestProperty("Content-Type", "application/json");
 			conn.setRequestProperty("Accept", "application/json");
-			conn.setRequestProperty("Authorization", "Zoho-enczapikey " + emailToken);
+			conn.setRequestProperty("Authorization", "Zoho-enczapikey "+emailToken);
 			JSONObject object = new JSONObject(
 					"{\n" + "  \"bounce_address\":\"bounce@bounce.haidata.ai\",\n" + "  \"from\": { \"address\": \""
 							+ fromEmail + "\"},\n" + "  \"to\": [{\"email_address\": {\"address\": \"" + mail.getEmail()

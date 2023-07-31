@@ -55,7 +55,7 @@ public class OrgCustVendReqResource {
     private AppPropertyRepository appPropertyRepository;
     
     @PostMapping("/aidas-org-cust-vend-req")
-	public ResponseEntity<OrgCustVendReq> createAidasVendor(@Valid @RequestBody OrgCustVendReq orgCustVendReq) throws URISyntaxException {
+	public ResponseEntity<OrgCustVendReq> createAidasVendor(@RequestBody OrgCustVendReq orgCustVendReq) throws URISyntaxException {
 		log.debug("REST request to save AidasVendor : {}", orgCustVendReq);
 		if (orgCustVendReq.getId() != null) {
 			throw new BadRequestAlertException("A new vendor cannot already have an ID", ENTITY_NAME, "idexists");
@@ -68,12 +68,17 @@ public class OrgCustVendReqResource {
 			mail.setSubject("Registration request successful");
 			mail.setBody("You request was submitted successfully.  We will get in touch with you shortly.");
 			sendMail(mail);
-			 AppProperty app  = appPropertyRepository.getAppProperty(-1l,"fromEmail");
+			 AppProperty app  = appPropertyRepository.getAppProperty(-1l,"adminEmail");
 		        String fromEmail = app.getValue();
 			mail.setEmail(fromEmail);
 			mail.setName(result.getFirstName()+" "+result.getLastName());
 			mail.setSubject("New Org/Cust/Vend Request.");
-			mail.setBody("New request raised by "+result.getFirstName()+" "+result.getLastName()+" from company "+result.getCompanyName()+" .The id of the new request is  "+result.getId());
+			mail.setBody("New request raised by <br/>"
+					+ "First Name: "+result.getFirstName()+" <br/>"
+							+ "Last Name:"+result.getLastName()+" <br/>"
+									+ "Company: "+result.getCompanyName()+"<br/>"
+											+ "Message:"+result.getMessage()+"<br/>"
+													+ "Aidas ID:  "+result.getId());
 			sendMail(mail);
 			return ResponseEntity
 					.created(new URI("/api/aidas-org-cust-vend-req/" + result.getId())).headers(HeaderUtil

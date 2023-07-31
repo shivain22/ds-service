@@ -93,12 +93,12 @@ spring:
     client-secret:
     user-name: admin
     password: admin
-    client-realm: jhipster
+    client-realm: aidac
   mail:
     host: smtp.zeptomail.in
     port: 587
-    username: noreply@haidata.ai  #Replace this field with your Gmail username.
-    password: PHtE6r1ZQujq2DUpoUBW5P+7FZP1Ndssqb80JFEStNkXX/ACGU1d/dl4wTC//0gtA6FGF/adz95utu6etr3Tdz28Mz5MXmqyqK3sx/VYSPOZsbq6x00cs1QcdEHdXIbod9Zu3SLQut7bNA==           #Replace this field with your Gmail password/App password.
+    username: noreply@ainnotate.com  #Replace this field with your Gmail username.
+    password: PHtE6r1fQ+m5g2cq+kAEsaS5FpKtM4spqL9jKwkVuI9FD6VSTk0GqdEsw2K+rR8qAPNCHfSdzIo85eubtuyAI2nvPGxPX2qyqK3sx/VYSPOZsbq6x00ZsV8bfk3VXI7qctZr0ifRv9qX           #Replace this field with your Gmail password/App password.
     protocol: smtp
     tls: true
     debug: false
