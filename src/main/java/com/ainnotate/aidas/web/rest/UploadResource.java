@@ -838,6 +838,10 @@ public class UploadResource {
 				PresignedGetObjectRequest presignedGetObjectRequest =presigner.presignGetObject(getObjectPresignRequest);
 			  	u.setUploadUrl(presignedGetObjectRequest.url().toString());
 			        
+			  	getObjectRequest =GetObjectRequest.builder().bucket(bucket.getValue()).key(u.getConsentFormUrl()).build();
+			   	getObjectPresignRequest = GetObjectPresignRequest.builder().signatureDuration(Duration.ofMinutes(1440)).getObjectRequest(getObjectRequest).build();
+				presignedGetObjectRequest =presigner.presignGetObject(getObjectPresignRequest);
+			  	u.setConsentFormUrl(presignedGetObjectRequest.url().toString());
 				int objStatus = 2;
 				if(map.get(u.getUserVendorMappingObjectMappingId())!=null) {
 					Integer pending = map.get(u.getUserVendorMappingObjectMappingId()).getTotalPending();
@@ -926,6 +930,11 @@ public class UploadResource {
 						PresignedGetObjectRequest presignedGetObjectRequest =presigner.presignGetObject(getObjectPresignRequest);
 					  	u.setUploadUrl(presignedGetObjectRequest.url().toString());
 					        
+					  	getObjectRequest =GetObjectRequest.builder().bucket(bucket.getValue()).key(u.getConsentFormUrl()).build();
+					   	getObjectPresignRequest = GetObjectPresignRequest.builder().signatureDuration(Duration.ofMinutes(1440)).getObjectRequest(getObjectRequest).build();
+						presignedGetObjectRequest =presigner.presignGetObject(getObjectPresignRequest);
+					  	u.setConsentFormUrl(presignedGetObjectRequest.url().toString());
+					  	
 						u.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
 						u.setBatchNumber(cqpmbm.getId());
 						if (project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)) {
@@ -1024,6 +1033,10 @@ public class UploadResource {
 				   	GetObjectPresignRequest getObjectPresignRequest = GetObjectPresignRequest.builder().signatureDuration(Duration.ofMinutes(1440)).getObjectRequest(getObjectRequest).build();
 					PresignedGetObjectRequest presignedGetObjectRequest =presigner.presignGetObject(getObjectPresignRequest);
 				  	u.setUploadUrl(presignedGetObjectRequest.url().toString());
+				  	getObjectRequest =GetObjectRequest.builder().bucket(bucket.getValue()).key(u.getConsentFormUrl()).build();
+				   	getObjectPresignRequest = GetObjectPresignRequest.builder().signatureDuration(Duration.ofMinutes(1440)).getObjectRequest(getObjectRequest).build();
+					presignedGetObjectRequest =presigner.presignGetObject(getObjectPresignRequest);
+				  	u.setConsentFormUrl(presignedGetObjectRequest.url().toString());
 					ups.add(u.getUploadId());
 					u.setBatchNumber(cqpmbm.getId());
 					if (resultMap1.get(u.getUserVendorMappingObjectMappingId() + "-" + u.getObjectName() + "-"

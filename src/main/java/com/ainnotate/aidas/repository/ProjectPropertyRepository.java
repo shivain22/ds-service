@@ -56,4 +56,6 @@ public interface ProjectPropertyRepository extends JpaRepository<ProjectProperty
     
     @Query(value="select * from project_property pp, property p where pp.project_id=?1 and pp.property_id=p.id and p.name=?2",nativeQuery = true)
     ProjectProperty findByProjectAndPropertyName(Long projectId, String propName);
+    
+   
 }

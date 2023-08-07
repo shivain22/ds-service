@@ -42,6 +42,7 @@ import com.ainnotate.aidas.domain.ObjectProperty;
 import com.ainnotate.aidas.domain.Project;
 import com.ainnotate.aidas.domain.Upload;
 import com.ainnotate.aidas.domain.User;
+import com.ainnotate.aidas.domain.UserVendorMappingObjectMapping;
 import com.ainnotate.aidas.dto.ObjectForJson;
 import com.ainnotate.aidas.dto.ProjectForJson;
 import com.ainnotate.aidas.dto.UploadForJson;
@@ -51,6 +52,7 @@ import com.ainnotate.aidas.repository.ObjectPropertyRepository;
 import com.ainnotate.aidas.repository.ObjectRepository;
 import com.ainnotate.aidas.repository.ProjectRepository;
 import com.ainnotate.aidas.repository.UploadRepository;
+import com.ainnotate.aidas.repository.UserVendorMappingObjectMappingRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -166,6 +168,8 @@ public class DownloadUploadJson  implements  Runnable{
     private ObjectPropertyRepository objectPropertyRepository;
     @Autowired
     private AppPropertyRepository appPropertyRepository;
+    @Autowired
+    private UserVendorMappingObjectMappingRepository userVendorMappingObjectMappingRepository;
 
 
     private String globalDownloadAccessKey ="";
@@ -343,8 +347,14 @@ public class DownloadUploadJson  implements  Runnable{
                     ProjectForJson projectForJson = new ProjectForJson();
                     projectForJson.setId(project.getId());
                     projectForJson.setName(project.getName());
+                    projectForJson.setConsentFormStatus(project.getConsentFormStatus());
                     projectForJson.setGroupingProject(project.getAutoCreateObjects());
                     for (Upload au : uploads) {
+                    	
+                    	Map<String, String> uploadLocProps = getObjectProperties(au);
+                    	S3Presigner presigner = S3Presigner.builder().credentialsProvider(StaticCredentialsProvider
+                				.create(AwsBasicCredentials.create(uploadLocProps.get("accessKey"),uploadLocProps.get("accessSecret")))).region(Region.of(uploadLocProps.get("region"))).build();
+                       
                     	UploadForJson uploadForJson= new UploadForJson();
                     	if(!tmpObjId.equals(au.getUserVendorMappingObjectMapping().getObject().getId())) {
                     		if(!tmpObjId.equals(-2l)) {
@@ -353,12 +363,17 @@ public class DownloadUploadJson  implements  Runnable{
                     		objectForJson = new ObjectForJson();
                     		objectForJson.setId(au.getUserVendorMappingObjectMapping().getObject().getId());
                     		objectForJson.setName(au.getUserVendorMappingObjectMapping().getObject().getName());
+                    		if(au.getUserVendorMappingObjectMapping().getConsentFormUrl()!=null) {
+                    			GetObjectRequest getObjectRequest =GetObjectRequest.builder().bucket(uploadLocProps.get("bucketName")).key(au.getUserVendorMappingObjectMapping().getConsentFormUrl()).build();
+                			   	GetObjectPresignRequest getObjectPresignRequest = GetObjectPresignRequest.builder().signatureDuration(Duration.ofMinutes(1440)).getObjectRequest(getObjectRequest).build();
+                				PresignedGetObjectRequest presignedGetObjectRequest =presigner.presignGetObject(getObjectPresignRequest);
+                				 
+                    			objectForJson.setConsentFormUrl(presignedGetObjectRequest.url().toString());
+                    		}
                     		tmpObjId = au.getUserVendorMappingObjectMapping().getObject().getId();
                     	}
-                        Map<String, String> uploadLocProps = getObjectProperties(au);
-                        S3Presigner presigner = S3Presigner.builder().credentialsProvider(StaticCredentialsProvider
-                				.create(AwsBasicCredentials.create(uploadLocProps.get("accessKey"),uploadLocProps.get("accessSecret")))).region(Region.of(uploadLocProps.get("region"))).build();
-                        try {
+                        
+                         try {
                             System.out.println("About to download file with objectkey as ="+au.getObjectKey());
                            
                             GetObjectRequest getObjectRequest =GetObjectRequest.builder().bucket(uploadLocProps.get("bucketName")).key(au.getUploadUrl()).build();

@@ -52,7 +52,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 									+ "-1 as ucbiId,"
 									+ "-1 as batchNumber,"
 									+ "u.name as fileName,"
-									+ "2 as qcStatus  "
+									+ "2 as qcStatus,  "
+									+ "uvmom.consent_form_url as consentFormUrl  "
 									+ "from "
 									+ "upload u,"
 									+ "user_vendor_mapping_object_mapping uvmom,"
@@ -114,7 +115,8 @@ query=
 				+ "ucbi.id as ucbiId,"
 				+ "ucbi.batch_number as batchNumber,"
 				+ "u.name as fileName,"
-				+ "ucbi.qc_status as qcStatus  "
+				+ "ucbi.qc_status as qcStatus,  "
+				+ "uvmom.consent_form_url as consentFormUrl  "
 				+ "from upload_cqpm_batch_info ucbi,"
 				+ "upload u,"
 				+ "user_vendor_mapping_object_mapping uvmom,"
@@ -143,6 +145,7 @@ query=
 				+ "ucbi.batch_number as batchNumber,\n"
 				+ "u.name as fileName,\n"
 				+ "ucbi.qc_status as qcStatus  \n"
+				+ "uvmom.consent_form_url as consentFormUrl  \n"
 				+ "from upload_cqpm_batch_info ucbi,\n"
 				+ "upload u,\n"
 				+ "user_vendor_mapping_object_mapping uvmom,\n"
@@ -170,7 +173,8 @@ query=
 			@ColumnResult(name = "ucbiId", type = Long.class), 
 			@ColumnResult(name = "batchNumber", type = Long.class),
 			@ColumnResult(name = "fileName", type = String.class),
-			@ColumnResult(name = "qcStatus", type = Integer.class)
+			@ColumnResult(name = "qcStatus", type = Integer.class),
+			@ColumnResult(name = "consentFormUrl", type = String.class)
 }))
 
 

@@ -101,7 +101,9 @@ public class CustomerResource {
             try {
 	        	Customer result = customerRepository.save(customer);
 	            propertyRepository.addCustomerProperties(result.getId(),user.getId());
+	            //propertyRepository.encrypt(result.getId());
 	            appPropertyRepository.addCustomerAppProperties(result.getId(),user.getId());
+	            //appPropertyRepository.encryptCustomer(result.getId());
 	            return ResponseEntity
 	                .created(new URI("/api/aidas-customers/" + result.getId()))
 	                .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))

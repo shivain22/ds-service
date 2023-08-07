@@ -8,6 +8,15 @@ public class ProjectForJson {
 	private Long id;
 	private String name;
 	private Integer groupingProject;
+	private Integer consentFormStatus;
+	public Integer getConsentFormStatus() {
+		return consentFormStatus;
+	}
+
+	public void setConsentFormStatus(Integer consentFormStatus) {
+		this.consentFormStatus = consentFormStatus;
+	}
+
 	public Integer getGroupingProject() {
 		return groupingProject;
 	}

@@ -104,6 +104,7 @@ public class OrganisationResource {
 		try {
 			Organisation result = organisationRepository.save(organisation);
 			appPropertyRepository.addOrganisationAppProperties(result.getId(), user.getId());
+			//appPropertyRepository.encryptOrg(result.getId());
 			return ResponseEntity
 					.created(new URI("/api/aidas-organisations/" + result.getId())).headers(HeaderUtil
 							.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))

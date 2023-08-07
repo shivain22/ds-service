@@ -249,8 +249,9 @@ public class ProjectResource {
 		}
 	}
 
-	@GetMapping("/downloadFile/{projectId}/{approvalStatus}")
+	@GetMapping("/downloadFile/{entityType}/{projectId}/{approvalStatus}")
 	public ResponseEntity<Resource> downloadFile(@PathVariable(value = "projectId", required = true) Long projectId,
+			@PathVariable(value = "entityType", required = false) String entityType,
 			@PathVariable(value = "approvalStatus", required = false) String approvalStatus)
 			throws MalformedURLException {
 		int status = 3;

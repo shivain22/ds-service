@@ -13,7 +13,18 @@ public class UploadDTOForQC {
 	private Long batchNumber;
 	private String fileName;
 	private Integer qcStatus;
+	private String consentFormUrl;
 	
+	public String getConsentFormUrl() {
+		return consentFormUrl;
+	}
+
+
+	public void setConsentFormUrl(String consentFormUrl) {
+		this.consentFormUrl = consentFormUrl;
+	}
+
+
 	public String getFileName() {
 		return fileName;
 	}
@@ -24,7 +35,7 @@ public class UploadDTOForQC {
 	}
 
 
-	public UploadDTOForQC(Long uploadId,String uploadUrl,Long userVendorMappingObjectMappingId, Long projectId, Long objectId, String projectName, String objectName,Long ucbiId, Long batchNumber,String fileName,Integer qcStatus) {
+	public UploadDTOForQC(Long uploadId,String uploadUrl,Long userVendorMappingObjectMappingId, Long projectId, Long objectId, String projectName, String objectName,Long ucbiId, Long batchNumber,String fileName,Integer qcStatus,String consentFormUrl) {
 		this.uploadId=uploadId;
 		this.uploadUrl=uploadUrl;
 		this.userVendorMappingObjectMappingId=userVendorMappingObjectMappingId;
@@ -36,6 +47,7 @@ public class UploadDTOForQC {
 		this.batchNumber=batchNumber;
 		this.fileName=fileName;
 		this.qcStatus=qcStatus;
+		this.consentFormUrl = consentFormUrl;
 	}
 	
 	

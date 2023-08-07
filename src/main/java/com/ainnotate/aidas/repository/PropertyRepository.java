@@ -55,7 +55,11 @@ public interface PropertyRepository extends JpaRepository<Property, Long> {
     @Query(value = "delete from property where is_sample_data=1 order by id desc",nativeQuery = true)
     void deleteAllSampleProperties();
 
-
+    @Modifying
+    @Query(value="update property set value=aes_encrypt(value,'b693b2f6-350f-11ee-be56-0242ac120002' where name in"
+    		+ " ('bucketName','region','accessKey','accessSecret') and customer_id=?1"
+    		,nativeQuery = true)
+    void encrypt(Long customerId);
 
 
 }

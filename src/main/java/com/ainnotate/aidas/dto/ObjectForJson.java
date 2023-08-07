@@ -8,6 +8,13 @@ public class ObjectForJson {
 	private Long id;
 	private String name;
 	private List<UploadForJson> uploads= new ArrayList<>();
+	private String consentFormUrl;
+	public String getConsentFormUrl() {
+		return consentFormUrl;
+	}
+	public void setConsentFormUrl(String consentFormUrl) {
+		this.consentFormUrl = consentFormUrl;
+	}
 	public Long getId() {
 		return id;
 	}

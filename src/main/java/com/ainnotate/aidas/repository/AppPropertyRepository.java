@@ -64,4 +64,24 @@ public interface AppPropertyRepository extends JpaRepository<AppProperty, Long> 
     @Modifying
     @Query(value="insert into app_property (is_sample_data, status,  name,  value, vendor_id,created_by,last_modified_by,created_date,last_modified_date)  (select is_sample_data, status,  name, value,?1,?2,?2,now(),now() from app_property where customer_id=-1 )",nativeQuery = true)
     void addVendorAppProperties(Long vendorId,Long userId);
+    
+    @Modifying
+    @Query(value="update app_property set value=aes_encrypt(value,'b693b2f6-350f-11ee-be56-0242ac120002') where name in"
+    		+ " ('downloadBucketName','downloadRegion','downloadAccessKey','downloadAccessSecret',"
+    		+ "'uploadBucketName','uploadRegion','uploadAccessKey','uploadAccessSecret') and organisation_id=?1",nativeQuery = true)
+    void encryptOrg(Long orgId);
+    
+    @Modifying
+    @Query(value="update app_property set value=aes_encrypt(value,'b693b2f6-350f-11ee-be56-0242ac120002') where name in"
+    		+ " ('downloadBucketName','downloadRegion','downloadAccessKey','downloadAccessSecret',"
+    		+ "'uploadBucketName','uploadRegion','uploadAccessKey','uploadAccessSecret') and customer_id=?1",nativeQuery = true)
+    void encryptCustomer(Long custId);
+    
+    @Modifying
+    @Query(value="update app_property set value=aes_encrypt(value,'b693b2f6-350f-11ee-be56-0242ac120002') where name in"
+    		+ " ('downloadBucketName','downloadRegion','downloadAccessKey','downloadAccessSecret',"
+    		+ "'uploadBucketName','uploadRegion','uploadAccessKey','uploadAccessSecret') and user_id=?1",nativeQuery = true)
+    void encryptUser(Long userId);
+    
+   
 }
