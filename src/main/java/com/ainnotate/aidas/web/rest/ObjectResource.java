@@ -326,6 +326,14 @@ public class ObjectResource {
         return ResponseEntity.ok().body(objects);
     }
 
+    @GetMapping("/aidas-projects/{id}/aidas-objects/dropdownformetadata")
+    public ResponseEntity<List<ObjectDTO>> getAllAidasObjectsOfProjectForDropdownForMetadata( @PathVariable(value = "id", required = false) final Long projectId) {
+        log.debug("REST request to get a page of AidasObjects");
+        User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        List<ObjectDTO> objects =objectRepository.getAllObjectDTOsOfProjectForMetadata(projectId);
+        return ResponseEntity.ok().body(objects);
+    }
+    
     @GetMapping("/aidas-projects/{id}/aidas-objects")
     public ResponseEntity<List<Object>> getAllAidasObjectsOfProject(Pageable pageable, @PathVariable(value = "id", required = false) final Long projectId) {
         log.debug("REST request to get a page of AidasObjects");

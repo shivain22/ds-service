@@ -32,6 +32,6 @@ public interface UserCustomerMappingRepository extends JpaRepository<UserCustome
     @Query(value = "select * from user_customer_mapping ucm, user_authority_mapping uam where ucm.user_id=uam.user_id and uam.authority_id=6 and ucm.is_sample_data=1 ",nativeQuery = true)
     List<UserCustomerMapping> getAllSampleUserCustomerMappingsForQc();
     
-    @Query(value="select * from user_customer_mapping ucm where ucm.user_id=?1", nativeQuery = true)
+    @Query(value="select * from user_customer_mapping ucm where ucm.user_id=?1 and ucm.status=1", nativeQuery = true)
     List<UserCustomerMapping> getAllCustomerForSelectedUser(Long userId);
 }

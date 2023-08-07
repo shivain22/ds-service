@@ -195,7 +195,7 @@ public interface UserRepository extends JpaRepository<User, Long>,QuerydslPredic
     @Query(value = "delete from user where is_sample_data=1",nativeQuery = true)
     void deleteAllSampleUsers();
 
-
+    
     @Override
     default public void customize(
         QuerydslBindings bindings, QUser root) {

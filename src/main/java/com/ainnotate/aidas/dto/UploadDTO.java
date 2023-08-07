@@ -1,13 +1,22 @@
 package com.ainnotate.aidas.dto;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Objects;
 
 public class UploadDTO {
 
     private Long uploadId;
+    
+	/*
+	 * private File uploadFile;
+	 * 
+	 * public File getUploadFile() { return uploadFile; }
+	 * 
+	 * public void setUploadFile(File uploadFile) { this.uploadFile = uploadFile; }
+	 */
 
-    public Long getUploadId() {
+	public Long getUploadId() {
         return uploadId;
     }
 

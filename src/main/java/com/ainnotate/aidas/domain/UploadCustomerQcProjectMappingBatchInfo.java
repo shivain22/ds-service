@@ -1,16 +1,27 @@
 package com.ainnotate.aidas.domain;
 
-import com.ainnotate.aidas.dto.ProjectDTO;
-import com.ainnotate.aidas.dto.QcResultDTO;
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.ColumnResult;
+import javax.persistence.ConstructorResult;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedNativeQuery;
+import javax.persistence.SqlResultSetMapping;
+import javax.persistence.SqlResultSetMappings;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
+
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.envers.Audited;
+import org.springframework.data.jpa.repository.Query;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
-import java.io.Serializable;
-import java.util.Objects;
+import com.ainnotate.aidas.dto.QcResultDTO;
+import com.ainnotate.aidas.dto.UploadSummaryForQCFinalize;
 
 /**
  * An authority (a security role) used by Spring Security.
@@ -35,14 +46,88 @@ import java.util.Objects;
         "and cqpm.user_customer_mapping_id=ucm.id " +
         "and ucm.user_id=u.id ",
     name = "UploadCustomerQcProjectMappingBatchInfo.getQcLevelStatus",resultSetMapping = "Mapping.QcResultDTO")
-@SqlResultSetMapping(name = "Mapping.QcResultDTO",
-    classes = @ConstructorResult(targetClass = QcResultDTO.class,
-        columns = {
-            @ColumnResult(name = "firstName",type = String.class),
-            @ColumnResult(name = "lastName",type = String.class),
-            @ColumnResult(name = "qcStatus",type = Integer.class),
-            @ColumnResult(name = "qcSeenStatus",type = Integer.class)
-        }))
+
+
+
+
+
+
+@SqlResultSetMappings(value={
+	    
+	    @SqlResultSetMapping(
+	        name = "Mapping.UploadSummaryForQCFinalize",
+	        classes = @ConstructorResult(targetClass = UploadSummaryForQCFinalize.class,
+	            columns = {
+	                @ColumnResult(name = "projectId",type = Long.class),
+	                @ColumnResult(name = "objectId",type = Long.class),
+	                @ColumnResult(name = "uvmpmId",type = Long.class),
+	                @ColumnResult(name = "uvmomId",type = Long.class),
+	                @ColumnResult(name = "totalUploaded",type = Integer.class),
+	                @ColumnResult(name = "totalApproved",type = Integer.class),
+	                @ColumnResult(name = "totalRejected",type = Integer.class),
+	                @ColumnResult(name = "totalPending",type = Integer.class),
+	                @ColumnResult(name = "totalShowToQc",type = Integer.class)
+	            })),
+	    @SqlResultSetMapping(name = "Mapping.QcResultDTO",
+	    classes = @ConstructorResult(targetClass = QcResultDTO.class,
+	        columns = {
+	            @ColumnResult(name = "firstName",type = String.class),
+	            @ColumnResult(name = "lastName",type = String.class),
+	            @ColumnResult(name = "qcStatus",type = Integer.class),
+	            @ColumnResult(name = "qcSeenStatus",type = Integer.class)
+	        })),
+	    @SqlResultSetMapping(name = "Mapping.BatchInfoMapping",
+	    classes = @ConstructorResult(targetClass = UploadSummaryForQCFinalize.class,
+	        columns = {
+	        		@ColumnResult(name = "totalUploaded",type = Integer.class),
+	                @ColumnResult(name = "totalApproved",type = Integer.class),
+	                @ColumnResult(name = "totalRejected",type = Integer.class),
+	                @ColumnResult(name = "totalPending",type = Integer.class)
+	        }))
+	})
+
+@NamedNativeQuery(name="UploadCustomerQcProjectMappingBatchInfo.getUvmomObjectIdsOfBatch",
+query="select "
+		+ " p.id as projectId,"
+		+ " uvmpm.id as uvmpmId,"
+		+ " u.user_vendor_mapping_object_mapping_id as uvmomId,"
+		+ " o.id as objectId,"
+		+ " count(*) as totalUploaded, \n"
+		+ " sum(case when ucbi.qc_status=1 then 1 else 0 end) as totalApproved, \n"
+		+ " sum(case when ucbi.qc_status=0 then 1 else 0 end) as totalRejected, \n"
+		+ " sum(case when ucbi.qc_status=2 then 1 else 0 end) as totalPending, \n"
+		+ " sum(ucbi.show_to_qc) as totalShowToQc \n"
+		+ " from  \n"
+		+ " upload_cqpm_batch_info ucbi, \n"
+		+ " upload u,\n"
+		+ " user_vendor_mapping_object_mapping uvmom, \n"
+		+ " user_vendor_mapping_project_mapping uvmpm, \n"
+		+ " object o ,\n"
+		+ " project p \n"
+		+ " where \n"
+		+ " ucbi.upload_id=u.id \n"
+		+ " and  u.user_vendor_mapping_object_mapping_id = uvmom.id \n"
+		+ " and uvmom.object_id=o.id \n"
+		+ " and o.project_id=p.id \n"
+		+ " and uvmpm.project_id=p.id \n"
+		+ " and ucbi.batch_number=?2 \n"
+		+ " and ucbi.customer_qc_project_mapping_id=?1 \n"
+		+ " group by u.user_vendor_mapping_object_mapping_id,o.id,uvmpm.id, p.id"
+    ,resultSetMapping = "Mapping.UploadSummaryForQCFinalize")
+
+@NamedNativeQuery(name="UploadCustomerQcProjectMappingBatchInfo.countUploadsByCustomerQcProjectMappingAndBatchNumberForFinalize",
+query="select count(ucbi.id) as totalUploaded,\n"
+		+ "sum(case when ucbi.qc_status=1 then 1 else 0 end) as totalApproved, \n"
+		+ "sum(case when ucbi.qc_status=0 then 1 else 0 end) as totalRejected,\n"
+		+ "sum(case when ucbi.qc_status=2 then 1 else 0 end) as totalPending  \n"
+		+ "from upload_cqpm_batch_info ucbi \n"
+		+ "where ucbi.customer_qc_project_mapping_id=?1 \n"
+		+ "and ucbi.batch_number=?2 "
+    ,resultSetMapping = "Mapping.BatchInfoMapping")
+
+
+
+
 @org.springframework.data.elasticsearch.annotations.Document(indexName = "uploadCqpmBatchInfo")
 public class UploadCustomerQcProjectMappingBatchInfo extends AbstractAuditingEntity implements Serializable {
 

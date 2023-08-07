@@ -488,7 +488,7 @@ public class DownloadUploadS3  implements  Runnable{
             conn.setRequestProperty("Accept", "application/json");
             conn.setRequestProperty("Authorization", "Zoho-enczapikey "+emailToken);
             JSONObject object = new JSONObject("{\n" +
-                "  \"bounce_address\":\"aidas@bounce.ainnotate.com\",\n" +
+                "  \"bounce_address\":\"bounce@bounce.haidata.ai\",\n" +
                 "  \"from\": { \"address\": \""+fromEmail+"\"},\n" +
                 "  \"to\": [{\"email_address\": {\"address\": \""+email+"\",\"name\": \""+name+"\"}}],\n" +
                 "  \"subject\":\""+subject+"\",\n" +

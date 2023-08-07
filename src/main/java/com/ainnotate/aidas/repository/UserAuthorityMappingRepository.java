@@ -20,7 +20,7 @@ public interface UserAuthorityMappingRepository extends JpaRepository<UserAuthor
     @Query(value="select * from user_authority_mapping where authority_id=?1 and user_id=?2",nativeQuery = true)
     UserAuthorityMapping findByAuthorityIdAndUserId(Long authorityId, Long userId);
     
-    @Query(value="select * from user_authority_mapping where  user_id=?1",nativeQuery = true)
+    @Query(value="select * from user_authority_mapping uam where  user_id=?1 and uam.status=1",nativeQuery = true)
     Set<UserAuthorityMapping> findByUserId( Long userId);
     
     @Query(value="select a.* from user_authority_mapping where  user_id=?1",nativeQuery = true)

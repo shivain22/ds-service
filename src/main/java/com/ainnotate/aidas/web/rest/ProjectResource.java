@@ -9,6 +9,7 @@ import com.ainnotate.aidas.repository.search.ProjectSearchRepository;
 import com.ainnotate.aidas.constants.AidasConstants;
 import com.ainnotate.aidas.security.SecurityUtils;
 import com.ainnotate.aidas.service.CSVHelper;
+import com.ainnotate.aidas.service.DownloadUploadJson;
 import com.ainnotate.aidas.service.DownloadUploadS3;
 import com.ainnotate.aidas.service.ObjectAddingTask;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
@@ -28,6 +29,7 @@ import java.net.URL;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -85,7 +87,14 @@ public class ProjectResource {
 	private UserCustomerMappingRepository userCustomerMappingRepository;
 	@Autowired
 	private UserRepository userRepository;
+	
+	@Autowired
+	UserAuthorityMappingRepository userAuthorityMappingRepository;
+	
+	@Autowired
+	private AuthorityRepository authorityRepository;
 
+	
 	@Autowired
 	private ObjectRepository objectRepository;
 
@@ -931,7 +940,14 @@ public class ProjectResource {
 		log.debug("REST request to get a page of AidasProjects");
 		User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
 		Page<ProjectDTO> page;
-		if (user.getAuthority().getName().equals(AidasConstants.VENDOR_USER)) {
+		List<Authority> myAuthorities   = userAuthorityMappingRepository.findByUserId(user.getId()).stream().map(UserAuthorityMapping::getAuthority).collect(Collectors.toList());
+		boolean isVendorUser=false;
+		for(Authority a:myAuthorities) {
+			if(a.getName().equals(AidasConstants.VENDOR_USER)) {
+				isVendorUser = true;
+			}
+		}
+		if (isVendorUser) {
 			page = projectRepository.findProjectWithUploadCountByUser(pageable, user.getId());
 			
 			for (ProjectDTO pdto : page.getContent()) {
@@ -1090,6 +1106,9 @@ public class ProjectResource {
 
 	@Autowired
 	DownloadUploadS3 downloadUploadS3;
+	
+	@Autowired
+	DownloadUploadJson downloadUploadJson;
 
 	/**
 	 * {@code GET  /download/:id/:status} : download objects with the "id" object
@@ -1100,7 +1119,7 @@ public class ProjectResource {
 	 * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body
 	 *         the object, or with status {@code 404 (Not Found)}.
 	 */
-	@GetMapping("/download/project/{id}/{status}/{type}")
+	@GetMapping("/download/file/{type}/{id}/{status}")
 	public void downloadUploadedObjectsOfProject(@PathVariable("id") Long aidasProjectId,
 			@PathVariable("status") String status,@PathVariable("type") String type ) {
 		User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
@@ -1119,14 +1138,14 @@ public class ProjectResource {
 	 * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body
 	 *         the object, or with status {@code 404 (Not Found)}.
 	 */
-	@GetMapping("/download/project/json/{id}/{status}/{type}")
+	@GetMapping("/download/json/{type}/{id}/{status}")
 	public void downloadUploadedObjectsOfProjectJson(@PathVariable("id") Long aidasProjectId,
 			@PathVariable("status") String status,@PathVariable("type") String type) {
 		User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-		downloadUploadS3.setUser(user);
+		downloadUploadJson.setUser(user);
 		Project project = projectRepository.getById(aidasProjectId);
-		downloadUploadS3.setUp(project, status);
-		taskExecutor.execute(downloadUploadS3);
+		downloadUploadJson.setUp(project, status);
+		taskExecutor.execute(downloadUploadJson);
 	}
 	
 	

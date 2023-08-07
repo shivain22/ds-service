@@ -89,6 +89,11 @@ public class AuthorityResource {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to get a list of AidasAuthorities of logged in user"+ user.getId());
         List<Authority> myAuthorities   = userAuthorityMappingRepository.findByUserId(user.getId()).stream().map(UserAuthorityMapping::getAuthority).collect(Collectors.toList());
+        for(Authority a:myAuthorities) {
+        	if(user.getAuthority().getId().equals(a.getId())) {
+        		a.setLastLoggedInRole(true);
+        	}
+        }
         return ResponseEntity.ok().body(myAuthorities);
     }
 

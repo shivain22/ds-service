@@ -56,6 +56,10 @@ public interface VendorRepository extends JpaRepository<Vendor, Long>,QuerydslPr
     @Query(value = "delete from vendor where is_sample_data=1 order by id desc",nativeQuery = true)
     void deleteAllSampleVendors();
     
+
+    @Query(value="select v.* from vendor v, user_vendor_mapping uvm where uvm.vendor_id=v.id and uvm.user_id=?1",nativeQuery = true)
+    List<Vendor> getVendors(Long userId);
+    
     @Override
     default public void customize(
         QuerydslBindings bindings, QVendor root) {

@@ -16,6 +16,7 @@ import org.springframework.data.querydsl.binding.QuerydslBinderCustomizer;
 import org.springframework.data.querydsl.binding.QuerydslBindings;
 import org.springframework.data.querydsl.binding.SingleValueBinding;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.LockModeType;
@@ -59,6 +60,10 @@ public interface ObjectRepository
 
 	@Query(nativeQuery = true)
 	List<ObjectDTO> getAllObjectDTOsOfProject(Long projectId);
+	
+	@Query(nativeQuery = true)
+	List<ObjectDTO> getAllObjectDTOsOfProjectForMetadata(Long projectId);
+	
 
 	@Query(value = "select ao.* from project ap, object ao,  user_vendor_mapping_object_mapping auavmaom,user_vendor_mapping auavm ,user au where  auavmaom.object_id=ao.id and ao.project_id=ap.id and auavmaom.user_vendor_mapping_id=auavm.id and auavm.user_id=au.id and au.id= ?1 and ao.status=1 and ao.is_dummy=0", nativeQuery = true)
 	Page<Object> findAllObjectsByVendorUser(Pageable page, User user);
@@ -373,25 +378,30 @@ public interface ObjectRepository
     
 	
 	@Modifying
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
     @Query(value = "update object set total_rejected=total_rejected+?2,total_pending= total_pending-?2 ,total_required=total_required+?2 where id=?1",nativeQuery = true)
-    void addTotalRejectedAndSubtractTotalPendingAddTotalRequired(Long id,Long numToAddSub);
+    void addTotalRejectedAndSubtractTotalPendingAddTotalRequired(Long id,Integer numToAddSub);
     
 	
 	@Modifying
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
     @Query(value = "update object set total_rejected=total_rejected-1,total_required=total_required-1,total_pending=total_pending+1 where id=?1",nativeQuery = true)
     void subTotalRejectedAndSubTotalRequiredAddTotalPending(Long id);
 	
 	
     @Modifying
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Query(value = "update object set total_approved=total_approved+?2, total_pending=total_pending-?2  where id=?1",nativeQuery = true)
-    void addTotalApprovedSubtractTotalPending(Long id,Long numToAddSub);
+    void addTotalApprovedSubtractTotalPending(Long id,Integer numToAddSub);
     
     @Modifying
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Query(value = "update object set total_approved=total_approved+1, total_pending=total_pending  where id=?1",nativeQuery = true)
     void addTotalApprovedSubtractTotalPending(Long id);
 
     
     @Modifying
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Query(value = "update object set total_required=total_required-1 where id=?1",nativeQuery = true)
     void subTotalRequired(Long id);
     

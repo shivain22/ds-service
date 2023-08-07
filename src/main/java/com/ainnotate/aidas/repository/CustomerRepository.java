@@ -72,6 +72,10 @@ public interface CustomerRepository extends JpaRepository<Customer, Long>,Queryd
     @Modifying
     @Query(value = "delete from customer where is_sample_data=1 order by id desc",nativeQuery = true)
     void deleteAllSampleCustomers();
+    
+
+    @Query(value="select c.* from customer c, user_customer_mapping ucm where ucm.customer_id=c.id and ucm.user_id=?1",nativeQuery = true)
+    List<Customer> getCustomers(Long userId);
     @Override
     default public void customize(
         QuerydslBindings bindings, QCustomer root) {

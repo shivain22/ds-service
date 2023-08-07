@@ -1,8 +1,10 @@
 package com.ainnotate.aidas.service;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -40,12 +42,18 @@ import com.ainnotate.aidas.domain.ObjectProperty;
 import com.ainnotate.aidas.domain.Project;
 import com.ainnotate.aidas.domain.Upload;
 import com.ainnotate.aidas.domain.User;
+import com.ainnotate.aidas.dto.ObjectForJson;
+import com.ainnotate.aidas.dto.ProjectForJson;
+import com.ainnotate.aidas.dto.UploadForJson;
 import com.ainnotate.aidas.repository.AppPropertyRepository;
 import com.ainnotate.aidas.repository.DownloadRepository;
 import com.ainnotate.aidas.repository.ObjectPropertyRepository;
 import com.ainnotate.aidas.repository.ObjectRepository;
 import com.ainnotate.aidas.repository.ProjectRepository;
 import com.ainnotate.aidas.repository.UploadRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -248,6 +256,7 @@ public class DownloadUploadJson  implements  Runnable{
         this.resource = "object";
         this.status = status;
         this.object = object;
+        this.project = this.object.getProject();
         String format = "yyyy_MM_dd_HH_mm";
         DateFormat dateFormatter = new SimpleDateFormat(format);
         String createDate = dateFormatter.format(new Date());
@@ -288,19 +297,35 @@ public class DownloadUploadJson  implements  Runnable{
         try {
             if (this.resource.equals("project")) {
                 if (this.status.equals("approved")) {
-                    uploads = this.uploadRepository.getAidasUploadsByProject(this.project.getId(), AidasConstants.AIDAS_UPLOAD_APPROVED);
+                	if(project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)) {
+                		uploads = this.uploadRepository.getAidasUploadsByGroupedProjectApproved(this.project.getId());
+                	}else {
+                		uploads = this.uploadRepository.getAidasUploadsByProject(this.project.getId(), AidasConstants.AIDAS_UPLOAD_APPROVED);	
+                	}
                 } else if (this.status.equals("rejected")) {
-                    uploads = this.uploadRepository.getAidasUploadsByProject(this.project.getId(),AidasConstants.AIDAS_UPLOAD_REJECTED);
+                	if(project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)) {
+                		uploads = this.uploadRepository.getAidasUploadsByGroupedProjectRejected(this.project.getId());
+                	}else {
+                		uploads = this.uploadRepository.getAidasUploadsByProject(this.project.getId(),AidasConstants.AIDAS_UPLOAD_REJECTED);
+                	}
                 }else if (this.status.equals("pending")) {
-                    uploads = this.uploadRepository.getAidasUploadsByProject(this.project.getId());
+                    uploads = this.uploadRepository.getAidasUploadsByProject(this.project.getId(),AidasConstants.AIDAS_UPLOAD_PENDING);
                 }else if (this.status.equals("all")) {
                     uploads = this.uploadRepository.getAidasUploadsByProject(this.project.getId());
                 }
             } else if (this.resource.equals("object")) {
                 if (this.status.equals("approved")) {
-                    uploads = this.uploadRepository.getAidasUploadsByObject(this.object.getId(),AidasConstants.AIDAS_UPLOAD_APPROVED);
+                	if(project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)) {
+                		uploads = this.uploadRepository.getAidasUploadsByGroupedProjectApprovedObject(this.object.getId());
+                	}else {
+                		uploads = this.uploadRepository.getAidasUploadsByObject(this.object.getId(),AidasConstants.AIDAS_UPLOAD_APPROVED);
+                	}
                 } else if (this.status.equals("rejected")) {
-                    uploads = this.uploadRepository.getAidasUploadsByObject(this.object.getId(),AidasConstants.AIDAS_UPLOAD_REJECTED);
+                	if(project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)) {
+                		uploads = this.uploadRepository.getAidasUploadsByGroupedProjectRejectedObject(this.object.getId());
+                	}else {
+                		uploads = this.uploadRepository.getAidasUploadsByObject(this.object.getId(),AidasConstants.AIDAS_UPLOAD_REJECTED);
+                	}
                 } else if(this.status.equals("pending")) {
                     uploads = this.uploadRepository.getAidasUploadsByObject(this.object.getId(),AidasConstants.AIDAS_UPLOAD_PENDING);
                 } else if(this.status.equals("all")) {
@@ -311,25 +336,48 @@ public class DownloadUploadJson  implements  Runnable{
             }
             if (uploads != null) {
             	
-            	
-
+            	Long tmpObjId = -2l;
+            	ObjectForJson objectForJson=null;
                 try {
                     System.out.println("Starting to download all uploads.......");
+                    ProjectForJson projectForJson = new ProjectForJson();
+                    projectForJson.setId(project.getId());
+                    projectForJson.setName(project.getName());
+                    projectForJson.setGroupingProject(project.getAutoCreateObjects());
                     for (Upload au : uploads) {
+                    	UploadForJson uploadForJson= new UploadForJson();
+                    	if(!tmpObjId.equals(au.getUserVendorMappingObjectMapping().getObject().getId())) {
+                    		if(!tmpObjId.equals(-2l)) {
+                    			projectForJson.getObjects().add(objectForJson);
+                    		}
+                    		objectForJson = new ObjectForJson();
+                    		objectForJson.setId(au.getUserVendorMappingObjectMapping().getObject().getId());
+                    		objectForJson.setName(au.getUserVendorMappingObjectMapping().getObject().getName());
+                    		tmpObjId = au.getUserVendorMappingObjectMapping().getObject().getId();
+                    	}
                         Map<String, String> uploadLocProps = getObjectProperties(au);
                         S3Presigner presigner = S3Presigner.builder().credentialsProvider(StaticCredentialsProvider
                 				.create(AwsBasicCredentials.create(uploadLocProps.get("accessKey"),uploadLocProps.get("accessSecret")))).region(Region.of(uploadLocProps.get("region"))).build();
                         try {
                             System.out.println("About to download file with objectkey as ="+au.getObjectKey());
+                           
                             GetObjectRequest getObjectRequest =GetObjectRequest.builder().bucket(uploadLocProps.get("bucketName")).key(au.getUploadUrl()).build();
             			   	GetObjectPresignRequest getObjectPresignRequest = GetObjectPresignRequest.builder().signatureDuration(Duration.ofMinutes(1440)).getObjectRequest(getObjectRequest).build();
             				PresignedGetObjectRequest presignedGetObjectRequest =presigner.presignGetObject(getObjectPresignRequest);
-                    		
+            				 uploadForJson.setId(au.getId());
+                             uploadForJson.setFileName(au.getName());
+                             uploadForJson.setS3Url(presignedGetObjectRequest.url());
+                             uploadForJson.setMd5(au.getUploadEtag());
+                             uploadForJson.setApprovalStatus(au.getApprovalStatus());
+                             
                         }catch(Exception e4){
                             System.out.println("The file being tried is "+au.getObjectKey());
                             e4.printStackTrace();
                         }
+                        objectForJson.getUploads().add(uploadForJson);
                     }
+                    projectForJson.getObjects().add(objectForJson);
+                    writeJsonToFile(projectForJson);
                 }catch(Exception e2){
                     System.out.println("Error when tryingto download all files..... "+e2.getMessage());
                     e2.printStackTrace();
@@ -490,6 +538,22 @@ public class DownloadUploadJson  implements  Runnable{
         }
         return bytesArray;
     }
+    
+    private void writeJsonToFile(ProjectForJson projectForJson) {
+    	ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+    	
+		try {
+			ow.writeValue(new File(this.tempFolder+"/"+this.project.getId()+"_"+this.project.getName()+".json"),projectForJson);
+			
+		} catch (JsonProcessingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
+    }
 
     private void sendMail(String email, String  name, String downloadUrl,String fileName,String subject) throws IOException {
         String postUrl = "https://api.zeptomail.in/v1.1/email";
@@ -497,7 +561,7 @@ public class DownloadUploadJson  implements  Runnable{
         HttpURLConnection conn = null;
         String output = null;
         StringBuilder sb = new StringBuilder();
-        
+        System.out.println("PHtE6r0JSujviWd78kJR5vHuQ8etNNh89b8zelIS449LCPBRHU0AqNp/kWe/qRZ5XfEUQffNzo09tbiV4O6HdD24MTxIXmqyqK3sx/VYSPOZsbq6x00ZsFwbfkPcUYLpetBo1i3Qvd6X".equals(emailToken));
         try {
             URL url = new URL(postUrl);
             conn = (HttpURLConnection) url.openConnection();
@@ -507,7 +571,7 @@ public class DownloadUploadJson  implements  Runnable{
             conn.setRequestProperty("Accept", "application/json");
             conn.setRequestProperty("Authorization", "Zoho-enczapikey "+emailToken);
             JSONObject object = new JSONObject("{\n" +
-                "  \"bounce_address\":\"aidas@bounce.ainnotate.com\",\n" +
+                "  \"bounce_address\":\"bounce@bounce.haidata.ai\",\n" +
                 "  \"from\": { \"address\": \""+fromEmail+"\"},\n" +
                 "  \"to\": [{\"email_address\": {\"address\": \""+email+"\",\"name\": \""+name+"\"}}],\n" +
                 "  \"subject\":\""+subject+"\",\n" +

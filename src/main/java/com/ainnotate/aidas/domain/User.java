@@ -443,15 +443,6 @@ public class User extends AbstractAuditingEntity implements Serializable {
         this.customers = customers;
     }
 
-    public Set<Vendor> getVednors() {
-		/*
-		 * if(userVendorMappings !=null && userVendorMappings.size()>0){
-		 * for(UserVendorMapping auavm: userVendorMappings){
-		 * if(auavm.getStatus().equals(1)) vendors.add(auavm.getVendor()); } }
-		 */
-        return vendors;
-    }
-
     public void setVendors(Set<Vendor> vendors) {
         this.vendors = vendors;
     }

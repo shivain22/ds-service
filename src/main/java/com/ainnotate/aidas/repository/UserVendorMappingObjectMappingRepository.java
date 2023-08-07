@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -63,6 +64,7 @@ public interface UserVendorMappingObjectMappingRepository extends JpaRepository<
     List<Long> getAllSampleUserVendorMappingObjectMappingsIds();
 
     @Modifying
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Query(value = "delete from user_vendor_mapping_object_mapping where is_sample_data=1 order by id desc",nativeQuery = true)
     void deleteAllSampleUserVendorMappingObjectMappings();
     
@@ -71,26 +73,32 @@ public interface UserVendorMappingObjectMappingRepository extends JpaRepository<
     void addTotalUploadedAndAddTotalPending(Long id);
     
     @Modifying
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Query(value = "update user_vendor_mapping_object_mapping set total_rejected=total_rejected+1,total_pending= total_pending-1 ,total_required=total_required+1 where id=?1",nativeQuery = true)
     void addTotalRejectedAndSubtractTotalPendingAddTotalRequired(Long id);
     
     @Modifying
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Query(value = "update user_vendor_mapping_object_mapping set total_rejected=total_rejected+?2,total_pending= total_pending-?2 ,total_required=total_required+?2 where id=?1",nativeQuery = true)
-    void addTotalRejectedAndSubtractTotalPendingAddTotalRequired(Long id,Long numToAddSub);
+    void addTotalRejectedAndSubtractTotalPendingAddTotalRequired(Long id,Integer numToAddSub);
     
     @Modifying
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Query(value = "update user_vendor_mapping_object_mapping set total_rejected=total_rejected-1,total_required=total_required-1,total_pending=total_pending+1 where id=?1",nativeQuery = true)
     void subTotalRejectedAndSubTotalRequiredAddTotalPending(Long id);
     
     @Modifying
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Query(value = "update user_vendor_mapping_object_mapping set total_approved=total_approved+1, total_pending=total_pending  where id=?1",nativeQuery = true)
     void addTotalApprovedSubtractTotalPending(Long id);
     
     @Modifying
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Query(value = "update user_vendor_mapping_object_mapping set total_approved=total_approved+?2, total_pending=total_pending-?2  where id=?1",nativeQuery = true)
-    void addTotalApprovedSubtractTotalPending(Long id, Long numToAddSub);
+    void addTotalApprovedSubtractTotalPending(Long id, Integer numToAddSub);
 
     @Modifying
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Query(value = "update user_vendor_mapping_object_mapping set total_required=total_required-1 where id=?1",nativeQuery = true)
     void subTotalRequired(Long id);
     

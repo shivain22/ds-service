@@ -4,10 +4,14 @@ import com.ainnotate.aidas.domain.Authority;
 import com.ainnotate.aidas.domain.Upload;
 import com.ainnotate.aidas.domain.UploadCustomerQcProjectMappingBatchInfo;
 import com.ainnotate.aidas.dto.QcResultDTO;
+import com.ainnotate.aidas.dto.UploadSummaryForQCFinalize;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -173,14 +177,9 @@ public interface UploadCustomerQcProjectMappingBatchInfoRepository extends JpaRe
     @Query(value="select count(ucbi.id) from upload_cqpm_batch_info ucbi where ucbi.customer_qc_project_mapping_id=?1 and ucbi.batch_number=?2 and (ucbi.qc_status=1 or ucbi.qc_status=2) ",nativeQuery = true)
     Integer countUploadsByCustomerQcProjectMappingAndBatchNumber(Long customerQcProjectMappingId,Integer batchNumber);
     
-    @Query(value="select count(ucbi.id) as total,\n"
-    		+ "sum(case when ucbi.qc_status=1 then 1 else 0 end) as approved, \n"
-    		+ "sum(case when ucbi.qc_status=0 then 1 else 0 end) as rejected,\n"
-    		+ "sum(case when ucbi.qc_status=2 then 1 else 0 end) as pending  \n"
-    		+ "from upload_cqpm_batch_info ucbi \n"
-    		+ "where ucbi.customer_qc_project_mapping_id=?1 \n"
-    		+ "and ucbi.batch_number=?2 ",nativeQuery = true)
-    List<Integer[]> countUploadsByCustomerQcProjectMappingAndBatchNumberForFinalize(Long customerQcProjectMappingId,Long batchNumber);
+    @Query(nativeQuery = true)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    UploadSummaryForQCFinalize countUploadsByCustomerQcProjectMappingAndBatchNumberForFinalize(Long customerQcProjectMappingId,Long batchNumber);
 
     @Query(value="select count(ucbi.id) from upload_cqpm_batch_info ucbi where ucbi.customer_qc_project_mapping_id=?1 and ucbi.batch_number=?2  and ucbi.qc_status=?3",nativeQuery = true)
     Integer countUploadsByCustomerQcProjectMappingAndBatchNumber(Long customerQcProjectMappingId,Long batchNumber,Integer qcStatus);
@@ -197,8 +196,11 @@ public interface UploadCustomerQcProjectMappingBatchInfoRepository extends JpaRe
     UploadCustomerQcProjectMappingBatchInfo getByUploadId(Long uploadId);
     
     @Modifying
-    @Query(value="update upload_cqpm_batch_info set qc_status=1 where batch_number=?2 and customer_qc_project_mapping_id=?1 and show_to_qc=0 and qc_status=2",nativeQuery =  true)
-    void updateUcqpmbi(Long customerQcProjectMappingId,Long batchNumber);
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Query(value="update upload u,upload_cqpm_batch_info ucbi set ucbi.qc_status=1,u.qc_status=1, "
+    		+ "  ucbi.last_modified_date=now(), ucbi.last_modified_by=?3 where batch_number=?2 "
+    		+ "and customer_qc_project_mapping_id=?1 and ucbi.show_to_qc=0 and ucbi.qc_status=2 and ucbi.upload_id=u.id",nativeQuery =  true)
+    void updateUcqpmbi(Long customerQcProjectMappingId,Long batchNumber, String lastModifiedBy);
     
     
     @Modifying
@@ -231,48 +233,26 @@ public interface UploadCustomerQcProjectMappingBatchInfoRepository extends JpaRe
     		+ " group by u.user_vendor_mapping_object_mapping_id,o.id,uvmpm.id, p.id",nativeQuery =  true)
     List<Long[]> getUvmomObjectIdsOfFinalLevelPendingAndNotShown(Long customerQcProjectMappingId,Long batchNumber);
     
-    @Modifying
-    @Query(value="select "
-    		+ " p.id as project_id,"
-    		+ " uvmpm.id as uvmpm_id,"
-    		+ " u.user_vendor_mapping_object_mapping_id as uvmom_id,"
-    		+ " o.id as object_id,"
-    		+ " count(*) as total, \n"
-    		+ " sum(case when ucbi.qc_status=1 then 1 else 0 end) as total_approved, \n"
-    		+ " sum(case when ucbi.qc_status=0 then 1 else 0 end) as total_rejected, \n"
-    		+ " sum(case when ucbi.qc_status=2 then 1 else 0 end) as total_pending, \n"
-    		+ " sum(ucbi.show_to_qc) as show_to_qc \n"
-    		+ " from  \n"
-    		+ " upload_cqpm_batch_info ucbi, \n"
-    		+ " upload u,\n"
-    		+ " user_vendor_mapping_object_mapping uvmom, \n"
-    		+ " user_vendor_mapping_project_mapping uvmpm, \n"
-    		+ " object o ,\n"
-    		+ " project p \n"
-    		+ " where \n"
-    		+ " ucbi.upload_id=u.id \n"
-    		+ " and  u.user_vendor_mapping_object_mapping_id = uvmom.id \n"
-    		+ " and uvmom.object_id=o.id \n"
-    		+ " and o.project_id=p.id \n"
-    		+ " and uvmpm.project_id=p.id \n"
-    		+ " and ucbi.batch_number=?2 \n"
-    		+ " and ucbi.customer_qc_project_mapping_id=?1 \n"
-    		+ " group by u.user_vendor_mapping_object_mapping_id,o.id,uvmpm.id, p.id",nativeQuery =  true)
-    List<Long[]> getUvmomObjectIdsOfBatch(Long customerQcProjectMappingId,Long batchNumber);
+  
+    @Query(nativeQuery =  true)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    List<UploadSummaryForQCFinalize> getUvmomObjectIdsOfBatch(Long customerQcProjectMappingId,Long batchNumber);
     
     
     
     
     
-    @Modifying
+    @Modifying(clearAutomatically = true,flushAutomatically = true)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Query(value="update upload_cqpm_batch_info ucbi, upload u "
-    		+ "set ucbi.qc_status=1, u.qc_status=1, u.approval_status=1,"
+    		+ "set u.qc_status=1, u.approval_status=1, ucbi.last_modified_date=now(), ucbi.qc_status=1,"
     		+ "u.qc_end_date=now() where ucbi.upload_id=u.id and ucbi.batch_number=?2 "
-    		+ "and ucbi.customer_qc_project_mapping_id=?1 and ucbi.show_to_qc=?3 and ucbi.qc_status=2",nativeQuery =  true)
-    void updateUcqpmbiUploadFinalLevel(Long customerQcProjectMappingId,Long batchNumber,Integer showToQc);
+    		+ "and ucbi.customer_qc_project_mapping_id=?1 and ucbi.show_to_qc=0 and ucbi.qc_status=2",nativeQuery =  true)
+    void updateUcqpmbiUploadFinalLevel(Long customerQcProjectMappingId,Long batchNumber);
     
     @Modifying
-    @Query(value = "insert into upload_cqpm_batch_info(batch_number,upload_id,customer_qc_project_mapping_id,show_to_qc,qc_status) (select ?2,u.id,?3,?4,?5 from upload u where u.id in (?1)) ",nativeQuery = true)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Query(value = "insert into upload_cqpm_batch_info(batch_number,upload_id,customer_qc_project_mapping_id,show_to_qc,qc_status,qc_seen_status) (select ?2,u.id,?3,?4,?5,0 from upload u where u.id in (?1)) ",nativeQuery = true)
     void insertUploadCqpmBatchInfo(List<Long> uploadIds,Long batchNumber, Long customerQcProjectMappingId,Integer showToQc, Integer qcStatus);
     
     

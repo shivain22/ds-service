@@ -35,8 +35,18 @@ public class Authority extends AbstractAuditingEntity implements Serializable {
     @Size(max = 50)
     @Column(length = 50)
     private String name;
+    
+    private transient boolean lastLoggedInRole;
 
-    public String getName() {
+    public boolean isLastLoggedInRole() {
+		return lastLoggedInRole;
+	}
+
+	public void setLastLoggedInRole(boolean lastLoggedInRole) {
+		this.lastLoggedInRole = lastLoggedInRole;
+	}
+
+	public String getName() {
         return name;
     }
 

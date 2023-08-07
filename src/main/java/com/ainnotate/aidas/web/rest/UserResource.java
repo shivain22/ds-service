@@ -452,6 +452,34 @@ public class UserResource {
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, user.getId().toString()))
             .body(user);
     }
+    
+    /**
+     * {@code POST  /aidas-users/organisation/:organisationId} : Update/change current role of the user.
+     *
+     * @param organisationId the role to switch.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new user, or with status {@code 400 (Bad Request)} if the user has already an ID.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @GetMapping("/aidas-users/changeEntity/{entityType}/{entityId}")
+     public ResponseEntity<String> updateCurrentEntity(@Valid @PathVariable String entityType,@Valid @PathVariable Long entityId) throws URISyntaxException {
+        log.debug("REST request to update current role of AidasUser : {}", SecurityUtils.getCurrentUserLogin().get());
+        User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        if(entityType.equals("ROLE_ORG_ADMIN")) {
+        	Organisation currentOrganisation = organisationRepository.getById(entityId);
+        	user.setOrganisation(currentOrganisation);
+        }else if(entityType.equals("ROLE_CUSTOMER_ADMIN")) {
+        	Customer currentCustomer = customerRepository.getById(entityId);
+        	user.setCustomer(currentCustomer);
+        }else if(entityType.equals("ROLE_VENDOR_ADMIN")) {
+        	Vendor currentVendor  = vendorRepository.getById(entityId);
+        	user.setVendor(currentVendor);
+        }
+        userRepository.save(user);
+        return ResponseEntity
+            .created(new URI("/api/aidas-users/" + user.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, user.getId().toString()))
+            .body("Successfully changed");
+    }
 
     /**
      * {@code POST  /aidas-users/customer/:customerId} : Update/change current role of the user.
@@ -474,6 +502,53 @@ public class UserResource {
             .body(user);
     }
 
+    
+    
+    @GetMapping("/aidas-users/changeEntity/{entityType}")
+    public ResponseEntity<List<NameValueHolderDto>> getOrgCustVendList(@Valid @PathVariable String entityType) throws URISyntaxException {
+        log.debug("REST request to update current role of AidasUser : {}", SecurityUtils.getCurrentUserLogin().get());
+        User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        List<NameValueHolderDto> list =  new ArrayList<>();
+        if(entityType.equals("ROLE_ORG_ADMIN")) {
+        	List<Organisation> orgs = organisationRepository.getOrganisations(user.getId());
+        	for(Organisation o:orgs) {
+        		NameValueHolderDto n = new NameValueHolderDto();
+        		if(user.getOrganisation()!=null && user.getOrganisation().getId().equals(o.getId())) {
+        			n.setLastLoggedInRole(true);
+        		}
+        		n.setId(o.getId());
+        		n.setName(o.getName());
+        		list.add(n);
+        	}
+        }else if(entityType.equals("ROLE_CUSTOMER_ADMIN")) {
+        	List<Customer> custs = customerRepository.getCustomers(user.getId());
+        	for(Customer c:custs) {
+        		NameValueHolderDto n = new NameValueHolderDto();
+        		if(user.getCustomer()!=null && user.getCustomer().getId().equals(c.getId())) {
+        			n.setLastLoggedInRole(true);
+        		}
+        		n.setId(c.getId());
+        		n.setName(c.getName());
+        		list.add(n);
+        	}
+        }else if(entityType.equals("ROLE_VENDOR_ADMIN")) {
+        	List<Vendor> vendors = vendorRepository.getVendors(user.getId());
+        	for(Vendor v:vendors) {
+        		NameValueHolderDto n = new NameValueHolderDto();
+        		if(user.getVendor()!=null && user.getVendor().getId().equals(v.getId())) {
+        			n.setLastLoggedInRole(true);
+        		}
+        		n.setId(v.getId());
+        		n.setName(v.getName());
+        		list.add(n);
+        	}
+        }
+        return ResponseEntity
+            .created(new URI("/api/aidas-users/" + user.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, user.getId().toString()))
+            .body(list);
+    }
+    
     /**
      * {@code POST  /aidas-users/vendor/:vendorId} : Update/change current role of the user.
      *
@@ -1163,8 +1238,7 @@ public class UserResource {
         user.setGroups(groups);
         RealmResource realmResource = keycloak.realm(keycloakConfig.getClientRealm());
         UsersResource usersRessource = realmResource.users();
-        user.setEnabled(false);
-        user.setEmailVerified(false);
+        
         Response response = usersRessource.create(user);
         String userId = CreatedResponseUtil.getCreatedId(response);
         myUser.setKeycloakId(userId);
@@ -1174,7 +1248,7 @@ public class UserResource {
         passwordCred.setValue(myUser.getPassword());
         org.keycloak.admin.client.resource.UserResource userResource = usersRessource.get(userId);
         userResource.resetPassword(passwordCred);
-        //userResource.sendVerifyEmail();
+        userResource.sendVerifyEmail();
         
             for(UserAuthorityMapping aa:myUser.getUserAuthorityMappings()){
                 RoleRepresentation rr = realmResource.roles().get(aa.getAuthority().getName()).toRepresentation();

@@ -30,16 +30,51 @@ public interface UploadRepository extends JpaRepository<Upload, Long> {
     @Query(value = "select count(*) from upload au, object ao,user_vendor_mapping_object_mapping auavmaom where au.user_vendor_mapping_object_mapping_id=auavmaom.id and auavmaom.object_id=ao.id and ao.id=?1 and ao.status=1 and ao.is_dummy=0 ",nativeQuery = true)
     Integer countAidasUploadByAidasUserAidasObjectMapping_AidasObject(Long aidasObjectId);
 
-    @Query(value = "select au.* from upload au, user_vendor_mapping_object_mapping auavmaom,object ao where au.user_vendor_mapping_object_mapping_id=auavmaom.id and  auavmaom.object_id=ao.id and ao.project_id=?1 and au.approval_status=?2",nativeQuery = true)
+    @Query(value = "select u.* from upload u, user_vendor_mapping_object_mapping uvmom,object o where u.user_vendor_mapping_object_mapping_id=uvmom.id "
+    		+ " and  uvmom.object_id=o.id and o.project_id=?1 and u.approval_status=?2 order by o.project_id, o.id, uvmom.id,u.id",nativeQuery = true)
     List<Upload>getAidasUploadsByProject(Long aidasProjectId, Integer approvalStatus);
+    
+    @Query(value = "select u.* from upload u, user_vendor_mapping_object_mapping uvmom,object o where u.user_vendor_mapping_object_mapping_id=uvmom.id "
+    		+ " and  uvmom.object_id=o.id and o.project_id=?1 "
+    		+ " and (select count(*) from upload u1,user_vendor_mapping_object_mapping uvmom1,object o1 where u1.user_vendor_mapping_object_mapping_id=uvmom1.id "
+    		+ " and  uvmom1.object_id=o1.id and o1.project_id=?1 "
+    		+ " and u1.approval_status=1 and o1.id=o.id) = o.number_of_uploads_required"
+    		+ " order by o.project_id, o.id, uvmom.id,u.id",nativeQuery = true)
+    List<Upload>getAidasUploadsByGroupedProjectApproved(Long aidasProjectId);
+    
+    @Query(value = "select u.* from upload u, user_vendor_mapping_object_mapping uvmom,object o where u.user_vendor_mapping_object_mapping_id=uvmom.id "
+    		+ " and  uvmom.object_id=o.id and o.project_id=?1 "
+    		+ " and o.id in "
+    		+ "(select o.id from upload u, user_vendor_mapping_object_mapping uvmom, object o where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and u.approval_status=0 and o.project_id=?1 group by o.id)"
+    		+ " order by o.project_id, o.id, uvmom.id,u.id",nativeQuery = true)
+    List<Upload>getAidasUploadsByGroupedProjectRejected(Long aidasProjectId);
 
-    @Query(value = "select au.* from upload au, user_vendor_mapping_object_mapping auavmaom,object ao where au.user_vendor_mapping_object_mapping_id=auavmaom.id and auavmaom.object_id=ao.id and ao.project_id=?1",nativeQuery = true)
+    @Query(value = "select u.* from upload u, user_vendor_mapping_object_mapping uvmom,object o where u.user_vendor_mapping_object_mapping_id=uvmom.id "
+    		+ " and uvmom.object_id=o.id and o.project_id=?1 order by o.project_id,o.id,uvmom.id,u.id",nativeQuery = true)
     List<Upload>getAidasUploadsByProject(Long aidasProjectId);
 
-    @Query(value = "select au.* from upload au, user_vendor_mapping_object_mapping auavmaom where au.user_vendor_mapping_object_mapping_id=auavmaom.id and  auavmaom.object_id=?1 and au.approval_status=?2",nativeQuery = true)
-    List<Upload>getAidasUploadsByObject(Long aidasProjectId, Integer approvalStatus);
+    @Query(value = "select u.* from upload u, user_vendor_mapping_object_mapping uvmom where u.user_vendor_mapping_object_mapping_id=uvmom.id and  "
+    		+ " uvmom.object_id=?1 and u.approval_status=?2 order by uvmom.object_id, uvmom.id, u.id",nativeQuery = true)
+    List<Upload>getAidasUploadsByObject(Long aidasObjectId, Integer approvalStatus);
+    
+    @Query(value = "select u.* from upload u, user_vendor_mapping_object_mapping uvmom,object o where u.user_vendor_mapping_object_mapping_id=uvmom.id "
+    		+ " and  uvmom.object_id=o.id and o.id=?1 "
+    		+ " and (select count(*) from upload u1,user_vendor_mapping_object_mapping uvmom1,object o1 where u1.user_vendor_mapping_object_mapping_id=uvmom1.id "
+    		+ " and  uvmom1.object_id=o1.id and o1.id=?1 "
+    		+ " and u1.approval_status=1) = o.number_of_uploads_required"
+    		+ " order by o.project_id, o.id, uvmom.id,u.id",nativeQuery = true)
+    List<Upload>getAidasUploadsByGroupedProjectApprovedObject(Long aidasObjectId);
+    
+    @Query(value = "select u.* from upload u, user_vendor_mapping_object_mapping uvmom,object o where u.user_vendor_mapping_object_mapping_id=uvmom.id "
+    		+ " and  uvmom.object_id=o.id and o.id=?1 "
+    		+ " and (select count(*) from upload u1,user_vendor_mapping_object_mapping uvmom1,object o1 where u1.user_vendor_mapping_object_mapping_id=uvmom1.id "
+    		+ " and  uvmom1.object_id=o1.id and o1.id=?1 "
+    		+ " and u1.approval_status=0)>1"
+    		+ " order by o.project_id, o.id, uvmom.id,u.id",nativeQuery = true)
+    List<Upload>getAidasUploadsByGroupedProjectRejectedObject(Long aidasObjectId);
 
-    @Query(value = "select au.* from upload au, user_vendor_mapping_object_mapping auavmaom where au.user_vendor_mapping_object_mapping_id=auavmaom.id and  auavmaom.object_id=?1 ",nativeQuery = true)
+    @Query(value = "select u.* from upload au, user_vendor_mapping_object_mapping uvmom where au.user_vendor_mapping_object_mapping_id=uvmom.id and"
+    		+ "  uvmom.object_id=?1 order by uvmom.object_id, uvmom.id, u.id",nativeQuery = true)
     List<Upload>getAidasUploadsByObject(Long aidasProjectId);
 
     @Query(value="select count(*) from upload  au", nativeQuery = true)
