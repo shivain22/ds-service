@@ -1,5 +1,6 @@
 package com.ainnotate.aidas.web.rest;
 
+import com.ainnotate.aidas.constants.AidasConstants;
 import com.ainnotate.aidas.domain.*;
 import com.ainnotate.aidas.dto.VendorUserDTO;
 import com.ainnotate.aidas.repository.AppPropertyRepository;
@@ -9,6 +10,7 @@ import com.ainnotate.aidas.repository.VendorRepository;
 import com.ainnotate.aidas.repository.predicates.ProjectPredicatesBuilder;
 import com.ainnotate.aidas.repository.predicates.VendorPredicatesBuilder;
 import com.ainnotate.aidas.repository.search.VendorSearchRepository;
+import com.ainnotate.aidas.security.SecurityUtils;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 import com.querydsl.core.types.dsl.BooleanExpression;
 
@@ -236,7 +238,14 @@ public class VendorResource {
 	@GetMapping("/aidas-vendors/dropdown")
 	public ResponseEntity<List<Vendor>> getAllVendorsForDropDown() {
 		log.debug("REST request to get a page of AidasVendors");
-		List<Vendor> vendors = vendorRepository.findAllByIdGreaterThanForDropDown(0l);
+		User loggedInUser = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+		List<Vendor> vendors =new ArrayList();
+        if(loggedInUser.getAuthority().getName().equals(AidasConstants.ADMIN)) {
+        	vendors = vendorRepository.findAll();
+        }else {
+        	vendors = vendorRepository.findAllByIdGreaterThanForDropDown(0l);
+        }
+		
 		return ResponseEntity.ok().body(vendors);
 	}
 

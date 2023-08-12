@@ -105,6 +105,10 @@ public interface UploadMetaDataRepository extends JpaRepository<UploadMetaData, 
     List<UploadMetadataDTO> getAllUploadMetadataProjectProperties(Long userVendorMappingId, Long objectId);
     
     @Query(nativeQuery = true)
+    List<UploadMetadataDTO> findAllByUserAndProjectAllForMetadataUploadWiseForNew(Long userId, Long objectId);
+    
+    
+    @Query(nativeQuery = true)
     List<UploadMetadataDTO> getAllUploadMetadataObjectProperties(Long userVendorMappingId, Long objectId);
     
     

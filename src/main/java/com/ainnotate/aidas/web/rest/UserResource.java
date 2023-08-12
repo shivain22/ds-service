@@ -256,6 +256,7 @@ public class UserResource {
                 uam.setAuthority(a);
                 uam.setUser(user);
                 user.getUserAuthorityMappings().add(uam);
+                user.getAuthorities().add(a);
             }
             if(a!=null){
                 user.setAuthority(a);
@@ -473,6 +474,9 @@ public class UserResource {
         }else if(entityType.equals("ROLE_VENDOR_ADMIN")) {
         	Vendor currentVendor  = vendorRepository.getById(entityId);
         	user.setVendor(currentVendor);
+        }else if(entityType.equals("ROLE_QC")) {
+        	Customer currentCustomer = customerRepository.getById(entityId);
+        	user.setCustomer(currentCustomer);
         }
         userRepository.save(user);
         return ResponseEntity
@@ -542,7 +546,19 @@ public class UserResource {
         		n.setName(v.getName());
         		list.add(n);
         	}
+        }else if(entityType.equals("ROLE_QC")) {
+        	List<Customer> custs = customerRepository.getCustomers(user.getId());
+        	for(Customer c:custs) {
+        		NameValueHolderDto n = new NameValueHolderDto();
+        		if(user.getCustomer()!=null && user.getCustomer().getId().equals(c.getId())) {
+        			n.setLastLoggedInRole(true);
+        		}
+        		n.setId(c.getId());
+        		n.setName(c.getName());
+        		list.add(n);
+        	}
         }
+        
         return ResponseEntity
             .created(new URI("/api/aidas-users/" + user.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, user.getId().toString()))
@@ -875,6 +891,7 @@ public class UserResource {
                     uam.setUser(user);
                 }
                 uam.setStatus(aid.getStatus());
+                
                 userAuthorityMappingRepository.save(uam);
             }
         }

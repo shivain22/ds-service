@@ -33,6 +33,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.envers.Audited;
+import org.springframework.data.jpa.repository.Query;
 
 import com.ainnotate.aidas.dto.UploadDTOForQC;
 import com.ainnotate.aidas.dto.UploadMetadataDTO;
@@ -70,6 +71,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 								    + "order by u.user_vendor_mapping_object_mapping_id,u.id"
 				
 				            , resultSetMapping = "Mapping.getUploadDTOForQCInBatch")
+
+
 
 
 @NamedNativeQuery(name="Upload.findAllUploadIdsNonGroupedNew",
@@ -176,7 +179,6 @@ query=
 			@ColumnResult(name = "qcStatus", type = Integer.class),
 			@ColumnResult(name = "consentFormUrl", type = String.class)
 }))
-
 
 /**
  * A AidasUpload.

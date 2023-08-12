@@ -40,9 +40,13 @@ public interface PropertyRepository extends JpaRepository<Property, Long> {
 
     @Query(value="select * from property where user_id=-1",nativeQuery = true)
     List<Property>findAllStandardProperties();
+    
+    @Query(value="select * from property where customer_id=?1 and name in (?2)",nativeQuery = true)
+    List<Property>getAllCustomerPropertiesForEnc(Long customerId, List<String>key);
 
     @Modifying
-    @Query(value="insert into property (is_sample_data, status, add_to_metadata, default_prop, description, name, optional, property_type, value, customer_id,created_by,last_modified_by,created_date,last_modified_date,category_id)  (select is_sample_data, status, add_to_metadata, default_prop, description, name, optional, property_type, value,?1,?2,?2,now(),now(),category_id from property where customer_id=-1 )",nativeQuery = true)
+    @Query(value="insert into property (is_sample_data, status, add_to_metadata, default_prop, description, name, optional, property_type, value, customer_id,created_by,last_modified_by,created_date,last_modified_date,category_id,show_to_vendor_user)"
+    		+ "  (select is_sample_data, status, add_to_metadata, default_prop, description, name, optional, property_type, value,?1,?2,?2,now(),now(),category_id,show_to_vendor_user from property where customer_id=-1 )",nativeQuery = true)
     void addCustomerProperties(Long customerId,Long userId);
 
     @Query(value = "select * from property where is_sample_data=1",nativeQuery = true)

@@ -43,6 +43,9 @@ public interface AppPropertyRepository extends JpaRepository<AppProperty, Long> 
 
     @Query(value = "select * from app_property app where app.customer_id=?1 and app.name=?2",nativeQuery = true)
     AppProperty getAppPropertyCustomer(Long aidasCustomerId, String key );
+    
+    @Query(value = "select * from app_property app where app.user_id=?1 and app.name=?2",nativeQuery = true)
+    AppProperty getAppPropertyUser(Long aidasCustomerId, String key );
 
     @Query(value = "select * from app_property app where app.customer_id=?1 and app.name  like concat('%',?2) ",nativeQuery = true)
     List<AppProperty> getAppPropertyCustomerLike(Long aidasCustomerId, String key );
@@ -64,6 +67,12 @@ public interface AppPropertyRepository extends JpaRepository<AppProperty, Long> 
     @Modifying
     @Query(value="insert into app_property (is_sample_data, status,  name,  value, vendor_id,created_by,last_modified_by,created_date,last_modified_date)  (select is_sample_data, status,  name, value,?1,?2,?2,now(),now() from app_property where customer_id=-1 )",nativeQuery = true)
     void addVendorAppProperties(Long vendorId,Long userId);
+    
+    @Query(value = "select * from app_property app where app.organisation_id=?1 and app.name in (?2) ",nativeQuery = true)
+    List<AppProperty> getAppPropertyOrg(Long orgId, List<String> key );
+    
+    @Query(value = "select * from app_property app where app.organisation_id=?1 and app.name in (?2) ",nativeQuery = true)
+    List<AppProperty> getAppPropertyCust(Long custId, List<String> key );
     
     @Modifying
     @Query(value="update app_property set value=aes_encrypt(value,'b693b2f6-350f-11ee-be56-0242ac120002') where name in"

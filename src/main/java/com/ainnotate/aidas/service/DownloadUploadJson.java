@@ -50,6 +50,7 @@ import com.ainnotate.aidas.repository.AppPropertyRepository;
 import com.ainnotate.aidas.repository.DownloadRepository;
 import com.ainnotate.aidas.repository.ObjectPropertyRepository;
 import com.ainnotate.aidas.repository.ObjectRepository;
+import com.ainnotate.aidas.repository.ProjectPropertyRepository;
 import com.ainnotate.aidas.repository.ProjectRepository;
 import com.ainnotate.aidas.repository.UploadRepository;
 import com.ainnotate.aidas.repository.UserVendorMappingObjectMappingRepository;
@@ -163,7 +164,8 @@ public class DownloadUploadJson  implements  Runnable{
     private DownloadRepository downloadRepository;
     @Autowired
     private JavaMailSender javaMailSender;
-
+    @Autowired
+    private ProjectPropertyRepository projectPropertyRepository;
     @Autowired
     private ObjectPropertyRepository objectPropertyRepository;
     @Autowired
@@ -341,6 +343,7 @@ public class DownloadUploadJson  implements  Runnable{
             if (uploads != null) {
             	
             	Long tmpObjId = -2l;
+            	
             	ObjectForJson objectForJson=null;
                 try {
                     System.out.println("Starting to download all uploads.......");
@@ -349,9 +352,10 @@ public class DownloadUploadJson  implements  Runnable{
                     projectForJson.setName(project.getName());
                     projectForJson.setConsentFormStatus(project.getConsentFormStatus());
                     projectForJson.setGroupingProject(project.getAutoCreateObjects());
+                    Map<String, String> uploadLocProps = getObjectProperties(project.getId());
                     for (Upload au : uploads) {
                     	
-                    	Map<String, String> uploadLocProps = getObjectProperties(au);
+                    	
                     	S3Presigner presigner = S3Presigner.builder().credentialsProvider(StaticCredentialsProvider
                 				.create(AwsBasicCredentials.create(uploadLocProps.get("accessKey"),uploadLocProps.get("accessSecret")))).region(Region.of(uploadLocProps.get("region"))).build();
                        
@@ -511,22 +515,19 @@ public class DownloadUploadJson  implements  Runnable{
     }
     
     
-    private Map<String,String> getObjectProperties(Upload au){
+    private Map<String,String> getObjectProperties(Long projectId) throws Exception{
         Map<String,String> uploadLocProps = new HashMap<>();
-        List<ObjectProperty> objectProperties = objectPropertyRepository.getAllObjectPropertyForObject(au.getUserVendorMappingObjectMapping().getObject().getId());
-        for (ObjectProperty aop : objectProperties) {
-            if (aop.getProperty().getName().equals("accessKey")) {
-                uploadLocProps.put("accessKey",aop.getValue());
-            }
-            if (aop.getProperty().getName().equals("accessSecret")) {
-                uploadLocProps.put("accessSecret",aop.getValue());
-            }
-            if (aop.getProperty().getName().equals("region")) {
-                uploadLocProps.put("region",aop.getValue());
-            }
-            if (aop.getProperty().getName().equals("bucketName")) {
-                uploadLocProps.put("bucketName",aop.getValue());
-            }
+        if(uploadLocProps.get("accessKey")!=null && uploadLocProps.get("accessSecret")!=null && 
+        		uploadLocProps.get("region")!=null && uploadLocProps.get("bucketName")!=null) {
+	       
+	        String accessKey = AESCBCPKCS5Padding.decrypt(projectPropertyRepository.findByProjectPropertyByPropertyName(projectId, "accessKey").getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
+			String accessSecret = AESCBCPKCS5Padding.decrypt(projectPropertyRepository.findByProjectPropertyByPropertyName(projectId, "accessSecret").getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
+			String bucket = AESCBCPKCS5Padding.decrypt(projectPropertyRepository.findByProjectPropertyByPropertyName(projectId, "bucketName").getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
+			String region = AESCBCPKCS5Padding.decrypt(projectPropertyRepository.findByProjectPropertyByPropertyName(projectId, "region").getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
+	        uploadLocProps.put("accessKey",accessKey);
+	        uploadLocProps.put("accessSecret",accessSecret);
+	        uploadLocProps.put("region",bucket);
+	        uploadLocProps.put("bucketName",region);
         }
         return uploadLocProps;
     }

@@ -330,7 +330,8 @@ public class ObjectResource {
     public ResponseEntity<List<ObjectDTO>> getAllAidasObjectsOfProjectForDropdownForMetadata( @PathVariable(value = "id", required = false) final Long projectId) {
         log.debug("REST request to get a page of AidasObjects");
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-        List<ObjectDTO> objects =objectRepository.getAllObjectDTOsOfProjectForMetadata(projectId);
+        UserVendorMapping uvm = userVendorMappingRepository.findByVendorIdAndUserId(user.getVendor().getId(),user.getId());
+        List<ObjectDTO> objects =objectRepository.getAllObjectDTOsOfProjectForMetadata(projectId,uvm.getId());
         return ResponseEntity.ok().body(objects);
     }
     

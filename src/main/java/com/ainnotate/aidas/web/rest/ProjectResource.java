@@ -8,6 +8,7 @@ import com.ainnotate.aidas.repository.predicates.ProjectPredicatesBuilder;
 import com.ainnotate.aidas.repository.search.ProjectSearchRepository;
 import com.ainnotate.aidas.constants.AidasConstants;
 import com.ainnotate.aidas.security.SecurityUtils;
+import com.ainnotate.aidas.service.AESCBCPKCS5Padding;
 import com.ainnotate.aidas.service.CSVHelper;
 import com.ainnotate.aidas.service.DownloadUploadJson;
 import com.ainnotate.aidas.service.DownloadUploadS3;
@@ -147,7 +148,7 @@ public class ProjectResource {
 	 *         project has already an ID.
 	 * @throws URISyntaxException if the Location URI syntax is incorrect.
 	 */
-	@Secured({ AidasConstants.ADMIN, AidasConstants.ORG_ADMIN, AidasConstants.CUSTOMER_ADMIN })
+	
 	@PostMapping("/aidas-projects")
 	public ResponseEntity<Project> createAidasProject(@Valid @RequestBody Project project) throws URISyntaxException {
 		User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
@@ -371,7 +372,6 @@ public class ProjectResource {
 	 *         project has already an ID.
 	 * @throws URISyntaxException if the Location URI syntax is incorrect.
 	 */
-	@Secured({ AidasConstants.ADMIN, AidasConstants.ORG_ADMIN, AidasConstants.CUSTOMER_ADMIN })
 	@PostMapping("/aidas-projects/qc/add-remove")
 	public ResponseEntity<String> addQcToProject(@Valid @RequestBody ProjectQcDTO projectQcDTO)
 			throws URISyntaxException {
@@ -422,7 +422,6 @@ public class ProjectResource {
 	 *         project has already an ID.
 	 * @throws URISyntaxException if the Location URI syntax is incorrect.
 	 */
-	@Secured({ AidasConstants.ADMIN, AidasConstants.ORG_ADMIN, AidasConstants.CUSTOMER_ADMIN })
 	@PostMapping("/aidas-projects/vendormapping/add-remove")
 	public ResponseEntity<String> addRemoveVendorUsersMapping(
 			@Valid @RequestBody ProjectVendorMappingDTO projectVendorMappingDTO) throws URISyntaxException {
@@ -581,7 +580,6 @@ public class ProjectResource {
 	 *         project has no ID.
 	 * @throws URISyntaxException if the Location URI syntax is incorrect.
 	 */
-	@Secured({ AidasConstants.ADMIN, AidasConstants.ORG_ADMIN, AidasConstants.CUSTOMER_ADMIN })
 	@PostMapping("/aidas-projects/{id}/golive")
 	public ResponseEntity<Project> projectGoLive(@PathVariable(value = "id", required = true) final Long id)
 			throws URISyntaxException {
@@ -698,12 +696,12 @@ public class ProjectResource {
 	 *         project is not valid, or with status
 	 *         {@code 500 (Internal Server Error)} if the project couldn't be
 	 *         updated.
-	 * @throws URISyntaxException if the Location URI syntax is incorrect.
+	 * @throws Exception 
 	 */
-	@Secured({ AidasConstants.ADMIN, AidasConstants.ORG_ADMIN, AidasConstants.CUSTOMER_ADMIN })
+	
 	@PutMapping("/aidas-projects/{id}")
 	public ResponseEntity<Project> updateAidasProject(@PathVariable(value = "id", required = false) final Long id,
-			@Valid @RequestBody Project project) throws URISyntaxException {
+			@Valid @RequestBody Project project) throws Exception {
 		User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
 		log.debug("REST request to update AidasProject : {}, {}", id, project);
 		if (project.getId() == null) {
@@ -754,6 +752,20 @@ public class ProjectResource {
 		if (project.getProjectProperties() != null) {
 			Property ap = null;
 			for (ProjectProperty app : project.getProjectProperties()) {
+				for(ProjectProperty app1:existingProject.getProjectProperties()) {
+					if(app.getProperty().getId().equals(app1.getProperty().getId()) && app1.getProperty().getName().equals("region") && !app.getValue().equals(app1.getValue())) {
+						app.setValue(new String(AESCBCPKCS5Padding.encrypt(app1.getValue(), AidasConstants.KEY,AidasConstants.IV_STR)));
+					}
+					if(app.getProperty().getId().equals(app1.getProperty().getId()) && app1.getProperty().getName().equals("bucketName") && !app.getValue().equals(app1.getValue())) {
+						app.setValue(new String(AESCBCPKCS5Padding.encrypt(app1.getValue(), AidasConstants.KEY,AidasConstants.IV_STR)));					
+					}
+					if(app.getProperty().getId().equals(app1.getProperty().getId()) && app1.getProperty().getName().equals("accessKey") && !app.getValue().equals(app1.getValue())) {
+						app.setValue(new String(AESCBCPKCS5Padding.encrypt(app1.getValue(), AidasConstants.KEY,AidasConstants.IV_STR)));
+					}
+					if(app.getProperty().getId().equals(app1.getProperty().getId()) && app1.getProperty().getName().equals("accessSecret") && !app.getValue().equals(app1.getValue())) {
+						app.setValue(new String(AESCBCPKCS5Padding.encrypt(app1.getValue(), AidasConstants.KEY,AidasConstants.IV_STR)));
+					}
+				}
 				if (app.getProperty() != null && app.getProperty().getId() != null) {
 					ap = propertyRepository.getById(app.getId());
 					app.setProperty(ap);

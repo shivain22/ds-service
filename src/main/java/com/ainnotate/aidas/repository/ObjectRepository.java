@@ -62,7 +62,7 @@ public interface ObjectRepository
 	List<ObjectDTO> getAllObjectDTOsOfProject(Long projectId);
 	
 	@Query(nativeQuery = true)
-	List<ObjectDTO> getAllObjectDTOsOfProjectForMetadata(Long projectId);
+	List<ObjectDTO> getAllObjectDTOsOfProjectForMetadata(Long projectId,Long userVendorMappingId);
 	
 
 	@Query(value = "select ao.* from project ap, object ao,  user_vendor_mapping_object_mapping auavmaom,user_vendor_mapping auavm ,user au where  auavmaom.object_id=ao.id and ao.project_id=ap.id and auavmaom.user_vendor_mapping_id=auavm.id and auavm.user_id=au.id and au.id= ?1 and ao.status=1 and ao.is_dummy=0", nativeQuery = true)
@@ -352,15 +352,11 @@ public interface ObjectRepository
 	void createObjects(String prefix, String suffix, Long projectId, Integer dummy, Integer buffer, Integer status,
 			Integer bufferedUpload, Integer totalUploads, Integer uploadRequired, Integer numberOfObjects);
 
-	/*
-	 * @Lock(LockModeType.PESSIMISTIC_FORCE_INCREMENT)
-	 * 
-	 * @QueryHints({ @QueryHint(name = "javax.persistence.lock.timeout", value =
-	 * "1000") })
-	 */
+	
 	@Query(value="select o.* from object o where o.id=?1 for update ",nativeQuery = true)
 	Object getByIdForUpload(Long obectId);
 
+	
 	@Override
 	default public void customize(QuerydslBindings bindings, QObject root) {
 		bindings.bind(String.class)

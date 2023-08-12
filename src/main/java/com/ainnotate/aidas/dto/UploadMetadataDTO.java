@@ -82,7 +82,11 @@ public class UploadMetadataDTO {
     	this.optional=optional;
     }
 	
-	
+	public UploadMetadataDTO(Long uploadId,String objectName, String objectKey) {
+		this.uploadId = uploadId;
+		this.objectName = objectName;
+		this.objectKey = objectKey;
+	}
 
     private String projectName;
     private String objectName;

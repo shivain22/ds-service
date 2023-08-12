@@ -1,35 +1,18 @@
 package com.ainnotate.aidas.web.rest;
 
-import com.ainnotate.aidas.domain.AppProperty;
-import com.ainnotate.aidas.domain.Object;
-import com.ainnotate.aidas.domain.Organisation;
-import com.ainnotate.aidas.domain.User;
-import com.ainnotate.aidas.repository.AppPropertyRepository;
-import com.ainnotate.aidas.repository.OrganisationRepository;
-import com.ainnotate.aidas.repository.UserRepository;
-import com.ainnotate.aidas.repository.predicates.OrganisationPredicatesBuilder;
-import com.ainnotate.aidas.repository.predicates.ProjectPredicatesBuilder;
-import com.ainnotate.aidas.repository.search.OrganisationSearchRepository;
-import com.ainnotate.aidas.constants.AidasConstants;
-import com.ainnotate.aidas.security.SecurityUtils;
-import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
-import com.querydsl.core.types.dsl.BooleanExpression;
-
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.*;
-import java.util.function.Predicate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,8 +23,38 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import com.ainnotate.aidas.constants.AidasConstants;
+import com.ainnotate.aidas.domain.AppProperty;
+import com.ainnotate.aidas.domain.Organisation;
+import com.ainnotate.aidas.domain.User;
+import com.ainnotate.aidas.repository.AppPropertyRepository;
+import com.ainnotate.aidas.repository.OrganisationRepository;
+import com.ainnotate.aidas.repository.UserRepository;
+import com.ainnotate.aidas.repository.predicates.OrganisationPredicatesBuilder;
+import com.ainnotate.aidas.repository.search.OrganisationSearchRepository;
+import com.ainnotate.aidas.security.SecurityUtils;
+import com.ainnotate.aidas.service.AESCBCPKCS5Padding;
+import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
+import com.querydsl.core.types.dsl.BooleanExpression;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
 import tech.jhipster.web.util.ResponseUtil;
@@ -104,7 +117,13 @@ public class OrganisationResource {
 		try {
 			Organisation result = organisationRepository.save(organisation);
 			appPropertyRepository.addOrganisationAppProperties(result.getId(), user.getId());
-			//appPropertyRepository.encryptOrg(result.getId());
+			List<String> props = Arrays.asList("downloadBucketName","downloadRegion","downloadAccessKey","downloadAccessSecret",
+    		 "uploadBucketName","uploadRegion","uploadAccessKey","uploadAccessSecret");
+			List<AppProperty> toBeEncProps = appPropertyRepository.getAppPropertyOrg(result.getId(), props);
+			for(AppProperty ap:toBeEncProps) {
+				ap.setValue( new String(AESCBCPKCS5Padding.encrypt(ap.getValue(), AidasConstants.KEY,AidasConstants.IV_STR)));
+				appPropertyRepository.save(ap);
+			}
 			return ResponseEntity
 					.created(new URI("/api/aidas-organisations/" + result.getId())).headers(HeaderUtil
 							.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))

@@ -669,9 +669,25 @@ query = "select count(o.id)+?2 as count  \n" +
 
 @NamedNativeQuery(
 	    name = "Object.getAllObjectDTOsOfProjectForMetadata",
-	    query="select o.id,o.name from object o, consolidated_user_vendor_mapping_object_mapping_view cuvmomv where o.status=1 and o.is_dummy=0 and o.id=cuvmomv.object_id "
-	    		+ "and cuvmomv.uvmom_status>0 and o.project_id=?1 and o.id in (select o1.id from object o1, user_vendor_mapping_object_mapping uvmom1, upload u1 where "
-	    		+ "u1.user_vendor_mapping_object_mapping_id=uvmom1.id and uvmom1.object_id=o1.id and o1.project_id=?1 and u1.metadata_status=0 )",
+	    query="select\n"
+	    		+ "o.id,\n"
+	    		+ "o.name\n"
+	    		+ "from upload_meta_data umd, "
+	    		+ "upload u,project_property pp,"
+	    		+ "property pr,user_vendor_mapping_object_mapping uvmom, "
+	    		+ "object o,user_vendor_mapping uvm,project p \n"
+	    		+ "where \n"
+	    		+ "umd.upload_id=u.id \n"
+	    		+ "and u.user_vendor_mapping_object_mapping_id=uvmom.id \n"
+	    		+ "and uvmom.object_id=o.id \n"
+	    		+ "and o.project_id=p.id\n"
+	    		+ "and uvmom.user_vendor_mapping_id=uvm.id \n"
+	    		+ "and umd.project_property_id=pp.id \n"
+	    		+ "and pp.property_id=pr.id \n"
+	    		+ "and project_property_id is not null \n"
+	    		+ "and uvmom.object_id=o.id and o.project_id=?1 \n"
+	    		+ "and uvm.id=?2 \n"
+	    		+ "and pp.show_to_vendor_user=1 and u.metadata_status=0 group by o.id order by o.id",
 	    resultSetMapping = "Mapping.getAllObjectDTOsOfProject"
 	)
 

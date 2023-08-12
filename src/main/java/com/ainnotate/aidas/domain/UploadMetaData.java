@@ -233,6 +233,17 @@ query=" select id as uploadMetaDataId," +
         " op.property_id not in (select property_id from project_property where project_id=?1) and" +
         " o.project_id=?1 and o.project_id=pr.id and u.approval_status=?2) umd order by umd.upload_id, umd.prop_id",resultSetMapping = "Mapping.UploadMetaDataDTO")
 
+
+@NamedNativeQuery(name="UploadMetaData.findAllByUserAndProjectAllForMetadataUploadWiseForNew",
+query="select u.id uploadId, o.name as objectName, u.upload_url objectKey from upload u, "
+		+ "user_vendor_mapping_object_mapping uvmom,object o, project p,user_vendor_mapping uvm "
+		+ "where u.approval_status=2 and u.user_vendor_mapping_object_mapping_id=uvmom.id and "
+		+ "uvmom.object_id=o.id and o.project_id=p.id  and "
+		+ "uvmom.user_vendor_mapping_id=uvm.id and uvm.user_id=?1 "
+		+ "and o.id=?2 and u.metadata_status=0"
+          , resultSetMapping = "Mapping.UploadMetaDataDTO2")
+
+
 @SqlResultSetMappings(value = {
 @SqlResultSetMapping(name = "Mapping.UploadMetaDataDTO",
     classes = @ConstructorResult(targetClass = UploadMetadataDTO.class,
@@ -273,7 +284,16 @@ columns = {
     @ColumnResult(name = "value",type = String.class),
     @ColumnResult(name = "optional",type = Integer.class),
     @ColumnResult(name = "isProjectProperty",type = Integer.class)
-}))
+})),
+@SqlResultSetMapping(
+		name = "Mapping.UploadMetaDataDTO2", 
+		classes = @ConstructorResult(targetClass = UploadMetadataDTO.class, 
+		columns = {
+				@ColumnResult(name = "uploadId", type = Long.class), 
+				@ColumnResult(name = "objectName", type = String.class),
+				@ColumnResult(name = "objectKey", type = String.class)
+	}))
+
 
 })
 

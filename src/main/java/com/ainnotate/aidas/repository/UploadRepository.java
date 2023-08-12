@@ -1,20 +1,20 @@
 package com.ainnotate.aidas.repository;
 
-import com.ainnotate.aidas.domain.Object;
-import com.ainnotate.aidas.domain.Organisation;
-import com.ainnotate.aidas.domain.Upload;
-import com.ainnotate.aidas.domain.UserVendorMappingObjectMapping;
-import com.ainnotate.aidas.dto.UploadDTOForQC;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.*;
-import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.ainnotate.aidas.domain.Upload;
+import com.ainnotate.aidas.dto.UploadDTOForQC;
+import com.ainnotate.aidas.dto.UploadMetadataDTO;
 
 /**
  * Spring Data SQL repository for the AidasUpload entity.
@@ -184,9 +184,6 @@ public interface UploadRepository extends JpaRepository<Upload, Long> {
     @Query(value="select u.id, o.name, u.upload_url from upload u, user_vendor_mapping_object_mapping uvmom, object o where u.user_vendor_mapping_object_mapping_id=uvmom.id and object_id=o.id and u.id=?1",nativeQuery = true)
     List<java.lang.Object[]> findAllByUserAndProjectAllForMetadataObjectWiseNew(Long uploadId);
 
-    
-    @Query(value="select u.id, o.name, u.upload_url from upload u, user_vendor_mapping_object_mapping uvmom,object o, project p,user_vendor_mapping uvm where u.approval_status=2 and u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and o.project_id=p.id  and uvmom.user_vendor_mapping_id=uvm.id and uvm.user_id=?1 and o.id=?2 and u.metadata_status=0",nativeQuery = true)
-    List<java.lang.Object[]> findAllByUserAndProjectAllForMetadataUploadWiseForNew(Long userId, Long objectId);
     
     
     @Query(value="select au.* from upload au, user_vendor_mapping_object_mapping auavmaom,object ao, project ap,user_vendor_mapping auavm where au.approval_status=2 and au.user_vendor_mapping_object_mapping_id=auavmaom.id and auavmaom.object_id=ao.id and ao.project_id=ap.id and au.id=?2 and auavmaom.user_vendor_mapping_id=auavm.id and auavm.user_id=?1 and au.metadata_status=0",nativeQuery = true)

@@ -14,6 +14,7 @@ import com.ainnotate.aidas.repository.predicates.ProjectPredicatesBuilder;
 import com.ainnotate.aidas.repository.search.CustomerSearchRepository;
 import com.ainnotate.aidas.constants.AidasConstants;
 import com.ainnotate.aidas.security.SecurityUtils;
+import com.ainnotate.aidas.service.AESCBCPKCS5Padding;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 import com.querydsl.core.types.dsl.BooleanExpression;
 
@@ -101,9 +102,20 @@ public class CustomerResource {
             try {
 	        	Customer result = customerRepository.save(customer);
 	            propertyRepository.addCustomerProperties(result.getId(),user.getId());
-	            //propertyRepository.encrypt(result.getId());
+	            List<String> props = Arrays.asList("bucketName","region","accessKey","accessSecret");
+	            List<Property> propsToEncrypt = propertyRepository.getAllCustomerPropertiesForEnc(customer.getId(),props);
+	       			for(Property ap:propsToEncrypt) {
+	       				ap.setValue( new String(AESCBCPKCS5Padding.encrypt(ap.getValue(), AidasConstants.KEY,AidasConstants.IV_STR)));
+	       				propertyRepository.save(ap);
+	       			}
 	            appPropertyRepository.addCustomerAppProperties(result.getId(),user.getId());
-	            //appPropertyRepository.encryptCustomer(result.getId());
+	            props = Arrays.asList("downloadBucketName","downloadRegion","downloadAccessKey","downloadAccessSecret",
+	           		 "uploadBucketName","uploadRegion","uploadAccessKey","uploadAccessSecret");
+	       			List<AppProperty> toBeEncProps = appPropertyRepository.getAppPropertyCust(result.getId(), props);
+	       			for(AppProperty ap:toBeEncProps) {
+	       				ap.setValue( new String(AESCBCPKCS5Padding.encrypt(ap.getValue(), AidasConstants.KEY,AidasConstants.IV_STR)));
+	       				appPropertyRepository.save(ap);
+	       			}
 	            return ResponseEntity
 	                .created(new URI("/api/aidas-customers/" + result.getId()))
 	                .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))

@@ -127,5 +127,9 @@ public final class AidasConstants {
     public static final Integer AUTO_CREATE_OBJECT_DISABLE=0;
     
     public static final Integer CQPM_BATCH_NOT_YET_STARTED=0;
+    public static final String KEY = "b693b2f6350f11eebe560242ac120002";
+    public static final String IV_STR="1011121314151617";
     private AidasConstants() {}
+    
+    
 }

@@ -355,7 +355,7 @@ resultSetMapping = "Mapping.ProjectDTO")
 
 @NamedNativeQuery(
     name = "Project.findAllProjectsByVendorAdminDropDown",
-    query="select p.* from project p, object o,  user_vendor_mapping_object_mapping uvmom,user_vendor_mapping uvm ,user u where  uvmom.object_id=o.id and o.project_id=p.id and uvmom.user_vendor_mapping_id=uvm.id and uvm.vendor_id= ?1   and p.status=1 order by p.id desc",
+    query="select p.* from project p, object o,  user_vendor_mapping_object_mapping uvmom,user_vendor_mapping uvm ,user u where  uvmom.object_id=o.id and o.project_id=p.id and uvmom.user_vendor_mapping_id=uvm.id and uvm.vendor_id= ?1   and p.status=1 group by p.id order by p.id desc",
     resultSetMapping = "Mapping.findAllProjectsByVendorAdminDropDown"
 )
 

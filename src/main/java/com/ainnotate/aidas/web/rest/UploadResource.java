@@ -7,6 +7,7 @@ import com.ainnotate.aidas.repository.*;
 import com.ainnotate.aidas.repository.search.UploadSearchRepository;
 import com.ainnotate.aidas.constants.AidasConstants;
 import com.ainnotate.aidas.security.SecurityUtils;
+import com.ainnotate.aidas.service.AESCBCPKCS5Padding;
 import com.ainnotate.aidas.service.DownloadUploadS3;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
 
@@ -603,8 +604,8 @@ public class UploadResource {
 	 * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list
 	 *         of aidasUploads in body.
 	 */
-	@GetMapping("/aidas-uploads/{id}/{type}/{status}")
-	public ResponseEntity<List<Upload>> getAllAidasUploads(Pageable pageable, @PathVariable Long id,
+	@GetMapping("/aidas-uploads/{projectId}/{type}/{status}")
+	public ResponseEntity<List<Upload>> getAllAidasUploads(Pageable pageable, @PathVariable Long projectId,
 			@PathVariable String type, @PathVariable String status) {
 		User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
 		log.debug("REST request to get a page of AidasUploads");
@@ -624,39 +625,39 @@ public class UploadResource {
 				page = uploadRepository.findAidasUploadByAidasVendor(user.getVendor().getId(), pageable);
 			}
 			if (authority.getName().equals(AidasConstants.VENDOR_USER)) {
-				if (id != null && type != null && status != null) {
-					if (id != null && type.equalsIgnoreCase("o") && status.equalsIgnoreCase("a")) {
-						page = uploadRepository.findAllByUserAndObject(user.getId(), id,
+				if (projectId != null && type != null && status != null) {
+					if (projectId != null && type.equalsIgnoreCase("o") && status.equalsIgnoreCase("a")) {
+						page = uploadRepository.findAllByUserAndObject(user.getId(), projectId,
 								AidasConstants.AIDAS_UPLOAD_APPROVED, pageable);
 					}
-					if (id != null && type.equalsIgnoreCase("o") && status.equalsIgnoreCase("r")) {
-						page = uploadRepository.findAllByUserAndObject(user.getId(), id,
+					if (projectId != null && type.equalsIgnoreCase("o") && status.equalsIgnoreCase("r")) {
+						page = uploadRepository.findAllByUserAndObject(user.getId(), projectId,
 								AidasConstants.AIDAS_UPLOAD_REJECTED, pageable);
 					}
-					if (id != null && type.equalsIgnoreCase("o") && status.equalsIgnoreCase("p")) {
-						page = uploadRepository.findAllByUserAndObject(user.getId(), id,
+					if (projectId != null && type.equalsIgnoreCase("o") && status.equalsIgnoreCase("p")) {
+						page = uploadRepository.findAllByUserAndObject(user.getId(), projectId,
 								AidasConstants.AIDAS_UPLOAD_PENDING, pageable);
 					}
-					if (id != null && type.equalsIgnoreCase("o") && status.equalsIgnoreCase("all")) {
-						page = uploadRepository.findAllByUserAndObject(user.getId(), id, pageable);
+					if (projectId != null && type.equalsIgnoreCase("o") && status.equalsIgnoreCase("all")) {
+						page = uploadRepository.findAllByUserAndObject(user.getId(), projectId, pageable);
 					}
-					if (id != null && type.equalsIgnoreCase("p") && status.equalsIgnoreCase("a")) {
-						page = uploadRepository.findAllByUserAndProject(user.getId(), id,
+					if (projectId != null && type.equalsIgnoreCase("p") && status.equalsIgnoreCase("a")) {
+						page = uploadRepository.findAllByUserAndProject(user.getId(), projectId,
 								AidasConstants.AIDAS_UPLOAD_APPROVED, pageable);
 					}
-					if (id != null && type.equalsIgnoreCase("p") && status.equalsIgnoreCase("r")) {
-						page = uploadRepository.findAllByUserAndProject(user.getId(), id,
+					if (projectId != null && type.equalsIgnoreCase("p") && status.equalsIgnoreCase("r")) {
+						page = uploadRepository.findAllByUserAndProject(user.getId(), projectId,
 								AidasConstants.AIDAS_UPLOAD_REJECTED, pageable);
 					}
-					if (id != null && type.equalsIgnoreCase("p") && status.equalsIgnoreCase("p")) {
-						page = uploadRepository.findAllByUserAndProject(user.getId(), id,
+					if (projectId != null && type.equalsIgnoreCase("p") && status.equalsIgnoreCase("p")) {
+						page = uploadRepository.findAllByUserAndProject(user.getId(), projectId,
 								AidasConstants.AIDAS_UPLOAD_PENDING, pageable);
 					}
-					if (id != null && type.equalsIgnoreCase("p") && status.equalsIgnoreCase("all")) {
-						page = uploadRepository.findAllByUserAndProject(user.getId(), id, pageable);
+					if (projectId != null && type.equalsIgnoreCase("p") && status.equalsIgnoreCase("all")) {
+						page = uploadRepository.findAllByUserAndProject(user.getId(), projectId, pageable);
 					}
 				}
-				if (id == null && type == null && status != null) {
+				if (projectId == null && type == null && status != null) {
 					if (status.equalsIgnoreCase("a")) {
 						page = uploadRepository.findAllByUser(user.getId(), AidasConstants.AIDAS_UPLOAD_APPROVED,
 								pageable);
@@ -673,6 +674,18 @@ public class UploadResource {
 						page = uploadRepository.findAllByUser(user.getId(), pageable);
 					}
 				}
+			}
+			String accessKey = AESCBCPKCS5Padding.decrypt(projectPropertyRepository.findByProjectPropertyByPropertyName(projectId, "accessKey").getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
+			String accessSecret = AESCBCPKCS5Padding.decrypt(projectPropertyRepository.findByProjectPropertyByPropertyName(projectId, "accessSecret").getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
+			String bucket = AESCBCPKCS5Padding.decrypt(projectPropertyRepository.findByProjectPropertyByPropertyName(projectId, "bucketName").getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
+			String region = AESCBCPKCS5Padding.decrypt(projectPropertyRepository.findByProjectPropertyByPropertyName(projectId, "region").getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
+			S3Presigner presigner = S3Presigner.builder().credentialsProvider(StaticCredentialsProvider
+					.create(AwsBasicCredentials.create(accessKey, accessSecret))).region(Region.of(region)).build();
+			for(Upload u: page.getContent()) {
+				GetObjectRequest getObjectRequest =GetObjectRequest.builder().bucket(bucket).key(u.getUploadUrl()).build();
+			   	GetObjectPresignRequest getObjectPresignRequest = GetObjectPresignRequest.builder().signatureDuration(Duration.ofMinutes(1440)).getObjectRequest(getObjectRequest).build();
+				PresignedGetObjectRequest presignedGetObjectRequest =presigner.presignGetObject(getObjectPresignRequest);
+				u.setUploadUrl(presignedGetObjectRequest.url().toString());
 			}
 			HttpHeaders headers = PaginationUtil
 					.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
@@ -702,6 +715,7 @@ public class UploadResource {
 				objectId);
 		List<UploadsMetadataDTO> uploadsMetadataDTOList = new ArrayList<>();
 
+		
 		Map<Long, List<ProjectPropertyDTO>> uploadMetaDataDTOp = new HashMap<>();
 		Map<Long, List<ObjectPropertyDTO>> uploadMetaDataDTOo = new HashMap<>();
 		Map<Long, UploadDTO> uploadDtos = new HashMap<>();
@@ -735,21 +749,35 @@ public class UploadResource {
 			umdts.setObjectProperties(uploadMetaDataDTOo.get(entry.getKey()));
 			uploadsMetadataDTOList.add(umdts);
 		}
+		try {
+			String accessKey = AESCBCPKCS5Padding.decrypt(projectPropertyRepository.findByProjectPropertyByPropertyName(projectId, "accessKey").getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
+			String accessSecret = AESCBCPKCS5Padding.decrypt(projectPropertyRepository.findByProjectPropertyByPropertyName(projectId, "accessSecret").getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
+			String bucket = AESCBCPKCS5Padding.decrypt(projectPropertyRepository.findByProjectPropertyByPropertyName(projectId, "bucketName").getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
+			String region = AESCBCPKCS5Padding.decrypt(projectPropertyRepository.findByProjectPropertyByPropertyName(projectId, "region").getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
+			S3Presigner presigner = S3Presigner.builder().credentialsProvider(StaticCredentialsProvider
+					.create(AwsBasicCredentials.create(accessKey, accessSecret))).region(Region.of(region)).build();
+			
 		if (uploadsMetadataDTOList.size() == 0) {
-			List<java.lang.Object[]> uploads = uploadRepository
+			List<UploadMetadataDTO> uploads = uploadMetaDataRepository
 					.findAllByUserAndProjectAllForMetadataUploadWiseForNew(user.getId(), objectId);
-			for (java.lang.Object[] obj : uploads) {
+			for (UploadMetadataDTO obj : uploads) {
 				UploadsMetadataDTO uploadsMetadataDTO = new UploadsMetadataDTO();
 				UploadDTO uploadDTO = new UploadDTO();
-				uploadDTO.setUploadId(Long.parseLong(obj[0].toString()));
-				uploadDTO.setName(obj[1].toString());
-				uploadDTO.setObjectKey(obj[2].toString());
+				uploadDTO.setUploadId(obj.getUploadId());
+				uploadDTO.setName(obj.getObjectName());
+				GetObjectRequest getObjectRequest =GetObjectRequest.builder().bucket(bucket).key(obj.getObjectKey()).build();
+			   	GetObjectPresignRequest getObjectPresignRequest = GetObjectPresignRequest.builder().signatureDuration(Duration.ofMinutes(1440)).getObjectRequest(getObjectRequest).build();
+				PresignedGetObjectRequest presignedGetObjectRequest =presigner.presignGetObject(getObjectPresignRequest);
+				uploadDTO.setObjectKey(presignedGetObjectRequest.url().toString());
 				uploadsMetadataDTO.setUploadDTO(uploadDTO);
 				uploadsMetadataDTO.setProjectProperties(new ArrayList<>());
 				uploadsMetadataDTO.setObjectProperties(new ArrayList<>());
 				uploadsMetadataDTOList.add(uploadsMetadataDTO);
 
 			}
+		}
+		}catch(Exception e) {
+			
 		}
 		return ResponseEntity.ok().body(uploadsMetadataDTOList);
 	}
@@ -801,12 +829,17 @@ public class UploadResource {
 		ProjectQcLevelConfigurations pqlc = projectQcLevelConfigurationsRepository.findByProejctIdAndQcLevel(projectId,
 				qcLevel);
 		CustomerQcProjectMapping cqpm = customerQcProjectMappingRepository.getById(customerQcProjectMappingId);
-		uploads = getUploadDTOQcs(projectId, customerQcProjectMappingId, qcLevel, pqlc, cqpm);
+		try {
+			uploads = getUploadDTOQcs(projectId, customerQcProjectMappingId, qcLevel, pqlc, cqpm);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return uploads;
 	}
 
 	private Map<String, List<UploadDTOForQC>> getUploadDTOQcs(Long projectId, Long customerQcProjectMappingId,
-			Integer qcLevel, ProjectQcLevelConfigurations pqlc, CustomerQcProjectMapping cqpm) {
+			Integer qcLevel, ProjectQcLevelConfigurations pqlc, CustomerQcProjectMapping cqpm) throws Exception {
 		List<UploadDTOForQC> uploadsDTOForQc = new ArrayList<>();
 		cqpm = customerQcProjectMappingRepository.getById(customerQcProjectMappingId);
 		CustomerQcProjectMappingBatchMapping cqpmbm = customerQcProjectMappingBatchMappingRepository
@@ -817,12 +850,13 @@ public class UploadResource {
 		Integer multFactor = 1;
 		List<Long[]> notCompletedBatches = customerQcProjectMappingBatchMappingRepository
 				.getQcNotCompletedBatches(project.getId(), cqpm.getQcLevel(), cqpm.getId());
-		ProjectProperty accessKey = projectPropertyRepository.findByProjectAndPropertyName(projectId, "accessKey");
-		ProjectProperty accessSecret = projectPropertyRepository.findByProjectAndPropertyName(projectId, "accessSecret");
-		ProjectProperty bucket = projectPropertyRepository.findByProjectAndPropertyName(projectId, "bucketName");
-		ProjectProperty region = projectPropertyRepository.findByProjectAndPropertyName(projectId, "region");
+		
+		String accessKey = AESCBCPKCS5Padding.decrypt(projectPropertyRepository.findByProjectPropertyByPropertyName(projectId, "accessKey").getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
+		String accessSecret = AESCBCPKCS5Padding.decrypt(projectPropertyRepository.findByProjectPropertyByPropertyName(projectId, "accessSecret").getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
+		String bucket = AESCBCPKCS5Padding.decrypt(projectPropertyRepository.findByProjectPropertyByPropertyName(projectId, "bucketName").getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
+		String region = AESCBCPKCS5Padding.decrypt(projectPropertyRepository.findByProjectPropertyByPropertyName(projectId, "region").getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
 		S3Presigner presigner = S3Presigner.builder().credentialsProvider(StaticCredentialsProvider
-				.create(AwsBasicCredentials.create(accessKey.getValue(), accessSecret.getValue()))).region(Region.of(region.getValue())).build();
+				.create(AwsBasicCredentials.create(accessKey, accessSecret))).region(Region.of(region)).build();
 		if (notCompletedBatches != null && notCompletedBatches.size() > 0) {
 			uploadsDTOForQc = uploadRepository.getUploadDTOForQCPendingInBatch(notCompletedBatches.get(0)[0],
 					cqpmbm.getCurrentPageNumber(), pqlc.getQcLevelBatchSize() * project.getNumberOfUploadsRequired());
@@ -833,15 +867,16 @@ public class UploadResource {
 			}
 			
 			for (UploadDTOForQC u : uploadsDTOForQc) {
-				GetObjectRequest getObjectRequest =GetObjectRequest.builder().bucket(bucket.getValue()).key(u.getUploadUrl()).build();
+				GetObjectRequest getObjectRequest =GetObjectRequest.builder().bucket(bucket).key(u.getUploadUrl()).build();
 			   	GetObjectPresignRequest getObjectPresignRequest = GetObjectPresignRequest.builder().signatureDuration(Duration.ofMinutes(1440)).getObjectRequest(getObjectRequest).build();
 				PresignedGetObjectRequest presignedGetObjectRequest =presigner.presignGetObject(getObjectPresignRequest);
 			  	u.setUploadUrl(presignedGetObjectRequest.url().toString());
-			        
-			  	getObjectRequest =GetObjectRequest.builder().bucket(bucket.getValue()).key(u.getConsentFormUrl()).build();
-			   	getObjectPresignRequest = GetObjectPresignRequest.builder().signatureDuration(Duration.ofMinutes(1440)).getObjectRequest(getObjectRequest).build();
-				presignedGetObjectRequest =presigner.presignGetObject(getObjectPresignRequest);
-			  	u.setConsentFormUrl(presignedGetObjectRequest.url().toString());
+			    if(u.getConsentFormUrl()!=null && !u.getConsentFormUrl().isEmpty())  {
+				  	getObjectRequest =GetObjectRequest.builder().bucket(bucket).key(u.getConsentFormUrl()).build();
+				   	getObjectPresignRequest = GetObjectPresignRequest.builder().signatureDuration(Duration.ofMinutes(1440)).getObjectRequest(getObjectRequest).build();
+					presignedGetObjectRequest =presigner.presignGetObject(getObjectPresignRequest);
+				  	u.setConsentFormUrl(presignedGetObjectRequest.url().toString());
+			    }
 				int objStatus = 2;
 				if(map.get(u.getUserVendorMappingObjectMappingId())!=null) {
 					Integer pending = map.get(u.getUserVendorMappingObjectMappingId()).getTotalPending();
@@ -925,15 +960,16 @@ public class UploadResource {
 					if (u.getQcStatus().equals(AidasConstants.AIDAS_UPLOAD_QC_REJECTED)) {
 						rejectedUps.add(u.getUploadId());
 					} else {
-						GetObjectRequest getObjectRequest =GetObjectRequest.builder().bucket(bucket.getValue()).key(u.getUploadUrl()).build();
+						GetObjectRequest getObjectRequest =GetObjectRequest.builder().bucket(bucket).key(u.getUploadUrl()).build();
 					   	GetObjectPresignRequest getObjectPresignRequest = GetObjectPresignRequest.builder().signatureDuration(Duration.ofMinutes(1440)).getObjectRequest(getObjectRequest).build();
 						PresignedGetObjectRequest presignedGetObjectRequest =presigner.presignGetObject(getObjectPresignRequest);
 					  	u.setUploadUrl(presignedGetObjectRequest.url().toString());
-					        
-					  	getObjectRequest =GetObjectRequest.builder().bucket(bucket.getValue()).key(u.getConsentFormUrl()).build();
-					   	getObjectPresignRequest = GetObjectPresignRequest.builder().signatureDuration(Duration.ofMinutes(1440)).getObjectRequest(getObjectRequest).build();
-						presignedGetObjectRequest =presigner.presignGetObject(getObjectPresignRequest);
-					  	u.setConsentFormUrl(presignedGetObjectRequest.url().toString());
+					  	if(u.getConsentFormUrl()!=null && !u.getConsentFormUrl().isEmpty())  {   
+						  	getObjectRequest =GetObjectRequest.builder().bucket(bucket).key(u.getConsentFormUrl()).build();
+						   	getObjectPresignRequest = GetObjectPresignRequest.builder().signatureDuration(Duration.ofMinutes(1440)).getObjectRequest(getObjectRequest).build();
+							presignedGetObjectRequest =presigner.presignGetObject(getObjectPresignRequest);
+						  	u.setConsentFormUrl(presignedGetObjectRequest.url().toString());
+					  	}
 					  	
 						u.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
 						u.setBatchNumber(cqpmbm.getId());
@@ -1029,14 +1065,16 @@ public class UploadResource {
 				Iterator it=null;
 				List<Long> ups = new ArrayList<>();
 				for (UploadDTOForQC u : uploadIds) {
-					GetObjectRequest getObjectRequest =GetObjectRequest.builder().bucket(bucket.getValue()).key(u.getUploadUrl()).build();
+					GetObjectRequest getObjectRequest =GetObjectRequest.builder().bucket(bucket).key(u.getUploadUrl()).build();
 				   	GetObjectPresignRequest getObjectPresignRequest = GetObjectPresignRequest.builder().signatureDuration(Duration.ofMinutes(1440)).getObjectRequest(getObjectRequest).build();
 					PresignedGetObjectRequest presignedGetObjectRequest =presigner.presignGetObject(getObjectPresignRequest);
 				  	u.setUploadUrl(presignedGetObjectRequest.url().toString());
-				  	getObjectRequest =GetObjectRequest.builder().bucket(bucket.getValue()).key(u.getConsentFormUrl()).build();
-				   	getObjectPresignRequest = GetObjectPresignRequest.builder().signatureDuration(Duration.ofMinutes(1440)).getObjectRequest(getObjectRequest).build();
-					presignedGetObjectRequest =presigner.presignGetObject(getObjectPresignRequest);
-				  	u.setConsentFormUrl(presignedGetObjectRequest.url().toString());
+				  	if(u.getConsentFormUrl()!=null && !u.getConsentFormUrl().isEmpty()) {
+					  	getObjectRequest =GetObjectRequest.builder().bucket(bucket).key(u.getConsentFormUrl()).build();
+					   	getObjectPresignRequest = GetObjectPresignRequest.builder().signatureDuration(Duration.ofMinutes(1440)).getObjectRequest(getObjectRequest).build();
+						presignedGetObjectRequest =presigner.presignGetObject(getObjectPresignRequest);
+					  	u.setConsentFormUrl(presignedGetObjectRequest.url().toString());
+				  	}
 					ups.add(u.getUploadId());
 					u.setBatchNumber(cqpmbm.getId());
 					if (resultMap1.get(u.getUserVendorMappingObjectMappingId() + "-" + u.getObjectName() + "-"
