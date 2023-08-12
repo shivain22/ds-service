@@ -474,6 +474,9 @@ public class UserResource {
         }else if(entityType.equals("ROLE_VENDOR_ADMIN")) {
         	Vendor currentVendor  = vendorRepository.getById(entityId);
         	user.setVendor(currentVendor);
+        }else if(entityType.equals("ROLE_VENDOR_USER")) {
+        	Vendor currentVendor  = vendorRepository.getById(entityId);
+        	user.setVendor(currentVendor);
         }else if(entityType.equals("ROLE_QC")) {
         	Customer currentCustomer = customerRepository.getById(entityId);
         	user.setCustomer(currentCustomer);
@@ -536,6 +539,17 @@ public class UserResource {
         		list.add(n);
         	}
         }else if(entityType.equals("ROLE_VENDOR_ADMIN")) {
+        	List<Vendor> vendors = vendorRepository.getVendors(user.getId());
+        	for(Vendor v:vendors) {
+        		NameValueHolderDto n = new NameValueHolderDto();
+        		if(user.getVendor()!=null && user.getVendor().getId().equals(v.getId())) {
+        			n.setLastLoggedInRole(true);
+        		}
+        		n.setId(v.getId());
+        		n.setName(v.getName());
+        		list.add(n);
+        	}
+        }else if(entityType.equals("ROLE_VENDOR_USER")) {
         	List<Vendor> vendors = vendorRepository.getVendors(user.getId());
         	for(Vendor v:vendors) {
         		NameValueHolderDto n = new NameValueHolderDto();
