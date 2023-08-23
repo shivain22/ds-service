@@ -499,18 +499,18 @@
             u.first_name,
             u.last_name,
             u.login,
-            cqpm.qc_level,
-            cqpm.project_id,
+            qpm.qc_level,
+            qpm.project_id,
             ucm.id as user_customer_mapping_id,
             -1 as user_organisation_mapping_id,
             -1 as user_vendor_mapping_id,
-            cqpm.status,
+            qpm.status,
             p.customer_id,
             o.id as organisation_id,
             -1 as vendor_id,
             ucm.purpose_id
-            from user u, user_customer_mapping ucm, customer_qc_project_mapping cqpm,project p,organisation o,customer c
-            where ucm.user_id=u.id and cqpm.user_customer_mapping_id=ucm.id and cqpm.project_id=p.id and ucm.customer_id=c.id and c.organisation_id=o.id
+            from user u, user_customer_mapping ucm, qc_project_mapping qpm,project p,organisation o,customer c
+            where ucm.user_id=u.id and qpm.user_customer_mapping_id=ucm.id and qpm.project_id=p.id and ucm.customer_id=c.id and c.organisation_id=o.id
 
             union
 
@@ -533,8 +533,8 @@
             from project p, project_qc_level_configurations pqlc,user_customer_mapping ucm,user_authority_mapping uam,user u, customer c,organisation o
             where pqlc.project_id=p.id and ucm.user_id=u.id and uam.user_id=u.id and uam.authority_id=6 and p.customer_id=c.id and ucm.customer_id=c.id and c.organisation_id=o.id
             and (p.id,pqlc.qc_level,ucm.id,u.id) not in (
-            select cqpm.project_id,cqpm.qc_level,ucm.id,u.id from user u, user_customer_mapping ucm, customer_qc_project_mapping cqpm
-            where ucm.user_id=u.id and cqpm.user_customer_mapping_id=ucm.id
+            select qpm.project_id,qpm.qc_level,ucm.id,u.id from user u, user_customer_mapping ucm, qc_project_mapping qpm
+            where ucm.user_id=u.id and qpm.user_customer_mapping_id=ucm.id
             )
 
             union

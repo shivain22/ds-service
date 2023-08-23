@@ -27,9 +27,9 @@ import com.ainnotate.aidas.dto.UploadSummaryForQCFinalize;
  * An authority (a security role) used by Spring Security.
  */
 @Entity
-@Table(name = "upload_cqpm_batch_info",
+@Table(name = "upload_qpm_batch_info",
     uniqueConstraints={
-        @UniqueConstraint(name = "uk_upload_cqpm_status",columnNames={"upload_id","customer_qc_project_mapping_id","batch_number","qc_status"})})
+        @UniqueConstraint(name = "uk_upload_qpm_status",columnNames={"upload_id","qc_project_mapping_id","batch_number","qc_status"})})
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @Audited
 
@@ -39,13 +39,13 @@ import com.ainnotate.aidas.dto.UploadSummaryForQCFinalize;
         "ucbi.qc_status as qcStatus,"
         + "ucbi.qc_seen_status as qcSeenStatus " +
         "from " +
-        "upload_cqpm_batch_info ucbi,customer_qc_project_mapping cqpm, user_customer_mapping ucm, user u " +
-        "where ucbi.customer_qc_project_mapping_id=cqpm.id " +
-        "and cqpm.qc_level=?2 " +
+        "upload_qpm_batch_info ucbi,qc_project_mapping qpm, user_customer_mapping ucm, user u " +
+        "where ucbi.qc_project_mapping_id=qpm.id " +
+        "and qpm.qc_level=?2 " +
         "and ucbi.upload_id=?1 " +
-        "and cqpm.user_customer_mapping_id=ucm.id " +
+        "and qpm.user_customer_mapping_id=ucm.id " +
         "and ucm.user_id=u.id ",
-    name = "UploadCustomerQcProjectMappingBatchInfo.getQcLevelStatus",resultSetMapping = "Mapping.QcResultDTO")
+    name = "UploadQcProjectMappingBatchInfo.getQcLevelStatus",resultSetMapping = "Mapping.QcResultDTO")
 
 
 
@@ -86,7 +86,7 @@ import com.ainnotate.aidas.dto.UploadSummaryForQCFinalize;
 	        }))
 	})
 
-@NamedNativeQuery(name="UploadCustomerQcProjectMappingBatchInfo.getUvmomObjectIdsOfBatch",
+@NamedNativeQuery(name="UploadQcProjectMappingBatchInfo.getUvmomObjectIdsOfBatch",
 query="select "
 		+ " p.id as projectId,"
 		+ " uvmpm.id as uvmpmId,"
@@ -98,7 +98,7 @@ query="select "
 		+ " sum(case when ucbi.qc_status=2 then 1 else 0 end) as totalPending, \n"
 		+ " sum(ucbi.show_to_qc) as totalShowToQc \n"
 		+ " from  \n"
-		+ " upload_cqpm_batch_info ucbi, \n"
+		+ " upload_qpm_batch_info ucbi, \n"
 		+ " upload u,\n"
 		+ " user_vendor_mapping_object_mapping uvmom, \n"
 		+ " user_vendor_mapping_project_mapping uvmpm, \n"
@@ -111,25 +111,25 @@ query="select "
 		+ " and o.project_id=p.id \n"
 		+ " and uvmpm.project_id=p.id \n"
 		+ " and ucbi.batch_number=?2 \n"
-		+ " and ucbi.customer_qc_project_mapping_id=?1 \n"
+		+ " and ucbi.qc_project_mapping_id=?1 \n"
 		+ " group by u.user_vendor_mapping_object_mapping_id,o.id,uvmpm.id, p.id"
     ,resultSetMapping = "Mapping.UploadSummaryForQCFinalize")
 
-@NamedNativeQuery(name="UploadCustomerQcProjectMappingBatchInfo.countUploadsByCustomerQcProjectMappingAndBatchNumberForFinalize",
+@NamedNativeQuery(name="UploadQcProjectMappingBatchInfo.countUploadsByqcProjectMappingAndBatchNumberForFinalize",
 query="select count(ucbi.id) as totalUploaded,\n"
 		+ "sum(case when ucbi.qc_status=1 then 1 else 0 end) as totalApproved, \n"
 		+ "sum(case when ucbi.qc_status=0 then 1 else 0 end) as totalRejected,\n"
 		+ "sum(case when ucbi.qc_status=2 then 1 else 0 end) as totalPending  \n"
-		+ "from upload_cqpm_batch_info ucbi \n"
-		+ "where ucbi.customer_qc_project_mapping_id=?1 \n"
+		+ "from upload_qpm_batch_info ucbi \n"
+		+ "where ucbi.qc_project_mapping_id=?1 \n"
 		+ "and ucbi.batch_number=?2 "
     ,resultSetMapping = "Mapping.BatchInfoMapping")
 
 
 
 
-@org.springframework.data.elasticsearch.annotations.Document(indexName = "uploadCqpmBatchInfo")
-public class UploadCustomerQcProjectMappingBatchInfo extends AbstractAuditingEntity implements Serializable {
+@org.springframework.data.elasticsearch.annotations.Document(indexName = "uploadqpmBatchInfo")
+public class UploadQcProjectMappingBatchInfo extends AbstractAuditingEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -142,8 +142,8 @@ public class UploadCustomerQcProjectMappingBatchInfo extends AbstractAuditingEnt
     @Column(name="upload_id")
     private Long uploadId;
 
-    @Column(name="customer_qc_project_mapping_id")
-    private Long customerQcProjectMappingId;
+    @Column(name="qc_project_mapping_id")
+    private Long qcProjectMappingId;
 
     @Column(name="batch_number")
     private Long batchNumber;
@@ -201,12 +201,12 @@ public class UploadCustomerQcProjectMappingBatchInfo extends AbstractAuditingEnt
         this.uploadId = uploadId;
     }
 
-    public Long getCustomerQcProjectMappingId() {
-        return customerQcProjectMappingId;
+    public Long getqcProjectMappingId() {
+        return qcProjectMappingId;
     }
 
-    public void setCustomerQcProjectMappingId(Long customerQcProjectMappingId) {
-        this.customerQcProjectMappingId = customerQcProjectMappingId;
+    public void setqcProjectMappingId(Long qcProjectMappingId) {
+        this.qcProjectMappingId = qcProjectMappingId;
     }
 
     public Long getBatchNumber() {

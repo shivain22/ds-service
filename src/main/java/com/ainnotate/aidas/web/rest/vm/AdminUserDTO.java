@@ -5,7 +5,9 @@ package com.ainnotate.aidas.web.rest.vm;
 import com.ainnotate.aidas.config.Constants;
 import com.ainnotate.aidas.domain.Authority;
 import com.ainnotate.aidas.domain.User;
+import com.ainnotate.aidas.domain.UserAuthorityMapping;
 import com.ainnotate.aidas.dto.LanguageDTO;
+import com.ainnotate.aidas.dto.UserAuthorityMappingDTO;
 
 import javax.persistence.Column;
 import javax.validation.constraints.Email;
@@ -138,7 +140,7 @@ public class AdminUserDTO {
         this.createdDate = user.getCreatedDate();
         this.lastModifiedBy = user.getLastModifiedBy();
         this.lastModifiedDate = user.getLastModifiedDate();
-        this.authorities = user.getAuthorities().stream().map(Authority::getName).collect(Collectors.toSet());
+        this.authorities = user.getAuthorityDtos().stream().map(UserAuthorityMappingDTO::getName).collect(Collectors.toSet());
     }
 
     public Long getId() {

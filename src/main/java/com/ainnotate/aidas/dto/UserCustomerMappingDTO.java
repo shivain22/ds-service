@@ -4,8 +4,24 @@ public class UserCustomerMappingDTO {
 
     private Long customerId;
     private Integer status;
+    private String name;
+    public UserCustomerMappingDTO() {
+    	
+    }
+    public UserCustomerMappingDTO(Long id, String name,Integer status ) {
+    	this.customerId=id;
+    	this.name=name;
+    	this.status=status;
+    }
+    public String getName() {
+		return name;
+	}
 
-    public Long getCustomerId() {
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public Long getCustomerId() {
         return customerId;
     }
 

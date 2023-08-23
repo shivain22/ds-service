@@ -120,7 +120,7 @@ query=
 				+ "u.name as fileName,"
 				+ "ucbi.qc_status as qcStatus,  "
 				+ "uvmom.consent_form_url as consentFormUrl  "
-				+ "from upload_cqpm_batch_info ucbi,"
+				+ "from upload_qpm_batch_info ucbi,"
 				+ "upload u,"
 				+ "user_vendor_mapping_object_mapping uvmom,"
 				+ "object o,"
@@ -149,7 +149,7 @@ query=
 				+ "u.name as fileName,\n"
 				+ "ucbi.qc_status as qcStatus  \n"
 				+ "uvmom.consent_form_url as consentFormUrl  \n"
-				+ "from upload_cqpm_batch_info ucbi,\n"
+				+ "from upload_qpm_batch_info ucbi,\n"
 				+ "upload u,\n"
 				+ "user_vendor_mapping_object_mapping uvmom,\n"
 				+ "object o,\n"
@@ -248,8 +248,8 @@ public class Upload extends AbstractAuditingEntity implements Serializable {
 	@ManyToOne
 	@JsonIgnoreProperties(value = { "user", "project" })
 	@JsonIgnore
-	@JoinColumn(name = "qc_done_by_id", nullable = true, foreignKey = @ForeignKey(name = "fk_upload_qc_done_by"))
-	private CustomerQcProjectMapping qcDoneBy;
+	@JoinColumn(name = "qc_done_by_id", nullable = false,referencedColumnName = "id")
+	private QcProjectMapping qcDoneBy;
 	@Column(name = "qc_start_date", nullable = true)
 	private Instant qcStartDate;
 	@Column(name = "qc_end_date", nullable = true)
@@ -427,11 +427,11 @@ public class Upload extends AbstractAuditingEntity implements Serializable {
 		this.qcStatus = qcStatus;
 	}
 
-	public CustomerQcProjectMapping getQcDoneBy() {
+	public QcProjectMapping getQcDoneBy() {
 		return qcDoneBy;
 	}
 
-	public void setQcDoneBy(CustomerQcProjectMapping qcDoneBy) {
+	public void setQcDoneBy(QcProjectMapping qcDoneBy) {
 		this.qcDoneBy = qcDoneBy;
 	}
 

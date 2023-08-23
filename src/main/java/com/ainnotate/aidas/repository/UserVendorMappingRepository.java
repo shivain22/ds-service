@@ -59,6 +59,15 @@ public interface UserVendorMappingRepository extends JpaRepository<UserVendorMap
         "auavm.user_id=au.id and auavm.vendor_id=?1 and auavm.user_id=?2 " +
         "and auaam.user_id=au.id and auaam.user_id=?2 and auaam.authority_id=5",nativeQuery = true)
     UserVendorMapping findByUserAndVendor(Long aidasVendorId, Long aidasUserId);
+    
+    @Query(value = "select uvm.* " +
+            "from " +
+            "user_vendor_mapping uvm ," +
+            "user_authority_mapping uam " +
+            "where " +
+            "uvm.user_id=?2 and uvm.vendor_id=?1 " +
+            "and uam.user_id=?2 and  uam.authority_id=?3",nativeQuery = true)
+    UserVendorMapping findByUserIdAndVendorId(Long vendorId, Long userId, Long authorityId);
 
     @Query(value="select * from user_vendor_mapping where vendor_id=?1 and user_id=?2",nativeQuery = true)
     UserVendorMapping findByVendorIdAndUserId(Long vendorId, Long userId);

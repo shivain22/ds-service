@@ -86,11 +86,17 @@ public interface UserRepository extends JpaRepository<User, Long>,QuerydslPredic
         ,countQuery = "select count(*) from user u, user_customer_mapping ucm where u.id=ucm.user_id and ucm.customer_id=?1 and u.status=1 and deleted=0",nativeQuery = true)
     List<User> findAllByDeletedIsFalseAndAidasCustomer(Long customerId);
 
-    @Query(value = "select u.* from user u, user_customer_mapping ucm,customer c where u.id=ucm.user_id and ucm.customer_id=c.id and c.organisation_id=?1 and u.status=1 and deleted=0" +
-        " union select u.* from user u, user_organisation_mapping uom where uom.user_id=u.id and uom.organisation_id=?1"
-        ,countQuery = "select count(*) from (select u.id from user u, user_customer_mapping ucm,customer c where u.id=ucm.user_id and ucm.customer_id=c.id and c.organisation_id=?1 and u.status=1 and deleted=0" +
-        " union select u.id from user u, user_organisation_mapping uom where uom.user_id=u.id and uom.organisation_id=?1 ) as orgusers",nativeQuery = true)
+    @Query(value = "select u.* from user u where u.parent_organisation_id=?1 and u.status=1 and deleted=0" +
+        " union "
+        + "select u.* from user u, user_organisation_mapping uom where uom.user_id=u.id and uom.organisation_id=?1"
+        ,countQuery = "select count(*) from (select u.id from user u where u.parent_organisation_id.id=?1 and u.status=1 and deleted=0)" +
+        " ) as orgusers",nativeQuery = true)
     Page<User> findAllByDeletedIsFalseAndAidasOrganisation_OrAidasCustomer_AidasOrganisation(Pageable pageable, Organisation organisation, Organisation aidasCustomerOrganisation);
+    
+    @Query(value = "select u.* from user u where u.parent_organisation_id=?1 and u.status=1 and deleted=0"
+            ,countQuery = "select count(*) from  user u where u.parent_organisation_id.id=?1 and u.status=1 and deleted=0" +
+            " ) as orgusers",nativeQuery = true)
+        Page<User> findAllByParentOrganisationId(Pageable pageable, Long parentOrganisationId);
 
 
     @Query(value = "select * from user u, user_customer_mapping ucm,customer c where u.id=ucm.user_id and ucm.customer_id=c.id and c.organisation_id=?1 and u.status=1 and deleted=0" +
@@ -111,6 +117,9 @@ public interface UserRepository extends JpaRepository<User, Long>,QuerydslPredic
     @Query(value = "select * from user u where  u.status=1 and deleted=0 and u.id>?1 order by u.id desc"
         ,countQuery = "select count(*) from user u where  u.status=1 and deleted=0 and u.id>?1",nativeQuery = true)
     Page<User> findAllByIdGreaterThanAndDeletedIsFalse(Long id, Pageable page);
+    
+    @Query(value = "select * from user u where 1=2",nativeQuery = true)
+        Page<User> findNone(Pageable page);
 
     @Query(value = "select * from user u where  u.status=1 and deleted=0 order by u.id desc"
         ,countQuery = "select count(*) from user u where  u.status=1 and deleted=0",nativeQuery = true)
@@ -126,18 +135,18 @@ public interface UserRepository extends JpaRepository<User, Long>,QuerydslPredic
         "u.first_name as firstName, \n" +
         "u.last_name lastName, \n" +
         "0 as userVendorMappingId,\n" +
-        "cqpm.id as userCustomerMappingId,\n" +
+        "qpm.id as userCustomerMappingId,\n" +
         "ucm.id as qcProjectMappingId, \n" + //changed this to get qpc.id instead of customer mapping id so that the add function can directly work on qpc
-        "cqpm.status as status,   \n" +
-        "cqpm.qc_level as qcLevel "+
+        "qpm.status as status,   \n" +
+        "qpm.qc_level as qcLevel "+
         "from \n" +
-        "customer_qc_project_mapping cqpm, \n" +
+        "qc_project_mapping qpm, \n" +
         "user u,\n" +
         "user_customer_mapping ucm \n" +
         "where \n" +
-        "cqpm.user_customer_mapping_id=ucm.id and\n" +
+        "qpm.user_customer_mapping_id=ucm.id and\n" +
         "ucm.user_id=u.id and\n" +
-        "cqpm.project_id=?1 \n"
+        "qpm.project_id=?1 \n"
         , nativeQuery = true)
     List<IUserDTO>findAllByQcUsersByCustomerAndProject(Long projectId);
 

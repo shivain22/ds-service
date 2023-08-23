@@ -4,8 +4,24 @@ public class UserVendorMappingDTO {
 
     private Long vendorId;
     private Integer status;
+    private String name;
+    public UserVendorMappingDTO(Long id, String name,Integer status ) {
+    	this.vendorId=id;
+    	this.name=name;
+    	this.status=status;
+    }
+    public UserVendorMappingDTO() {
+    	
+    }
+    public String getName() {
+		return name;
+	}
 
-    public Long getVendorId() {
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public Long getVendorId() {
         return vendorId;
     }
 

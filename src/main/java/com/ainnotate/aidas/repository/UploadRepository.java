@@ -428,7 +428,7 @@ public interface UploadRepository extends JpaRepository<Upload, Long> {
     Set<Upload> getUploadsByIds(List<Long> uploadIds);
 
     @Query(value="select count(u.id) from upload u, user_vendor_mapping_object_mapping uvmom, object o where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and o.project_id=?2 and  u.qc_done_by_id=?1 and u.qc_status=0 and  u.metadata_status=1  limit 10",nativeQuery = true)
-    Integer findPendingQcDoneByCQPM(Long customerQcProjectMappingId, Long projectId);
+    Integer findPendingQcDoneByqpm(Long qcProjectMappingId, Long projectId);
 
     @Query(value="select upload.* from upload where upload.qc_done_by_id is not null and qc_end_date is null and qc_start_date is not null and qc_status=0 and TIMEstampDIFF(SECOND,qc_start_date,now())>(select value from app_property where name='qc_clean_up_time')",nativeQuery = true)
     List<Upload> findUploadsHeldByQcForMoreThan10Mins();
@@ -466,7 +466,7 @@ public interface UploadRepository extends JpaRepository<Upload, Long> {
     @Query(value="select u.* from upload u, user_vendor_mapping_object_mapping uvmom, object o where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and o.project_id=?1",nativeQuery = true)
     List<Upload> findAllUploadByProject(Long projectId);
 
-    @Query(value="select u.*  from upload_cqpm_batch_info ucbi,"
+    @Query(value="select u.*  from upload_qpm_batch_info ucbi,"
     		+ "upload u where ucbi.upload_id =u.id and ucbi.batch_number=?1 "
     		+ "and ucbi.show_to_qc=1 order by u.id limit ?3 offset ?2",nativeQuery = true)
     List<Upload> getUploadIdsInBatch(Long batchNumber,Integer pageNumber, Integer size);
@@ -480,10 +480,10 @@ public interface UploadRepository extends JpaRepository<Upload, Long> {
     
     
     @Query(value="select u.id as upload_id, o.id as object_id,u.user_vendor_mapping_object_mapping_id as uvmomvId, o.name as object_name   from object o,user_vendor_mapping_object_mapping uvom, "
-    		+ " upload_cqpm_batch_info ucbi,upload u where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and  ucbi.upload_id =u.id and ucbi.batch_number=?1",nativeQuery = true)
+    		+ " upload_qpm_batch_info ucbi,upload u where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and  ucbi.upload_id =u.id and ucbi.batch_number=?1",nativeQuery = true)
     List<String[]> getUploadIdsInBatchDto(Long batchNumber);
     
-    @Query(value="select u.* from upload_cqpm_batch_info ucbi,upload u where ucbi.batch_number=?1 and ucbi.upload_id=u.id",nativeQuery = true)
+    @Query(value="select u.* from upload_qpm_batch_info ucbi,upload u where ucbi.batch_number=?1 and ucbi.upload_id=u.id",nativeQuery = true)
     List<Upload> getUploadByBatchNumber(Integer batchNumber);
     
     @Query(nativeQuery = true)

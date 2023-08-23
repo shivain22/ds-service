@@ -8,13 +8,13 @@
     <changeSet author="shiva (generated)" id="1657539087468-6">
         <addColumn catalogName="ainnotateservice"
                    schemaName= "ainnotateservice"
-                   tableName="cqpm_batch_mapping" >
+                   tableName="qpm_batch_mapping" >
             <column name="current_page_number"
                     type="INT"/>
         </addColumn>
         <addColumn catalogName="ainnotateservice"
                    schemaName= "ainnotateservice"
-                   tableName="cqpm_batch_mapping_aud" >
+                   tableName="qpm_batch_mapping_aud" >
             <column name="current_page_number"
                     type="INT"/>
         </addColumn>

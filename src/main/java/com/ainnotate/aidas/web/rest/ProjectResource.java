@@ -77,7 +77,7 @@ public class ProjectResource {
 	private ProjectPropertyRepository projectPropertyRepository;
 
 	@Autowired
-	private CustomerQcProjectMappingRepository customerQcProjectMappingRepository;
+	private QcProjectMappingRepository qcProjectMappingRepository;
 
 	@Autowired
 	private UploadMetaDataRepository uploadMetaDataRepository;
@@ -129,7 +129,7 @@ public class ProjectResource {
 	private CategoryRepository categoryRepository;
 
 	@Autowired
-	private UploadCustomerQcProjectMappingBatchInfoRepository uploadCustomerQcProjectMappingBatchInfoRepository;
+	private UploadQcProjectMappingBatchInfoRepository uploadQcProjectMappingBatchInfoRepository;
 
 	@Autowired
 	private ProjectQcLevelConfigurationsRepository projectQcLevelConfigurationsRepository;
@@ -306,7 +306,7 @@ public class ProjectResource {
 					csvData.add(String.valueOf(umd.getUploadId()));
 					Integer qcLevels = project.getQcLevels();
 					for (int j = 1; j <= qcLevels; j++) {
-						List<QcResultDTO> qcLevelStatus = uploadCustomerQcProjectMappingBatchInfoRepository
+						List<QcResultDTO> qcLevelStatus = uploadQcProjectMappingBatchInfoRepository
 								.getQcLevelStatus(umd.getUploadId(), j);
 						if (qcLevelStatus == null || (qcLevelStatus != null && qcLevelStatus.size() == 0)) {
 							csvData.add("QC Not Done Yet");
@@ -378,36 +378,20 @@ public class ProjectResource {
 		User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
 		log.debug("REST request to add AidasQcUsers : {}", projectQcDTO);
 		Project project = projectRepository.getById(projectQcDTO.getProjectId());
-		for (UserDTO userDTO : projectQcDTO.getQcUsers()) {
-			System.out.println(userDTO.getPurposeId());
-			UserCustomerMapping ucm = null;
-			if (userDTO.getPurposeId() != null && (userDTO.getPurposeId().equals(AidasConstants.ORG_QC_USER)
-					|| userDTO.getPurposeId().equals(AidasConstants.VENDOR_QC_USER))) {
-				ucm = userCustomerMappingRepository.findByCustomerIdAndUserId(project.getCustomer().getId(),
-						userDTO.getUserId());
-				if (ucm == null) {
-					ucm = new UserCustomerMapping();
-					ucm.setUser(userRepository.getById(userDTO.getUserId()));
-					ucm.setCustomer(project.getCustomer());
-					ucm.setPurpose(userDTO.getPurposeId());
-					ucm = userCustomerMappingRepository.save(ucm);
-				}
-			} else {
-				ucm = userCustomerMappingRepository.getById(userDTO.getUserCustomerMappingId());
+		for (QcUser qcUser : projectQcDTO.getQcUsers()) {
+			QcProjectMapping qpm = qcProjectMappingRepository.getByUserMappingIdAndEntityIdAndProjectIdAndQcLevel(project.getId(),qcUser.getUserMappingId(),qcUser.getEntityId(),qcUser.getQcLevel());
+			if(qpm==null) {
+				qpm = new QcProjectMapping();
+				qpm.setProject(project);
+				qpm.setUserMappingId(qcUser.getUumId());
+				qpm.setQcLevel(qcUser.getQcLevel());
+				qpm.setStatus(qcUser.getStatus());
+				qpm.setEntityId(qcUser.getEntityId().intValue());
+			}else {
+				qpm.setStatus(qcUser.getStatus());
 			}
-			// the uservendormappingid coming from the frontend is actually qpc.id -- check
-			// the method which fetch list of qc users for project.
-			CustomerQcProjectMapping cqpm = customerQcProjectMappingRepository
-					.getQcProjectMappingByProjectAndCustomerAndUserAndLevel(projectQcDTO.getProjectId(),
-							userDTO.getUserCustomerMappingId(), userDTO.getQcLevel());
-			if (cqpm == null && ucm != null) {
-				cqpm = new CustomerQcProjectMapping();
-				cqpm.setProject(project);
-				cqpm.setUserCustomerMapping(ucm);
-			}
-			cqpm.setStatus(userDTO.getStatus());
-			cqpm.setQcLevel(userDTO.getQcLevel());
-			customerQcProjectMappingRepository.save(cqpm);
+			qcProjectMappingRepository.save(qpm);
+			
 		}
 		return ResponseEntity.ok().body("Successfully added project qc level");
 	}
@@ -930,7 +914,8 @@ public class ProjectResource {
 		if (user.getAuthority().getName().equals(AidasConstants.VENDOR_USER)) {
 			page = projectRepository.findProjectWithUploadCountByUserForDropDown(user.getId());
 		}
-		if (user.getAuthority().getName().equals(AidasConstants.QC_USER)) {
+		if (user.getAuthority().getName().equals(AidasConstants.ADMIN_QC_USER)||user.getAuthority().getName().equals(AidasConstants.ORG_QC_USER)||
+				user.getAuthority().getName().equals(AidasConstants.CUSTOMER_QC_USER)||user.getAuthority().getName().equals(AidasConstants.VENDOR_QC_USER)) {
 			page = projectRepository.findProjectsForCustomerQC(user.getId());
 		}
 		if (page != null) {

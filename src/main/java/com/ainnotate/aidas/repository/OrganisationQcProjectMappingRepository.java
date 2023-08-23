@@ -1,6 +1,6 @@
 package com.ainnotate.aidas.repository;
 
-import com.ainnotate.aidas.domain.CustomerQcProjectMapping;
+import com.ainnotate.aidas.domain.QcProjectMapping;
 import com.ainnotate.aidas.domain.OrganisationQcProjectMapping;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 /**
- * Spring Data JPA repository for the {@link CustomerQcProjectMapping} entity.
+ * Spring Data JPA repository for the {@link QcProjectMapping} entity.
  */
 @Repository
 @Transactional

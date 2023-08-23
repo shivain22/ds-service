@@ -2,12 +2,18 @@ package com.ainnotate.aidas.web.rest;
 
 import com.ainnotate.aidas.domain.AppProperty;
 import com.ainnotate.aidas.domain.Customer;
+import com.ainnotate.aidas.domain.CustomerOrganisationMapping;
 import com.ainnotate.aidas.domain.Organisation;
 import com.ainnotate.aidas.domain.Property;
 import com.ainnotate.aidas.domain.User;
+import com.ainnotate.aidas.domain.UserAuthorityMapping;
+import com.ainnotate.aidas.dto.UserCustomerMappingDTO;
 import com.ainnotate.aidas.repository.AppPropertyRepository;
+import com.ainnotate.aidas.repository.CustomerOrganisationMappingRepository;
 import com.ainnotate.aidas.repository.CustomerRepository;
+import com.ainnotate.aidas.repository.OrganisationRepository;
 import com.ainnotate.aidas.repository.PropertyRepository;
+import com.ainnotate.aidas.repository.UserAuthorityMappingRepository;
 import com.ainnotate.aidas.repository.UserRepository;
 import com.ainnotate.aidas.repository.predicates.CustomerPredicatesBuilder;
 import com.ainnotate.aidas.repository.predicates.ProjectPredicatesBuilder;
@@ -71,7 +77,17 @@ public class CustomerResource {
     private final CustomerSearchRepository aidasCustomerSearchRepository;
 
     @Autowired
+	private UserAuthorityMappingRepository userAuthorityMappingRepository;
+
+    
+    @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private OrganisationRepository organisationRepository;
+    
+    @Autowired
+    private CustomerOrganisationMappingRepository customerOrganisationRepository;
 
     public CustomerResource(
         CustomerRepository customerRepository,
@@ -91,24 +107,40 @@ public class CustomerResource {
     @Secured({AidasConstants.ADMIN, AidasConstants.ORG_ADMIN})
     @PostMapping("/aidas-customers")
     public ResponseEntity<Customer> createAidasCustomer(@Valid @RequestBody Customer customer) throws URISyntaxException {
-        User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        User loggedInUser = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to save AidasCustomer : {}", customer);
-        HttpServletRequest req = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
         if (customer.getId() != null) {
             throw new BadRequestAlertException("A new customer cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        if( user.getAuthority().getName().equals(AidasConstants.ADMIN) ||
-            (user.getAuthority().getName().equals(AidasConstants.ORG_ADMIN) && user.getOrganisation()!=null && user.getOrganisation().equals(customer.getOrganisation()))){
+        if( loggedInUser.getAuthority().getName().equals(AidasConstants.ADMIN) ||
+            (loggedInUser.getAuthority().getName().equals(AidasConstants.ORG_ADMIN) && loggedInUser.getOrganisation()!=null && loggedInUser.getOrganisation().equals(customer.getOrganisation()))){
             try {
 	        	Customer result = customerRepository.save(customer);
-	            propertyRepository.addCustomerProperties(result.getId(),user.getId());
+	        	CustomerOrganisationMapping com1 = new CustomerOrganisationMapping();
+	        	Organisation org = organisationRepository.getById(-1l);
+	        	com1.setOrganisation(org);
+	        	com1.setCustomer(result);
+	        	customerOrganisationRepository.save(com1);
+	        	if(loggedInUser.getAuthority().getName().equals(AidasConstants.ADMIN) ) {
+	        		com1 = new CustomerOrganisationMapping();
+		        	com1.setOrganisation(result.getOrganisation());
+		        	com1.setCustomer(result);
+		        	customerOrganisationRepository.save(com1);
+	        	}
+	        	if(loggedInUser.getAuthority().getName().equals(AidasConstants.ORG_ADMIN) && loggedInUser.getOrganisation()!=null && loggedInUser.getOrganisation().equals(customer.getOrganisation())) {
+	        		com1 = new CustomerOrganisationMapping();
+		        	com1.setOrganisation(result.getOrganisation());
+		        	com1.setCustomer(result);
+		        	customerOrganisationRepository.save(com1);
+	        	}
+	            propertyRepository.addCustomerProperties(result.getId(),loggedInUser.getId());
 	            List<String> props = Arrays.asList("bucketName","region","accessKey","accessSecret");
 	            List<Property> propsToEncrypt = propertyRepository.getAllCustomerPropertiesForEnc(customer.getId(),props);
 	       			for(Property ap:propsToEncrypt) {
 	       				ap.setValue( new String(AESCBCPKCS5Padding.encrypt(ap.getValue(), AidasConstants.KEY,AidasConstants.IV_STR)));
 	       				propertyRepository.save(ap);
 	       			}
-	            appPropertyRepository.addCustomerAppProperties(result.getId(),user.getId());
+	            appPropertyRepository.addCustomerAppProperties(result.getId(),loggedInUser.getId());
 	            props = Arrays.asList("downloadBucketName","downloadRegion","downloadAccessKey","downloadAccessSecret",
 	           		 "uploadBucketName","uploadRegion","uploadAccessKey","uploadAccessSecret");
 	       			List<AppProperty> toBeEncProps = appPropertyRepository.getAppPropertyCust(result.getId(), props);
@@ -182,7 +214,7 @@ public class CustomerResource {
     public ResponseEntity<List<Customer>> getAllAidasCustomers(Pageable pageable) {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to get a page of AidasCustomers");
-        Page<Customer> page =null;
+        Page<Customer> page = customerRepository.findNone(pageable);
         if( user.getAuthority().getName().equals(AidasConstants.ADMIN)){
             page = customerRepository.findAllByIdGreaterThan(pageable,-1l);
         }else if(user.getAuthority().getName().equals(AidasConstants.ORG_ADMIN) && user.getOrganisation()!=null) {
@@ -212,9 +244,60 @@ public class CustomerResource {
         if( user.getAuthority().getName().equals(AidasConstants.ADMIN)){
             customers = customerRepository.findAllByIdGreaterThanForDropDown(-1l);
         }else if(user.getAuthority().getName().equals(AidasConstants.ORG_ADMIN) && user.getOrganisation()!=null) {
-            customers = customerRepository.findAllByAidasOrganisationForDropDown(user.getOrganisation());
+            customers = customerRepository.findAllByAidasOrganisationForDropDown(user.getOrganisation().getId());
         }else if(user.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN) && user.getCustomer()!=null) {
             customers = customerRepository.findAllByIdEqualsForDropDown(user.getCustomer().getId());
+        }
+        if(customers!=null ){
+            return ResponseEntity.ok().body(customers);
+        }else{
+            throw new BadRequestAlertException("Not Authorised", ENTITY_NAME, "idinvalid");
+        }
+    }
+    
+    /**
+     * {@code GET  /aidas-customers/dropdown} : get all the aidasCustomers.
+     *
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of aidasCustomers in body.
+     */
+    //@Secured({AidasConstants.ADMIN, AidasConstants.ORG_ADMIN, AidasConstants.CUSTOMER_ADMIN})
+    @GetMapping("/aidas-customers/dropdown/{organisationId}")
+    public ResponseEntity<List<Customer>> getCustomersOfOrganisationForDropDown(@PathVariable Long organisationId) {
+        User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        log.debug("REST request to get a page of AidasCustomers");
+        List<Customer> customers =null;
+        if( user.getAuthority().getName().equals(AidasConstants.ADMIN)){
+            customers = customerRepository.findAllByAidasOrganisationForDropDown(organisationId);
+        }else if(user.getAuthority().getName().equals(AidasConstants.ORG_ADMIN) && user.getOrganisation()!=null) {
+            customers = customerRepository.findAllByAidasOrganisationForDropDown(user.getOrganisation().getId());
+        }else if(user.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN) && user.getCustomer()!=null) {
+            customers = customerRepository.findAllByIdEqualsForDropDown(user.getCustomer().getId());
+        }
+        if(customers!=null ){
+            return ResponseEntity.ok().body(customers);
+        }else{
+            throw new BadRequestAlertException("Not Authorised", ENTITY_NAME, "idinvalid");
+        }
+    }
+    
+    /**
+     * {@code GET  /aidas-customers/dropdown} : get all the aidasCustomers.
+     *
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of aidasCustomers in body.
+     */
+    //@Secured({AidasConstants.ADMIN, AidasConstants.ORG_ADMIN, AidasConstants.CUSTOMER_ADMIN})
+    @GetMapping("/aidas-customers/dropdown/new")
+    public ResponseEntity<List<UserCustomerMappingDTO>> getCustomersForDropDownNew() {
+        User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        UserAuthorityMapping uam = userAuthorityMappingRepository.findByAuthorityIdAndUserId(user.getAuthority().getId(), user.getId());
+        log.debug("REST request to get a page of AidasCustomers");
+        List<UserCustomerMappingDTO> customers =null;
+        if( user.getAuthority().getName().equals(AidasConstants.ADMIN)){
+            customers = customerRepository.getAllCustomersWithUamId(user.getId(),uam.getAuthority().getId());
+        }else if(user.getAuthority().getName().equals(AidasConstants.ORG_ADMIN) && user.getOrganisation()!=null) {
+            customers = customerRepository.getAllCustomersWithUamIdAndOrgId(uam.getId(),user.getOrganisation().getId());
+        }else if(user.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN) && user.getCustomer()!=null) {
+            customers = customerRepository.getAllCustomersWithUamIdAndCustomerId(uam.getId(),user.getCustomer().getId());
         }
         if(customers!=null ){
             return ResponseEntity.ok().body(customers);

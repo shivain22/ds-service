@@ -4,6 +4,7 @@ package com.ainnotate.aidas.service;
 import com.ainnotate.aidas.config.KeycloakConfig;
 import com.ainnotate.aidas.domain.*;
 import com.ainnotate.aidas.domain.Object;
+import com.ainnotate.aidas.dto.UserAuthorityMappingDTO;
 import com.ainnotate.aidas.repository.*;
 import com.ainnotate.aidas.repository.search.*;
 import com.opencsv.exceptions.CsvException;
@@ -88,7 +89,7 @@ public class DataPopulator implements Runnable {
     OrganisationQcProjectMappingRepository organisationQcProjectMappingRepository;
 
     @Autowired
-    CustomerQcProjectMappingRepository customerQcProjectMappingRepository;
+    QcProjectMappingRepository qcProjectMappingRepository;
 
     @Autowired
     private UserCustomerMappingRepository userCustomerMappingRepository;
@@ -539,16 +540,16 @@ public class DataPopulator implements Runnable {
 
     private void addSampleOrgnisationQcMappings(){
         List<UserCustomerMapping> ucms = userCustomerMappingRepository.getAllSampleUserCustomerMappingsForQc();
-        List<CustomerQcProjectMapping> oqpms = new ArrayList<>();
+        List<QcProjectMapping> oqpms = new ArrayList<>();
         for(Project p: projects){
             for(UserCustomerMapping ucm: ucms) {
-                CustomerQcProjectMapping cqpm = new CustomerQcProjectMapping();
-                cqpm.setUserCustomerMapping(ucm);
-                cqpm.setProject(p);
-                oqpms.add(cqpm);
+                QcProjectMapping qpm = new QcProjectMapping();
+                //qpm.setUserCustomerMapping(ucm);
+                qpm.setProject(p);
+                oqpms.add(qpm);
             }
         }
-        customerQcProjectMappingRepository.saveAll(oqpms);
+        qcProjectMappingRepository.saveAll(oqpms);
     }
     private void addSampleCustomerQcMappings(){
         List<UserOrganisationMapping> uoms = userOrganisationMappingRepository.getAllSampleUserOrganisationMappingsForQc();
@@ -625,11 +626,12 @@ public class DataPopulator implements Runnable {
         List<RoleRepresentation> roleRepresentationList = realmResource.roles().list();
         for (RoleRepresentation roleRepresentation : roleRepresentationList)
         {
-            for(Authority aa:myUser.getAuthorities()){
+            for(UserAuthorityMappingDTO aa:myUser.getAuthorityDtos()){
                 if (roleRepresentation.getName().equals(aa.getName()))
                 {
                     userResource.roles().realmLevel().add(Arrays.asList(roleRepresentation));
-                    myUser.setAuthority(aa);
+                    UserAuthorityMapping a = userAuthorityMappingRepository.getById(aa.getAuthorityId());
+                    myUser.setAuthority(a.getAuthority());
                 }
             }
         }
@@ -659,7 +661,7 @@ public class DataPopulator implements Runnable {
         passwordCred.setType(CredentialRepresentation.PASSWORD);
         passwordCred.setValue(myUser.getPassword());
         userResource.resetPassword(passwordCred);
-        userResource.roles().realmLevel().add(myUser.getAuthorities().stream().map(authority -> {return realmResource.roles().get(authority.getName()).toRepresentation();}).collect(Collectors.toList()));
+        userResource.roles().realmLevel().add(myUser.getAuthorityDtos().stream().map(authority -> {return realmResource.roles().get(authority.getName()).toRepresentation();}).collect(Collectors.toList()));
     }
 
     private void deleteUserFromKeyCloak(User user){

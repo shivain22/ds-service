@@ -20,4 +20,20 @@ public class UserAuthorityMappingDTO {
 
     private Long authorityId;
     private Integer status;
+    private String name;
+    public UserAuthorityMappingDTO( ) {
+    	
+    }
+    public UserAuthorityMappingDTO(Long id, String name,Integer status ) {
+    	this.authorityId=id;
+    	this.name=name;
+    	this.status=status;
+    }
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
 }

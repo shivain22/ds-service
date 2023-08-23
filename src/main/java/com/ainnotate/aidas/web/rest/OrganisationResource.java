@@ -40,8 +40,11 @@ import com.ainnotate.aidas.constants.AidasConstants;
 import com.ainnotate.aidas.domain.AppProperty;
 import com.ainnotate.aidas.domain.Organisation;
 import com.ainnotate.aidas.domain.User;
+import com.ainnotate.aidas.domain.UserAuthorityMapping;
+import com.ainnotate.aidas.dto.UserOrganisationMappingDTO;
 import com.ainnotate.aidas.repository.AppPropertyRepository;
 import com.ainnotate.aidas.repository.OrganisationRepository;
+import com.ainnotate.aidas.repository.UserAuthorityMappingRepository;
 import com.ainnotate.aidas.repository.UserRepository;
 import com.ainnotate.aidas.repository.predicates.OrganisationPredicatesBuilder;
 import com.ainnotate.aidas.repository.search.OrganisationSearchRepository;
@@ -78,6 +81,9 @@ public class OrganisationResource {
 
 	@Autowired
 	private AppPropertyRepository appPropertyRepository;
+	
+	@Autowired
+	private UserAuthorityMappingRepository userAuthorityMappingRepository;
 
 	private final OrganisationSearchRepository aidasOrganisationSearchRepository;
 
@@ -253,10 +259,8 @@ public class OrganisationResource {
 				}
 			}
 			if (user.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN)) {
-				if (user.getCustomer() != null) {
-					page = organisationRepository.findAllByCustomer(user.getCustomer().getOrganisation().getId(),
+					page = organisationRepository.findAllById(user.getCustomer().getOrganisation().getId(),
 							pageable);
-				}
 			}
 		}
 		HttpHeaders headers = PaginationUtil
@@ -279,7 +283,6 @@ public class OrganisationResource {
 		if (user.getAuthority().getName().equals(AidasConstants.ADMIN)) {
 			organisations = organisationRepository.findAllByIdGreaterThanForDropDown(-1l);
 		}
-		{
 			if (user.getAuthority().getName().equals(AidasConstants.ORG_ADMIN)) {
 				if (user.getOrganisation() != null) {
 					organisations.add(user.getOrganisation());
@@ -291,7 +294,35 @@ public class OrganisationResource {
 							.findOrgOfCustomer(user.getCustomer().getOrganisation().getId());
 				}
 			}
+		return ResponseEntity.ok().body(organisations);
+	}
+	
+	/**
+	 * {@code GET  /aidas-organisations} : get all the aidasOrganisations.
+	 *
+	 * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list
+	 *         of aidasOrganisations in body.
+	 */
+	//@Secured({ AidasConstants.ADMIN, AidasConstants.ORG_ADMIN, AidasConstants.CUSTOMER_ADMIN })
+	@GetMapping("/aidas-organisations/dropdown/new")
+	public ResponseEntity<List<UserOrganisationMappingDTO>> getAllOrganisationsForDropDownNew() {
+		log.debug("REST request to get a page of AidasOrganisations");
+		List<UserOrganisationMappingDTO> organisations = new ArrayList<>();
+		User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+		UserAuthorityMapping uam = userAuthorityMappingRepository.findByUamIdAndUserId(user.getAuthority().getId(), user.getId());
+		if (user.getAuthority().getName().equals(AidasConstants.ADMIN)) {
+			organisations = organisationRepository.getAllOrganisationsWithUamId(user.getId(),uam.getId());
 		}
+		else if (user.getAuthority().getName().equals(AidasConstants.ORG_ADMIN)) {
+				if (user.getOrganisation() != null) {
+					organisations = organisationRepository.getAllOrganisationsWithUamIdAndOrgId(uam.getId(),user.getOrganisation().getId());
+				}
+			}
+		else if (user.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN)) {
+				if (user.getCustomer() != null) {
+					organisations = organisationRepository.getAllOrganisationsWithUamIdAndOrgId(uam.getId(),user.getCustomer().getOrganisation().getId());
+				}
+			}
 		return ResponseEntity.ok().body(organisations);
 	}
 

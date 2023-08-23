@@ -1,11 +1,29 @@
 package com.ainnotate.aidas.dto;
 
+import com.ainnotate.aidas.domain.User;
+
 public class UserOrganisationMappingDTO {
 
     private Long organisationId;
     private Integer status;
+    private String name;
+    public UserOrganisationMappingDTO( ) {
+    	
+    }
+    public UserOrganisationMappingDTO(Long id, String name,Integer status ) {
+    	this.organisationId=id;
+    	this.name=name;
+    	this.status=status;
+    }
+    public String getName() {
+		return name;
+	}
 
-    public Long getOrganisationId() {
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public Long getOrganisationId() {
         return organisationId;
     }
 

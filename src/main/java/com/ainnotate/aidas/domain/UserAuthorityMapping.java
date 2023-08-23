@@ -1,5 +1,6 @@
 package com.ainnotate.aidas.domain;
 
+import com.ainnotate.aidas.dto.UserAuthorityMappingDTO;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.hibernate.annotations.Cache;
@@ -23,6 +24,37 @@ import java.util.Objects;
     })
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @Audited
+
+
+
+@NamedNativeQuery(name = "UserAuthorityMapping.getAllAuthoritiesOfUser",
+query="select uam.id, a.name, uam.status \n"
+		+ "from\n"
+		+ "authority a, user_authority_mapping uam\n"
+		+ "where\n"
+		+ "uam.authority_id=a.id \n"
+		+ "and uam.user_id=?1\n"
+		+ "union\n"
+		+ "select -2 , a.name, 0 as status\n"
+		+ "from\n"
+		+ "authority a \n"
+		+ "where\n"
+		+ "a.id \n"
+		+ "not in \n"
+		+ "(select authority_id from user_authority_mapping uam where user_id=?1)",
+		resultSetMapping = "Mapping.AuthorityMappingDTO")
+
+@SqlResultSetMapping(
+		name = "Mapping.AuthorityMappingDTO", 
+		classes = @ConstructorResult(targetClass = UserAuthorityMappingDTO.class, 
+		columns = {
+				@ColumnResult(name = "id", type = Long.class), 
+				@ColumnResult(name = "name", type = String.class),
+				@ColumnResult(name = "status", type = Integer.class)
+	}))
+
+
+
 public class UserAuthorityMapping extends AbstractAuditingEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;

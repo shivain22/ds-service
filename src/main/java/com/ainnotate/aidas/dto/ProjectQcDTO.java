@@ -1,8 +1,8 @@
 package com.ainnotate.aidas.dto;
 
-import com.ainnotate.aidas.domain.QcUsersOfCustomer;
-
 import java.util.List;
+
+import com.ainnotate.aidas.domain.QcUser;
 
 public class ProjectQcDTO {
 
@@ -10,23 +10,23 @@ public class ProjectQcDTO {
     private Long customerId;
     private String name;
 
-    private List<UserDTO> qcUsers;
+    private List<QcUser> qcUsers;
 
-    private List<QcUsersOfCustomer> qcUsers1;
+    private List<QcUser> qcUsers1;
 
-    public List<QcUsersOfCustomer> getQcUsers1() {
+    public List<QcUser> getQcUsers1() {
         return qcUsers1;
     }
 
-    public void setQcUsers1(List<QcUsersOfCustomer> qcUsers1) {
+    public void setQcUsers1(List<QcUser> qcUsers1) {
         this.qcUsers1 = qcUsers1;
     }
 
-    public List<UserDTO> getQcUsers() {
+    public List<QcUser> getQcUsers() {
         return qcUsers;
     }
 
-    public void setQcUsers(List<UserDTO> qcUsers) {
+    public void setQcUsers(List<QcUser> qcUsers) {
         this.qcUsers = qcUsers;
     }
 

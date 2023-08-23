@@ -26,7 +26,7 @@ public class ObjectAddingTask {
     private UserVendorMappingProjectMappingRepository userVendorMappingProjectMappingRepository;
 
     @Autowired
-    CustomerQcProjectMappingRepository customerQcProjectMappingRepository;
+    QcProjectMappingRepository qcProjectMappingRepository;
 
     @Autowired
     UserCustomerMappingRepository userCustomerMappingRepository;
@@ -106,16 +106,16 @@ public class ObjectAddingTask {
 
         /*if(getDummy()) {
             List<UserCustomerMapping> qcUserCustomerMapping = userCustomerMappingRepository.getAllQcUserCustomerMapping(object.getProject().getCustomer().getId());
-            List<CustomerQcProjectMapping> qpms = new ArrayList<>();
+            List<qcProjectMapping> qpms = new ArrayList<>();
             for (UserCustomerMapping ucm : qcUserCustomerMapping) {
                 if (object.getProject().getQcLevels() != null) {
                     for (int i = 0; i < object.getProject().getQcLevels(); i++) {
-                        CustomerQcProjectMapping qpm = new CustomerQcProjectMapping();
+                        qcProjectMapping qpm = new qcProjectMapping();
                         qpm.setUserCustomerMapping(ucm);
                         qpm.setProject(object.getProject());
                         qpm.setStatus(0);
                         qpm.setQcLevel(i + 1);
-                        customerQcProjectMappingRepository.save(qpm);
+                        qcProjectMappingRepository.save(qpm);
                     }
                 }
             }
@@ -125,16 +125,16 @@ public class ObjectAddingTask {
     @Async
     public void runBulkObjects() {
         List<UserCustomerMapping> qcUserCustomerMapping = userCustomerMappingRepository.getAllQcUserCustomerMapping(object.getProject().getCustomer().getId());
-        List<CustomerQcProjectMapping> qpms = new ArrayList<>();
+        List<QcProjectMapping> qpms = new ArrayList<>();
         for (UserCustomerMapping ucm : qcUserCustomerMapping) {
             if (object.getProject().getQcLevels() != null) {
                 for (int i = 0; i < object.getProject().getQcLevels(); i++) {
-                    CustomerQcProjectMapping qpm = new CustomerQcProjectMapping();
-                    qpm.setUserCustomerMapping(ucm);
+                    QcProjectMapping qpm = new QcProjectMapping();
+                    //qpm.setUserCustomerMapping(ucm);
                     qpm.setProject(object.getProject());
                     qpm.setStatus(0);
                     qpm.setQcLevel(i + 1);
-                    customerQcProjectMappingRepository.save(qpm);
+                    qcProjectMappingRepository.save(qpm);
                 }
             }
         }
@@ -173,16 +173,16 @@ public class ObjectAddingTask {
     @Async
     public void runQcUserAdd(){
         List<UserCustomerMapping> qcUserCustomerMapping = userCustomerMappingRepository.getAllQcUserCustomerMapping(object.getProject().getCustomer().getId());
-        List<CustomerQcProjectMapping> qpms = new ArrayList<>();
+        List<QcProjectMapping> qpms = new ArrayList<>();
         for (UserCustomerMapping ucm : qcUserCustomerMapping) {
             if (object.getProject().getQcLevels() != null) {
                 for (int i = 0; i < object.getProject().getQcLevels(); i++) {
-                    CustomerQcProjectMapping qpm = new CustomerQcProjectMapping();
-                    qpm.setUserCustomerMapping(ucm);
+                    QcProjectMapping qpm = new QcProjectMapping();
+                    //qpm.setUserCustomerMapping(ucm);
                     qpm.setProject(object.getProject());
                     qpm.setStatus(0);
                     qpm.setQcLevel(i + 1);
-                    customerQcProjectMappingRepository.save(qpm);
+                    qcProjectMappingRepository.save(qpm);
                 }
             }
         }

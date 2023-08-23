@@ -92,7 +92,7 @@ public class IdpUserService {
                 authority.setName(ga.getAuthority());
                 authorityRepository.save(authority);
             }
-            user.getAuthorities().add(authority);
+            //user.getAuthorities().add(authority);
             currentAuthority = authority;
         }
         user.setLocked(0);

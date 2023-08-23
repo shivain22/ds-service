@@ -87,7 +87,7 @@ public class UserAddingTask {
     }
 
     @Autowired
-    CustomerQcProjectMappingRepository customerQcProjectMappingRepository;
+    QcProjectMappingRepository qcProjectMappingRepository;
     @Autowired
     UserCustomerMappingRepository userCustomerMappingRepository;
 
@@ -144,17 +144,17 @@ public class UserAddingTask {
                     if(p.getQcLevels()!=null) {
                         for( int i=1;i<=p.getQcLevels();i++) {
                             System.out.println("userCustomerMappingId="+userCustomerMapping.getId()+"projcetId="+p.getId()+"level="+i);
-                            CustomerQcProjectMapping qpm = customerQcProjectMappingRepository.getQcProjectMappingByProjectAndCustomerAndUserAndLevel(p.getId(),userCustomerMapping.getId(),i);
+                            QcProjectMapping qpm = qcProjectMappingRepository.getQcProjectMappingByProjectAndCustomerAndUserAndLevel(p.getId(),userCustomerMapping.getId(),i);
                             if(qpm!=null){
                                 System.out.println("userCustomerMappingId="+userCustomerMapping.getId()+"projcetId="+p.getId()+"level="+i+"qpmId="+qpm.getId());
                             }
                             if(qpm==null) {
-                                qpm =  new CustomerQcProjectMapping();
-                                qpm.setUserCustomerMapping(userCustomerMapping);
+                                qpm =  new QcProjectMapping();
+                                //qpm.setUserCustomerMapping(userCustomerMapping);
                                 qpm.setProject(p);
                                 qpm.setStatus(0);
                                 qpm.setQcLevel(i);
-                                customerQcProjectMappingRepository.save(qpm);
+                                qcProjectMappingRepository.save(qpm);
                             }
                         }
                     }

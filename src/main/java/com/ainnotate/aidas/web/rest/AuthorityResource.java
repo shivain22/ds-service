@@ -1,10 +1,18 @@
 package com.ainnotate.aidas.web.rest;
 
+import com.ainnotate.aidas.constants.AidasConstants;
 import com.ainnotate.aidas.domain.Authority;
 import com.ainnotate.aidas.domain.User;
 import com.ainnotate.aidas.domain.UserAuthorityMapping;
+import com.ainnotate.aidas.domain.UserAuthorityMappingUserCustomerMapping;
+import com.ainnotate.aidas.domain.UserAuthorityMappingUserOrganisationMapping;
+import com.ainnotate.aidas.domain.UserAuthorityMappingUserVendorMapping;
+import com.ainnotate.aidas.dto.AuthorityDTO;
 import com.ainnotate.aidas.repository.AuthorityRepository;
 import com.ainnotate.aidas.repository.UserAuthorityMappingRepository;
+import com.ainnotate.aidas.repository.UserAuthorityMappingUserCustomerMappingRepository;
+import com.ainnotate.aidas.repository.UserAuthorityMappingUserOrganisationMappingRepository;
+import com.ainnotate.aidas.repository.UserAuthorityMappingUserVendorMappingRepository;
 import com.ainnotate.aidas.repository.UserRepository;
 import com.ainnotate.aidas.repository.search.AuthoritySearchRepository;
 import com.ainnotate.aidas.security.SecurityUtils;
@@ -29,6 +37,7 @@ import tech.jhipster.web.util.ResponseUtil;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -52,6 +61,15 @@ public class AuthorityResource {
     private final AuthorityRepository authorityRepository;
 
     private final AuthoritySearchRepository aidasAuthoritySearchRepository;
+    
+    @Autowired
+    private UserAuthorityMappingUserOrganisationMappingRepository userAuthorityMappingUserOrganisationMappingRepository;
+    
+    @Autowired
+    private UserAuthorityMappingUserCustomerMappingRepository userAuthorityMappingUserCustomerMappingRepository;
+    
+    @Autowired
+    private UserAuthorityMappingUserVendorMappingRepository userAuthorityMappingUserVendorMappingRepository;
 
     @Autowired
     private UserAuthorityMappingRepository userAuthorityMappingRepository;
@@ -73,10 +91,11 @@ public class AuthorityResource {
         @ApiResponse(responseCode = "200", description = "Retrieved list of AidasAuthories",content = { @Content(mediaType = "application/json",schema = @Schema(implementation = Authority.class)) }),
         @ApiResponse(responseCode = "500", description = "Unable to retrieve the list of AidasAuthorities.  Contact the administrator",content = @Content) })
     @GetMapping("/aidas-authorities")
-    public ResponseEntity<List<Authority>> getAllAidasAuthorities() {
+    public ResponseEntity<List<AuthorityDTO>> getAllAidasAuthorities() {
         log.debug("REST request to get a list of AidasAuthorities");
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-        List<Authority> aidasAuthorities = authorityRepository.getAllAuthority(user.getAuthority().getId());
+        List<AuthorityDTO> aidasAuthorities = authorityRepository.getAllAuthorityForRoleAssignment(user.getAuthority().getId());
+        
         return ResponseEntity.ok().body(aidasAuthorities);
     }
 
@@ -88,12 +107,58 @@ public class AuthorityResource {
     public ResponseEntity<List<Authority>> getMyAidasAuthorityies() {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to get a list of AidasAuthorities of logged in user"+ user.getId());
-        List<Authority> myAuthorities   = userAuthorityMappingRepository.findByUserId(user.getId()).stream().map(UserAuthorityMapping::getAuthority).collect(Collectors.toList());
+        Set<UserAuthorityMapping> userAuthorities = userAuthorityMappingRepository.findByUserId(user.getId());
+        List<Authority> myAuthorities   = userAuthorities.stream().map(UserAuthorityMapping::getAuthority).collect(Collectors.toList());
+        /**for(UserAuthorityMapping uam:userAuthorities) {
+        	if(uam.getAuthority().getName().equals(AidasConstants.ADMIN)) {
+        		
+        	}else if(uam.getAuthority().getName().equals(AidasConstants.ORG_ADMIN)) {
+        		List<UserAuthorityMappingUserOrganisationMapping> uamuoms = userAuthorityMappingUserOrganisationMappingRepository.getByUamId(uam.getId());
+        		if(uamuoms!=null && uamuoms.size()>0) {
+        			user.setOrganisation(uamuoms.get(0).getUserOrganisationMapping().getOrganisation());
+        		}
+        	}else if(uam.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN)) {
+        		List<UserAuthorityMappingUserCustomerMapping> uamucms = userAuthorityMappingUserCustomerMappingRepository.getByUamId(uam.getId());
+        		if(uamucms!=null && uamucms.size()>0) {
+        			user.setCustomer(uamucms.get(0).getUserCustomerMapping().getCustomer());
+        		}
+         	}else if(uam.getAuthority().getName().equals(AidasConstants.VENDOR_ADMIN)) {
+         		List<UserAuthorityMappingUserVendorMapping> uamuvms = userAuthorityMappingUserVendorMappingRepository.getByUamId(uam.getId());
+        		if(uamuvms!=null && uamuvms.size()>0) {
+        			user.setVendor(uamuvms.get(0).getUserVendorMapping().getVendor());
+        		}
+         	}else if(uam.getAuthority().getName().equals(AidasConstants.VENDOR_USER)) {
+         		List<UserAuthorityMappingUserVendorMapping> uamuvms = userAuthorityMappingUserVendorMappingRepository.getByUamId(uam.getId());
+        		if(uamuvms!=null && uamuvms.size()>0) {
+        			user.setVendor(uamuvms.get(0).getUserVendorMapping().getVendor());
+        		}
+         	}else if(uam.getAuthority().getName().equals(AidasConstants.ORG_QC_USER)) {
+         		List<UserAuthorityMappingUserOrganisationMapping> uamuoms = userAuthorityMappingUserOrganisationMappingRepository.getByUamId(uam.getId());
+        		if(uamuoms!=null && uamuoms.size()>0) {
+        			user.setOrganisation(uamuoms.get(0).getUserOrganisationMapping().getOrganisation());
+        		}
+         	}else if(uam.getAuthority().getName().equals(AidasConstants.CUSTOMER_QC_USER)) {
+         		List<UserAuthorityMappingUserCustomerMapping> uamucms = userAuthorityMappingUserCustomerMappingRepository.getByUamId(uam.getId());
+        		if(uamucms!=null && uamucms.size()>0) {
+        			user.setCustomer(uamucms.get(0).getUserCustomerMapping().getCustomer());
+        		}
+         	}else if(uam.getAuthority().getName().equals(AidasConstants.VENDOR_QC_USER)) {
+         		List<UserAuthorityMappingUserVendorMapping> uamuvms = userAuthorityMappingUserVendorMappingRepository.getByUamId(uam.getId());
+        		if(uamuvms!=null && uamuvms.size()>0) {
+        			user.setVendor(uamuvms.get(0).getUserVendorMapping().getVendor());
+        		}
+         	}
+        }
+        int i=1;
         for(Authority a:myAuthorities) {
-        	if(user.getAuthority().getId().equals(a.getId())) {
+        	if(myAuthorities.size()==i) {
+        		user.setAuthority(a);
         		a.setLastLoggedInRole(true);
         	}
+        	i++;
         }
+        userRepository.save(user);
+        **/
         return ResponseEntity.ok().body(myAuthorities);
     }
 

@@ -115,6 +115,15 @@ public class UserResource {
 
     @Autowired
     private UserOrganisationMappingRepository userOrganisationMappingRepository;
+    
+    @Autowired
+    private UserAuthorityMappingUserOrganisationMappingRepository userAuthorityUserOrganisationMappingRepository;
+    
+    @Autowired
+    private UserAuthorityMappingUserCustomerMappingRepository userAuthorityUserCustomerMappingRepository;
+    
+    @Autowired
+    private UserAuthorityMappingUserVendorMappingRepository userAuthorityUserVendorMappingRepository;
 
     @Autowired
     private UserAuthorityMappingRepository userAuthorityMappingRepository;
@@ -152,7 +161,6 @@ public class UserResource {
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new user, or with status {@code 400 (Bad Request)} if the user has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @Secured({AidasConstants.ADMIN, AidasConstants.ORG_ADMIN, AidasConstants.CUSTOMER_ADMIN, AidasConstants.VENDOR_ADMIN})
     @PostMapping("/aidas-users")
     public ResponseEntity<User> createAidasUser(@Valid @RequestBody User user) throws URISyntaxException {
         log.debug("REST request to save AidasUser : {}", user);
@@ -200,84 +208,254 @@ public class UserResource {
                 }
             }
         }
-        if( loggedInUser.getAuthority().getName().equals(AidasConstants.QC_USER)){
+        if( loggedInUser.getAuthority().getName().equals(AidasConstants.ORG_QC_USER)){
             if(user.getCustomer()!=null){
                 if(!loggedInUser.getCustomer().equals(user.getCustomer())){
                     throw new BadRequestAlertException("Not Customer", ENTITY_NAME, "idexists");
                 }
             }
         }
-
-        if(user.getOrganisationIds()!=null && user.getOrganisationIds().size()>0){
-            Organisation o =null;
-            for(UserOrganisationMappingDTO oid: user.getOrganisationIds()){
-                o = organisationRepository.getById(oid.getOrganisationId());
-                UserOrganisationMapping uom = new UserOrganisationMapping();
-                uom.setOrganisation(o);
-                uom.setUser(user);
-                user.getUserOrganisationMappings().add(uom);
-            }
-            if(o!=null){
-                user.setOrganisation(o);
-            }
-        }
-        if(user.getCustomerIds()!=null && user.getCustomerIds().size()>0){
-            Customer c =null;
-            for(UserCustomerMappingDTO cid: user.getCustomerIds()){
-                c = customerRepository.getById(cid.getCustomerId());
-                UserCustomerMapping ucm = new UserCustomerMapping();
-                ucm.setCustomer(c);
-                ucm.setUser(user);
-                user.getUserCustomerMappings().add(ucm);
-            }
-            if(c!=null){
-                user.setCustomer(c);
-            }
-        }
-        if(user.getVendorIds()!=null && user.getVendorIds().size()>0){
-            Vendor v = null;
-            for(UserVendorMappingDTO vid: user.getVendorIds()){
-                v = vendorRepository.getById(vid.getVendorId());
-                UserVendorMapping uvm = new UserVendorMapping();
-                uvm.setVendor(v);
-                uvm.setUser(user);
-                user.getUserVendorMappings().add(uvm);
-            }
-            if(v!=null){
-                user.setVendor(v);
-            }
-        }
-
-        if(user.getAuthorityIds()!=null && user.getAuthorityIds().size()>0){
-            Authority a =null;
-            for(UserAuthorityMappingDTO aid: user.getAuthorityIds()){
-                a = authorityRepository.getById(aid.getAuthorityId());
-                UserAuthorityMapping uam = new UserAuthorityMapping();
-                uam.setAuthority(a);
-                uam.setUser(user);
-                user.getUserAuthorityMappings().add(uam);
-                user.getAuthorities().add(a);
-            }
-            if(a!=null){
-                user.setAuthority(a);
-            }
-        }
-
-        if(user.getLanguageIds()!=null && user.getLanguageIds().size()>0) {
-        	Language language = null;
-        	for(UserLanguageMappingDTO ulmdto: user.getLanguageIds()) {
-        		language = languageRepository.getById(ulmdto.getLanguageId());
-        		UserLanguageMapping ulm = new UserLanguageMapping();
-        		ulm.setLanguage(language);
-        		ulm.setUser(user);
-        		user.getUserLanguageMappings().add(ulm);
-        	}
-        }
         try {
             try {
                 addUserToKeyCloak(user);
                 user.setDeleted(0);
+                if(loggedInUser.getAuthority().getName().equals(AidasConstants.ADMIN)) {
+                	user.setParentOrganisation(organisationRepository.getById(-1l));
+                	user.setParentCustomer(customerRepository.getById(-1l));
+                	user.setParentVendor(vendorRepository.getById(-1l));
+                }else if(loggedInUser.getAuthority().getName().equals(AidasConstants.ORG_ADMIN)) {
+                	user.setParentOrganisation(loggedInUser.getOrganisation());
+                	user.setParentCustomer(null);
+                	user.setParentVendor(null);
+                } else if(loggedInUser.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN)) {
+                	user.setParentOrganisation(null);
+                	user.setParentCustomer(loggedInUser.getCustomer());
+                	user.setParentVendor(null);
+                }else if(loggedInUser.getAuthority().getName().equals(AidasConstants.VENDOR_ADMIN)) {
+                	user.setParentOrganisation(null);
+                	user.setParentCustomer(null);
+                	user.setParentVendor(loggedInUser.getVendor());
+                }
+                
                 User result = userRepository.save(user);
+                if(user.getAuthorityDtos()!=null && user.getAuthorityDtos().size()>0){
+                    Authority a =null;
+                    for(UserAuthorityMappingDTO aid: user.getAuthorityDtos()){
+                    	if(aid.getStatus().equals(AidasConstants.STATUS_ENABLED)){
+	                        a = authorityRepository.getById(aid.getAuthorityId());
+	                        UserAuthorityMapping uam = new UserAuthorityMapping();
+	                        uam.setAuthority(a);
+	                        uam.setUser(user);
+	                        uam.setStatus(aid.getStatus());
+	                        userAuthorityMappingRepository.save(uam);
+	                        if(a.getName().equals(AidasConstants.ORG_ADMIN)) {
+	                            if(user.getAdminOrgDtos()!=null && user.getAdminOrgDtos().size()>0){
+	                                Organisation o =null;
+	                                
+	                                for(UserOrganisationMappingDTO oid: user.getAdminOrgDtos()){
+	                                	UserOrganisationMapping uom = userOrganisationMappingRepository.findByOrganisationIdAndUserId(oid.getOrganisationId(), user.getId());
+	                                	if(uom==null) {
+	        	                            o = organisationRepository.getById(oid.getOrganisationId());
+	        	                            uom = new UserOrganisationMapping();
+	        	                            uom.setOrganisation(o);
+	        	                            uom.setUser(user);
+	        	                            uom.setStatus(oid.getStatus());
+	        	                            userOrganisationMappingRepository.save(uom);
+	        	                            UserAuthorityMappingUserOrganisationMapping uamuom = new UserAuthorityMappingUserOrganisationMapping();
+	        	                            uamuom.setUserOrganisationMapping(uom);
+	        	                            uamuom.setUserAuthorityMapping(uam);
+	        	                            uamuom.setStatus(oid.getStatus());
+	        	                            userAuthorityUserOrganisationMappingRepository.save(uamuom);
+	                                	}
+	                                }
+	                                if(o!=null){
+	                                    user.setOrganisation(o);
+	                                }
+	                            }
+	                        }
+	                        if(a.getName().equals(AidasConstants.CUSTOMER_ADMIN)) {
+	                        	if(user.getAdminCustomerDtos()!=null && user.getAdminCustomerDtos().size()>0){
+	                                Customer c =null;
+	                                for(UserCustomerMappingDTO cid: user.getAdminCustomerDtos()){
+	                                	UserCustomerMapping ucm = userCustomerMappingRepository.findByCustomerIdAndUserId(cid.getCustomerId(),user.getId());
+	                                	if(ucm==null) {
+	        	                            c = customerRepository.getById(cid.getCustomerId());
+	        	                            ucm = new UserCustomerMapping();
+	        	                            ucm.setCustomer(c);
+	        	                            ucm.setUser(user);
+	        	                            ucm.setStatus(cid.getStatus());
+	        	                            userCustomerMappingRepository.save(ucm);
+	        	                            UserAuthorityMappingUserCustomerMapping uamucm = new UserAuthorityMappingUserCustomerMapping();
+	        	                            uamucm.setUserCustomerMapping(ucm);
+	        	                            uamucm.setUserAuthorityMapping(uam);
+	        	                            uamucm.setStatus(cid.getStatus());
+	        	                            userAuthorityUserCustomerMappingRepository.save(uamucm);
+	                                	}
+	                                }
+	                                if(c!=null){
+	                                    user.setCustomer(c);
+	                                }
+	                            }
+	                        }
+	                        if(a.getName().equals(AidasConstants.VENDOR_ADMIN)) {
+	                        	 if(user.getAdminVendorDtos()!=null && user.getAdminVendorDtos().size()>0){
+	                                 Vendor v = null;
+	                                 for(UserVendorMappingDTO vid: user.getAdminVendorDtos()){
+	                                	 UserVendorMapping uvm = userVendorMappingRepository.findByUserAndVendor(vid.getVendorId(), user.getId());
+	                                     if(uvm==null) {
+	        	                             v = vendorRepository.getById(vid.getVendorId());
+	        	                             uvm = new UserVendorMapping();
+	        	                             uvm.setVendor(v);
+	        	                             uvm.setUser(user);
+	        	                             uvm.setStatus(vid.getStatus());
+	        	                             userVendorMappingRepository.save(uvm);
+	        	                             UserAuthorityMappingUserVendorMapping uamuvm = new UserAuthorityMappingUserVendorMapping();
+	        	                             uamuvm.setUserVendorMapping(uvm);
+	        	                             uamuvm.setUserAuthorityMapping(uam);
+	        	                             uamuvm.setStatus(vid.getStatus());
+	        	                             userAuthorityUserVendorMappingRepository.save(uamuvm);
+	                                     }
+	                                 }
+	                                 if(v!=null){
+	                                     user.setVendor(v);
+	                                 }
+	                             }
+	                        }
+	                        if(a.getName().equals(AidasConstants.VENDOR_USER)) {
+	                        	 if(user.getUserVendorDtos()!=null && user.getUserVendorDtos().size()>0){
+	                                 Vendor v = null;
+	                                 for(UserVendorMappingDTO vid: user.getUserVendorDtos()){
+	                                	 UserVendorMapping uvm = userVendorMappingRepository.findByUserAndVendor(vid.getVendorId(), user.getId());
+	                                     if(uvm==null) {
+	        	                             v = vendorRepository.getById(vid.getVendorId());
+	        	                             uvm = new UserVendorMapping();
+	        	                             uvm.setVendor(v);
+	        	                             uvm.setUser(user);
+	        	                             uvm.setStatus(vid.getStatus());
+	        	                             userVendorMappingRepository.save(uvm);
+	        	                             UserAuthorityMappingUserVendorMapping uamuvm = new UserAuthorityMappingUserVendorMapping();
+	        	                             uamuvm.setUserVendorMapping(uvm);
+	        	                             uamuvm.setUserAuthorityMapping(uam);
+	        	                             uamuvm.setStatus(vid.getStatus());
+	        	                             userAuthorityUserVendorMappingRepository.save(uamuvm);
+	                                     }
+	                                 }
+	                                 if(v!=null){
+	                                     user.setVendor(v);
+	                                 }
+	                             }
+	                        }
+	                        if(a.getName().equals(AidasConstants.ADMIN_QC_USER)) {
+	                        	if(user.getQcAdminDtos()!=null && user.getQcAdminDtos().size()>0){
+	                                Organisation o = organisationRepository.getById(-1l);;
+	                               	UserOrganisationMapping uom = userOrganisationMappingRepository.findByOrganisationIdAndUserId(-1l, user.getId());
+	                                    if(uom==null) {
+	        	                            uom = new UserOrganisationMapping();
+	        	                            uom.setOrganisation(o);
+	        	                            uom.setUser(user);
+	        	                            userOrganisationMappingRepository.save(uom);
+	        	                            UserAuthorityMappingUserOrganisationMapping uamuom = new UserAuthorityMappingUserOrganisationMapping();
+	        	                            uamuom.setUserOrganisationMapping(uom);
+	        	                            uamuom.setUserAuthorityMapping(uam);
+	        	                            uamuom.setStatus(AidasConstants.STATUS_ENABLED);
+	        	                            userAuthorityUserOrganisationMappingRepository.save(uamuom);
+	                                    }else {
+	                                    	
+	                                    }
+	                              }
+	                                
+	                        }
+	        				if(a.getName().equals(AidasConstants.ORG_QC_USER)) {
+	        					if(user.getQcOrgDtos()!=null && user.getQcOrgDtos().size()>0){
+	                                Organisation o =null;
+	                                for(UserOrganisationMappingDTO oid: user.getQcOrgDtos()){
+	                                	UserOrganisationMapping uom = userOrganisationMappingRepository.findByOrganisationIdAndUserId(oid.getOrganisationId(), user.getId());
+	                                	if(uom==null) {
+	        	                            o = organisationRepository.getById(oid.getOrganisationId());
+	        	                            uom = new UserOrganisationMapping();
+	        	                            uom.setOrganisation(o);
+	        	                            uom.setUser(user);
+	        	                            uom.setStatus(oid.getStatus());
+	        	                            userOrganisationMappingRepository.save(uom);
+	        	                            UserAuthorityMappingUserOrganisationMapping uamuom = new UserAuthorityMappingUserOrganisationMapping();
+	        	                            uamuom.setUserOrganisationMapping(uom);
+	        	                            uamuom.setUserAuthorityMapping(uam);
+	        	                            uamuom.setStatus(oid.getStatus());
+	        	                            userAuthorityUserOrganisationMappingRepository.save(uamuom);
+	                                	}
+	                                }
+	                                if(o!=null){
+	                                    user.setOrganisation(o);
+	                                }
+	                            }      	
+	        				}
+	        				if(a.getName().equals(AidasConstants.CUSTOMER_QC_USER)) {
+	
+	        					if(user.getQcCustomerDtos()!=null && user.getQcCustomerDtos().size()>0){
+	                                Customer c =null;
+	                                for(UserCustomerMappingDTO cid: user.getQcCustomerDtos()){
+	                                	UserCustomerMapping ucm = userCustomerMappingRepository.findByCustomerIdAndUserId(cid.getCustomerId(),user.getId());
+	                                	if(ucm==null) {
+	        	                            c = customerRepository.getById(cid.getCustomerId());
+	        	                            ucm = new UserCustomerMapping();
+	        	                            ucm.setCustomer(c);
+	        	                            ucm.setUser(user);
+	        	                            ucm.setStatus(cid.getStatus());
+	        	                            userCustomerMappingRepository.save(ucm);
+	        	                            UserAuthorityMappingUserCustomerMapping uamucm = new UserAuthorityMappingUserCustomerMapping();
+	        	                            uamucm.setUserCustomerMapping(ucm);
+	        	                            uamucm.setUserAuthorityMapping(uam);
+	        	                            uamucm.setStatus(cid.getStatus());
+	        	                            userAuthorityUserCustomerMappingRepository.save(uamucm);
+	        	                            
+	                                	}
+	                                }
+	                                if(c!=null){
+	                                    user.setCustomer(c);
+	                                }
+	                            }
+	        				}
+	        				if(a.getName().equals(AidasConstants.VENDOR_QC_USER)) {
+	        					if(user.getQcVendorDtos()!=null && user.getAdminVendorDtos().size()>0){
+	                                Vendor v = null;
+	                                for(UserVendorMappingDTO vid: user.getAdminVendorDtos()){
+	                                	UserVendorMapping uvm = userVendorMappingRepository.findByUserAndVendor(vid.getVendorId(), user.getId());
+	                                    if(uvm==null) {
+	        	                        	v = vendorRepository.getById(vid.getVendorId());
+	        	                            uvm = new UserVendorMapping();
+	        	                            uvm.setVendor(v);
+	        	                            uvm.setUser(user);
+	        	                            uvm.setStatus(vid.getStatus());
+	        	                            userVendorMappingRepository.save(uvm);
+	        	                            UserAuthorityMappingUserVendorMapping uamuvm = new UserAuthorityMappingUserVendorMapping();
+	        	                            uamuvm.setUserVendorMapping(uvm);
+	        	                            uamuvm.setUserAuthorityMapping(uam);
+	        	                            uamuvm.setStatus(vid.getStatus());
+	        	                            userAuthorityUserVendorMappingRepository.save(uamuvm);
+	                                    }
+	                                }
+	                                if(v!=null){
+	                                    user.setVendor(v);
+	                                }
+	                            }
+	        				}
+	                    }
+                    }
+                    if(a!=null){
+                        user.setAuthority(a);
+                    }
+                    
+                }
+                if(user.getLanguageIds()!=null && user.getLanguageIds().size()>0) {
+                	Language language = null;
+                	for(UserLanguageMappingDTO ulmdto: user.getLanguageIds()) {
+                		language = languageRepository.getById(ulmdto.getLanguageId());
+                		UserLanguageMapping ulm = new UserLanguageMapping();
+                		ulm.setLanguage(language);
+                		ulm.setUser(user);
+                	}
+                }
+                
                 updateUserToKeyCloak(result);
                 return ResponseEntity
                     .created(new URI("/api/aidas-users/" + result.getId()))
@@ -294,6 +472,7 @@ public class UserResource {
             throw new BadRequestAlertException(e.getMessage(), ENTITY_NAME, "idexists");
         }
         }catch(Exception e) {
+        	e.printStackTrace();
         	throw new BadRequestAlertException(e.getMessage(), ENTITY_NAME, "idexists");
         }
     }
@@ -421,7 +600,6 @@ public class UserResource {
     @PostMapping("/aidas-users/{role}")
     public ResponseEntity<User> updateCurrentRole(@Valid @PathVariable String role) throws URISyntaxException {
         log.debug("REST request to update current role of AidasUser : {}", SecurityUtils.getCurrentUserLogin().get());
-        User loggedInUser = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         updateCurrentRole(user,role);
         Authority currentAuthority =  authorityRepository.findByName(role.trim());
@@ -433,26 +611,7 @@ public class UserResource {
             .body(user);
     }
 
-    /**
-     * {@code POST  /aidas-users/organisation/:organisationId} : Update/change current role of the user.
-     *
-     * @param organisationId the role to switch.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new user, or with status {@code 400 (Bad Request)} if the user has already an ID.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
-    @PostMapping("/aidas-users/organisation/{organisationId}")
-    @Secured({AidasConstants.ADMIN, AidasConstants.ORG_ADMIN})
-    public ResponseEntity<User> updateCurrentOrganisation(@Valid @PathVariable Long organisationId) throws URISyntaxException {
-        log.debug("REST request to update current role of AidasUser : {}", SecurityUtils.getCurrentUserLogin().get());
-        User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-        Organisation currentOrganisation = organisationRepository.getById(organisationId);
-        user.setOrganisation(currentOrganisation);
-        userRepository.save(user);
-        return ResponseEntity
-            .created(new URI("/api/aidas-users/" + user.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, user.getId().toString()))
-            .body(user);
-    }
+    
     
     /**
      * {@code POST  /aidas-users/organisation/:organisationId} : Update/change current role of the user.
@@ -477,9 +636,15 @@ public class UserResource {
         }else if(entityType.equals("ROLE_VENDOR_USER")) {
         	Vendor currentVendor  = vendorRepository.getById(entityId);
         	user.setVendor(currentVendor);
-        }else if(entityType.equals("ROLE_QC")) {
+        }else if(entityType.equals("ROLE_ORG_QC")) {
+        	Organisation currentOrganisation = organisationRepository.getById(entityId);
+        	user.setOrganisation(currentOrganisation);
+        }else if(entityType.equals("ROLE_CUSTOMER_QC")) {
         	Customer currentCustomer = customerRepository.getById(entityId);
         	user.setCustomer(currentCustomer);
+        }else if(entityType.equals("ROLE_VENDOR_QC")) {
+        	Vendor currentVendor  = vendorRepository.getById(entityId);
+        	user.setVendor(currentVendor);
         }
         userRepository.save(user);
         return ResponseEntity
@@ -495,7 +660,6 @@ public class UserResource {
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new user, or with status {@code 400 (Bad Request)} if the user has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @Secured({AidasConstants.ADMIN, AidasConstants.ORG_ADMIN,AidasConstants.CUSTOMER_ADMIN,AidasConstants.QC_USER})
     @PostMapping("/aidas-users/customer/{customerId}")
     public ResponseEntity<User> updateCurrentCustomer(@Valid @PathVariable Long customerId) throws URISyntaxException {
         log.debug("REST request to update current role of AidasUser : {}", SecurityUtils.getCurrentUserLogin().get());
@@ -516,8 +680,13 @@ public class UserResource {
         log.debug("REST request to update current role of AidasUser : {}", SecurityUtils.getCurrentUserLogin().get());
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         List<NameValueHolderDto> list =  new ArrayList<>();
+        user.setOrganisation(null);
+        user.setVendor(null);
+        user.setCustomer(null);
+        Authority a = authorityRepository.findByName(entityType);
+        user.setAuthority(a);
         if(entityType.equals("ROLE_ORG_ADMIN")) {
-        	List<Organisation> orgs = organisationRepository.getOrganisations(user.getId());
+        	List<Organisation> orgs = organisationRepository.getOrganisations(user.getId(),user.getAuthority().getId());
         	for(Organisation o:orgs) {
         		NameValueHolderDto n = new NameValueHolderDto();
         		if(user.getOrganisation()!=null && user.getOrganisation().getId().equals(o.getId())) {
@@ -528,7 +697,7 @@ public class UserResource {
         		list.add(n);
         	}
         }else if(entityType.equals("ROLE_CUSTOMER_ADMIN")) {
-        	List<Customer> custs = customerRepository.getCustomers(user.getId());
+        	List<Customer> custs = customerRepository.getCustomers(user.getId(),user.getAuthority().getId());
         	for(Customer c:custs) {
         		NameValueHolderDto n = new NameValueHolderDto();
         		if(user.getCustomer()!=null && user.getCustomer().getId().equals(c.getId())) {
@@ -539,7 +708,8 @@ public class UserResource {
         		list.add(n);
         	}
         }else if(entityType.equals("ROLE_VENDOR_ADMIN")) {
-        	List<Vendor> vendors = vendorRepository.getVendors(user.getId());
+        	Authority auth = authorityRepository.findByName(entityType);
+        	List<Vendor> vendors = vendorRepository.getVendors(user.getId(),auth.getId());
         	for(Vendor v:vendors) {
         		NameValueHolderDto n = new NameValueHolderDto();
         		if(user.getVendor()!=null && user.getVendor().getId().equals(v.getId())) {
@@ -550,7 +720,8 @@ public class UserResource {
         		list.add(n);
         	}
         }else if(entityType.equals("ROLE_VENDOR_USER")) {
-        	List<Vendor> vendors = vendorRepository.getVendors(user.getId());
+        	Authority auth = authorityRepository.findByName(entityType);
+        	List<Vendor> vendors = vendorRepository.getVendors(user.getId(),auth.getId());
         	for(Vendor v:vendors) {
         		NameValueHolderDto n = new NameValueHolderDto();
         		if(user.getVendor()!=null && user.getVendor().getId().equals(v.getId())) {
@@ -560,8 +731,20 @@ public class UserResource {
         		n.setName(v.getName());
         		list.add(n);
         	}
-        }else if(entityType.equals("ROLE_QC")) {
-        	List<Customer> custs = customerRepository.getCustomers(user.getId());
+        }else if(entityType.equals("ROLE_ORG_QC")) {
+        	List<Organisation> orgs = organisationRepository.getOrganisations(user.getId(),user.getAuthority().getId());
+        	for(Organisation o:orgs) {
+        		NameValueHolderDto n = new NameValueHolderDto();
+        		if(user.getOrganisation()!=null && user.getOrganisation().getId().equals(o.getId())) {
+        			n.setLastLoggedInRole(true);
+        		}
+        		n.setId(o.getId());
+        		n.setName(o.getName());
+        		list.add(n);
+        	}
+        }
+        else if(entityType.equals("ROLE_CUSTOMER_QC")) {
+        	List<Customer> custs = customerRepository.getCustomers(user.getId(),user.getAuthority().getId());
         	for(Customer c:custs) {
         		NameValueHolderDto n = new NameValueHolderDto();
         		if(user.getCustomer()!=null && user.getCustomer().getId().equals(c.getId())) {
@@ -571,235 +754,43 @@ public class UserResource {
         		n.setName(c.getName());
         		list.add(n);
         	}
+        }else if(entityType.equals("ROLE_VENDOR_QC")) {
+        	Authority auth = authorityRepository.findByName(entityType);
+        	List<Vendor> vendors = vendorRepository.getVendors(user.getId(),auth.getId());
+        	for(Vendor v:vendors) {
+        		NameValueHolderDto n = new NameValueHolderDto();
+        		if(user.getVendor()!=null && user.getVendor().getId().equals(v.getId())) {
+        			n.setLastLoggedInRole(true);
+        		}
+        		n.setId(v.getId());
+        		n.setName(v.getName());
+        		list.add(n);
+        	}
         }
-        
+        userRepository.save(user);
         return ResponseEntity
             .created(new URI("/api/aidas-users/" + user.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, user.getId().toString()))
             .body(list);
     }
     
-    /**
-     * {@code POST  /aidas-users/vendor/:vendorId} : Update/change current role of the user.
-     *
-     * @param vendorId the role to switch.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new user, or with status {@code 400 (Bad Request)} if the user has already an ID.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
-    @Secured({AidasConstants.ADMIN, AidasConstants.ORG_ADMIN,AidasConstants.CUSTOMER_ADMIN,AidasConstants.VENDOR_ADMIN,AidasConstants.VENDOR_USER,AidasConstants.QC_USER})
-    @PostMapping("/aidas-users/vendor/{vendorId}")
-    public ResponseEntity<User> updateCurrentVendor(@Valid @PathVariable Long vendorId) throws URISyntaxException {
+    
+    @GetMapping("/aidas-users/signout")
+    public ResponseEntity<User> signOut() throws URISyntaxException {
         log.debug("REST request to update current role of AidasUser : {}", SecurityUtils.getCurrentUserLogin().get());
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-        Vendor currentVendor = vendorRepository.getById(vendorId);
-        user.setVendor(currentVendor);
+        user.setVendor(null);
+        user.setCustomer(null);
+        user.setOrganisation(null);
         userRepository.save(user);
         return ResponseEntity
             .created(new URI("/api/aidas-users/" + user.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, user.getId().toString()))
             .body(user);
     }
+    
+    
 
-
-    /**
-     * {@code POST  /aidas-users/add/organisation/:organisationId/:userId} : Update/change current role of the user.
-     *
-     * @param organisationId the role to switch.
-     * @param userId the role to switch.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new user, or with status {@code 400 (Bad Request)} if the user has already an ID.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
-    @PostMapping("/aidas-users/add/organisation/{organisationId}/{userId}")
-    public ResponseEntity<User> addOrganisation( @Valid @PathVariable Long organisationId,@Valid @PathVariable Long userId) throws URISyntaxException {
-        log.debug("REST request to update current role of AidasUser : {}", SecurityUtils.getCurrentUserLogin().get());
-        User user = userRepository.getById(userId);
-        Organisation organisation = organisationRepository.getById(organisationId);
-        UserOrganisationMapping userOrganisationMapping = new UserOrganisationMapping();
-        userOrganisationMapping.setOrganisation(organisation);
-        userOrganisationMapping.setUser(user);
-        user.getUserOrganisationMappings().add(userOrganisationMapping);
-        userRepository.save(user);
-        return ResponseEntity
-            .created(new URI("/api/aidas-users/" + user.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, user.getId().toString()))
-            .body(user);
-    }
-
-    /**
-     * {@code POST  /aidas-users/add/customer/:customerId/:userId} : Update/change current role of the user.
-     *
-     * @param customerId the role to switch.
-     * @param userId the role to switch.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new user, or with status {@code 400 (Bad Request)} if the user has already an ID.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
-    @PostMapping("/aidas-users/add/customer/{customerId}/{userId}")
-    public ResponseEntity<User> addCustomer( @Valid @PathVariable Long customerId,@Valid @PathVariable Long userId) throws URISyntaxException {
-        log.debug("REST request to update current role of AidasUser : {}", SecurityUtils.getCurrentUserLogin().get());
-        User user = userRepository.getById(userId);
-        Customer customer = customerRepository.getById(customerId);
-        UserCustomerMapping userCustomerMapping = new UserCustomerMapping();
-        userCustomerMapping.setCustomer(customer);
-        userCustomerMapping.setUser(user);
-        user.getUserCustomerMappings().add(userCustomerMapping);
-        userRepository.save(user);
-        return ResponseEntity
-            .created(new URI("/api/aidas-users/" + user.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, user.getId().toString()))
-            .body(user);
-    }
-
-    /**
-     * {@code POST  /aidas-users/add/vendor/:userVendorMappingId} : Update/change current role of the user.
-     *
-     * @param vendorId the role to switch.
-     * @param userId the role to switch.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new user, or with status {@code 400 (Bad Request)} if the user has already an ID.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
-    @PostMapping("/aidas-users/add/vendor/{vendorId}/{userId}")
-    public ResponseEntity<User> addVendor(@Valid @PathVariable Long vendorId,@Valid @PathVariable Long userId) throws URISyntaxException {
-        log.debug("REST request to update current role of AidasUser : {}", SecurityUtils.getCurrentUserLogin().get());
-        User user = userRepository.getById(userId);
-        Vendor vendor = vendorRepository.getById(vendorId);
-        UserVendorMapping userVendorMapping = new UserVendorMapping();
-        userVendorMapping.setVendor(vendor);
-        userVendorMapping.setUser(user);
-        user.getUserVendorMappings().add(userVendorMapping);
-        userRepository.save(user);
-        return ResponseEntity
-            .created(new URI("/api/aidas-users/" + user.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, user.getId().toString()))
-            .body(user);
-    }
-
-    /**
-     * {@code POST  /aidas-users/add/authority/:userVendorMappingId} : Update/change current role of the user.
-     *
-     * @param authorityId the role to switch.
-     * @param userId the role to switch.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new user, or with status {@code 400 (Bad Request)} if the user has already an ID.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
-    @PostMapping("/aidas-users/add/authority/{authorityId}/{userId}")
-    public ResponseEntity<User> addAuthority(@Valid @PathVariable Long authorityId,@Valid @PathVariable Long userId) throws URISyntaxException {
-        log.debug("REST request to update current role of AidasUser : {}", SecurityUtils.getCurrentUserLogin().get());
-        User user = userRepository.getById(userId);
-        Authority authority = authorityRepository.getById(authorityId);
-        UserAuthorityMapping userAuthorityMapping = new UserAuthorityMapping();
-        userAuthorityMapping.setAuthority(authority);
-        userAuthorityMapping.setUser(user);
-        user.getUserAuthorityMappings().add(userAuthorityMapping);
-        userRepository.save(user);
-        return ResponseEntity
-            .created(new URI("/api/aidas-users/" + user.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, user.getId().toString()))
-            .body(user);
-    }
-
-
-    /**
-     * {@code POST  /aidas-users/remove/organisation/:userOrganisationMappingId} : Update/change current role of the user.
-     *
-     * @param userOrganisationMappingId the role to switch.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new user, or with status {@code 400 (Bad Request)} if the user has already an ID.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
-    @PostMapping("/aidas-users/remove/organisation/{userOrganisationMappingId}")
-    public ResponseEntity<User> removeOrganisation(@Valid @PathVariable Long userOrganisationMappingId) throws URISyntaxException {
-        log.debug("REST request to update current role of AidasUser : {}", SecurityUtils.getCurrentUserLogin().get());
-        UserOrganisationMapping userOrganisationMapping = userOrganisationMappingRepository.getById(userOrganisationMappingId);
-        User user = userOrganisationMapping.getUser();
-        if(userOrganisationMapping!=null) {
-            if (!user.getOrganisation().getId().equals(userOrganisationMapping.getOrganisation().getId())) {
-                if (user.getUserOrganisationMappings().contains(userOrganisationMapping)) {
-                    user.getUserOrganisationMappings().remove(userOrganisationMapping);
-                }
-            }
-        }
-        return ResponseEntity
-            .created(new URI("/api/aidas-users/" + user.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, user.getId().toString()))
-            .body(user);
-    }
-
-    /**
-     * {@code POST  /aidas-users/remove/customer/:userCustomerMappingId} : Update/change current role of the user.
-     *
-     * @param userCustomerMappingId the role to switch.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new user, or with status {@code 400 (Bad Request)} if the user has already an ID.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
-    @PostMapping("/aidas-users/remove/customer/{userCustomerMappingId}")
-    public ResponseEntity<User> removeCustomer(@Valid @PathVariable Long userCustomerMappingId) throws URISyntaxException {
-        log.debug("REST request to update current role of AidasUser : {}", SecurityUtils.getCurrentUserLogin().get());
-        UserCustomerMapping userCustomerMapping = userCustomerMappingRepository.getById(userCustomerMappingId);
-        User user = userCustomerMapping.getUser();
-        if(userCustomerMapping!=null) {
-            if (!user.getCustomer().getId().equals(userCustomerMapping.getCustomer().getId())) {
-                if (user.getUserCustomerMappings().contains(userCustomerMapping)) {
-                    user.getUserCustomerMappings().remove(userCustomerMapping);
-                }
-            }
-        }
-        userRepository.save(user);
-        return ResponseEntity
-            .created(new URI("/api/aidas-users/" + user.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, user.getId().toString()))
-            .body(user);
-    }
-
-    /**
-     * {@code POST  /aidas-users/remove/vendor/:userVendorMappingId} : Update/change current role of the user.
-     *
-     * @param userVendorMappingId the role to switch.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new user, or with status {@code 400 (Bad Request)} if the user has already an ID.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
-    @PostMapping("/aidas-users/remove/vendor/{userVendorMappingId}")
-    public ResponseEntity<User> removeVendor(@Valid @PathVariable Long userVendorMappingId) throws URISyntaxException {
-        log.debug("REST request to update current role of AidasUser : {}", SecurityUtils.getCurrentUserLogin().get());
-        UserVendorMapping userVendorMapping= userVendorMappingRepository.getById(userVendorMappingId);
-        User user = userVendorMapping.getUser();
-        if(userVendorMapping!=null) {
-            if (!user.getVendor().getId().equals(userVendorMapping.getVendor().getId())) {
-                if (user.getUserVendorMappings().contains(userVendorMapping)) {
-                    user.getUserVendorMappings().remove(userVendorMapping);
-                }
-            }
-        }
-        userRepository.save(user);
-        return ResponseEntity
-            .created(new URI("/api/aidas-users/" + user.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, user.getId().toString()))
-            .body(user);
-    }
-
-    /**
-     * {@code POST  /aidas-users/remove/authority/:userAuthorityMappingId} : Update/change current role of the user.
-     *
-     * @param userAuthorityMappingId the role to switch.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new user, or with status {@code 400 (Bad Request)} if the user has already an ID.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
-    @PostMapping("/aidas-users/remove/authority/{userAuthorityMappingId}")
-    public ResponseEntity<User> removeAuthority(@Valid @PathVariable Long userAuthorityMappingId) throws URISyntaxException {
-        log.debug("REST request to update current role of AidasUser : {}", SecurityUtils.getCurrentUserLogin().get());
-        UserAuthorityMapping userAuthorityMapping= userAuthorityMappingRepository.getById(userAuthorityMappingId);
-        User user = userAuthorityMapping.getUser();
-        if(userAuthorityMapping!=null) {
-            if (!user.getVendor().getId().equals(userAuthorityMapping.getAuthority().getId())) {
-                if (user.getUserAuthorityMappings().contains(userAuthorityMapping)) {
-                    user.getUserAuthorityMappings().remove(userAuthorityMapping);
-                }
-            }
-        }
-        userRepository.save(user);
-        return ResponseEntity
-            .created(new URI("/api/aidas-users/" + user.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, user.getId().toString()))
-            .body(user);
-    }
 
     /**
      * {@code PUT  /aidas-users/:id} : Updates an existing user.
@@ -860,57 +851,294 @@ public class UserResource {
         User existingUser= userRepository.getById(id);
         existingUser.setFirstName(user.getFirstName());
         existingUser.setLastName(user.getLastName());
-        if(user.getOrganisationIds()!=null && user.getOrganisationIds().size()>0){
-            for(UserOrganisationMappingDTO oid: user.getOrganisationIds()){
-                UserOrganisationMapping uom = userOrganisationMappingRepository.findByOrganisationIdAndUserId(oid.getOrganisationId(),user.getId());
-                if(uom==null) {
-                    uom=new UserOrganisationMapping();
-                    uom.setOrganisation(organisationRepository.getById(oid.getOrganisationId()));
-                    uom.setUser(user);
-                }
-                uom.setStatus(oid.getStatus());
-                userOrganisationMappingRepository.save(uom);
+        
+        
+        
+        if(user.getAuthorityDtos()!=null && user.getAuthorityDtos().size()>0){
+            Authority a =null;
+            for(UserAuthorityMappingDTO aid: user.getAuthorityDtos()){
+	            	if(aid.getStatus().equals(AidasConstants.STATUS_ENABLED)){
+	            		UserAuthorityMapping uam = null;//
+	            		if(aid.getAuthorityId()>0) {
+	            			a = authorityRepository.getByUamId(aid.getAuthorityId());
+	            			uam = userAuthorityMappingRepository.getById(aid.getAuthorityId());
+	            		}else {
+	            			a = authorityRepository.findByName(aid.getName().trim());
+	            		}
+		            	
+		                
+		                if(uam!=null) {
+		                	uam.setStatus(aid.getStatus());
+		                }else {
+			                uam = new UserAuthorityMapping();
+		                	uam.setAuthority(a);
+			                uam.setUser(user);
+			                uam.setStatus(aid.getStatus());
+		                }
+		                userAuthorityMappingRepository.save(uam);
+		                if(a.getName().equals(AidasConstants.ORG_ADMIN)) {
+		                    if(user.getAdminOrgDtos()!=null && user.getAdminOrgDtos().size()>0){
+		                        Organisation o =null;
+		                        for(UserOrganisationMappingDTO oid: user.getAdminOrgDtos()){
+		                        	UserOrganisationMapping uom = userOrganisationMappingRepository.findByOrganisationIdAndUserId(oid.getOrganisationId(), user.getId());
+		                        	if(uom==null && oid.getStatus().equals(AidasConstants.STATUS_ENABLED)) {
+			                            o = organisationRepository.getById(oid.getOrganisationId());
+			                            uom = new UserOrganisationMapping();
+			                            uom.setOrganisation(o);
+			                            uom.setUser(user);
+			                            userOrganisationMappingRepository.save(uom);
+			                            UserAuthorityMappingUserOrganisationMapping uamuom = new UserAuthorityMappingUserOrganisationMapping();
+			                            uamuom.setUserOrganisationMapping(uom);
+			                            uamuom.setUserAuthorityMapping(uam);
+			                            uamuom.setStatus(AidasConstants.STATUS_ENABLED);
+			                            userAuthorityUserOrganisationMappingRepository.save(uamuom);
+		                        	}else {
+		                        		UserAuthorityMappingUserOrganisationMapping uamuom = userAuthorityUserOrganisationMappingRepository.getByUomIdAndUamId(uom.getId(), uam.getId());
+			                            uom.setStatus(oid.getStatus());
+		                        		if(uamuom!=null) {
+			                            	uamuom.setStatus(oid.getStatus());
+			                            }else {
+			                            	uamuom = new UserAuthorityMappingUserOrganisationMapping();
+			                        		uamuom.setUserOrganisationMapping(uom);
+				                            uamuom.setUserAuthorityMapping(uam);
+				                            uamuom.setStatus(oid.getStatus());
+			                            }
+			                            userAuthorityUserOrganisationMappingRepository.save(uamuom);
+		                        	}
+		                        }
+		                    }
+		                }
+		                if(a.getName().equals(AidasConstants.CUSTOMER_ADMIN)) {
+		                	if(user.getAdminCustomerDtos()!=null && user.getAdminCustomerDtos().size()>0){
+		                        Customer c =null;
+		                        for(UserCustomerMappingDTO cid: user.getAdminCustomerDtos()){
+		                        	UserCustomerMapping ucm = userCustomerMappingRepository.findByCustomerIdAndUserId(cid.getCustomerId(),user.getId());
+		                        	if(ucm==null && cid.getStatus().equals(AidasConstants.STATUS_ENABLED)) {
+			                            c = customerRepository.getById(cid.getCustomerId());
+			                            ucm = new UserCustomerMapping();
+			                            ucm.setCustomer(c);
+			                            ucm.setUser(user);
+			                            userCustomerMappingRepository.save(ucm);
+			                            UserAuthorityMappingUserCustomerMapping uamucm = new UserAuthorityMappingUserCustomerMapping();
+			                            uamucm.setUserCustomerMapping(ucm);
+			                            uamucm.setUserAuthorityMapping(uam);
+			                            uamucm.setStatus(AidasConstants.STATUS_ENABLED);
+			                            userAuthorityUserCustomerMappingRepository.save(uamucm);
+		                        	}else {
+		                        		UserAuthorityMappingUserCustomerMapping uamucm = userAuthorityUserCustomerMappingRepository.getByUcmIdAndUamId(ucm.getId(), uam.getId());
+			                            ucm.setStatus(cid.getStatus());
+		                        		if(uamucm!=null) {
+			                            	uamucm.setStatus(cid.getStatus());
+			                            }else {
+			                            	uamucm = new UserAuthorityMappingUserCustomerMapping();
+				                            uamucm.setUserCustomerMapping(ucm);
+				                            uamucm.setUserAuthorityMapping(uam);
+				                            uamucm.setStatus(cid.getStatus());
+			                            }
+			                            userAuthorityUserCustomerMappingRepository.save(uamucm);
+		                        	}
+		                        }
+		                    }
+		                }
+		                if(a.getName().equals(AidasConstants.VENDOR_ADMIN)) {
+		                	 if(user.getAdminVendorDtos()!=null && user.getAdminVendorDtos().size()>0){
+		                         Vendor v = null;
+		                         for(UserVendorMappingDTO vid: user.getAdminVendorDtos()){
+		                        	 UserVendorMapping uvm = userVendorMappingRepository.findByUserIdAndVendorId(vid.getVendorId(), user.getId(),a.getId());
+		                             if(uvm==null && vid.getStatus().equals(AidasConstants.STATUS_ENABLED)) {
+			                             v = vendorRepository.getById(vid.getVendorId());
+			                             uvm = new UserVendorMapping();
+			                             uvm.setVendor(v);
+			                             uvm.setUser(user);
+			                             userVendorMappingRepository.save(uvm);
+			                             UserAuthorityMappingUserVendorMapping uamuvm = new UserAuthorityMappingUserVendorMapping();
+			                             uamuvm.setUserVendorMapping(uvm);
+			                             uamuvm.setUserAuthorityMapping(uam);
+			                             uamuvm.setStatus(AidasConstants.STATUS_ENABLED);
+			                             userAuthorityUserVendorMappingRepository.save(uamuvm);
+		                             }else {
+		                        		UserAuthorityMappingUserVendorMapping uamuvm = userAuthorityUserVendorMappingRepository.getByUvmIdAndUamId(uvm.getId(), uam.getId());
+		                        		uvm.setStatus(vid.getStatus());
+			                            if(uamuvm!=null) {
+			                            	uamuvm.setStatus(vid.getStatus());
+			                            }else {
+			                            	uamuvm = new UserAuthorityMappingUserVendorMapping();
+			                            	uamuvm.setUserVendorMapping(uvm);
+			                            	uamuvm.setUserAuthorityMapping(uam);
+			                            	uamuvm.setStatus(vid.getStatus());
+			                            }
+			                            userAuthorityUserVendorMappingRepository.save(uamuvm);
+		                        	}
+		                         }
+		                     }
+		                }
+		                if(a.getName().equals(AidasConstants.VENDOR_USER)) {
+		                	 if(user.getUserVendorDtos()!=null && user.getUserVendorDtos().size()>0){
+		                         Vendor v = null;
+		                         for(UserVendorMappingDTO vid: user.getUserVendorDtos()){
+		                        	 UserVendorMapping uvm = userVendorMappingRepository.findByUserIdAndVendorId(vid.getVendorId(), user.getId(),a.getId());
+		                             if(uvm==null && vid.getStatus().equals(AidasConstants.STATUS_ENABLED)) {
+			                             v = vendorRepository.getById(vid.getVendorId());
+			                             uvm = new UserVendorMapping();
+			                             uvm.setVendor(v);
+			                             uvm.setUser(user);
+			                             userVendorMappingRepository.save(uvm);
+			                             UserAuthorityMappingUserVendorMapping uamuvm = new UserAuthorityMappingUserVendorMapping();
+			                             uamuvm.setUserVendorMapping(uvm);
+			                             uamuvm.setUserAuthorityMapping(uam);
+			                             uamuvm.setStatus(AidasConstants.STATUS_ENABLED);
+			                             userAuthorityUserVendorMappingRepository.save(uamuvm);
+		                             }else {
+		                        		UserAuthorityMappingUserVendorMapping uamuvm = userAuthorityUserVendorMappingRepository.getByUvmIdAndUamId(uvm.getId(), uam.getId());
+			                            uvm.setStatus(vid.getStatus());
+		                        		if(uamuvm!=null) {
+			                            	uamuvm.setStatus(vid.getStatus());
+			                            }else {
+			                            	uamuvm = new UserAuthorityMappingUserVendorMapping();
+			                            	uamuvm.setUserVendorMapping(uvm);
+			                            	uamuvm.setUserAuthorityMapping(uam);
+			                            	uamuvm.setStatus(vid.getStatus());
+			                            }
+			                            userAuthorityUserVendorMappingRepository.save(uamuvm);
+		                        	}
+		                         }
+		                     }
+		                }
+		                if(a.getName().equals(AidasConstants.ADMIN_QC_USER)) {
+		                	if(user.getQcAdminDtos()!=null && user.getQcAdminDtos().size()>0){
+		                        Organisation o =null;
+		                        for(UserOrganisationMappingDTO oid: user.getQcAdminDtos()){
+		                        	UserOrganisationMapping uom = userOrganisationMappingRepository.findByOrganisationIdAndUserId(-1l, user.getId());
+		                            if(uom==null && oid.getStatus().equals(AidasConstants.STATUS_ENABLED)) {
+			                        	o = organisationRepository.getById(-1l);
+			                            uom = new UserOrganisationMapping();
+			                            uom.setOrganisation(o);
+			                            uom.setUser(user);
+			                            userOrganisationMappingRepository.save(uom);
+			                            UserAuthorityMappingUserOrganisationMapping uamuom = new UserAuthorityMappingUserOrganisationMapping();
+			                            uamuom.setUserOrganisationMapping(uom);
+			                            uamuom.setUserAuthorityMapping(uam);
+			                            uamuom.setStatus(AidasConstants.STATUS_ENABLED);
+			                            userAuthorityUserOrganisationMappingRepository.save(uamuom);
+		                            }else {
+		                        		UserAuthorityMappingUserOrganisationMapping uamuom = userAuthorityUserOrganisationMappingRepository.getByUomIdAndUamId(uom.getId(), uam.getId());
+			                            uom.setStatus(oid.getStatus());
+		                        		if(uamuom!=null) {
+			                            	uamuom.setStatus(oid.getStatus());
+			                            }else {
+			                            	uamuom = new UserAuthorityMappingUserOrganisationMapping();
+			                        		uamuom.setUserOrganisationMapping(uom);
+				                            uamuom.setUserAuthorityMapping(uam);
+				                            uamuom.setStatus(oid.getStatus());
+			                            }
+			                            userAuthorityUserOrganisationMappingRepository.save(uamuom);
+		                        	}
+		                        }
+		                    }   
+		                }
+						if(a.getName().equals(AidasConstants.ORG_QC_USER)) {
+							if(user.getQcOrgDtos()!=null && user.getQcOrgDtos().size()>0){
+		                        Organisation o =null;
+		                        for(UserOrganisationMappingDTO oid: user.getQcOrgDtos()){
+		                        	UserOrganisationMapping uom = userOrganisationMappingRepository.findByOrganisationIdAndUserId(oid.getOrganisationId(), user.getId());
+		                        	if(uom==null && oid.getStatus().equals(AidasConstants.STATUS_ENABLED)) {
+			                            o = organisationRepository.getById(oid.getOrganisationId());
+			                            uom = new UserOrganisationMapping();
+			                            uom.setOrganisation(o);
+			                            uom.setUser(user);
+			                            userOrganisationMappingRepository.save(uom);
+			                            UserAuthorityMappingUserOrganisationMapping uamuom = new UserAuthorityMappingUserOrganisationMapping();
+			                            uamuom.setUserOrganisationMapping(uom);
+			                            uamuom.setUserAuthorityMapping(uam);
+			                            uamuom.setStatus(AidasConstants.STATUS_ENABLED);
+			                            userAuthorityUserOrganisationMappingRepository.save(uamuom);
+		                        	}else{
+		                        		UserAuthorityMappingUserOrganisationMapping uamuom = userAuthorityUserOrganisationMappingRepository.getByUomIdAndUamId(uom.getId(), uam.getId());
+			                            uom.setStatus(oid.getStatus());
+		                        		if(uamuom!=null) {
+			                            	uamuom.setStatus(oid.getStatus());
+			                            }else {
+			                            	uamuom = new UserAuthorityMappingUserOrganisationMapping();
+			                        		uamuom.setUserOrganisationMapping(uom);
+				                            uamuom.setUserAuthorityMapping(uam);
+				                            uamuom.setStatus(oid.getStatus());
+			                            }
+			                            userAuthorityUserOrganisationMappingRepository.save(uamuom);
+		                        	}
+		                        }
+		                    }      	
+						}
+						if(a.getName().equals(AidasConstants.CUSTOMER_QC_USER)) {
+		
+							if(user.getQcCustomerDtos()!=null && user.getQcCustomerDtos().size()>0){
+		                        Customer c =null;
+		                        for(UserCustomerMappingDTO cid: user.getQcCustomerDtos()){
+		                        	UserCustomerMapping ucm = userCustomerMappingRepository.findByCustomerIdAndUserId(cid.getCustomerId(),user.getId());
+		                        	if(ucm==null && cid.getStatus().equals(AidasConstants.STATUS_ENABLED)) {
+			                            c = customerRepository.getById(cid.getCustomerId());
+			                            ucm = new UserCustomerMapping();
+			                            ucm.setCustomer(c);
+			                            ucm.setUser(user);
+			                            userCustomerMappingRepository.save(ucm);
+			                            UserAuthorityMappingUserCustomerMapping uamucm = new UserAuthorityMappingUserCustomerMapping();
+			                            uamucm.setUserCustomerMapping(ucm);
+			                            uamucm.setUserAuthorityMapping(uam);
+			                            uamucm.setStatus(AidasConstants.STATUS_ENABLED);
+			                            userAuthorityUserCustomerMappingRepository.save(uamucm);
+			                            
+		                        	}else {
+		                        		UserAuthorityMappingUserCustomerMapping uamucm = userAuthorityUserCustomerMappingRepository.getByUcmIdAndUamId(ucm.getId(), uam.getId());
+			                            ucm.setStatus(cid.getStatus());
+		                        		if(uamucm!=null) {
+			                            	uamucm.setStatus(cid.getStatus());
+			                            }else {
+			                            	uamucm = new UserAuthorityMappingUserCustomerMapping();
+				                            uamucm.setUserCustomerMapping(ucm);
+				                            uamucm.setUserAuthorityMapping(uam);
+				                            uamucm.setStatus(cid.getStatus());
+			                            }
+			                            userAuthorityUserCustomerMappingRepository.save(uamucm);
+		                        	}
+		                        }
+		                    }
+						}
+						if(a.getName().equals(AidasConstants.VENDOR_QC_USER)) {
+							if(user.getQcVendorDtos()!=null && user.getAdminVendorDtos().size()>0){
+		                        Vendor v = null;
+		                        for(UserVendorMappingDTO vid: user.getAdminVendorDtos()){
+		                        	UserVendorMapping uvm = userVendorMappingRepository.findByUserAndVendor(vid.getVendorId(), user.getId());
+		                            if(uvm==null && vid.getStatus().equals(AidasConstants.STATUS_ENABLED)) {
+			                        	v = vendorRepository.getById(vid.getVendorId());
+			                            uvm = new UserVendorMapping();
+			                            uvm.setVendor(v);
+			                            uvm.setUser(user);
+			                            userVendorMappingRepository.save(uvm);
+			                            UserAuthorityMappingUserVendorMapping uamuvm = new UserAuthorityMappingUserVendorMapping();
+			                            uamuvm.setUserVendorMapping(uvm);
+			                            uamuvm.setUserAuthorityMapping(uam);
+			                            uamuvm.setStatus(AidasConstants.STATUS_ENABLED);
+			                            userAuthorityUserVendorMappingRepository.save(uamuvm);
+		                            }else {
+		                        		UserAuthorityMappingUserVendorMapping uamuvm = userAuthorityUserVendorMappingRepository.getByUvmIdAndUamId(uvm.getId(), uam.getId());
+			                            uvm.setStatus(vid.getStatus());
+		                        		if(uamuvm!=null) {
+			                            	uamuvm.setStatus(vid.getStatus());
+			                            }else {
+			                            	uamuvm = new UserAuthorityMappingUserVendorMapping();
+			                            	uamuvm.setUserVendorMapping(uvm);
+			                            	uamuvm.setUserAuthorityMapping(uam);
+			                            	uamuvm.setStatus(vid.getStatus());
+			                            }
+			                            userAuthorityUserVendorMappingRepository.save(uamuvm);
+		                        	}
+		                        }
+		                    }
+						}
+	            }
             }
         }
-        if(user.getCustomerIds()!=null && user.getCustomerIds().size()>0){
-            for(UserCustomerMappingDTO cid: user.getCustomerIds()){
-                UserCustomerMapping ucm = userCustomerMappingRepository.findByCustomerIdAndUserId(cid.getCustomerId(),user.getId());
-                if(ucm==null) {
-                    ucm = new UserCustomerMapping();
-                    ucm.setCustomer(customerRepository.getById(cid.getCustomerId()));
-                    ucm.setUser(user);
-                }
-                ucm.setStatus(cid.getStatus());
-                userCustomerMappingRepository.save(ucm);
-            }
-        }
-        if(user.getVendorIds()!=null && user.getVendorIds().size()>0){
-            for(UserVendorMappingDTO vid: user.getVendorIds()){
-                UserVendorMapping uvm = userVendorMappingRepository.findByVendorIdAndUserId(vid.getVendorId(),user.getId());
-                if(uvm==null) {
-                    uvm = new UserVendorMapping();
-                    uvm.setVendor(vendorRepository.getById(vid.getVendorId()));
-                    uvm.setUser(user);
-                }
-                uvm.setStatus(vid.getStatus());
-                userVendorMappingRepository.save(uvm);
-            }
-        }
-        if(user.getAuthorityIds()!=null && user.getAuthorityIds().size()>0){
-            for(UserAuthorityMappingDTO aid: user.getAuthorityIds()){
-                UserAuthorityMapping uam = userAuthorityMappingRepository.findByAuthorityIdAndUserId(aid.getAuthorityId(),user.getId());
-                if(uam==null) {
-                    uam = new UserAuthorityMapping();
-                    uam.setAuthority(authorityRepository.getById(aid.getAuthorityId()));
-                    uam.setUser(user);
-                }
-                uam.setStatus(aid.getStatus());
-                
-                userAuthorityMappingRepository.save(uam);
-            }
-        }
-
         User result = userRepository.save(existingUser);
+        result.setAuthorityDtos(user.getAuthorityDtos());
         updateUserToKeyCloak(result);
         return ResponseEntity
             .ok()
@@ -1019,12 +1247,12 @@ public class UserResource {
     public ResponseEntity<List<User>> getAllAidasUsers(Pageable pageable) {
         log.debug("REST request to get a page of AidasUsers");
         User loggedInUser = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-        Page<User> page = null;//aidasUserRepository.findAll(pageable);
+        Page<User> page = userRepository.findAll(pageable);
         if(loggedInUser.getAuthority().getName().equals(AidasConstants.ADMIN)){
             page = userRepository.findAllByIdGreaterThanAndDeletedIsFalse(0l,pageable);
         }
         if(loggedInUser.getAuthority().getName().equals(AidasConstants.ORG_ADMIN) && loggedInUser.getOrganisation()!=null ){
-            page = userRepository.findAllByDeletedIsFalseAndAidasOrganisation_OrAidasCustomer_AidasOrganisation(pageable,loggedInUser.getOrganisation(),loggedInUser.getOrganisation());
+            page = userRepository.findAllByParentOrganisationId(pageable,loggedInUser.getOrganisation().getId());
         }
         if( loggedInUser.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN) && loggedInUser.getCustomer()!=null ){
             page = userRepository.findAllByDeletedIsFalseAndAidasCustomer(pageable,loggedInUser.getCustomer().getId());
@@ -1076,14 +1304,15 @@ public class UserResource {
     public ResponseEntity<ProjectQcDTO> getAllAidasQcUsers(@PathVariable(value = "projectId", required = false) final Long projectId) {
         log.debug("REST request to get a page of AidasQCUsers");
         User loggedInUser = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-        Authority authority = authorityRepository.findByName(AidasConstants.QC_USER);
+        //Authority authority = authorityRepository.findByName(AidasConstants.QC_USER);
+        List<Authority> authorities = authorityRepository.getAllAuthorities(Arrays.asList(new String[]{AidasConstants.ADMIN_QC_USER,AidasConstants.ORG_QC_USER,AidasConstants.CUSTOMER_QC_USER,AidasConstants.VENDOR_QC_USER }));
         ProjectQcDTO projectQcDTO = new ProjectQcDTO();
         Project project= projectRepository.getById(projectId);
         projectQcDTO.setProjectId(projectId);
         projectQcDTO.setCustomerId(project.getCustomer().getId());
         projectQcDTO.setName(project.getCustomer().getName());
         projectQcDTO.setQcUsers1(new ArrayList<>());
-        List<QcUsersOfCustomer> userDTOs = qcUsersOfCustomerRepository.getQcUserOfCustomer(projectId,project.getCustomer().getId());
+        List<QcUser> userDTOs = qcUsersOfCustomerRepository.getQcUserOfCustomer(projectId,project.getCustomer().getId());
         if(loggedInUser.getAuthority().getName().equals(AidasConstants.ADMIN)){
             userDTOs = qcUsersOfCustomerRepository.getQcUserOfAdmin(projectId,project.getCustomer().getId());
         }
@@ -1098,19 +1327,6 @@ public class UserResource {
         }
 
         projectQcDTO.setQcUsers1(userDTOs);
-        /*//List<IUserDTO> userDTOs = userRepository.findAllByQcUsersByCustomerAndProject(projectId);
-        for (int j = 0; j < userDTOs.size(); j++) {
-            IUserDTO u = userDTOs.get(j);
-            UserDTO udto = new UserDTO();
-            udto.setQcLevel(u.getQcLevel());
-            udto.setUserCustomerMappingId(u.getUserCustomerMappingId());
-            udto.setUserId(u.getUserId());
-            udto.setFirstName(u.getFirstName());
-            udto.setLastName(u.getLastName());
-            udto.setLogin(u.getLogin());
-            udto.setStatus(u.getStatus());
-            projectQcDTO.getQcUsers1().add(udto);
-        }*/
         return ResponseEntity.ok().body(projectQcDTO);
     }
 
@@ -1136,25 +1352,65 @@ public class UserResource {
     @GetMapping("/aidas-users/{id}")
     public ResponseEntity<User> getUser(@PathVariable Long id) {
         log.debug("REST request to get AidasUser : {}", id);
-        //User loggedInUser = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         User user = userRepository.getById(id);
-        Set<UserAuthorityMapping> uams = userAuthorityMappingRepository.findByUserId(id);
-        for(UserAuthorityMapping uam:uams) {
-        	user.getAuthorities().add(uam.getAuthority());
+        List<UserAuthorityMappingDTO> uams = userAuthorityMappingRepository.getAllAuthoritiesOfUser(user.getId());
+        user.setAuthorityDtos(uams);
+       
+        Long tmp = -1l;
+        for(UserAuthorityMappingDTO uamdto:uams) {
+        	UserAuthorityMapping uam =null;
+        	if(uamdto.getAuthorityId()>0)
+        	 uam = userAuthorityMappingRepository.getById(uamdto.getAuthorityId());
+        	 if(uam!=null && (uam.getAuthority().getName().equals(AidasConstants.ORG_ADMIN))) {
+	        	user.setAdminOrgDtos(organisationRepository.getAllOrganisationsWithUamId(user.getId(),uam.getAuthority().getId()));
+        	 }else if(uamdto.getName().equals(AidasConstants.ORG_ADMIN)) {
+        		user.setAdminOrgDtos(organisationRepository.getAllOrganisationsWithoutUamId(user.getId()));
+        	 }
+        	 if(uam!=null && (uam.getAuthority().getName().equals(AidasConstants.ORG_QC_USER))) {
+ 	        	user.setQcOrgDtos(organisationRepository.getAllOrganisationsWithUamId(user.getId(),uam.getAuthority().getId()));
+         	 }else if(uamdto.getName().equals(AidasConstants.ORG_QC_USER)){
+         		user.setQcOrgDtos(organisationRepository.getAllOrganisationsWithoutUamId(user.getId()));
+         	 }
+        	 
+        	 
+        	 if(uam!=null && (uam.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN))) {
+	            user.setAdminCustomerDtos(customerRepository.getAllCustomersWithUamId(user.getId(),uam.getAuthority().getId()));
+        	 }else if(uamdto.getName().equals(AidasConstants.CUSTOMER_ADMIN)) {
+        		 user.setAdminCustomerDtos(customerRepository.getAllCustomersWithoutUamId(user.getId()));
+        	 }
+        	 if(uam!=null && (uam.getAuthority().getName().equals(AidasConstants.CUSTOMER_QC_USER))) {
+ 	            user.setQcCustomerDtos(customerRepository.getAllCustomersWithUamId(user.getId(),uam.getAuthority().getId()));
+         	 }else if(uamdto.getName().equals(AidasConstants.CUSTOMER_QC_USER)){
+         		 user.setQcCustomerDtos(customerRepository.getAllCustomersWithoutUamId(user.getId()));
+         	 }
+        	 
+        	 if(uam!=null && (uam.getAuthority().getName().equals(AidasConstants.VENDOR_ADMIN))) {
+ 	            user.setAdminVendorDtos(vendorRepository.getAllVendorsWithUamId(user.getId(),uam.getAuthority().getId()));
+         	 }else if(uamdto.getName().equals(AidasConstants.VENDOR_ADMIN)) {
+         		 user.setAdminVendorDtos(vendorRepository.getAllVendorsWithoutUamId(user.getId()));
+         	 }
+         	 if(uam!=null && (uam.getAuthority().getName().equals(AidasConstants.VENDOR_QC_USER))) {
+  	            user.setQcVendorDtos(vendorRepository.getAllVendorsWithUamId(user.getId(),uam.getAuthority().getId()));
+          	 }else if(uamdto.getName().equals(AidasConstants.VENDOR_QC_USER)){
+          		 user.setQcVendorDtos(vendorRepository.getAllVendorsWithoutUamId(user.getId()));
+          	 }
+         	 if(uam!=null && (uam.getAuthority().getName().equals(AidasConstants.VENDOR_USER))) {
+  	            user.setUserVendorDtos(vendorRepository.getAllVendorsWithUamId(user.getId(),uam.getAuthority().getId()));
+          	 }else if(uamdto.getName().equals(AidasConstants.VENDOR_USER)){
+          		 user.setUserVendorDtos(vendorRepository.getAllVendorsWithoutUamId(user.getId()));
+          	 }
+	    		/*user.setAdminVendorDtos(vendorRepository.getAllVendorsWithUamId(uam.getId()));
+	    		user.setUserVendorDtos(vendorRepository.getAllVendorsWithUamId(uam.getId()));
+	    		user.setQcAdminDtos(organisationRepository.getAllOrganisationsWithUamId(uam.getId()));
+	    		user.setQcOrgDtos(organisationRepository.getAllOrganisationsWithUamId(uam.getId()));
+	    		user.setQcCustomerDtos(customerRepository.getAllCustomersWithUamId(uam.getId()));		
+	    		user.setQcVendorDtos(vendorRepository.getAllVendorsWithUamId(uam.getId()));*/
+        	
+			if(uamdto.getAuthorityId().equals(-2l)) {
+				uamdto.setAuthorityId(tmp--);
+			}
         }
-        List<UserCustomerMapping> ucms = userCustomerMappingRepository.getAllCustomerForSelectedUser(id);
-        for(UserCustomerMapping ucm:ucms) {
-        	user.getCustomers().add(ucm.getCustomer());
-        }
-        List<UserOrganisationMapping> uoms = userOrganisationMappingRepository.getAllOrganisationForSelectedUser(id);
-        for(UserOrganisationMapping uom:uoms) {
-        	user.getOrganisations().add(uom.getOrganisation());
-        }
-        List<UserVendorMapping> uvms = userVendorMappingRepository.getAllVendorsForSelectedUser(id);
-        for(UserVendorMapping uvm:uvms) {
-        	user.getVendors().add(uvm.getVendor());
-        }
-         return ResponseEntity.ok().body(user);
+		return ResponseEntity.ok().body(user);
     }
 
 
@@ -1279,10 +1535,10 @@ public class UserResource {
         passwordCred.setValue(myUser.getPassword());
         org.keycloak.admin.client.resource.UserResource userResource = usersRessource.get(userId);
         userResource.resetPassword(passwordCred);
-        userResource.sendVerifyEmail();
+        //userResource.sendVerifyEmail();
         
-            for(UserAuthorityMapping aa:myUser.getUserAuthorityMappings()){
-                RoleRepresentation rr = realmResource.roles().get(aa.getAuthority().getName()).toRepresentation();
+            for(UserAuthorityMappingDTO aa:myUser.getAuthorityDtos()){
+                RoleRepresentation rr = realmResource.roles().get(aa.getName()).toRepresentation();
                 userResource.roles().realmLevel().add(Arrays.asList(rr));
             }
         
@@ -1356,7 +1612,7 @@ public class UserResource {
         passwordCred.setType(CredentialRepresentation.PASSWORD);
         passwordCred.setValue(myUser.getPassword());
         userResource.resetPassword(passwordCred);
-        userResource.roles().realmLevel().add(myUser.getAuthorities().stream().map(authority -> {return realmResource.roles().get(authority.getName()).toRepresentation();}).collect(Collectors.toList()));
+        userResource.roles().realmLevel().add(myUser.getAuthorityDtos().stream().map(authority -> {return realmResource.roles().get(authority.getName()).toRepresentation();}).collect(Collectors.toList()));
     }
 
     private boolean changePassword(User myUser,String password){

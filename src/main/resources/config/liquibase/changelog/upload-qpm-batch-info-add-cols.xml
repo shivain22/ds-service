@@ -8,39 +8,39 @@
     <changeSet author="shiva (generated)" id="1657539087468-6">
         <addColumn catalogName="ainnotateservice"
                    schemaName= "ainnotateservice"
-                   tableName="upload_cqpm_batch_info" >
+                   tableName="upload_qpm_batch_info" >
             <column name="qc_status_other_than_level_1"
                     type="INT"/>
         </addColumn>
         <addColumn catalogName="ainnotateservice"
                    schemaName= "ainnotateservice"
-                   tableName="upload_cqpm_batch_info_aud" >
+                   tableName="upload_qpm_batch_info_aud" >
             <column name="qc_status_other_than_level_1"
                     type="INT"/>
         </addColumn>
 
         <addColumn catalogName="ainnotateservice"
                    schemaName= "ainnotateservice"
-                   tableName="upload_cqpm_batch_info" >
+                   tableName="upload_qpm_batch_info" >
             <column name="show_to_qc"
                     type="INT"/>
         </addColumn>
         <addColumn catalogName="ainnotateservice"
                    schemaName= "ainnotateservice"
-                   tableName="upload_cqpm_batch_info_aud" >
+                   tableName="upload_qpm_batch_info_aud" >
             <column name="show_to_qc"
                     type="INT"/>
         </addColumn>
 
         <addColumn catalogName="ainnotateservice"
                    schemaName= "ainnotateservice"
-                   tableName="upload_cqpm_batch_info" >
+                   tableName="upload_qpm_batch_info" >
             <column name="qc_seen_status"
                     type="INT"/>
         </addColumn>
         <addColumn catalogName="ainnotateservice"
                    schemaName= "ainnotateservice"
-                   tableName="upload_cqpm_batch_info_aud" >
+                   tableName="upload_qpm_batch_info_aud" >
             <column name="qc_seen_status"
                     type="INT"/>
         </addColumn>

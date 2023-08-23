@@ -9,6 +9,9 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.envers.Audited;
 
+import com.ainnotate.aidas.dto.UploadMetadataDTO;
+import com.ainnotate.aidas.dto.UserOrganisationMappingDTO;
+
 /**
  * A AidasOrganisation.
  */
@@ -19,6 +22,68 @@ import org.hibernate.envers.Audited;
         @UniqueConstraint(name = "uk_organisation_name",columnNames={"name"})
     })
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+
+
+@NamedNativeQuery(name = "Organisation.getAllOrganisationsWithUamId",
+query="select distinct o.id, o.name, uum.status \n"
+		+ "from\n"
+		+ "organisation  o,  user_organisation_mapping uom,uam_uom_mapping uum, user_authority_mapping uam\n"
+		+ "where\n"
+		+ "uum.uom_id=uom.id and uom.organisation_id=o.id\n"
+		+ "and uom.user_id=?1 and uum.uam_id=uam.id and uam.authority_id=?2 and o.id>-1\n"
+		+ "union\n"
+		+ "select o.id, o.name, 0 as status\n"
+		+ "from\n"
+		+ "organisation  o \n"
+		+ "where\n"
+		+ "o.id>-1 and o.id \n"
+		+ "not in \n"
+		+ "(select o.id\n"
+		+ "from\n"
+		+ "organisation o,  user_organisation_mapping uom,uam_uom_mapping uum,user_authority_mapping uam \n"
+		+ "where\n"
+		+ "uum.uom_id=uom.id and uom.organisation_id=o.id\n"
+		+ "and uom.user_id=?1 and uum.uam_id=uam.id and uam.authority_id=?2 and o.id>-1)",
+		resultSetMapping = "Mapping.AuthorityOrganisationMappingDTO")
+
+@NamedNativeQuery(name = "Organisation.getAllOrganisationsWithoutUamId",
+query="select o.id as id, o.name as name, 0 as status from organisation o where o.id>0 and o.id not in (select uom.organisation_id from user_organisation_mapping uom where uom.user_id=?1)",
+		resultSetMapping = "Mapping.AuthorityOrganisationMappingDTO")
+
+
+@NamedNativeQuery(name = "Organisation.getAllOrganisationsWithUamIdAndOrgId",
+query="select distinct o.id, o.name, uum.status \n"
+		+ "from\n"
+		+ "organisation  o,  user_organisation_mapping uom,uam_uom_mapping uum\n"
+		+ "where\n"
+		+ "uum.uom_id=uom.id and uom.organisation_id=o.id\n"
+		+ "and uum.uam_id=?1 and o.id>-1 and o.id=?2\n"
+		+ "union\n"
+		+ "select o.id, o.name, 0 as status\n"
+		+ "from\n"
+		+ "organisation  o \n"
+		+ "where\n"
+		+ "o.id>-1 and o.id=?2 and o.id \n"
+		+ "not in \n"
+		+ "(select o.id\n"
+		+ "from\n"
+		+ "organisation o,  user_organisation_mapping uom,uam_uom_mapping uum\n"
+		+ "where\n"
+		+ "uum.uom_id=uom.id and uom.organisation_id=o.id\n"
+		+ "and uum.uam_id=?1 and o.id=?2 and o.id>-1)",
+		resultSetMapping = "Mapping.AuthorityOrganisationMappingDTO")
+
+
+@SqlResultSetMapping(
+		name = "Mapping.AuthorityOrganisationMappingDTO", 
+		classes = @ConstructorResult(targetClass = UserOrganisationMappingDTO.class, 
+		columns = {
+				@ColumnResult(name = "id", type = Long.class), 
+				@ColumnResult(name = "name", type = String.class),
+				@ColumnResult(name = "status", type = Integer.class)
+	}))
+
+
 @org.springframework.data.elasticsearch.annotations.Document(indexName = "organisation")
 @Audited
 public class Organisation extends AbstractAuditingEntity  implements Serializable {

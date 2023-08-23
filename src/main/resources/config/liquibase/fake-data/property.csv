@@ -64,4 +64,4 @@ id;name;value;property_type;optional;description;default_prop;user_id;customer_i
 63;audioDuration;-1;1;true;Audio Duration;1;-1;-1;5;1;0
 64;audioBitRate;-1;1;true;Audio Bit Rate;1;-1;-1;5;1;0
 65;saveIndividualRecordings;0;1;0;Save Individual Recordings;1;-1;-1;5;1;0
-
+66;scriptedAudioRecording;0;1;0;Whether scripted audio recording or not;1;-1;-1;5;1;0

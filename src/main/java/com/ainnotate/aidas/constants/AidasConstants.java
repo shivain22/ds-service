@@ -15,7 +15,13 @@ public final class AidasConstants {
 
     public static final String VENDOR_USER = "ROLE_VENDOR_USER";
 
-    public static final String QC_USER = "ROLE_QC";
+    public static final String ADMIN_QC_USER = "ROLE_ADMIN_QC";
+    
+    public static final String ORG_QC_USER = "ROLE_ORG_QC";
+    
+    public static final String CUSTOMER_QC_USER = "ROLE_CUSTOMER_QC";
+    
+    public static final String VENDOR_QC_USER = "ROLE_VENDOR_QC";
 
     public static final String ANONYMOUS = "ROLE_ANONYMOUS";
 
@@ -120,15 +126,17 @@ public final class AidasConstants {
     public static final Integer IGNORE_ALREADY_UPLOADED=1;
     public static final Integer NOT_IGNORE_ALREADY_UPLOADED=0;
 
-    public static final Long ORG_QC_USER=1l;
-    public static final Long CUSTOMER_QC_USER=0l;
-    public static final Long VENDOR_QC_USER=2l;
+    
     public static final Integer AUTO_CREATE_OBJECT_ENABLE=1;
     public static final Integer AUTO_CREATE_OBJECT_DISABLE=0;
     
-    public static final Integer CQPM_BATCH_NOT_YET_STARTED=0;
+    public static final Integer qpm_BATCH_NOT_YET_STARTED=0;
     public static final String KEY = "b693b2f6350f11eebe560242ac120002";
     public static final String IV_STR="1011121314151617";
+    
+    public static final Long ORG_ENTITY_ID = 1l;
+    public static final Long CUSTOMER_ENTITY_ID = 2l;
+    public static final Long VENDOR_ENTITY_ID = 3l;
     private AidasConstants() {}
     
     

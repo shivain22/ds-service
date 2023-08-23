@@ -2,6 +2,7 @@ package com.ainnotate.aidas.domain;
 
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.persistence.*;
 import javax.validation.constraints.*;
@@ -9,9 +10,91 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.envers.Audited;
 
+import com.ainnotate.aidas.dto.UserCustomerMappingDTO;
+import com.ainnotate.aidas.dto.UserOrganisationMappingDTO;
+import com.ainnotate.aidas.dto.VendorOrganisationMappingDTO;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * A AidasCustomer.
  */
+
+
+
+@NamedNativeQuery(name = "Customer.getAllCustomersWithUamId",
+query="select distinct c.id, c.name, uum.status \n"
+		+ "from\n"
+		+ "customer  c,  user_customer_mapping ucm,uam_ucm_mapping uum, user_authority_mapping uam \n"
+		+ "where\n"
+		+ "uum.ucm_id=ucm.id and ucm.customer_id=c.id and c.id>-1\n"
+		+ "and ucm.user_id=?1 and uum.uam_id=uam.id and uam.authority_id=?2 \n"
+		+ "union\n"
+		+ "select c.id, c.name, 0 as status\n"
+		+ "from\n"
+		+ "customer  c \n"
+		+ "where\n"
+		+ "c.id>-1 and c.id \n"
+		+ "not in \n"
+		+ "(select c.id\n"
+		+ "from\n"
+		+ "customer  c,  user_customer_mapping ucm,uam_ucm_mapping uum ,user_authority_mapping uam \n"
+		+ "where\n"
+		+ "uum.ucm_id=ucm.id and ucm.customer_id=c.id\n"
+		+ "and ucm.user_id=?1 and c.id>-1 and uum.uam_id=uam.id and uam.authority_id=?2 )",
+		resultSetMapping = "Mapping.AuthorityCustomerMappingDTO")
+
+@NamedNativeQuery(name = "Customer.getAllCustomersWithoutUamId",
+query="select c.id as id, c.name as name, 0 as status from customer c where c.id>0 and c.id not in (select ucm.customer_id from user_customer_mapping ucm where ucm.user_id=?1)",
+		resultSetMapping = "Mapping.AuthorityCustomerMappingDTO")
+
+@NamedNativeQuery(name = "Customer.getAllCustomersWithUamIdAndCustomerId",
+query="select c.id, c.name, uum.status \n"
+		+ "from\n"
+		+ "customer  c, uam_ucm_mapping uum, user_customer_mapping ucm,user_authority_mapping uam \n"
+		+ "where\n"
+		+ "uum.ucm_id=ucm.id \n"
+		+ "and uum.uam_id=uam.id and uam.authority_id=?1 \n"
+		+ "union\n"
+		+ "select c.id, c.name, 0 as status\n"
+		+ "from\n"
+		+ "customer  c \n"
+		+ "where\n"
+		+ "c.id \n"
+		+ "not in \n"
+		+ "(select ucm.customer_id from uam_ucm_mapping uum,user_customer_mapping ucm,user_authority_mapping uam where uum.ucm_id=ucm.id and uum.uam_id=uam.id and uam.authority_id=?1)",
+		
+		resultSetMapping = "Mapping.AuthorityCustomerMappingDTO")
+
+
+@NamedNativeQuery(name = "Customer.getAllCustomersWithUamIdAndOrgId",
+query="select c.id, c.name, uum.status \n"
+		+ "from\n"
+		+ "customer  c, uam_ucm_mapping uum, user_customer_mapping ucm,user_authority_mapping uam \n"
+		+ "where\n"
+		+ "uum.ucm_id=ucm.id \n"
+		+ "and uum.uam_id=uam.id and uam.authority_id=?1 \n"
+		+ "union\n"
+		+ "select c.id, c.name, 0 as status\n"
+		+ "from\n"
+		+ "customer  c \n"
+		+ "where\n"
+		+ "c.id \n"
+		+ "not in \n"
+		+ "(select ucm.customer_id from uam_ucm_mapping uum,user_customer_mapping ucm,user_authority_mapping uam where uum.ucm_id=ucm.id and uum.uam_id=uam.id and uam.authority_id=?1)",
+		resultSetMapping = "Mapping.AuthorityCustomerMappingDTO")
+
+@SqlResultSetMapping(
+		name = "Mapping.AuthorityCustomerMappingDTO", 
+		classes = @ConstructorResult(targetClass = UserCustomerMappingDTO.class, 
+		columns = {
+				@ColumnResult(name = "id", type = Long.class), 
+				@ColumnResult(name = "name", type = String.class),
+				@ColumnResult(name = "status", type = Integer.class)
+	}))
+
+
+
+
 @Entity
 @Table(name = "customer",indexes = {
     @Index(name="idx_customer_organisation",columnList = "organisation_id")
@@ -43,10 +126,22 @@ public class Customer extends AbstractAuditingEntity  implements Serializable {
     @NotNull
     @JoinColumn(name = "organisation_id", nullable = true, foreignKey = @ForeignKey(name="fk_customer_organisation"))
     private Organisation organisation;
+    
+    @Transient
+	@JsonProperty
+	private transient List<VendorOrganisationMappingDTO> organisationDtos;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
-    public Long getId() {
+    public List<VendorOrganisationMappingDTO> getOrganisationDtos() {
+		return organisationDtos;
+	}
+
+	public void setOrganisationDtos(List<VendorOrganisationMappingDTO> organisationDtos) {
+		this.organisationDtos = organisationDtos;
+	}
+
+	public Long getId() {
         return this.id;
     }
 
