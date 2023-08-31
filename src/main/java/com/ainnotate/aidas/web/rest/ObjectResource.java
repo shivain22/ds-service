@@ -430,8 +430,12 @@ public class ObjectResource {
     		@RequestParam(value = "search", required = false) final String search) {
         log.debug("REST request to get a page of AidasObjects");
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-        if(user.getVendor()==null) {
-        	throw new BadRequestAlertException("Vendor is not mapped", ENTITY_NAME, "vendoridnotexists");
+        List<Vendor> vendors = vendorRepository.getVendors(user.getId(), AidasConstants.VENDOR_USER_ID);
+        if(vendors!=null && vendors.size()>0) {
+        	user.setVendor(vendors.get(0));
+	        if(user.getVendor()==null) {
+	        	throw new BadRequestAlertException("Vendor is not mapped", ENTITY_NAME, "vendoridnotexists");
+	        }
         }
         Page<ObjectDTO> page = null;
         Project project = projectRepository.getById(projectId);

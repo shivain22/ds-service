@@ -13,7 +13,7 @@ public class JavaSendapi {
         BufferedReader br = null;
         HttpURLConnection conn = null;
         String output = null;
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         try {
             URL url = new URL(postUrl);
             conn = (HttpURLConnection) url.openConnection();

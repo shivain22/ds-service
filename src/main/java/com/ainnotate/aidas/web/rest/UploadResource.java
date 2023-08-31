@@ -131,7 +131,7 @@ public class UploadResource {
 	Integer totalRejected = 0;
 	Integer totalPending = 0;
 
-	
+
 	/**
 	 * {@code POST  /aidas-uploads} : Create a new upload.
 	 *
@@ -274,6 +274,7 @@ public class UploadResource {
 				umd.setUploadDTO(udtoMap.get(umd.getUploadId()));
 				if (i == 0) {
 					Upload upload = uploadRepository.getById(umd.getUploadId());
+					System.out.println("Upload retrieved  "+upload.getUserVendorMappingObjectMapping().getId());
 					successUploads.add(upload);
 				} else {
 					uploadMetadataDTOS1.add(umd);
@@ -284,6 +285,8 @@ public class UploadResource {
 				return ResponseEntity.ok().body(uploadMetadataDTOS);
 			}
 			for (Upload u : successUploads) {
+				u = uploadRepository.getUploadQcDoneByIsNull(u.getId());
+				System.out.println("u--------"+u.getId()+"-------"+u.getUserVendorMappingObjectMapping().getId());
 				uploadRepository.updateMetadataStatus(u.getId(), AidasConstants.AIDAS_UPLOAD_METADATA_COMPLETED);
 				uploadRepository.updateUvmomQcStatus(u.getUserVendorMappingObjectMapping().getId());
 				uploadRepository.updateObjectQcStatus(u.getUserVendorMappingObjectMapping().getObject().getId());
@@ -372,7 +375,7 @@ public class UploadResource {
 						userVendorMappingObjectMappingRepository.addTotalUploadedAndAddTotalPending(uvmom.getId());
 						objectRepository.addTotalUploadedAddPendingSubtractRequired(object.getId());
 					}
-					
+
 					return ResponseEntity.ok().body(true);
 				} else {
 					return ResponseEntity.ok().body(false);
@@ -383,8 +386,8 @@ public class UploadResource {
 		}
 	}
 
-	
-	
+
+
 
 	/**
 	 * {@code PUT  /aidas-uploads/:id} : Approve an existing upload.
@@ -404,7 +407,7 @@ public class UploadResource {
 		Upload upload = uploadRepository.getById(id);
 		QcProjectMapping qpm = qcProjectMappingRepository.getById(qcProjectMappingId);
 		UploadQcProjectMappingBatchInfo uqpmbi = uploadQcProjectMappingBatchInfoRepository.getUploadIdByqcProjectMappingAndBatchNumber(qcProjectMappingId,qpm.getCurrentQcBatchNo(), upload.getId());
-		
+
 		if(qpm.getQcLevel().equals(qpm.getProject().getQcLevels())) {
 			upload.setApprovalStatus(AidasConstants.AIDAS_UPLOAD_APPROVED);
 		}
@@ -425,11 +428,11 @@ public class UploadResource {
 		return ResponseEntity.ok().body(true);
 	}
 
-	
+
 	/**
 	 * {@code PUT  /aidas-uploads/:id} : Reject an existing upload.
 	 *
-	 * @param id the id of the upload to save.
+	 * @param qcProjectMappingId the id of the upload to save.
 	 * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body
 	 *         the updated upload, or with status {@code 400 (Bad Request)} if the
 	 *         upload is not valid, or with status
@@ -446,14 +449,14 @@ public class UploadResource {
 		if(qpm.getProject().getQcLevels().equals(qpm.getQcLevel())) {
 			uploadQcProjectMappingBatchInfoRepository.updateUqpmbiUploadFinalLevel(qcProjectMappingId,batchNumber);
 		}else {
-			uploadQcProjectMappingBatchInfoRepository.updateUqpmbi(qcProjectMappingId,batchNumber,user.getLogin());	
+			uploadQcProjectMappingBatchInfoRepository.updateUqpmbi(qcProjectMappingId,batchNumber,user.getLogin());
 		}
 		List<UploadSummaryForQCFinalize> batchStatus = uploadQcProjectMappingBatchInfoRepository.getUvmomObjectIdsOfBatch(qcProjectMappingId,batchNumber);
-		
+
 		if(batchStatus!=null && batchStatus.size()>0) {
 			for(UploadSummaryForQCFinalize usfqcf:batchStatus) {
 				System.out.println(usfqcf.getProjectId()+"|"+usfqcf.getUvmpmId()+"|"+usfqcf.getObjectId()+""+usfqcf.getUvmomId()+"|"+usfqcf.getTotalUploaded()+"|"+usfqcf.getTotalApproved()+"|"+usfqcf.getTotalRejected()+"|"+usfqcf.getTotalPending()+"|"+usfqcf.getTotalShowToQc());
-				
+
 				if(usfqcf.getTotalRejected()>0 && usfqcf.getTotalShowToQc()>0) {
 					if (qpm.getProject().getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)) {
 						userVendorMappingProjectMappingRepository.addTotalRejectedAndSubtractTotalPendingAddTotalRequiredForGrouped(usfqcf.getUvmpmId(),1l);
@@ -477,7 +480,7 @@ public class UploadResource {
 						}
 					}
 				}
-				
+
 			}
 		}
 		UploadSummaryForQCFinalize batchInfo = uploadQcProjectMappingBatchInfoRepository.countUploadsByqcProjectMappingAndBatchNumberForFinalize(qcProjectMappingId,batchNumber);
@@ -551,7 +554,7 @@ public class UploadResource {
 			uqpmbi.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_REJECTED);
 			uqpmbi.setQcSeenStatus(AidasConstants.AIDAS_QC_VIWED);
 		}
-		
+
 		upload.setQcDoneBy(qpm);
 		upload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_REJECTED);
 		upload.setApprovalStatus(AidasConstants.AIDAS_UPLOAD_REJECTED);
@@ -562,7 +565,7 @@ public class UploadResource {
 		return ResponseEntity.ok().body(true);
 	}
 
-	
+
 	/**
 	 * {@code GET  /aidas-uploads} : get all the aidasUploads.
 	 *
@@ -695,7 +698,7 @@ public class UploadResource {
 		}
 	}
 
-	
+
 	/**
 	 * {@code GET /aidas-uploads/{id}/{type}/{status}} : get all the aidasUploads.
 	 *
@@ -715,7 +718,7 @@ public class UploadResource {
 				objectId);
 		List<UploadsMetadataDTO> uploadsMetadataDTOList = new ArrayList<>();
 
-		
+
 		Map<Long, List<ProjectPropertyDTO>> uploadMetaDataDTOp = new HashMap<>();
 		Map<Long, List<ObjectPropertyDTO>> uploadMetaDataDTOo = new HashMap<>();
 		Map<Long, UploadDTO> uploadDtos = new HashMap<>();
@@ -756,7 +759,7 @@ public class UploadResource {
 			String region = AESCBCPKCS5Padding.decrypt(projectPropertyRepository.findByProjectPropertyByPropertyName(projectId, "region").getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
 			S3Presigner presigner = S3Presigner.builder().credentialsProvider(StaticCredentialsProvider
 					.create(AwsBasicCredentials.create(accessKey, accessSecret))).region(Region.of(region)).build();
-			
+
 		if (uploadsMetadataDTOList.size() == 0) {
 			List<UploadMetadataDTO> uploads = uploadMetaDataRepository
 					.findAllByUserAndProjectAllForMetadataUploadWiseForNew(user.getId(), objectId);
@@ -777,12 +780,12 @@ public class UploadResource {
 			}
 		}
 		}catch(Exception e) {
-			
+
 		}
 		return ResponseEntity.ok().body(uploadsMetadataDTOList);
 	}
 
-	
+
 
 	/**
 	 * {@code GET  /aidas-uploads/next} : get the "id" upload.
@@ -795,8 +798,20 @@ public class UploadResource {
 		User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
 		log.debug("REST request to get next AidasUpload : {}");
 		Project project = projectRepository.getById(projectId);
-		List<QcProjectMapping> qpms = qcProjectMappingRepository
-				.getQcProjectMappingByProjectAndCustomerAndUser(projectId, project.getCustomer().getId(), user.getId());
+		List<QcProjectMapping> qpms = new ArrayList();//qcProjectMappingRepository.getQcProjectMappingForAdminQc(projectId, project.getCustomer().getId(), user.getId());
+		if (user.getAuthority().getName().equals(AidasConstants.ADMIN_QC_USER)) {
+			qpms = qcProjectMappingRepository.getQcProjectMappingForAdminQc(projectId,user.getCustomer().getId(), user.getId());
+		}
+		if(user.getAuthority().getName().equals(AidasConstants.ORG_QC_USER)) {
+			qpms = qcProjectMappingRepository.getQcProjectMappingForOrganisationQc(projectId,user.getOrganisation().getId(), user.getId());
+		}
+		if(user.getAuthority().getName().equals(AidasConstants.CUSTOMER_QC_USER)) {
+			qpms = qcProjectMappingRepository.getQcProjectMappingForCustomerQc(projectId, user.getCustomer().getId(),user.getId());
+		}
+		if(user.getAuthority().getName().equals(AidasConstants.VENDOR_QC_USER)) {
+			qpms = qcProjectMappingRepository.getQcProjectMappingForVendorQc(projectId,user.getVendor().getId(), user.getId());
+		}
+
 		return ResponseEntity.ok().body(qpms);
 	}
 
@@ -850,7 +865,7 @@ public class UploadResource {
 		Integer multFactor = 1;
 		List<Long[]> notCompletedBatches = qcProjectMappingBatchMappingRepository
 				.getQcNotCompletedBatches(project.getId(), qpm.getQcLevel(), qpm.getId());
-		
+
 		String accessKey = AESCBCPKCS5Padding.decrypt(projectPropertyRepository.findByProjectPropertyByPropertyName(projectId, "accessKey").getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
 		String accessSecret = AESCBCPKCS5Padding.decrypt(projectPropertyRepository.findByProjectPropertyByPropertyName(projectId, "accessSecret").getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
 		String bucket = AESCBCPKCS5Padding.decrypt(projectPropertyRepository.findByProjectPropertyByPropertyName(projectId, "bucketName").getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
@@ -865,7 +880,7 @@ public class UploadResource {
 			for(UploadSummaryForQCFinalize objStat:objCompletionStatus) {
 				map.put(objStat.getUvmomId(), objStat);
 			}
-			
+
 			for (UploadDTOForQC u : uploadsDTOForQc) {
 				GetObjectRequest getObjectRequest =GetObjectRequest.builder().bucket(bucket).key(u.getUploadUrl()).build();
 			   	GetObjectPresignRequest getObjectPresignRequest = GetObjectPresignRequest.builder().signatureDuration(Duration.ofMinutes(1440)).getObjectRequest(getObjectRequest).build();
@@ -955,7 +970,7 @@ public class UploadResource {
 				List<Long> showToQcUps = new ArrayList<>();
 				List<Long> notShowToQcUps = new ArrayList<>();
 				List<Long> rejectedUps = new ArrayList<>();
-				
+
 				for (UploadDTOForQC u : tempUploadIds) {
 					if (u.getQcStatus().equals(AidasConstants.AIDAS_UPLOAD_QC_REJECTED)) {
 						rejectedUps.add(u.getUploadId());
@@ -964,13 +979,13 @@ public class UploadResource {
 					   	GetObjectPresignRequest getObjectPresignRequest = GetObjectPresignRequest.builder().signatureDuration(Duration.ofMinutes(1440)).getObjectRequest(getObjectRequest).build();
 						PresignedGetObjectRequest presignedGetObjectRequest =presigner.presignGetObject(getObjectPresignRequest);
 					  	u.setUploadUrl(presignedGetObjectRequest.url().toString());
-					  	if(u.getConsentFormUrl()!=null && !u.getConsentFormUrl().isEmpty())  {   
+					  	if(u.getConsentFormUrl()!=null && !u.getConsentFormUrl().isEmpty())  {
 						  	getObjectRequest =GetObjectRequest.builder().bucket(bucket).key(u.getConsentFormUrl()).build();
 						   	getObjectPresignRequest = GetObjectPresignRequest.builder().signatureDuration(Duration.ofMinutes(1440)).getObjectRequest(getObjectRequest).build();
 							presignedGetObjectRequest =presigner.presignGetObject(getObjectPresignRequest);
 						  	u.setConsentFormUrl(presignedGetObjectRequest.url().toString());
 					  	}
-					  	
+
 						u.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
 						u.setBatchNumber(qpmbm.getId());
 						if (project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)) {
@@ -1096,8 +1111,8 @@ public class UploadResource {
 		return resultMap1;
 	}
 
-	
-	
+
+
 
 	/**
 	 * {@code SEARCH  /_search/aidas-uploads?query=:query} : search for the upload

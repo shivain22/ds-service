@@ -914,9 +914,17 @@ public class ProjectResource {
 		if (user.getAuthority().getName().equals(AidasConstants.VENDOR_USER)) {
 			page = projectRepository.findProjectWithUploadCountByUserForDropDown(user.getId());
 		}
-		if (user.getAuthority().getName().equals(AidasConstants.ADMIN_QC_USER)||user.getAuthority().getName().equals(AidasConstants.ORG_QC_USER)||
-				user.getAuthority().getName().equals(AidasConstants.CUSTOMER_QC_USER)||user.getAuthority().getName().equals(AidasConstants.VENDOR_QC_USER)) {
+		if (user.getAuthority().getName().equals(AidasConstants.ADMIN_QC_USER)) {
+			page = projectRepository.findProjectsForAdminQC(user.getId());
+		}
+		if(user.getAuthority().getName().equals(AidasConstants.ORG_QC_USER)) {
+			page = projectRepository.findProjectsForOrganisationQC(user.getId());
+		}
+		if(user.getAuthority().getName().equals(AidasConstants.CUSTOMER_QC_USER)) {
 			page = projectRepository.findProjectsForCustomerQC(user.getId());
+		}
+		if(user.getAuthority().getName().equals(AidasConstants.VENDOR_QC_USER)) {
+			page = projectRepository.findProjectsForVendorQC(user.getId());
 		}
 		if (page != null) {
 			return ResponseEntity.ok().body(page);

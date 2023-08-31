@@ -87,7 +87,7 @@ spring:
       discovery:
         enabled: true
   keycloak:
-    server-url: http://aidas-auth.atparui.com:1080/auth/
+    server-url: http://auth.haidata.ai/auth/
     realm: master
     client-id: admin-cli
     client-secret:
@@ -108,7 +108,7 @@ spring:
       ssl.trust: smtp.zeptomail.in
       debug: false
 server:
-  port: 8081
+  port: 7979
 
 # ===================================================================
 # JHipster specific properties

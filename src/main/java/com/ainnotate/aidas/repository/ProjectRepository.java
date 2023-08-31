@@ -82,6 +82,15 @@ public interface ProjectRepository extends JpaRepository<Project, Long>,Querydsl
 
     @Query(nativeQuery = true)
     List<ProjectDTO> findProjectsForCustomerQC(Long userId);
+    
+    @Query(nativeQuery = true)
+    List<ProjectDTO> findProjectsForOrganisationQC(Long userId);
+    
+    @Query(nativeQuery = true)
+    List<ProjectDTO> findProjectsForVendorQC(Long userId);
+    
+    @Query(nativeQuery = true)
+    List<ProjectDTO> findProjectsForAdminQC(Long userId);
 
     @Query(value = "select count(*) from project p , customer c where p.customer_id=c.id and c.organisation_id=?1 and p.status=1",nativeQuery = true)
     Long countAidasProjectByAidasCustomer_AidasOrganisation(Long organisationId);

@@ -515,5 +515,7 @@ public interface UploadRepository extends JpaRepository<Upload, Long> {
     @Query(value="select * from upload where user_vendor_mapping_object_mapping_id=?1 and object_key=?2",nativeQuery = true)
     Upload getUploadByFileNameUvmomId(Long uvmomId,String objectKey);
     
+    @Query(value="select * from upload where id=?1 and qc_done_by_id is null",nativeQuery = true)
+    Upload getUploadQcDoneByIsNull(Long uploadId);
 
 }

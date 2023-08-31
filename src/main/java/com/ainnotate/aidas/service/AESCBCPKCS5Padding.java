@@ -3,6 +3,7 @@ import javax.crypto.Cipher;
 import javax.crypto.Mac;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.Base64;
@@ -13,10 +14,10 @@ public class AESCBCPKCS5Padding {
 	 * public static void main(String[] args) throws Exception { String key =
 	 * "b693b2f6350f11eebe560242ac120002"; String iv = "1011121314151617"; String
 	 * toEncrypt = "santhosh";
-	 * 
+	 *
 	 * byte[] encrypted = encrypt(toEncrypt, key, iv); String decrypted =
 	 * decrypt(encrypted, key, iv);
-	 * 
+	 *
 	 * System.out.println(new String(encrypted)); System.out.println(decrypted); }
 	 */
 
@@ -27,11 +28,11 @@ public class AESCBCPKCS5Padding {
         byte[] clean = plainText.getBytes();
 
         // Initialization Vector
-        byte[] iv = ivStr.getBytes("US-ASCII");
+        byte[] iv = ivStr.getBytes(Charset.forName("US-ASCII"));
         IvParameterSpec ivParameterSpec = new IvParameterSpec(iv);
 
         // Key
-        byte[] keyBytes = key.getBytes("US-ASCII");
+        byte[] keyBytes = key.getBytes(Charset.forName("US-ASCII"));
         SecretKeySpec secretKeySpec = new SecretKeySpec(keyBytes, "AES");
 
         // Encrypt.
@@ -45,10 +46,10 @@ public class AESCBCPKCS5Padding {
 
     public static String decrypt(byte[] encryptedBytes, String key, String ivStr) throws Exception {
 
-        byte[] iv = ivStr.getBytes("US-ASCII");
+        byte[] iv = ivStr.getBytes(Charset.forName("US-ASCII"));
         IvParameterSpec ivParameterSpec = new IvParameterSpec(iv);
 
-        byte[] keyBytes = key.getBytes("US-ASCII");
+        byte[] keyBytes = key.getBytes(Charset.forName("US-ASCII"));
         SecretKeySpec secretKeySpec = new SecretKeySpec(keyBytes, "AES");
 
         // Decrypt.

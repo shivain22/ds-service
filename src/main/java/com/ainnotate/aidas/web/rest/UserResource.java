@@ -782,6 +782,7 @@ public class UserResource {
         user.setVendor(null);
         user.setCustomer(null);
         user.setOrganisation(null);
+        user.setAuthority(null);
         userRepository.save(user);
         return ResponseEntity
             .created(new URI("/api/aidas-users/" + user.getId()))
@@ -857,7 +858,7 @@ public class UserResource {
         if(user.getAuthorityDtos()!=null && user.getAuthorityDtos().size()>0){
             Authority a =null;
             for(UserAuthorityMappingDTO aid: user.getAuthorityDtos()){
-	            	if(aid.getStatus().equals(AidasConstants.STATUS_ENABLED)){
+	            	//if(aid.getStatus().equals(AidasConstants.STATUS_ENABLED)){
 	            		UserAuthorityMapping uam = null;//
 	            		if(aid.getAuthorityId()>0) {
 	            			a = authorityRepository.getByUamId(aid.getAuthorityId());
@@ -1134,7 +1135,7 @@ public class UserResource {
 		                        }
 		                    }
 						}
-	            }
+	            //}
             }
         }
         User result = userRepository.save(existingUser);

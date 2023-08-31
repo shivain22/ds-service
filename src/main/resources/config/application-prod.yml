@@ -82,13 +82,13 @@ spring:
       discovery:
         enabled: true
   keycloak:
-    server-url: https://auth-staging.ainnotate.com/auth
+    server-url: https://auth.haidata.ai/auth
     realm: master
     client-id: admin-cli
     client-secret:
     user-name: admin
     password: admin
-    client-realm: jhipster
+    client-realm: aidac
   mail:
     host: smtp.gmail.com
     port: 587

@@ -366,12 +366,22 @@ resultSetMapping = "Mapping.ProjectDTO")
     resultSetMapping = "Mapping.findProjectsForCustomerQC"
 )
 
-
 @NamedNativeQuery(
-    name = "Project.findProjectsForOrganisationQC",
-    query="select p.* from project p, organisation_qc_project_mapping oqpm, user_customer_mapping ucm where oqpm.user_organisation_mapping_id=ucm.id and ucm.user_id=? and oqpm.project_id=p.id and p.status=1 and oqpm.status=1 and ucm.status=1 and p.id>0 order by p.id desc ",
-    resultSetMapping = "Mapping.findProjectsForOrganisationQC"
-)
+	    name = "Project.findProjectsForOrganisationQC",
+	    query="select distinct p.* from project p, qc_project_mapping qpm, user_organisation_mapping uom where qpm.user_mapping_id=uom.id and uom.user_id=?1 and qpm.project_id=p.id and p.status=1 and qpm.status=1 and uom.status=1 and p.id>0 order by p.id desc",
+	    resultSetMapping = "Mapping.findProjectsForCustomerQC"
+	)
+@NamedNativeQuery(
+	    name = "Project.findProjectsForVendorQC",
+	    query="select distinct p.* from project p, qc_project_mapping qpm, user_vendor_mapping uvm where qpm.user_mapping_id=uvm.id and uvm.user_id=?1 and qpm.project_id=p.id and p.status=1 and qpm.status=1 and uvm.status=1 and p.id>0 order by p.id desc",
+	    resultSetMapping = "Mapping.findProjectsForCustomerQC"
+	)
+@NamedNativeQuery(
+	    name = "Project.findProjectsForAdminQC",
+	    query="select distinct p.* from project p, qc_project_mapping qpm, user_organisation_mapping uom where qpm.user_mapping_id=uom.id and uom.organisation_id=-1 and uom.user_id=?1 and qpm.project_id=p.id and p.status=1 and qpm.status=1 and uom.status=1 and p.id>0 order by p.id desc",
+	    resultSetMapping = "Mapping.findProjectsForCustomerQC"
+	)
+
 
 
 

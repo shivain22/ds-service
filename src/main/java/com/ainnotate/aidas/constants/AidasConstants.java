@@ -134,9 +134,21 @@ public final class AidasConstants {
     public static final String KEY = "b693b2f6350f11eebe560242ac120002";
     public static final String IV_STR="1011121314151617";
     
+    
     public static final Long ORG_ENTITY_ID = 1l;
     public static final Long CUSTOMER_ENTITY_ID = 2l;
     public static final Long VENDOR_ENTITY_ID = 3l;
+    
+    public static final Long ADMIN_ID =1l;
+    public static final Long ORG_ADMIN_ID=2l;
+    public static final Long CUSTOMER_ADMIN_ID=3l;
+    public static final Long VENDOR_ADMIN_ID=4l;
+    public static final Long VENDOR_USER_ID=5l;
+    public static final Long ADMIN_QC_ID_ID=6l;
+    public static final Long ORG_QC_ID=7l;
+    public static final Long CUSTOMER_QC_ID=8l;
+    public static final Long VENDOR_QC_ID=9l;
+    
     private AidasConstants() {}
     
     
