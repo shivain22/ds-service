@@ -69,72 +69,74 @@ public class DashboardResource {
         Dashboard ad = new Dashboard();
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         Authority authority = user.getAuthority();
-        if(authority.getName().equals(AidasConstants.ADMIN)){
-            ad.setOrganisationCount(organisationRepository.countAllOrgsForSuperAdmin());
-            ad.setCustomerCount(customerRepository.countAidasCustomersForSuperAdmin());
-            ad.setVendorCount(vendorRepository.countAllVendorsForSuperAdmin());
-            ad.setProjectCount(projectRepository.countAllProjectsForSuperAdmin());
-            ad.setObjectCount(objectRepository.countAllObjectsForSuperAdmin());
-            ad.setUploadCount(uploadRepository.countAllUploadsForSuperAdmin());
-            ad.setUserCount(userRepository.countAllForSuperAdmin());
-        }
-        if(authority.getName().equals(AidasConstants.ORG_ADMIN)){
-            ad.setOrganisationCount(1l);
-            if(user.getOrganisation()!=null) {
-	            ad.setCustomerCount(customerRepository.countAidasCustomerByAidasOrganisation(user.getOrganisation().getId()));
-	            ad.setVendorCount(vendorRepository.countAllVendorsForOrgAdmin());
-	            ad.setProjectCount(projectRepository.countAidasProjectByAidasCustomer_AidasOrganisation(user.getOrganisation().getId()));
-	            ad.setObjectCount(objectRepository.countAidasObjectByAidasProject_AidasCustomer_AidasOrganisation(user.getOrganisation().getId()));
-	            ad.setUploadCount(uploadRepository.countAidasUploadByAidasOrganisation(user.getOrganisation().getId()));
-	            ad.setOrgUsersCount(userRepository.countAllByOrganisation(user.getOrganisation().getId()));
-	            ad.setCustomerUsersCount(userRepository.countAllByCustomer_Organisation(user.getOrganisation().getId()));
-	            ad.setAllVendorUsersCount(userRepository.countAllVendorUsers());
-	            ad.setUserCount(ad.getOrgUsersCount()+ ad.getCustomerUsersCount());
-            }
-        }
-        if(authority.getName().equals(AidasConstants.CUSTOMER_ADMIN)){
-            ad.setOrganisationCount(1l);
-            ad.setCustomerCount(1l);
-            if(user.getCustomer()!=null) {
-	            ad.setVendorCount(vendorRepository.countAllVendorsForCustomerAdmin());
-	            ad.setProjectCount(projectRepository.countAidasProjectByAidasCustomer(user.getCustomer().getId()));
-	            ad.setObjectCount(objectRepository.countAidasObjectByAidasProject_AidasCustomer(user.getCustomer().getId()));
-	            ad.setUploadCount(uploadRepository.countAidasUploadByAidasCustomer(user.getCustomer().getId()));
-	            ad.setOrgUsersCount(1l);
-	            ad.setCustomerUsersCount(userRepository.countAllByCustomer(user.getCustomer().getId()));
-	            ad.setAllVendorUsersCount(userRepository.countAllVendorUsers());
-	            ad.setUserCount(ad.getCustomerUsersCount());
-            }
-        }
-        if(authority.getName().equals(AidasConstants.VENDOR_ADMIN)){
-            ad.setOrganisationCount(1l);
-            if(user.getVendor()!=null) {
-            	ad.setCustomerCount(customerRepository.countAidasCustomerCountForVendorAdmin(user.getVendor().getId()));
-            }else {
-            	ad.setCustomerCount(0l);
-            }
-            ad.setVendorCount(1l);
-            if(user.getVendor()!=null) {
-	            ad.setProjectCount(projectRepository.countAidasProjectByVendor(user.getVendor().getId()));
-	            ad.setObjectCount(objectRepository.countAidasObjectByVendor(user.getVendor().getId()));
-	            ad.setUploadCount(uploadRepository.countAidasUploadByAidasVendor(user.getVendor().getId()));
-	            ad.setVendorUsersCount(userRepository.countAllByVendor(user.getVendor().getId()));
-	            ad.setUserCount(userRepository.countAllByVendor(user.getVendor().getId()));
-            }
-        }if(authority.getName().equals(AidasConstants.VENDOR_USER)){
-            ad.setOrganisationCount(1l);
-            ad.setCustomerCount(1l);
-            ad.setVendorCount(1l);
-            if(user.getVendor()!=null) {
-	            Long projectCount = projectRepository.countAidasProjectByVendorUser(user.getId());
-	            ad.setProjectCount(projectCount==null?0:projectCount);
-	            ad.setObjectCount(objectRepository.countAidasProjectByVendorUser(user.getId()));
-	            ad.setUploadCount(uploadRepository.countAidasUploadByAidasVendorUser(user.getId()));
-	            ad.setApprovedUploadCount(uploadRepository.countAidasUploadByAidasVendorUser(user.getVendor().getId(),AidasConstants.AIDAS_UPLOAD_APPROVED));
-	            ad.setRejectedUploadCount(uploadRepository.countAidasUploadByAidasVendorUser(user.getVendor().getId(),AidasConstants.AIDAS_UPLOAD_REJECTED));
-	            ad.setPendingUploadCount(uploadRepository.countAidasUploadByAidasVendorUser(user.getVendor().getId(),AidasConstants.AIDAS_UPLOAD_PENDING));
-	            ad.setUserCount(1l);
-            }
+        if(authority!=null) {
+	        if(authority.getName().equals(AidasConstants.ADMIN)){
+	            ad.setOrganisationCount(organisationRepository.countAllOrgsForSuperAdmin());
+	            ad.setCustomerCount(customerRepository.countAidasCustomersForSuperAdmin());
+	            ad.setVendorCount(vendorRepository.countAllVendorsForSuperAdmin());
+	            ad.setProjectCount(projectRepository.countAllProjectsForSuperAdmin());
+	            ad.setObjectCount(objectRepository.countAllObjectsForSuperAdmin());
+	            ad.setUploadCount(uploadRepository.countAllUploadsForSuperAdmin());
+	            ad.setUserCount(userRepository.countAllForSuperAdmin());
+	        }
+	        if(authority.getName().equals(AidasConstants.ORG_ADMIN)){
+	            ad.setOrganisationCount(1l);
+	            if(user.getOrganisation()!=null) {
+		            ad.setCustomerCount(customerRepository.countAidasCustomerByAidasOrganisation(user.getOrganisation().getId()));
+		            ad.setVendorCount(vendorRepository.countAllVendorsForOrgAdmin());
+		            ad.setProjectCount(projectRepository.countAidasProjectByAidasCustomer_AidasOrganisation(user.getOrganisation().getId()));
+		            ad.setObjectCount(objectRepository.countAidasObjectByAidasProject_AidasCustomer_AidasOrganisation(user.getOrganisation().getId()));
+		            ad.setUploadCount(uploadRepository.countAidasUploadByAidasOrganisation(user.getOrganisation().getId()));
+		            ad.setOrgUsersCount(userRepository.countAllByOrganisation(user.getOrganisation().getId()));
+		            ad.setCustomerUsersCount(userRepository.countAllByCustomer_Organisation(user.getOrganisation().getId()));
+		            ad.setAllVendorUsersCount(userRepository.countAllVendorUsers());
+		            ad.setUserCount(ad.getOrgUsersCount()+ ad.getCustomerUsersCount());
+	            }
+	        }
+	        if(authority.getName().equals(AidasConstants.CUSTOMER_ADMIN)){
+	            ad.setOrganisationCount(1l);
+	            ad.setCustomerCount(1l);
+	            if(user.getCustomer()!=null) {
+		            ad.setVendorCount(vendorRepository.countAllVendorsForCustomerAdmin());
+		            ad.setProjectCount(projectRepository.countAidasProjectByAidasCustomer(user.getCustomer().getId()));
+		            ad.setObjectCount(objectRepository.countAidasObjectByAidasProject_AidasCustomer(user.getCustomer().getId()));
+		            ad.setUploadCount(uploadRepository.countAidasUploadByAidasCustomer(user.getCustomer().getId()));
+		            ad.setOrgUsersCount(1l);
+		            ad.setCustomerUsersCount(userRepository.countAllByCustomer(user.getCustomer().getId()));
+		            ad.setAllVendorUsersCount(userRepository.countAllVendorUsers());
+		            ad.setUserCount(ad.getCustomerUsersCount());
+	            }
+	        }
+	        if(authority.getName().equals(AidasConstants.VENDOR_ADMIN)){
+	            ad.setOrganisationCount(1l);
+	            if(user.getVendor()!=null) {
+	            	ad.setCustomerCount(customerRepository.countAidasCustomerCountForVendorAdmin(user.getVendor().getId()));
+	            }else {
+	            	ad.setCustomerCount(0l);
+	            }
+	            ad.setVendorCount(1l);
+	            if(user.getVendor()!=null) {
+		            ad.setProjectCount(projectRepository.countAidasProjectByVendor(user.getVendor().getId()));
+		            ad.setObjectCount(objectRepository.countAidasObjectByVendor(user.getVendor().getId()));
+		            ad.setUploadCount(uploadRepository.countAidasUploadByAidasVendor(user.getVendor().getId()));
+		            ad.setVendorUsersCount(userRepository.countAllByVendor(user.getVendor().getId()));
+		            ad.setUserCount(userRepository.countAllByVendor(user.getVendor().getId()));
+	            }
+	        }if(authority.getName().equals(AidasConstants.VENDOR_USER)){
+	            ad.setOrganisationCount(1l);
+	            ad.setCustomerCount(1l);
+	            ad.setVendorCount(1l);
+	            if(user.getVendor()!=null) {
+		            Long projectCount = projectRepository.countAidasProjectByVendorUser(user.getId());
+		            ad.setProjectCount(projectCount==null?0:projectCount);
+		            ad.setObjectCount(objectRepository.countAidasProjectByVendorUser(user.getId()));
+		            ad.setUploadCount(uploadRepository.countAidasUploadByAidasVendorUser(user.getId()));
+		            ad.setApprovedUploadCount(uploadRepository.countAidasUploadByAidasVendorUser(user.getVendor().getId(),AidasConstants.AIDAS_UPLOAD_APPROVED));
+		            ad.setRejectedUploadCount(uploadRepository.countAidasUploadByAidasVendorUser(user.getVendor().getId(),AidasConstants.AIDAS_UPLOAD_REJECTED));
+		            ad.setPendingUploadCount(uploadRepository.countAidasUploadByAidasVendorUser(user.getVendor().getId(),AidasConstants.AIDAS_UPLOAD_PENDING));
+		            ad.setUserCount(1l);
+	            }
+	        }
         }
 		/*
 		 * List<AppProperty> appProperty =
