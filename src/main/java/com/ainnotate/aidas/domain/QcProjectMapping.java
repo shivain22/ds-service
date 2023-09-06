@@ -14,8 +14,7 @@ import java.util.Objects;
  */
 @Entity
 @Table(name = "qc_project_mapping",indexes = {
-    @Index(name="idx_qpm_project",columnList = "project_id"),
-    @Index(name="idx_qpm_ucm",columnList = "user_mapping_id")
+    @Index(name="idx_qpm_project",columnList = "project_id")
 },
     uniqueConstraints={
         @UniqueConstraint(name = "uk_qpm_ucmid_pid",columnNames={"user_mapping_id","project_id"})
@@ -37,13 +36,13 @@ public class QcProjectMapping extends AbstractAuditingEntity implements Serializ
     @JoinColumn(name = "project_id", nullable = false, foreignKey = @ForeignKey(name="fk_qpm_project"))
     private Project project;
 
-    
-    
-    
+
+
+
     @Column(name = "user_mapping_id")
     private Long userMappingId;
-    
-   
+
+
     @Column(name = "entity_id")
     private Integer entityId;
 
@@ -96,7 +95,7 @@ public class QcProjectMapping extends AbstractAuditingEntity implements Serializ
 	/*
 	 * public UserCustomerMapping getUserCustomerMapping() { return
 	 * userCustomerMapping; }
-	 * 
+	 *
 	 * public void setUserCustomerMapping(UserCustomerMapping userCustomerMapping) {
 	 * this.userCustomerMapping = userCustomerMapping; }
 	 */

@@ -687,7 +687,7 @@ query = "select count(o.id)+?2 as count  \n" +
 	    		+ "and project_property_id is not null \n"
 	    		+ "and uvmom.object_id=o.id and o.project_id=?1 \n"
 	    		+ "and uvm.id=?2 \n"
-	    		+ "and pp.show_to_vendor_user=1 and u.metadata_status=0 group by o.id order by o.id",
+	    		+ "and  u.metadata_status=0 group by o.id order by o.id",
 	    resultSetMapping = "Mapping.getAllObjectDTOsOfProject"
 	)
 

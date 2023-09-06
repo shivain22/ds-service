@@ -489,7 +489,7 @@
             where  uvm.user_id=u.id and uam.user_id=u.id and uam.authority_id=6 and uvm.vendor_id=v.id
         </createView>
 
-        <createView  catalogName="ainnotateservice"
+        <!--<createView  catalogName="ainnotateservice"
                      encoding="UTF-8"
                      replaceIfExists="true"
                      schemaName="ainnotateservice"
@@ -576,7 +576,7 @@
             2 as purpose_id
             from vendor_qc_users vqc,project_qc_level_configurations pqlc,project p, customer c, organisation o where user_id not in (
             SELECT ucm.user_id FROM vendor_qc_users vqc,user_customer_mapping ucm where vqc.user_id=ucm.user_id) and pqlc.project_id=p.id and p.customer_id=c.id and c.organisation_id=o.id
-        </createView>
+        </createView>-->
 
         <createView  catalogName="ainnotateservice"
                      encoding="UTF-8"

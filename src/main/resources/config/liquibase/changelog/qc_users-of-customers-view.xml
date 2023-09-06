@@ -6,7 +6,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.5.xsd
                         http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
     <changeSet author="shiva (generated)" id="1657539087464-7">
-        <createView  catalogName="ainnotateservice"
+        <!--<createView  catalogName="ainnotateservice"
                      encoding="UTF-8"
                      replaceIfExists="true"
                      schemaName="ainnotateservice"
@@ -20,6 +20,6 @@
             select concat(qpm.project_id,qpm.qc_level,ucm.id,u.id) from user u, user_customer_mapping ucm, qc_project_mapping qpm
             where ucm.user_id=u.id and qpm.user_customer_mapping_id=ucm.id
             )
-        </createView>
+        </createView>-->
     </changeSet>
 </databaseChangeLog>

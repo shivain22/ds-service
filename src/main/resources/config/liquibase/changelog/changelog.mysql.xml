@@ -215,7 +215,7 @@
             <column name="entity_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
-            
+
         </createTable>
     </changeSet>
     <changeSet author="shiva (generated)" id="1657539087460-12">
@@ -1429,9 +1429,6 @@
     <changeSet author="shiva (generated)" id="1657539087460-67">
         <addUniqueConstraint columnNames="vendor_id, user_id" constraintName="uk_ap_oid_cid_vid_uid" tableName="user_vendor_mapping"/>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1657539087460-68">
-        <addUniqueConstraint columnNames="user_customer_mapping_id, project_id, qc_level" constraintName="uk_qpm_ucmid_pid_qclevel" tableName="qc_project_mapping"/>
-    </changeSet>
     <changeSet author="shiva (generated)" id="1657539087460-69">
         <addUniqueConstraint columnNames="name, organisation_id" constraintName="uk_customer_organisation_name" tableName="customer"/>
     </changeSet>
@@ -1645,11 +1642,7 @@
             <column name="project_id"/>
         </createIndex>
     </changeSet>
-    <changeSet author="shiva (generated)" id="1657539087460-118">
-        <createIndex indexName="idx_qpm_ucm" tableName="qc_project_mapping">
-            <column name="user_customer_mapping_id"/>
-        </createIndex>
-    </changeSet>
+
     <changeSet author="shiva (generated)" id="1657539087460-119">
         <createIndex indexName="idx_customer_organisation" tableName="customer">
             <column name="organisation_id"/>
@@ -2008,9 +2001,6 @@
     </changeSet>
     <changeSet author="shiva (generated)" id="1657539087460-209">
         <addForeignKeyConstraint baseColumnNames="project_id" baseTableName="qc_project_mapping" constraintName="fk_qpm_project" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="project" validate="true"/>
-    </changeSet>
-    <changeSet author="shiva (generated)" id="1657539087460-210">
-        <addForeignKeyConstraint baseColumnNames="user_customer_mapping_id" baseTableName="qc_project_mapping" constraintName="fk_qpm_ucm" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="user_customer_mapping" validate="true"/>
     </changeSet>
     <changeSet author="shiva (generated)" id="1657539087460-211">
         <addForeignKeyConstraint baseColumnNames="organisation_id" baseTableName="customer" constraintName="fk_customer_organisation" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="organisation" validate="true"/>

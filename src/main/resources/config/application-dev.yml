@@ -87,7 +87,7 @@ spring:
       discovery:
         enabled: true
   keycloak:
-    server-url: http://auth.haidata.ai/auth/
+    server-url: http://aidas-auth.atparui.com:1080/auth/
     realm: master
     client-id: admin-cli
     client-secret:

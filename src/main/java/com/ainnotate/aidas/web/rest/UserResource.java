@@ -94,10 +94,10 @@ public class UserResource {
 
     @Autowired
     private AuthorityRepository authorityRepository;
-    
+
     @Autowired
     private LanguageRepository languageRepository;
-    
+
     @Autowired
     private UserLanguageMappingRepository userLanguageMappingRepository;
 
@@ -115,13 +115,13 @@ public class UserResource {
 
     @Autowired
     private UserOrganisationMappingRepository userOrganisationMappingRepository;
-    
+
     @Autowired
     private UserAuthorityMappingUserOrganisationMappingRepository userAuthorityUserOrganisationMappingRepository;
-    
+
     @Autowired
     private UserAuthorityMappingUserCustomerMappingRepository userAuthorityUserCustomerMappingRepository;
-    
+
     @Autowired
     private UserAuthorityMappingUserVendorMappingRepository userAuthorityUserVendorMappingRepository;
 
@@ -236,7 +236,7 @@ public class UserResource {
                 	user.setParentCustomer(null);
                 	user.setParentVendor(loggedInUser.getVendor());
                 }
-                
+
                 User result = userRepository.save(user);
                 if(user.getAuthorityDtos()!=null && user.getAuthorityDtos().size()>0){
                     Authority a =null;
@@ -251,7 +251,7 @@ public class UserResource {
 	                        if(a.getName().equals(AidasConstants.ORG_ADMIN)) {
 	                            if(user.getAdminOrgDtos()!=null && user.getAdminOrgDtos().size()>0){
 	                                Organisation o =null;
-	                                
+
 	                                for(UserOrganisationMappingDTO oid: user.getAdminOrgDtos()){
 	                                	UserOrganisationMapping uom = userOrganisationMappingRepository.findByOrganisationIdAndUserId(oid.getOrganisationId(), user.getId());
 	                                	if(uom==null) {
@@ -360,10 +360,10 @@ public class UserResource {
 	        	                            uamuom.setStatus(AidasConstants.STATUS_ENABLED);
 	        	                            userAuthorityUserOrganisationMappingRepository.save(uamuom);
 	                                    }else {
-	                                    	
+
 	                                    }
 	                              }
-	                                
+
 	                        }
 	        				if(a.getName().equals(AidasConstants.ORG_QC_USER)) {
 	        					if(user.getQcOrgDtos()!=null && user.getQcOrgDtos().size()>0){
@@ -387,10 +387,10 @@ public class UserResource {
 	                                if(o!=null){
 	                                    user.setOrganisation(o);
 	                                }
-	                            }      	
+	                            }
 	        				}
 	        				if(a.getName().equals(AidasConstants.CUSTOMER_QC_USER)) {
-	
+
 	        					if(user.getQcCustomerDtos()!=null && user.getQcCustomerDtos().size()>0){
 	                                Customer c =null;
 	                                for(UserCustomerMappingDTO cid: user.getQcCustomerDtos()){
@@ -407,7 +407,7 @@ public class UserResource {
 	        	                            uamucm.setUserAuthorityMapping(uam);
 	        	                            uamucm.setStatus(cid.getStatus());
 	        	                            userAuthorityUserCustomerMappingRepository.save(uamucm);
-	        	                            
+
 	                                	}
 	                                }
 	                                if(c!=null){
@@ -444,7 +444,6 @@ public class UserResource {
                     if(a!=null){
                         user.setAuthority(a);
                     }
-                    
                 }
                 if(user.getLanguageIds()!=null && user.getLanguageIds().size()>0) {
                 	Language language = null;
@@ -455,7 +454,6 @@ public class UserResource {
                 		ulm.setUser(user);
                 	}
                 }
-                
                 updateUserToKeyCloak(result);
                 return ResponseEntity
                     .created(new URI("/api/aidas-users/" + result.getId()))
@@ -469,6 +467,7 @@ public class UserResource {
                 }
             }
         }catch(Exception e){
+            e.printStackTrace();
             throw new BadRequestAlertException(e.getMessage(), ENTITY_NAME, "idexists");
         }
         }catch(Exception e) {
@@ -501,7 +500,7 @@ public class UserResource {
         user.setMobileNumber(newUser.getMobileNumber());
         user.setLocked(0);
         user.setPassword(newUser.getPassword());
-        
+
         if (user.getId() != null) {
             throw new BadRequestAlertException("A new user cannot already have an ID", ENTITY_NAME, "idexists");
         }
@@ -527,13 +526,13 @@ public class UserResource {
         auavm = userVendorMappingRepository.save(auavm);
         auao.setUserVendorMapping(auavm);
         auao.setObject(defaultObject);
-        
+
         UserAuthorityMapping uam = new UserAuthorityMapping();
         uam.setUser(result);
         Authority authority = authorityRepository.getById(5l);
         uam.setAuthority(authority);
         userAuthorityMappingRepository.save(uam);
-        
+
         userVendorMappingObjectMappingRepository.save(auao);
         updateUserToKeyCloak(result);
         return ResponseEntity
@@ -565,7 +564,7 @@ public class UserResource {
         	return ResponseEntity.ok().body("Unable to reset password.");
         }
     }
-    
+
     /**
      * {@code POST  /aidas-users} : Create a new user.
      *
@@ -611,12 +610,12 @@ public class UserResource {
             .body(user);
     }
 
-    
-    
+
+
     /**
      * {@code POST  /aidas-users/organisation/:organisationId} : Update/change current role of the user.
      *
-     * @param organisationId the role to switch.
+     * @param entityId the role to switch.
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new user, or with status {@code 400 (Bad Request)} if the user has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
@@ -673,8 +672,8 @@ public class UserResource {
             .body(user);
     }
 
-    
-    
+
+
     @GetMapping("/aidas-users/changeEntity/{entityType}")
     public ResponseEntity<List<NameValueHolderDto>> getOrgCustVendList(@Valid @PathVariable String entityType) throws URISyntaxException {
         log.debug("REST request to update current role of AidasUser : {}", SecurityUtils.getCurrentUserLogin().get());
@@ -773,8 +772,8 @@ public class UserResource {
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, user.getId().toString()))
             .body(list);
     }
-    
-    
+
+
     @GetMapping("/aidas-users/signout")
     public ResponseEntity<User> signOut() throws URISyntaxException {
         log.debug("REST request to update current role of AidasUser : {}", SecurityUtils.getCurrentUserLogin().get());
@@ -789,8 +788,8 @@ public class UserResource {
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, user.getId().toString()))
             .body(user);
     }
-    
-    
+
+
 
 
     /**
@@ -852,9 +851,9 @@ public class UserResource {
         User existingUser= userRepository.getById(id);
         existingUser.setFirstName(user.getFirstName());
         existingUser.setLastName(user.getLastName());
-        
-        
-        
+
+
+
         if(user.getAuthorityDtos()!=null && user.getAuthorityDtos().size()>0){
             Authority a =null;
             for(UserAuthorityMappingDTO aid: user.getAuthorityDtos()){
@@ -866,8 +865,8 @@ public class UserResource {
 	            		}else {
 	            			a = authorityRepository.findByName(aid.getName().trim());
 	            		}
-		            	
-		                
+
+
 		                if(uam!=null) {
 		                	uam.setStatus(aid.getStatus());
 		                }else {
@@ -1035,7 +1034,7 @@ public class UserResource {
 			                            userAuthorityUserOrganisationMappingRepository.save(uamuom);
 		                        	}
 		                        }
-		                    }   
+		                    }
 		                }
 						if(a.getName().equals(AidasConstants.ORG_QC_USER)) {
 							if(user.getQcOrgDtos()!=null && user.getQcOrgDtos().size()>0){
@@ -1067,10 +1066,10 @@ public class UserResource {
 			                            userAuthorityUserOrganisationMappingRepository.save(uamuom);
 		                        	}
 		                        }
-		                    }      	
+		                    }
 						}
 						if(a.getName().equals(AidasConstants.CUSTOMER_QC_USER)) {
-		
+
 							if(user.getQcCustomerDtos()!=null && user.getQcCustomerDtos().size()>0){
 		                        Customer c =null;
 		                        for(UserCustomerMappingDTO cid: user.getQcCustomerDtos()){
@@ -1086,7 +1085,7 @@ public class UserResource {
 			                            uamucm.setUserAuthorityMapping(uam);
 			                            uamucm.setStatus(AidasConstants.STATUS_ENABLED);
 			                            userAuthorityUserCustomerMappingRepository.save(uamucm);
-			                            
+
 		                        	}else {
 		                        		UserAuthorityMappingUserCustomerMapping uamucm = userAuthorityUserCustomerMappingRepository.getByUcmIdAndUamId(ucm.getId(), uam.getId());
 			                            ucm.setStatus(cid.getStatus());
@@ -1356,7 +1355,7 @@ public class UserResource {
         User user = userRepository.getById(id);
         List<UserAuthorityMappingDTO> uams = userAuthorityMappingRepository.getAllAuthoritiesOfUser(user.getId());
         user.setAuthorityDtos(uams);
-       
+
         Long tmp = -1l;
         for(UserAuthorityMappingDTO uamdto:uams) {
         	UserAuthorityMapping uam =null;
@@ -1372,8 +1371,8 @@ public class UserResource {
          	 }else if(uamdto.getName().equals(AidasConstants.ORG_QC_USER)){
          		user.setQcOrgDtos(organisationRepository.getAllOrganisationsWithoutUamId(user.getId()));
          	 }
-        	 
-        	 
+
+
         	 if(uam!=null && (uam.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN))) {
 	            user.setAdminCustomerDtos(customerRepository.getAllCustomersWithUamId(user.getId(),uam.getAuthority().getId()));
         	 }else if(uamdto.getName().equals(AidasConstants.CUSTOMER_ADMIN)) {
@@ -1384,7 +1383,7 @@ public class UserResource {
          	 }else if(uamdto.getName().equals(AidasConstants.CUSTOMER_QC_USER)){
          		 user.setQcCustomerDtos(customerRepository.getAllCustomersWithoutUamId(user.getId()));
          	 }
-        	 
+
         	 if(uam!=null && (uam.getAuthority().getName().equals(AidasConstants.VENDOR_ADMIN))) {
  	            user.setAdminVendorDtos(vendorRepository.getAllVendorsWithUamId(user.getId(),uam.getAuthority().getId()));
          	 }else if(uamdto.getName().equals(AidasConstants.VENDOR_ADMIN)) {
@@ -1404,9 +1403,9 @@ public class UserResource {
 	    		user.setUserVendorDtos(vendorRepository.getAllVendorsWithUamId(uam.getId()));
 	    		user.setQcAdminDtos(organisationRepository.getAllOrganisationsWithUamId(uam.getId()));
 	    		user.setQcOrgDtos(organisationRepository.getAllOrganisationsWithUamId(uam.getId()));
-	    		user.setQcCustomerDtos(customerRepository.getAllCustomersWithUamId(uam.getId()));		
+	    		user.setQcCustomerDtos(customerRepository.getAllCustomersWithUamId(uam.getId()));
 	    		user.setQcVendorDtos(vendorRepository.getAllVendorsWithUamId(uam.getId()));*/
-        	
+
 			if(uamdto.getAuthorityId().equals(-2l)) {
 				uamdto.setAuthorityId(tmp--);
 			}
@@ -1526,7 +1525,7 @@ public class UserResource {
         user.setGroups(groups);
         RealmResource realmResource = keycloak.realm(keycloakConfig.getClientRealm());
         UsersResource usersRessource = realmResource.users();
-        
+
         Response response = usersRessource.create(user);
         String userId = CreatedResponseUtil.getCreatedId(response);
         myUser.setKeycloakId(userId);
@@ -1537,13 +1536,13 @@ public class UserResource {
         org.keycloak.admin.client.resource.UserResource userResource = usersRessource.get(userId);
         userResource.resetPassword(passwordCred);
         //userResource.sendVerifyEmail();
-        
+
             for(UserAuthorityMappingDTO aa:myUser.getAuthorityDtos()){
                 RoleRepresentation rr = realmResource.roles().get(aa.getName()).toRepresentation();
                 userResource.roles().realmLevel().add(Arrays.asList(rr));
             }
-        
-        
+
+
     }
 
     public void registerNewUser(User myUser) {
@@ -1570,7 +1569,7 @@ public class UserResource {
         RealmResource realmResource = keycloak.realm(keycloakConfig.getClientRealm());
         UsersResource usersRessource = realmResource.users();
         //user.setEnabled(true);
-        
+
         user.setEmailVerified(false);
         Response response = usersRessource.create(user);
         String userId = CreatedResponseUtil.getCreatedId(response);
@@ -1579,7 +1578,7 @@ public class UserResource {
         passwordCred.setTemporary(false);
         passwordCred.setType(CredentialRepresentation.PASSWORD);
         passwordCred.setValue(myUser.getPassword());
-        
+
         org.keycloak.admin.client.resource.UserResource userResource = usersRessource.get(userId);
         userResource.resetPassword(passwordCred);
         userResource.sendVerifyEmail();
@@ -1599,8 +1598,17 @@ public class UserResource {
         userAttrsVals.add(String.valueOf(myUser.getId()));
         userAttrs.put("aidas_id",userAttrsVals);
         userAttrsVals = new ArrayList<>();
-        userAttrsVals.add(String.valueOf(myUser.getAuthority().getName()));
-        userAttrs.put("current_role",userAttrsVals);
+        if(myUser.getAuthority()!=null) {
+	        userAttrsVals.add(String.valueOf(myUser.getAuthority().getName()));
+	        userAttrs.put("current_role",userAttrsVals);
+        }else {
+        	List<Authority> authorities = authorityRepository.getAllUserAuthorities(myUser.getId());
+        	if(authorities!=null && authorities.size()>0) {
+        		userAttrsVals.add(String.valueOf(authorities.get(0).getName()));
+    	        userAttrs.put("current_role",userAttrsVals);
+        	}
+        }
+
         user.setAttributes(userAttrs);
         user.setEnabled(true);
         user.setUsername(user.getEmail());
@@ -1630,7 +1638,7 @@ public class UserResource {
         //userResource.update(user);
         //userResource.sendVerifyEmail();
         userResource.executeActionsEmail(List.of("UPDATE_PASSWORD"));
-     
+
         return true;
     }
 
@@ -1658,7 +1666,7 @@ public class UserResource {
         }
         userResource.update(user);
     }
-    
+
     @GetMapping(value = "/search/users")
     @ResponseBody
     public ResponseEntity<List<User>> search(@RequestParam(value = "search") String search, Pageable pageable) {

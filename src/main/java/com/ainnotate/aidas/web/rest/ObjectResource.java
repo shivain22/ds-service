@@ -330,6 +330,13 @@ public class ObjectResource {
     public ResponseEntity<List<ObjectDTO>> getAllAidasObjectsOfProjectForDropdownForMetadata( @PathVariable(value = "id", required = false) final Long projectId) {
         log.debug("REST request to get a page of AidasObjects");
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        List<Vendor> vendors = vendorRepository.getVendors(user.getId(), AidasConstants.VENDOR_USER_ID);
+        if(vendors!=null && vendors.size()>0) {
+        	user.setVendor(vendors.get(0));
+	        if(user.getVendor()==null) {
+	        	throw new BadRequestAlertException("Vendor is not mapped", ENTITY_NAME, "vendoridnotexists");
+	        }
+        }
         UserVendorMapping uvm = userVendorMappingRepository.findByVendorIdAndUserId(user.getVendor().getId(),user.getId());
         List<ObjectDTO> objects =objectRepository.getAllObjectDTOsOfProjectForMetadata(projectId,uvm.getId());
         return ResponseEntity.ok().body(objects);
@@ -348,6 +355,13 @@ public class ObjectResource {
     public ResponseEntity<List<ObjectDTO>> getAllAidasObjectsOfProjectForVendorUser(Pageable pageable, @PathVariable(value = "id", required = false) final Long projectId) {
         log.debug("REST request to get a page of AidasObjects");
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        List<Vendor> vendors = vendorRepository.getVendors(user.getId(), AidasConstants.VENDOR_USER_ID);
+        if(vendors!=null && vendors.size()>0) {
+        	user.setVendor(vendors.get(0));
+	        if(user.getVendor()==null) {
+	        	throw new BadRequestAlertException("Vendor is not mapped", ENTITY_NAME, "vendoridnotexists");
+	        }
+        }
         if(user.getVendor()==null) {
         	throw new BadRequestAlertException("Vendor is not mapped", ENTITY_NAME, "vendoridnotexists");
         }

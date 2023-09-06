@@ -30,4 +30,7 @@ public interface AuthorityRepository extends JpaRepository<Authority, Long> {
     
     @Query(nativeQuery = true,value = "select * from authority a, user_authority_mapping uam where uam.authority_id=a.id and uam.id=?1")
     Authority getByUamId(Long uamId);
+    
+    @Query(nativeQuery = true,value = "select * from authority a, user_authority_mapping uam where uam.authority_id=a.id and uam.user_id=?1")
+    List<Authority> getAllUserAuthorities(Long userId);
 }

@@ -77,7 +77,7 @@ public interface VendorRepository extends JpaRepository<Vendor, Long>,QuerydslPr
     
 
     @Query(value="select v.* from vendor v, user_vendor_mapping uvm,user_authority_mapping uam, uam_uvm_mapping uum where "
-    		+ "uum.uam_id=uam.id and uam.authority_id=?2 and uam.user_id=?1 and uum.uvm_id=uvm.id and uum.uam_id=uam.id and uum.status=1 and uvm.vendor_id=v.id and uvm.user_id=?1 and uam.authority_id=?2 and v.id>-1",nativeQuery = true)
+    		+ "uum.uam_id=uam.id and uam.authority_id=?2 and uam.user_id=?1 and uum.uvm_id=uvm.id and uum.uam_id=uam.id and uum.status=1 and uvm.vendor_id=v.id and uvm.user_id=?1  and uam.authority_id=?2 and v.id>-1",nativeQuery = true)
     List<Vendor> getVendors(Long userId,Long authorityId);
     
     @Override

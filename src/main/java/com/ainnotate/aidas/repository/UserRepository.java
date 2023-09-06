@@ -30,11 +30,11 @@ public interface UserRepository extends JpaRepository<User, Long>,QuerydslPredic
 
 
     Optional<User> findByLogin(String login);
- 
+
 
     @Query(value="select * from user u where u.login=?1 for update",nativeQuery = true)
     User getUserByLogin(String login);
-    
+
     @Query(value="select * from user u where u.email=?1",nativeQuery = true)
     User getUserByEmail(String email);
 
@@ -92,7 +92,7 @@ public interface UserRepository extends JpaRepository<User, Long>,QuerydslPredic
         ,countQuery = "select count(*) from (select u.id from user u where u.parent_organisation_id.id=?1 and u.status=1 and deleted=0)" +
         " ) as orgusers",nativeQuery = true)
     Page<User> findAllByDeletedIsFalseAndAidasOrganisation_OrAidasCustomer_AidasOrganisation(Pageable pageable, Organisation organisation, Organisation aidasCustomerOrganisation);
-    
+
     @Query(value = "select u.* from user u where u.parent_organisation_id=?1 and u.status=1 and deleted=0"
             ,countQuery = "select count(*) from  user u where u.parent_organisation_id.id=?1 and u.status=1 and deleted=0" +
             " ) as orgusers",nativeQuery = true)
@@ -117,7 +117,7 @@ public interface UserRepository extends JpaRepository<User, Long>,QuerydslPredic
     @Query(value = "select * from user u where  u.status=1 and deleted=0 and u.id>?1 order by u.id desc"
         ,countQuery = "select count(*) from user u where  u.status=1 and deleted=0 and u.id>?1",nativeQuery = true)
     Page<User> findAllByIdGreaterThanAndDeletedIsFalse(Long id, Pageable page);
-    
+
     @Query(value = "select * from user u where 1=2",nativeQuery = true)
         Page<User> findNone(Pageable page);
 
@@ -135,7 +135,7 @@ public interface UserRepository extends JpaRepository<User, Long>,QuerydslPredic
         "u.first_name as firstName, \n" +
         "u.last_name lastName, \n" +
         "0 as userVendorMappingId,\n" +
-        "qpm.id as userCustomerMappingId,\n" +
+        "qpm.id as userMappingMappingId,\n" +
         "ucm.id as qcProjectMappingId, \n" + //changed this to get qpc.id instead of customer mapping id so that the add function can directly work on qpc
         "qpm.status as status,   \n" +
         "qpm.qc_level as qcLevel "+
@@ -204,7 +204,7 @@ public interface UserRepository extends JpaRepository<User, Long>,QuerydslPredic
     @Query(value = "delete from user where is_sample_data=1",nativeQuery = true)
     void deleteAllSampleUsers();
 
-    
+
     @Override
     default public void customize(
         QuerydslBindings bindings, QUser root) {
