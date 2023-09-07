@@ -251,10 +251,9 @@ public class UserResource {
 	                        if(a.getName().equals(AidasConstants.ORG_ADMIN)) {
 	                            if(user.getAdminOrgDtos()!=null && user.getAdminOrgDtos().size()>0){
 	                                Organisation o =null;
-
 	                                for(UserOrganisationMappingDTO oid: user.getAdminOrgDtos()){
 	                                	UserOrganisationMapping uom = userOrganisationMappingRepository.findByOrganisationIdAndUserId(oid.getOrganisationId(), user.getId());
-	                                	if(uom==null) {
+	                                	if(uom==null && oid.getStatus().equals(AidasConstants.STATUS_ENABLED)) {
 	        	                            o = organisationRepository.getById(oid.getOrganisationId());
 	        	                            uom = new UserOrganisationMapping();
 	        	                            uom.setOrganisation(o);
@@ -278,7 +277,7 @@ public class UserResource {
 	                                Customer c =null;
 	                                for(UserCustomerMappingDTO cid: user.getAdminCustomerDtos()){
 	                                	UserCustomerMapping ucm = userCustomerMappingRepository.findByCustomerIdAndUserId(cid.getCustomerId(),user.getId());
-	                                	if(ucm==null) {
+	                                	if(ucm==null && cid.getStatus().equals(AidasConstants.STATUS_ENABLED)) {
 	        	                            c = customerRepository.getById(cid.getCustomerId());
 	        	                            ucm = new UserCustomerMapping();
 	        	                            ucm.setCustomer(c);
@@ -302,7 +301,7 @@ public class UserResource {
 	                                 Vendor v = null;
 	                                 for(UserVendorMappingDTO vid: user.getAdminVendorDtos()){
 	                                	 UserVendorMapping uvm = userVendorMappingRepository.findByUserAndVendor(vid.getVendorId(), user.getId());
-	                                     if(uvm==null) {
+	                                     if(uvm==null && vid.getStatus().equals(AidasConstants.STATUS_ENABLED)) {
 	        	                             v = vendorRepository.getById(vid.getVendorId());
 	        	                             uvm = new UserVendorMapping();
 	        	                             uvm.setVendor(v);
@@ -326,7 +325,7 @@ public class UserResource {
 	                                 Vendor v = null;
 	                                 for(UserVendorMappingDTO vid: user.getUserVendorDtos()){
 	                                	 UserVendorMapping uvm = userVendorMappingRepository.findByUserAndVendor(vid.getVendorId(), user.getId());
-	                                     if(uvm==null) {
+	                                     if(uvm==null && vid.getStatus().equals(AidasConstants.STATUS_ENABLED)) {
 	        	                             v = vendorRepository.getById(vid.getVendorId());
 	        	                             uvm = new UserVendorMapping();
 	        	                             uvm.setVendor(v);
@@ -349,7 +348,7 @@ public class UserResource {
 	                        	if(user.getQcAdminDtos()!=null && user.getQcAdminDtos().size()>0){
 	                                Organisation o = organisationRepository.getById(-1l);;
 	                               	UserOrganisationMapping uom = userOrganisationMappingRepository.findByOrganisationIdAndUserId(-1l, user.getId());
-	                                    if(uom==null) {
+	                                    if(uom==null && user.getQcAdminDtos().get(0).getStatus().equals(AidasConstants.STATUS_ENABLED)) {
 	        	                            uom = new UserOrganisationMapping();
 	        	                            uom.setOrganisation(o);
 	        	                            uom.setUser(user);
@@ -370,7 +369,7 @@ public class UserResource {
 	                                Organisation o =null;
 	                                for(UserOrganisationMappingDTO oid: user.getQcOrgDtos()){
 	                                	UserOrganisationMapping uom = userOrganisationMappingRepository.findByOrganisationIdAndUserId(oid.getOrganisationId(), user.getId());
-	                                	if(uom==null) {
+	                                	if(uom==null && oid.getStatus().equals(AidasConstants.STATUS_ENABLED)) {
 	        	                            o = organisationRepository.getById(oid.getOrganisationId());
 	        	                            uom = new UserOrganisationMapping();
 	        	                            uom.setOrganisation(o);
@@ -395,7 +394,7 @@ public class UserResource {
 	                                Customer c =null;
 	                                for(UserCustomerMappingDTO cid: user.getQcCustomerDtos()){
 	                                	UserCustomerMapping ucm = userCustomerMappingRepository.findByCustomerIdAndUserId(cid.getCustomerId(),user.getId());
-	                                	if(ucm==null) {
+	                                	if(ucm==null && cid.getStatus().equals(AidasConstants.STATUS_ENABLED)) {
 	        	                            c = customerRepository.getById(cid.getCustomerId());
 	        	                            ucm = new UserCustomerMapping();
 	        	                            ucm.setCustomer(c);
@@ -416,11 +415,11 @@ public class UserResource {
 	                            }
 	        				}
 	        				if(a.getName().equals(AidasConstants.VENDOR_QC_USER)) {
-	        					if(user.getQcVendorDtos()!=null && user.getAdminVendorDtos().size()>0){
+	        					if(user.getQcVendorDtos()!=null && user.getQcVendorDtos().size()>0){
 	                                Vendor v = null;
-	                                for(UserVendorMappingDTO vid: user.getAdminVendorDtos()){
+	                                for(UserVendorMappingDTO vid: user.getQcVendorDtos()){
 	                                	UserVendorMapping uvm = userVendorMappingRepository.findByUserAndVendor(vid.getVendorId(), user.getId());
-	                                    if(uvm==null) {
+	                                    if(uvm==null && vid.getStatus().equals(AidasConstants.STATUS_ENABLED)) {
 	        	                        	v = vendorRepository.getById(vid.getVendorId());
 	        	                            uvm = new UserVendorMapping();
 	        	                            uvm.setVendor(v);
@@ -460,6 +459,7 @@ public class UserResource {
                     .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
                     .body(result);
             }catch (Exception e){
+            	e.printStackTrace();
                 if(e.getMessage().equals("Create method returned status Conflict (Code: 409); expected status: Created (201)")){
                     throw new BadRequestAlertException("User already registered....", ENTITY_NAME, "useralreadyregistered");
                 }else{
@@ -1536,7 +1536,7 @@ public class UserResource {
         org.keycloak.admin.client.resource.UserResource userResource = usersRessource.get(userId);
         userResource.resetPassword(passwordCred);
         //userResource.sendVerifyEmail();
-
+        
             for(UserAuthorityMappingDTO aa:myUser.getAuthorityDtos()){
                 RoleRepresentation rr = realmResource.roles().get(aa.getName()).toRepresentation();
                 userResource.roles().realmLevel().add(Arrays.asList(rr));

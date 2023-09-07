@@ -46,7 +46,7 @@ public interface VendorRepository extends JpaRepository<Vendor, Long>,QuerydslPr
     Page<Vendor> findAllByVendor(Long vendorId, Pageable page);
     
     @Query(value = "select * from vendor v, vendor_organisation_mapping vom where v.id>0 and vom.vendor_id=v.id and vom.organisation_id=?1 and v.status=1",
-    		countQuery = "select count(*) from vendorv, vendor_organisation_mapping vom where v.id>0 and vom.vendor_id=v.id and vom.organisation_id=?1 and v.status=1", nativeQuery = true)
+    		countQuery = "select count(*) from vendor v, vendor_organisation_mapping vom where v.id>0 and vom.vendor_id=v.id and vom.organisation_id=?1 and v.status=1", nativeQuery = true)
     Page<Vendor> findAllByOrganisation(Long orgId, Pageable page);
     
     @Query(value = "select * from vendor v, vendor_customer_mapping vcm where v.id>0 and vcm.vendor_id=v.id and vcm.customer_id=?1 and v.status=1",

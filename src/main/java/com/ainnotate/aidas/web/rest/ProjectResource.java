@@ -380,7 +380,7 @@ public class ProjectResource {
 		Project project = projectRepository.getById(projectQcDTO.getProjectId());
 		for (QcUser qcUser : projectQcDTO.getQcUsers()) {
 			QcProjectMapping qpm = qcProjectMappingRepository.getByUserMappingIdAndEntityIdAndProjectIdAndQcLevel(project.getId(),qcUser.getUserMappingId(),qcUser.getEntityId(),qcUser.getQcLevel());
-			if(qpm==null) {
+			if(qpm==null && qcUser.getStatus().equals(AidasConstants.STATUS_ENABLED)) {
 				qpm = new QcProjectMapping();
 				qpm.setProject(project);
 				qpm.setUserMappingId(qcUser.getUumId());
@@ -418,6 +418,7 @@ public class ProjectResource {
 		Project project = projectRepository.getById(projectVendorMappingDTO.getProjectId());
 		for (VendorUserDTO vendorUserDTO : projectVendorMappingDTO.getVendors()) {
 			for (UsersOfVendor userDTO : vendorUserDTO.getUserDTOs()) {
+				if(userDTO.getStatus().equals(AidasConstants.STATUS_ENABLED)) {
 				Object dummyObject = objectRepository.getDummyObjectOfProject(projectVendorMappingDTO.getProjectId());
 				UserVendorMapping uvm = userVendorMappingRepository.getById(userDTO.getUserVendorMappingId());
 				if (uvm != null && dummyObject != null) {
@@ -426,7 +427,7 @@ public class ProjectResource {
 					UserVendorMappingProjectMapping uvmpm = userVendorMappingProjectMappingRepository
 							.findByUserVendorMappingIdProjectId(userDTO.getUserVendorMappingId(),
 									projectVendorMappingDTO.getProjectId());
-					if (uvmpm == null) {
+					if (uvmpm == null && userDTO.getStatus().equals(AidasConstants.STATUS_ENABLED)) {
 						uvmpm = new UserVendorMappingProjectMapping();
 						uvmpm.setProject(project);
 						uvmpm.setUserVendorMapping(uvm);
@@ -438,14 +439,15 @@ public class ProjectResource {
 						}
 						userVendorMappingProjectMappingRepository.save(uvmpm);
 					}
-					if (uvmom == null) {
+					if (uvmom == null && userDTO.getStatus().equals(AidasConstants.STATUS_ENABLED)) {
 						uvmom = new UserVendorMappingObjectMapping();
 						uvmom.setUserVendorMapping(uvm);
 						uvmom.setObject(dummyObject);
+						uvmom.setStatus(userDTO.getStatus());
+						userVendorMappingObjectMappingRepository.save(uvmom);
 					}
-					uvmom.setStatus(userDTO.getStatus());
-					userVendorMappingObjectMappingRepository.save(uvmom);
 				}
+			}
 			}
 		}
 		// userVendorMappingObjectMappingRepository.saveAll(uvmoms);

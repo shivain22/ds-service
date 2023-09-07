@@ -93,10 +93,30 @@ public interface UserRepository extends JpaRepository<User, Long>,QuerydslPredic
         " ) as orgusers",nativeQuery = true)
     Page<User> findAllByDeletedIsFalseAndAidasOrganisation_OrAidasCustomer_AidasOrganisation(Pageable pageable, Organisation organisation, Organisation aidasCustomerOrganisation);
 
-    @Query(value = "select u.* from user u where u.parent_organisation_id=?1 and u.status=1 and deleted=0"
-            ,countQuery = "select count(*) from  user u where u.parent_organisation_id.id=?1 and u.status=1 and deleted=0" +
-            " ) as orgusers",nativeQuery = true)
+    
+    @Query(value = "select u.* from user u where u.parent_organisation_id=?1 and u.status=1 and deleted=0 \n"
+    		+ "union \n"
+    		+ "select u.* from user u, user_organisation_mapping uom where uom.user_id=u.id and uom.organisation_id=?1 and u.status=1 and deleted=0 \n"
+    		+ "union \n"
+    		+ "select u.* from user u, user_customer_mapping ucm,customer c where ucm.user_id=u.id and ucm.customer_id=c.id and c.organisation_id=?1 and u.status=1 and deleted=0 \n"
+    		+ "union \n"
+    		+ "select u.* from user u, user_vendor_mapping uvm,vendor_organisation_mapping vom, vendor v where uvm.user_id = u.id and uvm.vendor_id=v.id and vom.vendor_id=v.id and vom.organisation_id=?1 and u.status=1 and deleted=0 \n"
+    		+ "union \n"
+    		+ "select u.* from user u, user_vendor_mapping uvm,vendor_customer_mapping vcm,customer c, vendor v where uvm.user_id = u.id and uvm.vendor_id=v.id and vcm.vendor_id=v.id and vcm.customer_id=c.id and c.organisation_id=?1 and u.status=1 and deleted=0 \n"
+            ,
+            countQuery = "select sum(count) from (\n"
+            		+ "select count(*) as count from user u where u.parent_organisation_id=?1 and u.status=1 and deleted=0 \n"
+            		+ "union \n"
+            		+ "select count(*) as count from user u, user_organisation_mapping uom where uom.user_id=u.id and uom.organisation_id=?1 and u.status=1 and deleted=0 \n"
+            		+ "union \n"
+            		+ "select count(*) as count from user u, user_customer_mapping ucm,customer c where ucm.user_id=u.id and ucm.customer_id=c.id and c.organisation_id=?1 and u.status=1 and deleted=0 \n"
+            		+ "union \n"
+            		+ "select count(*) as count from user u, user_vendor_mapping uvm,vendor_organisation_mapping vom, vendor v where uvm.user_id = u.id and uvm.vendor_id=v.id and vom.vendor_id=v.id and vom.organisation_id=?1 and u.status=1 and deleted=0 \n"
+            		+ "union \n"
+            		+ "select count(*) as count from user u, user_vendor_mapping uvm,vendor_customer_mapping vcm,customer c, vendor v where uvm.user_id = u.id and uvm.vendor_id=v.id and vcm.vendor_id=v.id and vcm.customer_id=c.id and c.organisation_id=?1 and u.status=1 and deleted=0 \n"
+            		+ ")a",nativeQuery = true)
         Page<User> findAllByParentOrganisationId(Pageable pageable, Long parentOrganisationId);
+    
 
 
     @Query(value = "select * from user u, user_customer_mapping ucm,customer c where u.id=ucm.user_id and ucm.customer_id=c.id and c.organisation_id=?1 and u.status=1 and deleted=0" +

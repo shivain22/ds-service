@@ -148,7 +148,7 @@ query=
 				+ "ucbi.id as ucbiId,\n"
 				+ "ucbi.batch_number as batchNumber,\n"
 				+ "u.name as fileName,\n"
-				+ "ucbi.qc_status as qcStatus  \n"
+				+ "ucbi.qc_status as qcStatus,  \n"
 				+ "uvmom.consent_form_url as consentFormUrl  \n"
 				+ "from upload_qpm_batch_info ucbi,\n"
 				+ "upload u,\n"

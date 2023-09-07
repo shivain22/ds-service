@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.Objects;
 
 import javax.persistence.Column;
+import javax.persistence.ColumnResult;
+import javax.persistence.ConstructorResult;
 import javax.persistence.Entity;
 import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
@@ -12,6 +14,8 @@ import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedNativeQuery;
+import javax.persistence.SqlResultSetMapping;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
@@ -19,9 +23,38 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.envers.Audited;
 
+import com.ainnotate.aidas.dto.QbmDto;
+import com.ainnotate.aidas.dto.UploadDTOForQC;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+@NamedNativeQuery(
+		name = "QcProjectMappingBatchMapping.getQcNotCompletedBatches", 
+				query="select qbm.id as qbmId,\n"
+			    		+ "count(case when ucbi.qc_status=1 then 1 end )as approved, \n"
+			    		+ "count(case when ucbi.qc_status=0 then 1 end)as rejected,\n"
+			    		+ "count(case when ucbi.qc_status=2 then 2 end)as pending \n"
+			    		+ "from \n"
+			    		+ "qpm_batch_mapping qbm,\n"
+			    		+ "qc_project_mapping qpm,\n"
+			    		+ "upload_qpm_batch_info ucbi \n"
+			    		+ "where \n"
+			    		+ "ucbi.batch_number=qbm.id and \n"
+			    		+ "qpm.id=?3 and \n"
+			    		+ "qbm.qpm_id=qpm.id and \n"
+			    		+ "qpm.project_id=?1 and \n"
+			    		+ "qpm.qc_level=?2 and \n"
+			    		+ "qbm.batch_completion_status=2 group by qbm.id", 
+		resultSetMapping = "Mapping.getQcNotCompletedBatches")
 
+@SqlResultSetMapping(
+	name = "Mapping.getQcNotCompletedBatches", 
+	classes = @ConstructorResult(targetClass = QbmDto.class, 
+	columns = {
+			@ColumnResult(name = "qbmId", type = Long.class), 
+			@ColumnResult(name = "approved", type = Integer.class),
+			@ColumnResult(name = "rejected", type = Integer.class),
+			@ColumnResult(name = "pending", type = Integer.class)
+}))
 /**
  * An authority (a security role) used by Spring Security.
  */

@@ -362,7 +362,7 @@ resultSetMapping = "Mapping.ProjectDTO")
 
 @NamedNativeQuery(
     name = "Project.findProjectsForCustomerQC",
-    query="select distinct p.* from project p, qc_project_mapping qpm, user_customer_mapping ucm where qpm.user_customer_mapping_id=ucm.id and ucm.user_id=?1 and qpm.project_id=p.id and p.status=1 and qpm.status=1 and ucm.status=1 and p.id>0 order by p.id desc",
+    query="select distinct p.* from project p, qc_project_mapping qpm,uam_ucm_mapping uum, user_customer_mapping ucm where qpm.user_mapping_id=uum.id and uum.ucm_id=ucm.id and ucm.user_id=?1 and qpm.project_id=p.id and p.status=1 and qpm.status=1 and ucm.status=1 and p.id>0 order by p.id desc",
     resultSetMapping = "Mapping.findProjectsForCustomerQC"
 )
 

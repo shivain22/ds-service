@@ -746,13 +746,6 @@ public class UploadResource {
 					umdt.getOptional(), umdt.getValue());
 			uploadMetaDataDTOo.get(umdt.getUploadId()).add(opdt);
 		}
-		for (Map.Entry<Long, List<ProjectPropertyDTO>> entry : uploadMetaDataDTOp.entrySet()) {
-			UploadsMetadataDTO umdts = new UploadsMetadataDTO();
-			umdts.setUploadDTO(uploadDtos.get(entry.getKey()));
-			umdts.setProjectProperties(entry.getValue());
-			umdts.setObjectProperties(uploadMetaDataDTOo.get(entry.getKey()));
-			uploadsMetadataDTOList.add(umdts);
-		}
 		try {
 			String accessKey = AESCBCPKCS5Padding.decrypt(projectPropertyRepository.findByProjectPropertyByPropertyName(projectId, "accessKey").getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
 			String accessSecret = AESCBCPKCS5Padding.decrypt(projectPropertyRepository.findByProjectPropertyByPropertyName(projectId, "accessSecret").getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
@@ -760,6 +753,18 @@ public class UploadResource {
 			String region = AESCBCPKCS5Padding.decrypt(projectPropertyRepository.findByProjectPropertyByPropertyName(projectId, "region").getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
 			S3Presigner presigner = S3Presigner.builder().credentialsProvider(StaticCredentialsProvider
 					.create(AwsBasicCredentials.create(accessKey, accessSecret))).region(Region.of(region)).build();
+		for (Map.Entry<Long, List<ProjectPropertyDTO>> entry : uploadMetaDataDTOp.entrySet()) {
+			UploadsMetadataDTO umdts = new UploadsMetadataDTO();
+			umdts.setUploadDTO(uploadDtos.get(entry.getKey()));
+			GetObjectRequest getObjectRequest =GetObjectRequest.builder().bucket(bucket).key(uploadDtos.get(entry.getKey()).getObjectKey()).build();
+		   	GetObjectPresignRequest getObjectPresignRequest = GetObjectPresignRequest.builder().signatureDuration(Duration.ofMinutes(1440)).getObjectRequest(getObjectRequest).build();
+			PresignedGetObjectRequest presignedGetObjectRequest =presigner.presignGetObject(getObjectPresignRequest);
+			umdts.getUploadDTO().setObjectKey(presignedGetObjectRequest.url().toString());
+			umdts.setProjectProperties(entry.getValue());
+			umdts.setObjectProperties(uploadMetaDataDTOo.get(entry.getKey()));
+			uploadsMetadataDTOList.add(umdts);
+		}
+		
 			
 		if (uploadsMetadataDTOList.size() == 0) {
 			List<UploadMetadataDTO> uploads = uploadMetaDataRepository
@@ -864,7 +869,7 @@ public class UploadResource {
 		List<Long> uvmomIds = new LinkedList<Long>();
 		Map<String, List<UploadDTOForQC>> resultMap1 = new HashMap<>();
 		Integer multFactor = 1;
-		List<Long[]> notCompletedBatches = qcProjectMappingBatchMappingRepository
+		List<QbmDto> notCompletedBatches = qcProjectMappingBatchMappingRepository
 				.getQcNotCompletedBatches(project.getId(), qpm.getQcLevel(), qpm.getId());
 		
 		String accessKey = AESCBCPKCS5Padding.decrypt(projectPropertyRepository.findByProjectPropertyByPropertyName(projectId, "accessKey").getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
@@ -874,7 +879,7 @@ public class UploadResource {
 		S3Presigner presigner = S3Presigner.builder().credentialsProvider(StaticCredentialsProvider
 				.create(AwsBasicCredentials.create(accessKey, accessSecret))).region(Region.of(region)).build();
 		if (notCompletedBatches != null && notCompletedBatches.size() > 0) {
-			uploadsDTOForQc = uploadRepository.getUploadDTOForQCPendingInBatch(notCompletedBatches.get(0)[0],
+			uploadsDTOForQc = uploadRepository.getUploadDTOForQCPendingInBatch(notCompletedBatches.get(0).getQbmId(),
 					qpmbm.getCurrentPageNumber(), pqlc.getQcLevelBatchSize() * project.getNumberOfUploadsRequired());
 			List<UploadSummaryForQCFinalize> objCompletionStatus = uploadQcProjectMappingBatchInfoRepository.getUvmomObjectIdsOfBatch(qpm.getId(),qpmbm.getId());
 			Map<Long, UploadSummaryForQCFinalize> map = new HashMap<>();
