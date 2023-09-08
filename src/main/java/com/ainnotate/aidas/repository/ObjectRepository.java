@@ -64,6 +64,9 @@ public interface ObjectRepository
 	@Query(nativeQuery = true)
 	List<ObjectDTO> getAllObjectDTOsOfProjectForMetadata(Long projectId,Long userVendorMappingId);
 	
+	@Query(nativeQuery = true)
+	List<ObjectDTO> getAllObjectDTOsOfProjectForMetadataForOtherThanVendorUser(Long projectId);
+
 
 	@Query(value = "select ao.* from project ap, object ao,  user_vendor_mapping_object_mapping auavmaom,user_vendor_mapping auavm ,user au where  auavmaom.object_id=ao.id and ao.project_id=ap.id and auavmaom.user_vendor_mapping_id=auavm.id and auavm.user_id=au.id and au.id= ?1 and ao.status=1 and ao.is_dummy=0", nativeQuery = true)
 	Page<Object> findAllObjectsByVendorUser(Pageable page, User user);

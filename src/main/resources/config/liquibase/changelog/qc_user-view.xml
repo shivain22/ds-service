@@ -39,6 +39,74 @@ uom.user_id=u.id
 and uum.uom_id=uom.id 
 and uum.uam_id=uam.id
 and pqlc.project_id=p.id 
+and uam.authority_id=6
+and 
+concat(p.id,pqlc.qc_level,uum.id,u.id) not in 
+(select concat(qpm.project_id,qpm.qc_level,uom.id,u.id) from user u, uam_uom_mapping uum,user_organisation_mapping uom, qc_project_mapping qpm,user_authority_mapping uam where uom.user_id=u.id and uum.uom_id=uom.id and qpm.user_mapping_id=uum.id  and qpm.entity_id=1 and uum.uam_id=uam.id and uam.authority_id=7)
+union 
+
+select 
+qpm.id as id, 
+u.id as user_id,
+u.first_name,
+concat(u.last_name,' ', '(OQC)') as last_name,
+u.login,
+qpm.qc_level as qc_level,
+p.id as project_id,
+qpm.user_mapping_id as user_mapping_id,
+qpm.status as status,
+p.customer_id as customer_id,
+qpm.entity_id as entity_id,
+uum.id as uum_id, 
+uom.id as uom_id, 
+-2 as ucm_id, 
+-2 as uvm_id 
+from 
+user u, 
+user_organisation_mapping uom,
+uam_uom_mapping uum,
+user_authority_mapping uam, 
+project p,
+qc_project_mapping qpm
+where 
+uom.user_id=u.id 
+and uum.uom_id=uom.id 
+and uum.uam_id=uam.id
+and qpm.project_id=p.id
+and qpm.user_mapping_id=uum.id
+and uam.authority_id=6
+and qpm.entity_id=1
+
+union
+
+select 
+uuid() as id, 
+u.id as user_id,
+u.first_name,
+concat(u.last_name,' ', '(OQC)') as last_name,
+u.login,
+pqlc.qc_level as qc_level,
+p.id as project_id,
+uum.id as user_mapping_id,
+0 as status,
+p.customer_id as customer_id,
+1 as entity_id,
+uum.id as uum_id, 
+uom.id as uom_id, 
+-2 as ucm_id, 
+-2 as uvm_id 
+from 
+user u, 
+user_organisation_mapping uom,
+uam_uom_mapping uum,
+user_authority_mapping uam,
+project_qc_level_configurations pqlc,
+project p
+where 
+uom.user_id=u.id 
+and uum.uom_id=uom.id 
+and uum.uam_id=uam.id
+and pqlc.project_id=p.id 
 and uam.authority_id=7
 and 
 concat(p.id,pqlc.qc_level,uum.id,u.id) not in 

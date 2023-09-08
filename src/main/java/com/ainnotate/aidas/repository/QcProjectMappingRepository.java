@@ -37,8 +37,8 @@ public interface QcProjectMappingRepository extends JpaRepository<QcProjectMappi
         List<QcProjectMapping> getQcProjectMappingForVendorQc(Long projectId, Long uvmId, Long userId);
     
     @Query(value = "select * from qc_project_mapping qpm,uam_uom_mapping uum,   user_organisation_mapping uom where " +
-            "qpm.project_id=?1 and qpm.user_mapping_id = uum.id and uum.uom_id=uom.id and qpm.entity_id=1 and uom.organisation_id=-1 and uom.user_id=?3 and qpm.status=1 order by qpm.qc_level asc ",nativeQuery = true)
-       List<QcProjectMapping> getQcProjectMappingForAdminQc(Long projectId, Long uomId, Long userId);
+            "qpm.project_id=?1 and qpm.user_mapping_id = uum.id and uum.uom_id=uom.id and qpm.entity_id=1 and uom.organisation_id=-1 and uom.user_id=?2 and qpm.status=1 order by qpm.qc_level asc ",nativeQuery = true)
+       List<QcProjectMapping> getQcProjectMappingForAdminQc(Long projectId, Long userId);
 
     @Query(value="select qpm.id from qc_project_mapping qpm where qpm.project_id=?1 and qpm.qc_level=?2 ", nativeQuery = true)
     List<Long> getAllqpmAvailableForProjectAndLevel(Long projectId, Integer qcLevel);

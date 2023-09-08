@@ -472,8 +472,8 @@ public class UploadResource {
 				if(qpm.getProject().getQcLevels().equals(qpm.getQcLevel())) {
 					userVendorMappingObjectMappingRepository.addTotalApprovedSubtractTotalPending(usfqcf.getUvmomId(),usfqcf.getTotalApproved());
 					objectRepository.addTotalApprovedSubtractTotalPending(usfqcf.getObjectId(),usfqcf.getTotalApproved());
-					projectRepository.addTotalApprovedSubtractTotalPending(usfqcf.getProjectId(),usfqcf.getTotalUploaded());
-					userVendorMappingProjectMappingRepository.addTotalApprovedSubtractTotalPending(usfqcf.getUvmpmId(),usfqcf.getTotalUploaded());
+					projectRepository.addTotalApprovedSubtractTotalPending(usfqcf.getProjectId(),usfqcf.getTotalApproved());
+					userVendorMappingProjectMappingRepository.addTotalApprovedSubtractTotalPending(usfqcf.getUvmpmId(),usfqcf.getTotalApproved());
 					if(qpm.getProject().getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)) {
 						if(usfqcf.getTotalUploaded().equals(usfqcf.getTotalApproved())) {
 							userVendorMappingProjectMappingRepository.addTotalApprovedSubtractTotalPendingForGrouped(usfqcf.getUvmpmId(),1);
@@ -712,81 +712,79 @@ public class UploadResource {
 			@PathVariable(required = true, name = "projectId") Long projectId,
 			@PathVariable(name = "objectId", required = false) Long objectId) {
 		User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-		UserVendorMapping uvm = userVendorMappingRepository.findByUserAndVendor(user.getVendor().getId(), user.getId());
-		List<UploadMetadataDTO> pps = uploadMetaDataRepository.getAllUploadMetadataProjectProperties(uvm.getId(),
-				objectId);
-		List<UploadMetadataDTO> ops = uploadMetaDataRepository.getAllUploadMetadataObjectProperties(uvm.getId(),
-				objectId);
 		List<UploadsMetadataDTO> uploadsMetadataDTOList = new ArrayList<>();
-
-		
-		Map<Long, List<ProjectPropertyDTO>> uploadMetaDataDTOp = new HashMap<>();
-		Map<Long, List<ObjectPropertyDTO>> uploadMetaDataDTOo = new HashMap<>();
-		Map<Long, UploadDTO> uploadDtos = new HashMap<>();
-		for (UploadMetadataDTO umdt : pps) {
-			if (uploadMetaDataDTOp.get(umdt.getUploadId()) == null) {
-				uploadMetaDataDTOp.put(umdt.getUploadId(), new ArrayList<>());
+		if(user.getAuthority().getName().equals(AidasConstants.VENDOR_USER)) {
+			UserVendorMapping uvm = userVendorMappingRepository.findByUserAndVendor(user.getVendor().getId(), user.getId());
+			List<UploadMetadataDTO> pps = uploadMetaDataRepository.getAllUploadMetadataProjectProperties(uvm.getId(),
+					objectId);
+			List<UploadMetadataDTO> ops = uploadMetaDataRepository.getAllUploadMetadataObjectProperties(uvm.getId(),
+					objectId);
+			Map<Long, List<ProjectPropertyDTO>> uploadMetaDataDTOp = new HashMap<>();
+			Map<Long, List<ObjectPropertyDTO>> uploadMetaDataDTOo = new HashMap<>();
+			Map<Long, UploadDTO> uploadDtos = new HashMap<>();
+			for (UploadMetadataDTO umdt : pps) {
+				if (uploadMetaDataDTOp.get(umdt.getUploadId()) == null) {
+					uploadMetaDataDTOp.put(umdt.getUploadId(), new ArrayList<>());
+				}
+				if (uploadMetaDataDTOo.get(umdt.getUploadId()) == null) {
+					uploadMetaDataDTOo.put(umdt.getUploadId(), new ArrayList<>());
+				}
+				if (uploadDtos.get(umdt.getUploadId()) == null) {
+					UploadDTO uploadDTO = new UploadDTO();
+					uploadDTO.setUploadId(umdt.getUploadId());
+					uploadDTO.setName(umdt.getObjectName());
+					uploadDTO.setObjectKey(umdt.getObjectKey());
+					uploadDtos.put(umdt.getUploadId(), uploadDTO);
+				}
+				ProjectPropertyDTO ppdt = new ProjectPropertyDTO(umdt.getProjectPropertyId(), umdt.getProjectPropertyName(),
+						umdt.getOptional(), umdt.getValue());
+				uploadMetaDataDTOp.get(umdt.getUploadId()).add(ppdt);
 			}
-			if (uploadMetaDataDTOo.get(umdt.getUploadId()) == null) {
-				uploadMetaDataDTOo.put(umdt.getUploadId(), new ArrayList<>());
+			for (UploadMetadataDTO umdt : ops) {
+				ObjectPropertyDTO opdt = new ObjectPropertyDTO(umdt.getProjectPropertyId(), umdt.getProjectPropertyName(),
+						umdt.getOptional(), umdt.getValue());
+				uploadMetaDataDTOo.get(umdt.getUploadId()).add(opdt);
 			}
-			if (uploadDtos.get(umdt.getUploadId()) == null) {
-				UploadDTO uploadDTO = new UploadDTO();
-				uploadDTO.setUploadId(umdt.getUploadId());
-				uploadDTO.setName(umdt.getObjectName());
-				uploadDTO.setObjectKey(umdt.getObjectKey());
-				uploadDtos.put(umdt.getUploadId(), uploadDTO);
-			}
-			ProjectPropertyDTO ppdt = new ProjectPropertyDTO(umdt.getProjectPropertyId(), umdt.getProjectPropertyName(),
-					umdt.getOptional(), umdt.getValue());
-			uploadMetaDataDTOp.get(umdt.getUploadId()).add(ppdt);
-		}
-		for (UploadMetadataDTO umdt : ops) {
-			ObjectPropertyDTO opdt = new ObjectPropertyDTO(umdt.getProjectPropertyId(), umdt.getProjectPropertyName(),
-					umdt.getOptional(), umdt.getValue());
-			uploadMetaDataDTOo.get(umdt.getUploadId()).add(opdt);
-		}
-		try {
-			String accessKey = AESCBCPKCS5Padding.decrypt(projectPropertyRepository.findByProjectPropertyByPropertyName(projectId, "accessKey").getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
-			String accessSecret = AESCBCPKCS5Padding.decrypt(projectPropertyRepository.findByProjectPropertyByPropertyName(projectId, "accessSecret").getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
-			String bucket = AESCBCPKCS5Padding.decrypt(projectPropertyRepository.findByProjectPropertyByPropertyName(projectId, "bucketName").getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
-			String region = AESCBCPKCS5Padding.decrypt(projectPropertyRepository.findByProjectPropertyByPropertyName(projectId, "region").getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
-			S3Presigner presigner = S3Presigner.builder().credentialsProvider(StaticCredentialsProvider
-					.create(AwsBasicCredentials.create(accessKey, accessSecret))).region(Region.of(region)).build();
-		for (Map.Entry<Long, List<ProjectPropertyDTO>> entry : uploadMetaDataDTOp.entrySet()) {
-			UploadsMetadataDTO umdts = new UploadsMetadataDTO();
-			umdts.setUploadDTO(uploadDtos.get(entry.getKey()));
-			GetObjectRequest getObjectRequest =GetObjectRequest.builder().bucket(bucket).key(uploadDtos.get(entry.getKey()).getObjectKey()).build();
-		   	GetObjectPresignRequest getObjectPresignRequest = GetObjectPresignRequest.builder().signatureDuration(Duration.ofMinutes(1440)).getObjectRequest(getObjectRequest).build();
-			PresignedGetObjectRequest presignedGetObjectRequest =presigner.presignGetObject(getObjectPresignRequest);
-			umdts.getUploadDTO().setObjectKey(presignedGetObjectRequest.url().toString());
-			umdts.setProjectProperties(entry.getValue());
-			umdts.setObjectProperties(uploadMetaDataDTOo.get(entry.getKey()));
-			uploadsMetadataDTOList.add(umdts);
-		}
-		
-			
-		if (uploadsMetadataDTOList.size() == 0) {
-			List<UploadMetadataDTO> uploads = uploadMetaDataRepository
-					.findAllByUserAndProjectAllForMetadataUploadWiseForNew(user.getId(), objectId);
-			for (UploadMetadataDTO obj : uploads) {
-				UploadsMetadataDTO uploadsMetadataDTO = new UploadsMetadataDTO();
-				UploadDTO uploadDTO = new UploadDTO();
-				uploadDTO.setUploadId(obj.getUploadId());
-				uploadDTO.setName(obj.getObjectName());
-				GetObjectRequest getObjectRequest =GetObjectRequest.builder().bucket(bucket).key(obj.getObjectKey()).build();
+			try {
+				String accessKey = AESCBCPKCS5Padding.decrypt(projectPropertyRepository.findByProjectPropertyByPropertyName(projectId, "accessKey").getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
+				String accessSecret = AESCBCPKCS5Padding.decrypt(projectPropertyRepository.findByProjectPropertyByPropertyName(projectId, "accessSecret").getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
+				String bucket = AESCBCPKCS5Padding.decrypt(projectPropertyRepository.findByProjectPropertyByPropertyName(projectId, "bucketName").getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
+				String region = AESCBCPKCS5Padding.decrypt(projectPropertyRepository.findByProjectPropertyByPropertyName(projectId, "region").getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
+				S3Presigner presigner = S3Presigner.builder().credentialsProvider(StaticCredentialsProvider
+						.create(AwsBasicCredentials.create(accessKey, accessSecret))).region(Region.of(region)).build();
+			for (Map.Entry<Long, List<ProjectPropertyDTO>> entry : uploadMetaDataDTOp.entrySet()) {
+				UploadsMetadataDTO umdts = new UploadsMetadataDTO();
+				umdts.setUploadDTO(uploadDtos.get(entry.getKey()));
+				GetObjectRequest getObjectRequest =GetObjectRequest.builder().bucket(bucket).key(uploadDtos.get(entry.getKey()).getObjectKey()).build();
 			   	GetObjectPresignRequest getObjectPresignRequest = GetObjectPresignRequest.builder().signatureDuration(Duration.ofMinutes(1440)).getObjectRequest(getObjectRequest).build();
 				PresignedGetObjectRequest presignedGetObjectRequest =presigner.presignGetObject(getObjectPresignRequest);
-				uploadDTO.setObjectKey(presignedGetObjectRequest.url().toString());
-				uploadsMetadataDTO.setUploadDTO(uploadDTO);
-				uploadsMetadataDTO.setProjectProperties(new ArrayList<>());
-				uploadsMetadataDTO.setObjectProperties(new ArrayList<>());
-				uploadsMetadataDTOList.add(uploadsMetadataDTO);
-
+				umdts.getUploadDTO().setObjectKey(presignedGetObjectRequest.url().toString());
+				umdts.setProjectProperties(entry.getValue());
+				umdts.setObjectProperties(uploadMetaDataDTOo.get(entry.getKey()));
+				uploadsMetadataDTOList.add(umdts);
 			}
-		}
-		}catch(Exception e) {
-			
+			if (uploadsMetadataDTOList.size() == 0) {
+				List<UploadMetadataDTO> uploads = uploadMetaDataRepository
+						.findAllByUserAndProjectAllForMetadataUploadWiseForNew(user.getId(), objectId);
+				for (UploadMetadataDTO obj : uploads) {
+					UploadsMetadataDTO uploadsMetadataDTO = new UploadsMetadataDTO();
+					UploadDTO uploadDTO = new UploadDTO();
+					uploadDTO.setUploadId(obj.getUploadId());
+					uploadDTO.setName(obj.getObjectName());
+					GetObjectRequest getObjectRequest =GetObjectRequest.builder().bucket(bucket).key(obj.getObjectKey()).build();
+				   	GetObjectPresignRequest getObjectPresignRequest = GetObjectPresignRequest.builder().signatureDuration(Duration.ofMinutes(1440)).getObjectRequest(getObjectRequest).build();
+					PresignedGetObjectRequest presignedGetObjectRequest =presigner.presignGetObject(getObjectPresignRequest);
+					uploadDTO.setObjectKey(presignedGetObjectRequest.url().toString());
+					uploadsMetadataDTO.setUploadDTO(uploadDTO);
+					uploadsMetadataDTO.setProjectProperties(new ArrayList<>());
+					uploadsMetadataDTO.setObjectProperties(new ArrayList<>());
+					uploadsMetadataDTOList.add(uploadsMetadataDTO);
+	
+				}
+			}
+			}catch(Exception e) {
+				
+			}
 		}
 		return ResponseEntity.ok().body(uploadsMetadataDTOList);
 	}
@@ -806,7 +804,7 @@ public class UploadResource {
 		Project project = projectRepository.getById(projectId);
 		List<QcProjectMapping> qpms = new ArrayList();//qcProjectMappingRepository.getQcProjectMappingForAdminQc(projectId, project.getCustomer().getId(), user.getId());
 		if (user.getAuthority().getName().equals(AidasConstants.ADMIN_QC_USER)) {
-			qpms = qcProjectMappingRepository.getQcProjectMappingForAdminQc(projectId,user.getCustomer().getId(), user.getId());
+			qpms = qcProjectMappingRepository.getQcProjectMappingForAdminQc(projectId, user.getId());
 		}
 		if(user.getAuthority().getName().equals(AidasConstants.ORG_QC_USER)) {
 			qpms = qcProjectMappingRepository.getQcProjectMappingForOrganisationQc(projectId,user.getOrganisation().getId(), user.getId());

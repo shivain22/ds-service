@@ -692,6 +692,29 @@ query = "select count(o.id)+?2 as count  \n" +
 	)
 
 
+@NamedNativeQuery(
+	    name = "Object.getAllObjectDTOsOfProjectForMetadataForOtherThanVendorUser",
+	    query="select\n"
+	    		+ "o.id,\n"
+	    		+ "o.name\n"
+	    		+ "from upload_meta_data umd, "
+	    		+ "upload u,project_property pp,"
+	    		+ "property pr,user_vendor_mapping_object_mapping uvmom, "
+	    		+ "object o,project p \n"
+	    		+ "where \n"
+	    		+ "umd.upload_id=u.id \n"
+	    		+ "and u.user_vendor_mapping_object_mapping_id=uvmom.id \n"
+	    		+ "and uvmom.object_id=o.id \n"
+	    		+ "and o.project_id=p.id\n"
+	    		+ "and umd.project_property_id=pp.id \n"
+	    		+ "and pp.property_id=pr.id \n"
+	    		+ "and project_property_id is not null \n"
+	    		+ "and uvmom.object_id=o.id and o.project_id=?1 \n"
+	    		+ "and  u.metadata_status=0 group by o.id order by o.id",
+	    resultSetMapping = "Mapping.getAllObjectDTOsOfProject"
+	)
+
+
 @Entity
 @Table(name = "object",indexes = {
     @Index(name="idx_object_parent_object",columnList = "parent_object_id"),

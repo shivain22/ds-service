@@ -33,19 +33,82 @@ import com.ainnotate.aidas.dto.UploadSummaryForQCFinalize;
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @Audited
 
+/*
+ * @NamedNativeQuery( query = "select u.first_name firstName," +
+ * "u.last_name as lastName," + "ucbi.qc_status as qcStatus," +
+ * "ucbi.qc_seen_status as qcSeenStatus " + "from " +
+ * "upload_qpm_batch_info ucbi,qc_project_mapping qpm, user_customer_mapping ucm, user u "
+ * + "where ucbi.qc_project_mapping_id=qpm.id " + "and qpm.qc_level=?2 " +
+ * "and ucbi.upload_id=?1 " + "and qpm.user_customer_mapping_id=ucm.id " +
+ * "and ucm.user_id=u.id ", name =
+ * "UploadQcProjectMappingBatchInfo.getQcLevelStatus",resultSetMapping =
+ * "Mapping.QcResultDTO")
+ */
 @NamedNativeQuery(
-    query = "select u.first_name firstName," +
-        "u.last_name as lastName," +
-        "ucbi.qc_status as qcStatus,"
-        + "ucbi.qc_seen_status as qcSeenStatus " +
-        "from " +
-        "upload_qpm_batch_info ucbi,qc_project_mapping qpm, user_customer_mapping ucm, user u " +
-        "where ucbi.qc_project_mapping_id=qpm.id " +
-        "and qpm.qc_level=?2 " +
-        "and ucbi.upload_id=?1 " +
-        "and qpm.user_customer_mapping_id=ucm.id " +
-        "and ucm.user_id=u.id ",
-    name = "UploadQcProjectMappingBatchInfo.getQcLevelStatus",resultSetMapping = "Mapping.QcResultDTO")
+	    query = "select \n"
+	    		+ "u.first_name firstName,\n"
+	    		+ "u.last_name as lastName,\n"
+	    		+ "ucbi.qc_status as qcStatus,\n"
+	    		+ "ucbi.qc_seen_status as qcSeenStatus \n"
+	    		+ "from \n"
+	    		+ "upload_qpm_batch_info ucbi,\n"
+	    		+ "qc_project_mapping qpm, \n"
+	    		+ "uam_uom_mapping uum,\n"
+	    		+ "user_organisation_mapping uom, \n"
+	    		+ "user u \n"
+	    		+ "where \n"
+	    		+ "ucbi.qc_project_mapping_id=qpm.id \n"
+	    		+ "and qpm.qc_level=?2 \n"
+	    		+ "and ucbi.upload_id=?1 \n"
+	    		+ "and qpm.user_mapping_id=uum.id \n"
+	    		+ "and qpm.entity_id=1\n"
+	    		+ "and uum.uom_id=uom.id\n"
+	    		+ "and uom.user_id=u.id\n"
+	    		+ "\n"
+	    		+ "union\n"
+	    		+ "\n"
+	    		+ "select \n"
+	    		+ "u.first_name firstName,\n"
+	    		+ "u.last_name as lastName,\n"
+	    		+ "ucbi.qc_status as qcStatus,\n"
+	    		+ "ucbi.qc_seen_status as qcSeenStatus \n"
+	    		+ "from \n"
+	    		+ "upload_qpm_batch_info ucbi,\n"
+	    		+ "qc_project_mapping qpm, \n"
+	    		+ "user_customer_mapping ucm, \n"
+	    		+ "uam_ucm_mapping uum,\n"
+	    		+ "user u \n"
+	    		+ "where \n"
+	    		+ "ucbi.qc_project_mapping_id=qpm.id \n"
+	    		+ "and qpm.qc_level=?2 \n"
+	    		+ "and ucbi.upload_id=?1 \n"
+	    		+ "and qpm.user_mapping_id=uum.id \n"
+	    		+ "and qpm.entity_id=2\n"
+	    		+ "and uum.ucm_id=ucm.id\n"
+	    		+ "and ucm.user_id=u.id\n"
+	    		+ "\n"
+	    		+ "union\n"
+	    		+ "\n"
+	    		+ "select \n"
+	    		+ "u.first_name firstName,\n"
+	    		+ "u.last_name as lastName,\n"
+	    		+ "ucbi.qc_status as qcStatus,\n"
+	    		+ "ucbi.qc_seen_status as qcSeenStatus \n"
+	    		+ "from \n"
+	    		+ "upload_qpm_batch_info ucbi,\n"
+	    		+ "qc_project_mapping qpm, \n"
+	    		+ "user_vendor_mapping uvm,\n"
+	    		+ "uam_uvm_mapping uum, \n"
+	    		+ "user u \n"
+	    		+ "where \n"
+	    		+ "ucbi.qc_project_mapping_id=qpm.id \n"
+	    		+ "and qpm.qc_level=?2 \n"
+	    		+ "and ucbi.upload_id=?1 \n"
+	    		+ "and qpm.user_mapping_id=uum.id \n"
+	    		+ "and qpm.entity_id=3\n"
+	    		+ "and uum.uvm_id=uvm.id\n"
+	    		+ "and uvm.user_id=u.id",
+	    name = "UploadQcProjectMappingBatchInfo.getQcLevelStatus",resultSetMapping = "Mapping.QcResultDTO")
 
 
 

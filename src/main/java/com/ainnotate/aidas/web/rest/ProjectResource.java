@@ -387,11 +387,11 @@ public class ProjectResource {
 				qpm.setQcLevel(qcUser.getQcLevel());
 				qpm.setStatus(qcUser.getStatus());
 				qpm.setEntityId(qcUser.getEntityId().intValue());
-			}else {
+				qcProjectMappingRepository.save(qpm);
+			}else if(qpm!=null && (qcUser.getStatus().equals(AidasConstants.STATUS_ENABLED )|| qcUser.getStatus().equals(AidasConstants.STATUS_DISABLED))) {
 				qpm.setStatus(qcUser.getStatus());
+				qcProjectMappingRepository.save(qpm);
 			}
-			qcProjectMappingRepository.save(qpm);
-			
 		}
 		return ResponseEntity.ok().body("Successfully added project qc level");
 	}
@@ -1128,12 +1128,17 @@ public class ProjectResource {
 	 *         the object, or with status {@code 404 (Not Found)}.
 	 */
 	@GetMapping("/download/file/{type}/{id}/{status}")
-	public void downloadUploadedObjectsOfProject(@PathVariable("id") Long aidasProjectId,
+	public void downloadUploadedObjectsOfProject(@PathVariable("id") Long id,
 			@PathVariable("status") String status,@PathVariable("type") String type ) {
 		User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
 		downloadUploadS3.setUser(user);
-		Project project = projectRepository.getById(aidasProjectId);
-		downloadUploadS3.setUp(project, status);
+		if(type.equals("project") || type.equals("p")) {
+			Project project = projectRepository.getById(id);
+			downloadUploadS3.setUp(project, status);
+		}else if(type.equals("object") || type.equals("o")) {
+			Object object = objectRepository.getById(id);
+	        downloadUploadS3.setUp(object,status);
+		}
 		taskExecutor.execute(downloadUploadS3);
 	}
 	
@@ -1147,12 +1152,17 @@ public class ProjectResource {
 	 *         the object, or with status {@code 404 (Not Found)}.
 	 */
 	@GetMapping("/download/json/{type}/{id}/{status}")
-	public void downloadUploadedObjectsOfProjectJson(@PathVariable("id") Long aidasProjectId,
+	public void downloadUploadedObjectsOfProjectJson(@PathVariable("id") Long id,
 			@PathVariable("status") String status,@PathVariable("type") String type) {
 		User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
 		downloadUploadJson.setUser(user);
-		Project project = projectRepository.getById(aidasProjectId);
-		downloadUploadJson.setUp(project, status);
+		if(type.equals("project") || type.equals("p")) {
+			Project project = projectRepository.getById(id);
+			downloadUploadJson.setUp(project, status);
+		}else if(type.equals("object") || type.equals("o")) {
+			Object object = objectRepository.getById(id);
+			downloadUploadJson.setUp(object, status);
+		}
 		taskExecutor.execute(downloadUploadJson);
 	}
 	

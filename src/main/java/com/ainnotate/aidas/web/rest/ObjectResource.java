@@ -329,16 +329,30 @@ public class ObjectResource {
     @GetMapping("/aidas-projects/{id}/aidas-objects/dropdownformetadata")
     public ResponseEntity<List<ObjectDTO>> getAllAidasObjectsOfProjectForDropdownForMetadata( @PathVariable(value = "id", required = false) final Long projectId) {
         log.debug("REST request to get a page of AidasObjects");
+        List<ObjectDTO> objects = new ArrayList<>();
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-        List<Vendor> vendors = vendorRepository.getVendors(user.getId(), AidasConstants.VENDOR_USER_ID);
-        if(vendors!=null && vendors.size()>0) {
-        	user.setVendor(vendors.get(0));
-	        if(user.getVendor()==null) {
-	        	throw new BadRequestAlertException("Vendor is not mapped", ENTITY_NAME, "vendoridnotexists");
+        if(user.getAuthority().getName().equals(AidasConstants.ADMIN) ||
+        		user.getAuthority().getName().equals(AidasConstants.VENDOR_ADMIN )||
+        		user.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN) ||
+        		user.getAuthority().getName().equals(AidasConstants.ADMIN_QC_USER) ||
+        		user.getAuthority().getName().equals(AidasConstants.CUSTOMER_QC_USER) ||
+        		user.getAuthority().getName().equals(AidasConstants.ORG_QC_USER) ||
+        		user.getAuthority().getName().equals(AidasConstants.VENDOR_QC_USER )) {
+        	
+        	objects = objectRepository.getAllObjectDTOsOfProjectForMetadataForOtherThanVendorUser(projectId);
+        	
+        }else if(user.getAuthority().getName().equals(AidasConstants.VENDOR_USER)) {
+	        List<Vendor> vendors = vendorRepository.getVendors(user.getId(), AidasConstants.VENDOR_USER_ID);
+	        if(vendors!=null && vendors.size()>0) {
+	        	user.setVendor(vendors.get(0));
+		        if(user.getVendor()==null) {
+		        	throw new BadRequestAlertException("Vendor is not mapped", ENTITY_NAME, "vendoridnotexists");
+		        }
 	        }
+	        UserVendorMapping uvm = userVendorMappingRepository.findByVendorIdAndUserId(user.getVendor().getId(),user.getId());
+	        objects =objectRepository.getAllObjectDTOsOfProjectForMetadata(projectId,uvm.getId());
         }
-        UserVendorMapping uvm = userVendorMappingRepository.findByVendorIdAndUserId(user.getVendor().getId(),user.getId());
-        List<ObjectDTO> objects =objectRepository.getAllObjectDTOsOfProjectForMetadata(projectId,uvm.getId());
+        
         return ResponseEntity.ok().body(objects);
     }
     
@@ -594,12 +608,13 @@ public class ObjectResource {
      * @param status the id of the upload objects to retrieve and download.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the object, or with status {@code 404 (Not Found)}.
      */
-    @GetMapping("/download/object/{id}/{status}")
-    public void downloadUploadedObjectsOfObject(@PathVariable("id") Long id,@PathVariable("status") String status){
-        User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-        downloadUploadS3.setUser(user);
-        Object object = objectRepository.getById(id);
-        downloadUploadS3.setUp(object,status);
-        taskExecutor.execute(downloadUploadS3);
-    }
+	/*
+	 * @GetMapping("/download/object/{id}/{status}") public void
+	 * downloadUploadedObjectsOfObject(@PathVariable("id") Long
+	 * id,@PathVariable("status") String status){ User user =
+	 * userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+	 * downloadUploadS3.setUser(user); Object object = objectRepository.getById(id);
+	 * downloadUploadS3.setUp(object,status);
+	 * taskExecutor.execute(downloadUploadS3); }
+	 */
 }

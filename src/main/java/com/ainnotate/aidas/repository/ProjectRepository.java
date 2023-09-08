@@ -182,7 +182,7 @@ public interface ProjectRepository extends JpaRepository<Project, Long>,Querydsl
     
     @Modifying
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    @Query(value = "update project set total_rejected=total_rejected+1,total_pending= total_pending-?2 ,total_required=total_required+?2 where id=?1",nativeQuery = true)
+    @Query(value = "update project set total_rejected=total_rejected+?2,total_pending= total_pending-?2 ,total_required=total_required+?2 where id=?1",nativeQuery = true)
     void addTotalRejectedAndSubtractTotalPendingAddTotalRequired(Long id,Integer numToAddSub);
     
     @Modifying

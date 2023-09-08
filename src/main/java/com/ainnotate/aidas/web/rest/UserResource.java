@@ -345,24 +345,17 @@ public class UserResource {
 	                             }
 	                        }
 	                        if(a.getName().equals(AidasConstants.ADMIN_QC_USER)) {
-	                        	if(user.getQcAdminDtos()!=null && user.getQcAdminDtos().size()>0){
 	                                Organisation o = organisationRepository.getById(-1l);;
 	                               	UserOrganisationMapping uom = userOrganisationMappingRepository.findByOrganisationIdAndUserId(-1l, user.getId());
-	                                    if(uom==null && user.getQcAdminDtos().get(0).getStatus().equals(AidasConstants.STATUS_ENABLED)) {
-	        	                            uom = new UserOrganisationMapping();
-	        	                            uom.setOrganisation(o);
-	        	                            uom.setUser(user);
-	        	                            userOrganisationMappingRepository.save(uom);
-	        	                            UserAuthorityMappingUserOrganisationMapping uamuom = new UserAuthorityMappingUserOrganisationMapping();
-	        	                            uamuom.setUserOrganisationMapping(uom);
-	        	                            uamuom.setUserAuthorityMapping(uam);
-	        	                            uamuom.setStatus(AidasConstants.STATUS_ENABLED);
-	        	                            userAuthorityUserOrganisationMappingRepository.save(uamuom);
-	                                    }else {
-
-	                                    }
-	                              }
-
+    	                            uom = new UserOrganisationMapping();
+    	                            uom.setOrganisation(o);
+    	                            uom.setUser(user);
+    	                            userOrganisationMappingRepository.save(uom);
+    	                            UserAuthorityMappingUserOrganisationMapping uamuom = new UserAuthorityMappingUserOrganisationMapping();
+    	                            uamuom.setUserOrganisationMapping(uom);
+    	                            uamuom.setUserAuthorityMapping(uam);
+    	                            uamuom.setStatus(AidasConstants.STATUS_ENABLED);
+    	                            userAuthorityUserOrganisationMappingRepository.save(uamuom);
 	                        }
 	        				if(a.getName().equals(AidasConstants.ORG_QC_USER)) {
 	        					if(user.getQcOrgDtos()!=null && user.getQcOrgDtos().size()>0){
