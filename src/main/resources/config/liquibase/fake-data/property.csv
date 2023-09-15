@@ -1,9 +1,9 @@
 id;name;value;property_type;optional;description;default_prop;user_id;customer_id;category_id;add_to_metadata;show_to_vendor_user
 1;storage;aws;1;true;Storage type eg. s3,dropBox,gdrive etc, Mandatory;1;-1;-1;1;0;0
-2;accessKey;AKIART6S2XPD6CH4Y23I;1;true;AWS Access key;1;-1;-1;1;0;0
-3;accessSecret;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;1;true;AWS access secret;1;-1;-1;1;0;0
-4;region;ap-south-1;1;true;AWS S3 bucket region;1;-1;-1;1;0;0
-5;bucketName;objects-upload;1;true;AWS S3 bucket name;1;-1;-1;1;0;0
+2;accessKey;OYd8Hra8gyDqck5bn2TTZaTOTfSgpbQ02qRcirFZ8EY=;1;true;AWS Access key;1;-1;-1;1;0;0
+3;accessSecret;kdLEDIWteQw1BhjEeeNeisSsAE55cOAltfjrdnLZD3DUijlDvihyYjgPpBeD2mcs;1;true;AWS access secret;1;-1;-1;1;0;0
+4;region;2LaryjhsqvAeQ4yOC+8fbw==;1;true;AWS S3 bucket region;1;-1;-1;1;0;0
+5;bucketName;BdC9vFh5YawCropi8QO5pw==;1;true;AWS S3 bucket name;1;-1;-1;1;0;0
 6;fileName;test;1;true;Filename;1;-1;-1;1;1;0
 7;os;android;1;true;Operating System;1;-1;-1;1;1;0
 8;osVersion;12;1;true;Operation System Version;1;-1;-1;1;1;0

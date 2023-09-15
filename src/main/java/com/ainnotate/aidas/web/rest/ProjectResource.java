@@ -1128,7 +1128,7 @@ public class ProjectResource {
 	 *         the object, or with status {@code 404 (Not Found)}.
 	 */
 	@GetMapping("/download/file/{type}/{id}/{status}")
-	public void downloadUploadedObjectsOfProject(@PathVariable("id") Long id,
+	public void downloadUploadedObjectsOfProjectFile(@PathVariable("id") Long id,
 			@PathVariable("status") String status,@PathVariable("type") String type ) {
 		User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
 		downloadUploadS3.setUser(user);

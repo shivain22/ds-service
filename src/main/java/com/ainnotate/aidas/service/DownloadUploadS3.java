@@ -347,7 +347,7 @@ public class DownloadUploadS3  implements  Runnable{
                         
                         try {
                             System.out.println("About to download file with objectkey as ="+au.getObjectKey());
-                            download(uploadLocProps.get("accessKey"), uploadLocProps.get("accessSecret"), uploadLocProps.get("bucketName"), uploadLocProps.get("region"), au.getObjectKey());
+                            download(uploadLocProps.get("accessKey"), uploadLocProps.get("accessSecret"), uploadLocProps.get("bucketName"), uploadLocProps.get("region"), au.getUploadUrl());
                         }catch(Exception e4){
                             System.out.println("The file being tried is "+au.getObjectKey());
                             e4.printStackTrace();
@@ -420,19 +420,20 @@ public class DownloadUploadS3  implements  Runnable{
 		String region = AESCBCPKCS5Padding.decrypt(projectPropertyRepository.findByProjectPropertyByPropertyName(projectId, "region").getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
         uploadLocProps.put("accessKey",accessKey);
         uploadLocProps.put("accessSecret",accessSecret);
-        uploadLocProps.put("region",bucket);
-        uploadLocProps.put("bucketName",region);
+        uploadLocProps.put("region",region);
+        uploadLocProps.put("bucketName",bucket);
         return uploadLocProps;
     }
 
     private void download(String accessKey, String accessSecret, String bucketName, String region, String key) throws IOException {
-        Path dest = Paths.get(this.tempFolder+"/"+key);
+        Path dest = Paths.get(this.tempFolder+"/"+bucketName+"/"+key);
+        Files.createDirectories(dest.getParent());
         PipedOutputStream os = new PipedOutputStream();
         PipedInputStream is = new PipedInputStream(os);
         AwsBasicCredentials awsCreds = AwsBasicCredentials.create(accessKey, accessSecret);
-        S3Client s3client = S3Client.builder().credentialsProvider(StaticCredentialsProvider.create(awsCreds)).region(Region.of(region)).build();
-        System.out.println(bucketName+"==="+globalUploadPrefix);
-        GetObjectRequest getObjectRequest = GetObjectRequest.builder().bucket(bucketName).key(globalUploadPrefix+"/"+key).build();
+        S3Client s3client = S3Client.builder().region(Region.of(region))
+        		.credentialsProvider(StaticCredentialsProvider.create(awsCreds)).build();
+        GetObjectRequest getObjectRequest = GetObjectRequest.builder().bucket(bucketName).key(key).build();
         s3client.getObject(getObjectRequest, ResponseTransformer.toFile(dest));
     }
 

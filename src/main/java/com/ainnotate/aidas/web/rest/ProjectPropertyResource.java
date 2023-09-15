@@ -306,13 +306,13 @@ public class ProjectPropertyResource {
 				projectProperty1.setAddToMetadata(projectProperty.getAddToMetadata());
 				String encValue= "";
 				
-				if(projectProperty.getProperty().getName().equals("region")) {
+				if(projectProperty.getProperty().getName().equals("region") && !projectProperty1.getValue().equals(projectProperty.getValue())) {
 					projectProperty1.setValue(AESCBCPKCS5Padding.encryptString(projectProperty.getValue(),AidasConstants.KEY,AidasConstants.IV_STR));
-				}else if(projectProperty.getProperty().getName().equals("bucketName")) {
+				}else if(projectProperty.getProperty().getName().equals("bucketName")&& !projectProperty1.getValue().equals(projectProperty.getValue())) {
 					projectProperty1.setValue(AESCBCPKCS5Padding.encryptString(projectProperty.getValue(),AidasConstants.KEY,AidasConstants.IV_STR));
-				}else if(projectProperty.getProperty().getName().equals("accessKey")) {
+				}else if(projectProperty.getProperty().getName().equals("accessKey")&& !projectProperty1.getValue().equals(projectProperty.getValue())) {
 					projectProperty1.setValue(AESCBCPKCS5Padding.encryptString(projectProperty.getValue(),AidasConstants.KEY,AidasConstants.IV_STR));
-				}else if(projectProperty.getProperty().getName().equals("accessSecret")) {
+				}else if(projectProperty.getProperty().getName().equals("accessSecret")&& !projectProperty1.getValue().equals(projectProperty.getValue())) {
 					projectProperty1.setValue(AESCBCPKCS5Padding.encryptString(projectProperty.getValue(),AidasConstants.KEY,AidasConstants.IV_STR));
 				}else {
 					projectProperty1.setValue(projectProperty.getValue());

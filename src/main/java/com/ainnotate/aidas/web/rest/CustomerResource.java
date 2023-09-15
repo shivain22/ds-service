@@ -134,6 +134,7 @@ public class CustomerResource {
 		        	customerOrganisationRepository.save(com1);
 	        	}
 	            propertyRepository.addCustomerProperties(result.getId(),loggedInUser.getId());
+	            /*
 	            List<String> props = Arrays.asList("bucketName","region","accessKey","accessSecret");
 	            List<Property> propsToEncrypt = propertyRepository.getAllCustomerPropertiesForEnc(customer.getId(),props);
 	       			for(Property ap:propsToEncrypt) {
@@ -148,6 +149,7 @@ public class CustomerResource {
 	       				ap.setValue( new String(AESCBCPKCS5Padding.encrypt(ap.getValue(), AidasConstants.KEY,AidasConstants.IV_STR)));
 	       				appPropertyRepository.save(ap);
 	       			}
+	       			*/
 	            return ResponseEntity
 	                .created(new URI("/api/aidas-customers/" + result.getId()))
 	                .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))

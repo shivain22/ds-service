@@ -342,6 +342,25 @@ public class UserResource {
 	                                 if(v!=null){
 	                                     user.setVendor(v);
 	                                 }
+	                             }else {
+	                            	 Vendor v = null;
+	                            	 UserVendorMapping uvm = userVendorMappingRepository.findByUserAndVendor(-1l, user.getId());
+                                     if(uvm==null) {
+        	                             v = vendorRepository.getById(-1l);
+        	                             uvm = new UserVendorMapping();
+        	                             uvm.setVendor(v);
+        	                             uvm.setUser(user);
+        	                             uvm.setStatus(AidasConstants.STATUS_ENABLED);
+        	                             userVendorMappingRepository.save(uvm);
+        	                             UserAuthorityMappingUserVendorMapping uamuvm = new UserAuthorityMappingUserVendorMapping();
+        	                             uamuvm.setUserVendorMapping(uvm);
+        	                             uamuvm.setUserAuthorityMapping(uam);
+        	                             uamuvm.setStatus(AidasConstants.STATUS_ENABLED);
+        	                             userAuthorityUserVendorMappingRepository.save(uamuvm);
+                                     }
+                                     if(v!=null){
+	                                     user.setVendor(v);
+	                                 }
 	                             }
 	                        }
 	                        if(a.getName().equals(AidasConstants.ADMIN_QC_USER)) {

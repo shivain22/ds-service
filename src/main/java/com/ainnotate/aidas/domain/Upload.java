@@ -163,6 +163,7 @@ query=
 				+ "order by u.id \n", 
 		resultSetMapping = "Mapping.getUploadDTOForQCInBatch")
 
+
 @SqlResultSetMapping(
 	name = "Mapping.getUploadDTOForQCInBatch", 
 	classes = @ConstructorResult(targetClass = UploadDTOForQC.class, 
@@ -271,6 +272,17 @@ public class Upload extends AbstractAuditingEntity implements Serializable {
 	private Integer currentQcLevel = 1;
 	@Column(name = "previous_qc_status", columnDefinition = "integer default 1")
 	private Integer previouQcStatus = 2;
+
+	@Transient
+	@JsonProperty
+	private transient String presignedUploadUrl;
+	public String getPresignedUploadUrl() {
+		return presignedUploadUrl;
+	}
+
+	public void setPresignedUploadUrl(String presignedUploadUrl) {
+		this.presignedUploadUrl = presignedUploadUrl;
+	}
 
 	public Integer getPreviouQcStatus() {
 		return previouQcStatus;

@@ -123,13 +123,13 @@ public class OrganisationResource {
 		try {
 			Organisation result = organisationRepository.save(organisation);
 			appPropertyRepository.addOrganisationAppProperties(result.getId(), user.getId());
-			List<String> props = Arrays.asList("downloadBucketName","downloadRegion","downloadAccessKey","downloadAccessSecret",
+			/*List<String> props = Arrays.asList("downloadBucketName","downloadRegion","downloadAccessKey","downloadAccessSecret",
     		 "uploadBucketName","uploadRegion","uploadAccessKey","uploadAccessSecret");
 			List<AppProperty> toBeEncProps = appPropertyRepository.getAppPropertyOrg(result.getId(), props);
 			for(AppProperty ap:toBeEncProps) {
 				ap.setValue( new String(AESCBCPKCS5Padding.encrypt(ap.getValue(), AidasConstants.KEY,AidasConstants.IV_STR)));
 				appPropertyRepository.save(ap);
-			}
+			}*/
 			return ResponseEntity
 					.created(new URI("/api/aidas-organisations/" + result.getId())).headers(HeaderUtil
 							.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))

@@ -195,35 +195,40 @@ public class DownloadUploadJson  implements  Runnable{
 
     private void setProperties(Set<AppProperty> appProperties){
         for(AppProperty appProperty :appProperties){
+        	try {
             if(appProperty.getName().equals(AidasConstants.DOWNLOAD_ACCESS_KEY_KEY_NAME) && appProperty.getValue()!=null)
-                globalDownloadAccessKey = appProperty.getValue();
+                globalDownloadAccessKey = AESCBCPKCS5Padding.decrypt(appProperty.getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
             if(appProperty.getName().equals(AidasConstants.DOWNLOAD_ACCESS_SECRET_KEY_NAME) && appProperty.getValue()!=null)
-                globalDownloadAccessSecret = appProperty.getValue();
+                globalDownloadAccessSecret = AESCBCPKCS5Padding.decrypt(appProperty.getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
             if(appProperty.getName().equals(AidasConstants.DOWNLOAD_REGION_KEY_NAME) && appProperty.getValue()!=null)
-                globalDownloadRegion = appProperty.getValue();
+                globalDownloadRegion = AESCBCPKCS5Padding.decrypt(appProperty.getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
             if(appProperty.getName().equals(AidasConstants.DOWNLOAD_BUCKETNAME_KEY_NAME) && appProperty.getValue()!=null)
-                globalDownloadBucketName = appProperty.getValue();
+                globalDownloadBucketName = AESCBCPKCS5Padding.decrypt(appProperty.getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
             if(appProperty.getName().equals(AidasConstants.DOWNLOAD_PREFIX_KEY_NAME) && appProperty.getValue()!=null)
-                globalDownloadPrefix = appProperty.getValue();
+                globalDownloadPrefix = AESCBCPKCS5Padding.decrypt(appProperty.getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
 
 
             if(appProperty.getName().equals(AidasConstants.UPLOAD_ACCESS_KEY_KEY_NAME) && appProperty.getValue()!=null)
-                globalUploadAccessKey = appProperty.getValue();
+                globalUploadAccessKey = AESCBCPKCS5Padding.decrypt(appProperty.getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
             if(appProperty.getName().equals(AidasConstants.UPLOAD_ACCESS_SECRET_KEY_NAME) && appProperty.getValue()!=null)
-                globalUploadAccessSecret = appProperty.getValue();
+                globalUploadAccessSecret = AESCBCPKCS5Padding.decrypt(appProperty.getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
             if(appProperty.getName().equals(AidasConstants.UPLOAD_REGION_KEY_NAME) && appProperty.getValue()!=null)
-                globalUploadRegion = appProperty.getValue();
+                globalUploadRegion = AESCBCPKCS5Padding.decrypt(appProperty.getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
             if(appProperty.getName().equals(AidasConstants.UPLOAD_BUCKETNAME_KEY_NAME) && appProperty.getValue()!=null)
-                globalUploadBucketName = appProperty.getValue();
+                globalUploadBucketName = AESCBCPKCS5Padding.decrypt(appProperty.getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
             if(appProperty.getName().equals(AidasConstants.UPLOAD_PREFIX_KEY_NAME) && appProperty.getValue()!=null)
-                globalUploadPrefix = appProperty.getValue();
+                globalUploadPrefix = AESCBCPKCS5Padding.decrypt(appProperty.getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
 
-            AppProperty app  = appPropertyRepository.getAppProperty(-1l,"fromEmail");
-            fromEmail = app.getValue();
-            app = appPropertyRepository.getAppProperty(-1l,"emailToken");
-            emailToken = app.getValue();
-
+            
+        	}catch(Exception e) {
+        		
+        	}
+        	
         }
+        AppProperty app  = appPropertyRepository.getAppProperty(-1l,"fromEmail");
+        fromEmail = app.getValue();
+        app = appPropertyRepository.getAppProperty(-1l,"emailToken");
+        emailToken = app.getValue();
     }
     private void setGlobalDefaultValues(){
         if(user.getAuthority().getName().equals(AidasConstants.ADMIN)){
@@ -354,11 +359,8 @@ public class DownloadUploadJson  implements  Runnable{
                     projectForJson.setGroupingProject(project.getAutoCreateObjects());
                     Map<String, String> uploadLocProps = getObjectProperties(project.getId());
                     for (Upload au : uploads) {
-                    	
-                    	
                     	S3Presigner presigner = S3Presigner.builder().credentialsProvider(StaticCredentialsProvider
                 				.create(AwsBasicCredentials.create(uploadLocProps.get("accessKey"),uploadLocProps.get("accessSecret")))).region(Region.of(uploadLocProps.get("region"))).build();
-                       
                     	UploadForJson uploadForJson= new UploadForJson();
                     	if(!tmpObjId.equals(au.getUserVendorMappingObjectMapping().getObject().getId())) {
                     		if(!tmpObjId.equals(-2l)) {
@@ -376,10 +378,7 @@ public class DownloadUploadJson  implements  Runnable{
                     		}
                     		tmpObjId = au.getUserVendorMappingObjectMapping().getObject().getId();
                     	}
-                        
                          try {
-                            System.out.println("About to download file with objectkey as ="+au.getObjectKey());
-                           
                             GetObjectRequest getObjectRequest =GetObjectRequest.builder().bucket(uploadLocProps.get("bucketName")).key(au.getUploadUrl()).build();
             			   	GetObjectPresignRequest getObjectPresignRequest = GetObjectPresignRequest.builder().signatureDuration(Duration.ofMinutes(1440)).getObjectRequest(getObjectRequest).build();
             				PresignedGetObjectRequest presignedGetObjectRequest =presigner.presignGetObject(getObjectPresignRequest);
@@ -398,19 +397,15 @@ public class DownloadUploadJson  implements  Runnable{
                     projectForJson.getObjects().add(objectForJson);
                     writeJsonToFile(projectForJson);
                 }catch(Exception e2){
-                    System.out.println("Error when tryingto download all files..... "+e2.getMessage());
                     e2.printStackTrace();
                 }
                 try {
-                    System.out.println("Start zipping the downloaded files from the local tmp dir.....");
                     zip();
-                    System.out.println("Completed zipping the files..........");
                 }catch(Exception e3){
-                    System.out.println("Error when trying to zip the file with name "+this.zipFileKey);
                     e3.printStackTrace();
                 }
                 try {
-                    System.out.println("About to upload the zipped file with name "+this.zipFileKey+" to s3");
+                    
                     URL url=null;
                     try {
                         url = upload(globalDownloadAccessKey, globalDownloadAccessSecret, globalDownloadBucketName, globalDownloadRegion);
@@ -517,18 +512,15 @@ public class DownloadUploadJson  implements  Runnable{
     
     private Map<String,String> getObjectProperties(Long projectId) throws Exception{
         Map<String,String> uploadLocProps = new HashMap<>();
-        if(uploadLocProps.get("accessKey")!=null && uploadLocProps.get("accessSecret")!=null && 
-        		uploadLocProps.get("region")!=null && uploadLocProps.get("bucketName")!=null) {
-	       
-	        String accessKey = AESCBCPKCS5Padding.decrypt(projectPropertyRepository.findByProjectPropertyByPropertyName(projectId, "accessKey").getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
-			String accessSecret = AESCBCPKCS5Padding.decrypt(projectPropertyRepository.findByProjectPropertyByPropertyName(projectId, "accessSecret").getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
-			String bucket = AESCBCPKCS5Padding.decrypt(projectPropertyRepository.findByProjectPropertyByPropertyName(projectId, "bucketName").getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
-			String region = AESCBCPKCS5Padding.decrypt(projectPropertyRepository.findByProjectPropertyByPropertyName(projectId, "region").getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
-	        uploadLocProps.put("accessKey",accessKey);
-	        uploadLocProps.put("accessSecret",accessSecret);
-	        uploadLocProps.put("region",bucket);
-	        uploadLocProps.put("bucketName",region);
-        }
+        String accessKey = AESCBCPKCS5Padding.decrypt(projectPropertyRepository.findByProjectPropertyByPropertyName(projectId, "accessKey").getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
+		String accessSecret = AESCBCPKCS5Padding.decrypt(projectPropertyRepository.findByProjectPropertyByPropertyName(projectId, "accessSecret").getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
+		String bucket = AESCBCPKCS5Padding.decrypt(projectPropertyRepository.findByProjectPropertyByPropertyName(projectId, "bucketName").getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
+		String region = AESCBCPKCS5Padding.decrypt(projectPropertyRepository.findByProjectPropertyByPropertyName(projectId, "region").getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
+        uploadLocProps.put("accessKey",accessKey);
+        uploadLocProps.put("accessSecret",accessSecret);
+        uploadLocProps.put("region",region);
+        uploadLocProps.put("bucketName",bucket);
+        
         return uploadLocProps;
     }
     

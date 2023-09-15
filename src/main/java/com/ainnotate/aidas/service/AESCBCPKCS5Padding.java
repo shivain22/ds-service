@@ -10,16 +10,19 @@ import java.util.Base64;
 
 public class AESCBCPKCS5Padding {
 
-	/*
-	 * public static void main(String[] args) throws Exception { String key =
-	 * "b693b2f6350f11eebe560242ac120002"; String iv = "1011121314151617"; String
-	 * toEncrypt = "santhosh";
-	 *
-	 * byte[] encrypted = encrypt(toEncrypt, key, iv); String decrypted =
-	 * decrypt(encrypted, key, iv);
-	 *
-	 * System.out.println(new String(encrypted)); System.out.println(decrypted); }
-	 */
+	
+	  public static void main(String[] args) throws Exception { 
+		  String key ="b693b2f6350f11eebe560242ac120002"; 
+		  String iv = "1011121314151617"; 
+		  String toEncrypt = "aidac-uploads";
+	 
+	  byte[] encrypted = encrypt(toEncrypt, key, iv); 
+	  String decrypted = decrypt(encrypted, key, iv);
+	 
+	  System.out.println("Encrypted "+toEncrypt+"======"+ new String(encrypted)); 
+	  System.out.println("Decrypted ="+decrypted); 
+	  }
+	 
 
 	public static String encryptString(String plainText, String key, String ivStr)throws Exception{
 		return new String(AESCBCPKCS5Padding.encrypt(plainText, key, ivStr));

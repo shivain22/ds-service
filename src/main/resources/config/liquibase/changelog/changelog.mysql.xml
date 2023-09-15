@@ -684,7 +684,7 @@
             <column name="property_type" type="INT">
                 <constraints nullable="false"/>
             </column>
-            <column name="value" type="VARCHAR(100)">
+            <column name="value" type="LONGTEXT">
                 <constraints nullable="false"/>
             </column>
             <column name="category_id" type="BIGINT"/>
@@ -715,7 +715,7 @@
             <column name="optional" type="INT"/>
             <column defaultValueNumeric="0" name="passed_from_app" type="INT"/>
             <column name="property_type" type="INT"/>
-            <column name="value" type="VARCHAR(100)"/>
+            <column name="value" type="LONGTEXT"/>
             <column name="category_id" type="BIGINT"/>
             <column name="customer_id" type="BIGINT"/>
             <column name="user_id" type="BIGINT"/>

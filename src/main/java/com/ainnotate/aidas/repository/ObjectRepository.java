@@ -341,12 +341,12 @@ public interface ObjectRepository
 
 	@Modifying
 	@Query(value = "insert into object_property (status,add_to_metadata,default_prop,optional,passed_from_app,value,category_id,object_id,property_id,show_to_vendor_user) "
-			+ "(select pr.status,pr.add_to_metadata,pr.default_prop,pr.optional,pr.passed_from_app,pr.value,pr.category_id,o.id ,pr.id,pr.show_to_vendor_user from property pr,object o,project p where o.project_id=p.id and pr.customer_id=p.customer_id and p.id=?1  and (pr.category_id=1 or pr.category_id=?2))", nativeQuery = true)
+			+ "(select pr.status,pr.add_to_metadata,pr.default_prop,pr.optional,pr.passed_from_app,pp.value,pr.category_id,o.id ,pr.id,pr.show_to_vendor_user from property pr,project_property pp,object o,project p where pp.property_id=pr.id and pp.project_id=p.id and o.project_id=p.id and pr.customer_id=p.customer_id and p.id=?1  and (pr.category_id=1 or pr.category_id=?2))", nativeQuery = true)
 	void addObjectProperties(Long projectId, Long categoryId);
 
 	@Modifying
 	@Query(value = "insert into object_property (status,add_to_metadata,default_prop,optional,passed_from_app,value,category_id,object_id,property_id,show_to_vendor_user) "
-			+ "(select pr.status,pr.add_to_metadata,pr.default_prop,pr.optional,pr.passed_from_app,pr.value,pr.category_id,?3 ,pr.id,pr.show_to_vendor_user from property pr,object o,project p where o.id=?3 and o.project_id=p.id and pr.customer_id=p.customer_id and p.id=?1  and (pr.category_id=1 or pr.category_id=?2))", nativeQuery = true)
+			+ "(select pr.status,pr.add_to_metadata,pr.default_prop,pr.optional,pr.passed_from_app,pp.value,pr.category_id,?3 ,pr.id,pr.show_to_vendor_user from property pr,project_property pp,object o,project p where o.id=?3 and pp.property_id=pr.id and pp.project_id=p.id and o.project_id=p.id and pr.customer_id=p.customer_id and p.id=?1  and (pr.category_id=1 or pr.category_id=?2))", nativeQuery = true)
 	void addObjectProperties(Long projectId, Long categoryId, Long objectId);
 
 	@Modifying

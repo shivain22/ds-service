@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.info.BuildProperties;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -57,6 +58,9 @@ public class DashboardResource {
 
     @Autowired
     private AppPropertyRepository appPropertyRepository;
+    
+    @Autowired
+    BuildProperties buildProperties;
 
     /**
      * {@code GET  /aidas-dashboard} : get all the dashboard metrics.
@@ -144,5 +148,10 @@ public class DashboardResource {
 		 * && appProperty.size()>0){ ad.setVersion(appProperty.get(0).getValue()); }
 		 */
         return ResponseEntity.ok().body(ad);
+    }
+    
+    @GetMapping("/version")
+    public ResponseEntity<String> getVersion() {
+        return ResponseEntity.ok().body(buildProperties.getVersion());
     }
 }
