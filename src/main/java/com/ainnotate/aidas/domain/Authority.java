@@ -26,7 +26,7 @@ import com.ainnotate.aidas.dto.UserCustomerMappingDTO;
 @Audited
 
 @NamedNativeQuery(name = "Authority.getAllAuthorityForRoleAssignment",
-query=" select uam.id as id, a.name as name, uam.status as status from user_authority_mapping uam, authority a where uam.authority_id=a.id and uam.user_id=?1 union "
+query=" select a.id as id, a.name as name, a.status as status from user_authority_mapping uam, authority a where uam.authority_id=a.id and uam.user_id=?1 union "
 		+ " select a.id as id, a.name as name, 0 as status from authority a where a.id not in (select uam.authority_id from user_authority_mapping uam where uam.user_id=?1 and uam.status=0) ",
 		resultSetMapping = "Mapping.AuthorityDTO")
 

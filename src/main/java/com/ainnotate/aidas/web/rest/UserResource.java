@@ -243,11 +243,14 @@ public class UserResource {
                     for(UserAuthorityMappingDTO aid: user.getAuthorityDtos()){
                     	if(aid.getStatus().equals(AidasConstants.STATUS_ENABLED)){
 	                        a = authorityRepository.getById(aid.getAuthorityId());
-	                        UserAuthorityMapping uam = new UserAuthorityMapping();
-	                        uam.setAuthority(a);
-	                        uam.setUser(user);
-	                        uam.setStatus(aid.getStatus());
-	                        userAuthorityMappingRepository.save(uam);
+	                        UserAuthorityMapping uam = userAuthorityMappingRepository.findByAuthorityIdAndUserId(aid.getAuthorityId(), result.getId());
+	                        if(uam==null) {
+		                        uam = new UserAuthorityMapping();
+		                        uam.setAuthority(a);
+		                        uam.setUser(result);
+		                        uam.setStatus(aid.getStatus());
+		                        userAuthorityMappingRepository.save(uam);
+	                        }
 	                        if(a.getName().equals(AidasConstants.ORG_ADMIN)) {
 	                            if(user.getAdminOrgDtos()!=null && user.getAdminOrgDtos().size()>0){
 	                                Organisation o =null;
@@ -904,7 +907,7 @@ public class UserResource {
 			                            uamuom.setUserAuthorityMapping(uam);
 			                            uamuom.setStatus(AidasConstants.STATUS_ENABLED);
 			                            userAuthorityUserOrganisationMappingRepository.save(uamuom);
-		                        	}else {
+		                        	}else if(uom!=null && oid.getStatus().equals(AidasConstants.STATUS_ENABLED)){
 		                        		UserAuthorityMappingUserOrganisationMapping uamuom = userAuthorityUserOrganisationMappingRepository.getByUomIdAndUamId(uom.getId(), uam.getId());
 			                            uom.setStatus(oid.getStatus());
 		                        		if(uamuom!=null) {
@@ -936,7 +939,7 @@ public class UserResource {
 			                            uamucm.setUserAuthorityMapping(uam);
 			                            uamucm.setStatus(AidasConstants.STATUS_ENABLED);
 			                            userAuthorityUserCustomerMappingRepository.save(uamucm);
-		                        	}else {
+		                        	}else if(ucm!=null && cid.getStatus().equals(AidasConstants.STATUS_ENABLED)){
 		                        		UserAuthorityMappingUserCustomerMapping uamucm = userAuthorityUserCustomerMappingRepository.getByUcmIdAndUamId(ucm.getId(), uam.getId());
 			                            ucm.setStatus(cid.getStatus());
 		                        		if(uamucm!=null) {
@@ -948,6 +951,8 @@ public class UserResource {
 				                            uamucm.setStatus(cid.getStatus());
 			                            }
 			                            userAuthorityUserCustomerMappingRepository.save(uamucm);
+		                        	}else {
+		                        		
 		                        	}
 		                        }
 		                    }
@@ -968,7 +973,7 @@ public class UserResource {
 			                             uamuvm.setUserAuthorityMapping(uam);
 			                             uamuvm.setStatus(AidasConstants.STATUS_ENABLED);
 			                             userAuthorityUserVendorMappingRepository.save(uamuvm);
-		                             }else {
+		                             }else if(uvm!=null && vid.getStatus().equals(AidasConstants.STATUS_ENABLED)){
 		                        		UserAuthorityMappingUserVendorMapping uamuvm = userAuthorityUserVendorMappingRepository.getByUvmIdAndUamId(uvm.getId(), uam.getId());
 		                        		uvm.setStatus(vid.getStatus());
 			                            if(uamuvm!=null) {
@@ -1000,7 +1005,7 @@ public class UserResource {
 			                             uamuvm.setUserAuthorityMapping(uam);
 			                             uamuvm.setStatus(AidasConstants.STATUS_ENABLED);
 			                             userAuthorityUserVendorMappingRepository.save(uamuvm);
-		                             }else {
+		                             }else if(uvm!=null && vid.getStatus().equals(AidasConstants.STATUS_ENABLED)){
 		                        		UserAuthorityMappingUserVendorMapping uamuvm = userAuthorityUserVendorMappingRepository.getByUvmIdAndUamId(uvm.getId(), uam.getId());
 			                            uvm.setStatus(vid.getStatus());
 		                        		if(uamuvm!=null) {
@@ -1064,7 +1069,7 @@ public class UserResource {
 			                            uamuom.setUserAuthorityMapping(uam);
 			                            uamuom.setStatus(AidasConstants.STATUS_ENABLED);
 			                            userAuthorityUserOrganisationMappingRepository.save(uamuom);
-		                        	}else{
+		                        	}else if(uom!=null && oid.getStatus().equals(AidasConstants.STATUS_ENABLED)){
 		                        		UserAuthorityMappingUserOrganisationMapping uamuom = userAuthorityUserOrganisationMappingRepository.getByUomIdAndUamId(uom.getId(), uam.getId());
 			                            uom.setStatus(oid.getStatus());
 		                        		if(uamuom!=null) {
@@ -1098,7 +1103,7 @@ public class UserResource {
 			                            uamucm.setStatus(AidasConstants.STATUS_ENABLED);
 			                            userAuthorityUserCustomerMappingRepository.save(uamucm);
 
-		                        	}else {
+		                        	}else if(ucm!=null && cid.getStatus().equals(AidasConstants.STATUS_ENABLED)){
 		                        		UserAuthorityMappingUserCustomerMapping uamucm = userAuthorityUserCustomerMappingRepository.getByUcmIdAndUamId(ucm.getId(), uam.getId());
 			                            ucm.setStatus(cid.getStatus());
 		                        		if(uamucm!=null) {
@@ -1130,7 +1135,7 @@ public class UserResource {
 			                            uamuvm.setUserAuthorityMapping(uam);
 			                            uamuvm.setStatus(AidasConstants.STATUS_ENABLED);
 			                            userAuthorityUserVendorMappingRepository.save(uamuvm);
-		                            }else {
+		                            }else if(uvm!=null && vid.getStatus().equals(AidasConstants.STATUS_ENABLED)){
 		                        		UserAuthorityMappingUserVendorMapping uamuvm = userAuthorityUserVendorMappingRepository.getByUvmIdAndUamId(uvm.getId(), uam.getId());
 			                            uvm.setStatus(vid.getStatus());
 		                        		if(uamuvm!=null) {

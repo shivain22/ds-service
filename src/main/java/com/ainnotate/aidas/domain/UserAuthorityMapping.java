@@ -116,6 +116,6 @@ public class UserAuthorityMapping extends AbstractAuditingEntity implements Seri
 
     @Override
     public String toString() {
-        return "UserAuthorityMapping{user_id="+id+",authority_id="+this.authority.getId()+"}";
+        return "UserAuthorityMapping{id="+id+",user_id="+this.user.getId()+",authority_id="+this.authority.getId()+"}";
     }
 }

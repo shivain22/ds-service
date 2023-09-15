@@ -119,10 +119,34 @@ public class VendorResource {
 				p.setVendor(result);
 				appPropertyRepository.save(p);
 			}
+			VendorOrganisationMapping vom1 = vendorOrganisationMappingRepository.getByOrgIdAndVendorId(-1l, -1l);
+			if(vom1==null) {
+				vom1= new VendorOrganisationMapping();
+				vom1.setVendor(vendorRepository.getById(-1l));
+				vom1.setOrganisation(organisationRepository.getById(-1l));
+				vendorOrganisationMappingRepository.save(vom1);
+			}
+			VendorOrganisationMapping vom = new VendorOrganisationMapping();
+			vom.setOrganisation(organisationRepository.getById(-1l));
+			vom.setVendor(result);
+			vendorOrganisationMappingRepository.save(vom);
+			
+			VendorCustomerMapping vcm1 = vendorCustomerMappingRepository.getByCustomerAndVendor(-1l, -1l);
+			if(vcm1==null) {
+				vcm1 = new VendorCustomerMapping();
+				vcm1.setVendor(vendor);
+				vcm1.setCustomer(customerRepository.getById(-1l));
+				vendorCustomerMappingRepository.save(vcm1);
+			}
+			
+			VendorCustomerMapping vcm = new VendorCustomerMapping();
+			vcm.setVendor(vendor);
+			vcm.setCustomer(customerRepository.getById(-1l));
+			vendorCustomerMappingRepository.save(vcm);
 			if(vendor.getCustomerDtos()!=null) {
 				for(VendorCustomerMappingDTO vdto:vendor.getCustomerDtos()) {
 					Customer customer = customerRepository.getById(vdto.getCustomerId());
-					VendorCustomerMapping vcm = new VendorCustomerMapping();
+					vcm = new VendorCustomerMapping();
 					vcm.setVendor(vendor);
 					vcm.setCustomer(customer);
 					vendorCustomerMappingRepository.save(vcm);
@@ -132,12 +156,13 @@ public class VendorResource {
 			if(vendor.getOrganisationDtos()!=null) {
 				for(VendorOrganisationMappingDTO vdto:vendor.getOrganisationDtos()) {
 					Organisation organisation = organisationRepository.getById(vdto.getOrganisationId());
-					VendorOrganisationMapping vom = new VendorOrganisationMapping();
+					vom = new VendorOrganisationMapping();
 					vom.setVendor(vendor);
 					vom.setOrganisation(organisation);
 					vendorOrganisationMappingRepository.save(vom);
 				}
 			}
+			
 			return ResponseEntity
 					.created(new URI("/api/aidas-vendors/" + result.getId())).headers(HeaderUtil
 							.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
