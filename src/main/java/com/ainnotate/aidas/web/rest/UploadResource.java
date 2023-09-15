@@ -545,7 +545,7 @@ public class UploadResource {
 			} else {
                 UploadRejectReason uploadRejectReason1 = new UploadRejectReason();
                 uploadRejectReason1.setReason(uploadRejectReason.getReason());
-                uploadRejectReasonRepository.save(uploadRejectReason1);
+                uploadRejectReason1 = uploadRejectReasonRepository.save(uploadRejectReason1);
 				uploadRejectReasonMapping.setUpload(upload);
                 uploadRejectReasonMapping.setUploadRejectReason(uploadRejectReason1);
 				upload.getUploadRejectMappings().add(uploadRejectReasonMapping);
