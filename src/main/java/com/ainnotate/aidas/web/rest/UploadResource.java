@@ -10,12 +10,14 @@ import com.ainnotate.aidas.security.SecurityUtils;
 import com.ainnotate.aidas.service.AESCBCPKCS5Padding;
 import com.ainnotate.aidas.service.DownloadUploadS3;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
@@ -23,8 +25,14 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 
+import java.io.File;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -327,64 +335,140 @@ public class UploadResource {
 					.findByUserVendorMappingIdProjectIdForUpload(uvmom.getUserVendorMapping().getId(),
 							uvmom.getObject().getProject().getId());
 			Upload upload = uploadRepository.getUploadByFileNameUvmomId(uvmom.getId(),uploadDto.getObjectKey());
-			if(uploadDto.getConsentFormUrl()!=null && uploadDto.getConsentFormUrl().trim().length()>0) {
-				uvmom.setConsentFormUrl(uploadDto.getConsentFormUrl());
-				userVendorMappingObjectMappingRepository.save(uvmom);
-				return ResponseEntity.ok().body(true);
-			}
 			if(upload!=null) {
 				throw new BadRequestAlertException("Upload with object key "+upload.getObjectKey()+" exists.  duplicate entry", ENTITY_NAME, "idexists");
 			}
-			try {
-				if (object.getTotalRequired() > 0 && upload==null) {
-					upload = new Upload();
-					upload.setUserVendorMappingObjectMapping(uvmom);
-					upload.setDateUploaded(Instant.now());
-					upload.setName(uploadDto.getObjectKey());
-					upload.setUploadUrl(uploadDto.getUploadUrl());
-					upload.setUploadEtag(uploadDto.getEtag());
-					upload.setObjectKey(uploadDto.getObjectKey());
-					upload.setCurrentQcLevel(1);
-					upload.setApprovalStatus(AidasConstants.AIDAS_UPLOAD_PENDING);
-					upload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
-					upload.setMetadataStatus(AidasConstants.AIDAS_UPLOAD_METADATA_REQUIRED);
-					upload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
-					upload.setCurrentBatchNumber(0);
-					upload = uploadRepository.save(upload);
-					uploadMetaDataRepository.insertUploadMetaDataForProjectProperties(upload.getId(), project.getId());
-					uploadMetaDataRepository.insertUploadMetaDataForObjectProperties(upload.getId(), object.getId());
-					for (Map.Entry<String, String> entry : uploadDto.getUploadMetadata().entrySet()) {
-						uploadMetaDataRepository.updateUploadMetaDataProjectPropertyFromUpload(upload.getId(),
-								entry.getKey().trim(), entry.getValue());
-						uploadMetaDataRepository.updateUploadMetaDataObjectPropertyFromUpload(upload.getId(),
-								entry.getKey().trim(), entry.getValue());
+			if(uploadDto.getConsentFormUrl()!=null && uploadDto.getConsentFormUrl().trim().length()>0) {
+				try {
+					uvmom.setConsentFormUrl(uploadDto.getConsentFormUrl());
+					String tempFolder = System.getProperty("java.io.tmpdir");
+					
+					String accessKey = AESCBCPKCS5Padding.decrypt(projectPropertyRepository.findByProjectPropertyByPropertyName(uvmom.getObject().getProject().getId(), "accessKey").getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
+	    			String accessSecret = AESCBCPKCS5Padding.decrypt(projectPropertyRepository.findByProjectPropertyByPropertyName(uvmom.getObject().getProject().getId(),  "accessSecret").getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
+	    			String region = AESCBCPKCS5Padding.decrypt(projectPropertyRepository.findByProjectPropertyByPropertyName(uvmom.getObject().getProject().getId(), "region").getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
+	    			String bucketName = AESCBCPKCS5Padding.decrypt(projectPropertyRepository.findByProjectPropertyByPropertyName(uvmom.getObject().getProject().getId(),  "bucketName").getValue().getBytes(),AidasConstants.KEY,AidasConstants.IV_STR);
+	    			
+					Path dest = Paths.get(tempFolder+"/"+bucketName+"/"+uploadDto.getConsentFormUrl());
+					if(Files.exists(dest)) {
+						Files.delete(dest);
 					}
-					if (project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)) {
-						Integer totalUploads = uploadRepository.getNumberOfUploads(object.getId());
-						if (totalUploads == object.getNumberOfUploadsRequired()) {
-							userVendorMappingProjectMappingRepository
-									.addTotalUploadedAndAddTotalPendingForGrouped(uvmpm.getId());
-							projectRepository.addTotalUploadedAddPendingSubtractRequiredForGrouped(project.getId());
-						}
-						userVendorMappingProjectMappingRepository.addTotalUploadedAndAddTotalPending(uvmpm.getId());
-						projectRepository.addTotalUploadedAddPendingSubtractRequired(project.getId());
-						userVendorMappingObjectMappingRepository.addTotalUploadedAndAddTotalPending(uvmom.getId());
-						objectRepository.addTotalUploadedAddPendingSubtractRequired(object.getId());
-					} else {
-						userVendorMappingProjectMappingRepository.addTotalUploadedAndAddTotalPending(uvmpm.getId());
-						projectRepository.addTotalUploadedAddPendingSubtractRequired(project.getId());
-						userVendorMappingObjectMappingRepository.addTotalUploadedAndAddTotalPending(uvmom.getId());
-						objectRepository.addTotalUploadedAddPendingSubtractRequired(object.getId());
-					}
-
+			        Files.createDirectories(dest.getParent());
+			        PipedOutputStream os = new PipedOutputStream();
+			        PipedInputStream is = new PipedInputStream(os);
+			        AwsBasicCredentials awsCreds = AwsBasicCredentials.create(accessKey, accessSecret);
+			        S3Client s3client = S3Client.builder().region(Region.of(region))
+			        		.credentialsProvider(StaticCredentialsProvider.create(awsCreds)).build();
+			        GetObjectRequest getObjectRequest = GetObjectRequest.builder().bucket(bucketName).key(uploadDto.getConsentFormUrl()).build();
+			        
+			        s3client.getObject(getObjectRequest, ResponseTransformer.toFile(dest));
+			        ObjectMapper objectMapper = new ObjectMapper();
+			        Map<String,String>consentFormFields =  objectMapper.readValue(Files.readAllBytes(dest), Map.class);
+			        
+			        for(Map.Entry<String,String> entry: consentFormFields.entrySet()) {
+			        	if(!entry.getKey().equals("signature") && !entry.getKey().equals("isChecked")) {
+			        	Property property = propertyRepository.getByNameAndUserIdAndCategory(entry.getKey(), project.getCustomer().getId(), project.getCategory().getId()) ;
+			        	if(property==null || property.getId()==null) {
+				        	property = new Property();
+				        	property.setName(entry.getKey());
+				        	property.setCustomer(project.getCustomer());
+				        	property.setPropertyType(AidasConstants.AIDAS_SYSTEM_PROPERTY);
+				        	property.setValue("");
+				        	property.setAddToMetadata(AidasConstants.STATUS_ENABLED);
+				        	property.setShowToVendorUser(AidasConstants.STATUS_DISABLED);
+				        	property.setCategory(project.getCategory());
+				        	property.setDefaultProp(AidasConstants.STATUS_DISABLED);
+				        	property.setDescription(entry.getKey());
+				        	property.setPassedFromApp(AidasConstants.STATUS_ENABLED);
+				        	property.setOptional(AidasConstants.AIDAS_PROPERTY_REQUIRED);
+				        	propertyRepository.save(property);	
+			        	}
+			        	ProjectProperty projectProperty = projectPropertyRepository.findByProjectPropertyByPropertyName(project.getId(), entry.getKey());
+			        	if(projectProperty==null || property.getId()==null) {
+				        	projectProperty = new ProjectProperty();
+				        	projectProperty.setProject(project);
+				        	projectProperty.setStatus(AidasConstants.STATUS_ENABLED);
+				        	projectProperty.setAddToMetadata(AidasConstants.STATUS_ENABLED);
+				        	projectProperty.setDefaultProp(AidasConstants.STATUS_DISABLED);
+				        	projectProperty.setOptional(AidasConstants.AIDAS_PROPERTY_REQUIRED);
+				        	projectProperty.setValue("");
+				        	projectProperty.setProperty(property);
+				        	projectPropertyRepository.save(projectProperty);
+			        	}
+			        	List<Upload> uploads = uploadRepository.getUploadByUvmomId(uvmom.getId());
+			        	for(Upload u:uploads) {
+			        		UploadMetaData umd = uploadMetaDataRepository.getUploadMetaDataByProjectPropertyId(u.getId(), projectProperty.getId());
+				        		if(umd==null) {
+					        		umd = new UploadMetaData();
+					        		umd.setProjectProperty(projectProperty);
+					        		umd.setValue(entry.getValue().toString());
+					        		umd.setUpload(u);
+					        	
+					        	}else {
+					        		umd.setValue(entry.getValue().toString());
+					        	}
+				        		uploadMetaDataRepository.save(umd);
+			        		}
+			        	}
+			        }
+					userVendorMappingObjectMappingRepository.save(uvmom);
 					return ResponseEntity.ok().body(true);
-				} else {
-					return ResponseEntity.ok().body(false);
+				}catch(Exception e) {
+					e.printStackTrace();
 				}
-		} catch (Exception e) {
-			log.error(e.getMessage());
-			return ResponseEntity.ok().body(false);
+			}
+			else {
+				try {
+					if (object.getTotalRequired() > 0 && upload==null) {
+						upload = new Upload();
+						upload.setUserVendorMappingObjectMapping(uvmom);
+						upload.setDateUploaded(Instant.now());
+						upload.setName(uploadDto.getObjectKey());
+						upload.setUploadUrl(uploadDto.getUploadUrl());
+						upload.setUploadEtag(uploadDto.getEtag());
+						upload.setObjectKey(uploadDto.getObjectKey());
+						upload.setCurrentQcLevel(1);
+						upload.setApprovalStatus(AidasConstants.AIDAS_UPLOAD_PENDING);
+						upload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
+						upload.setMetadataStatus(AidasConstants.AIDAS_UPLOAD_METADATA_REQUIRED);
+						upload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
+						upload.setCurrentBatchNumber(0);
+						upload = uploadRepository.save(upload);
+						uploadMetaDataRepository.insertUploadMetaDataForProjectProperties(upload.getId(), project.getId());
+						uploadMetaDataRepository.insertUploadMetaDataForObjectProperties(upload.getId(), object.getId());
+						for (Map.Entry<String, String> entry : uploadDto.getUploadMetadata().entrySet()) {
+							uploadMetaDataRepository.updateUploadMetaDataProjectPropertyFromUpload(upload.getId(),
+									entry.getKey().trim(), entry.getValue());
+							uploadMetaDataRepository.updateUploadMetaDataObjectPropertyFromUpload(upload.getId(),
+									entry.getKey().trim(), entry.getValue());
+						}
+						if (project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)) {
+							Integer totalUploads = uploadRepository.getNumberOfUploads(object.getId());
+							if (totalUploads == object.getNumberOfUploadsRequired()) {
+								userVendorMappingProjectMappingRepository
+										.addTotalUploadedAndAddTotalPendingForGrouped(uvmpm.getId());
+								projectRepository.addTotalUploadedAddPendingSubtractRequiredForGrouped(project.getId());
+							}
+							userVendorMappingProjectMappingRepository.addTotalUploadedAndAddTotalPending(uvmpm.getId());
+							projectRepository.addTotalUploadedAddPendingSubtractRequired(project.getId());
+							userVendorMappingObjectMappingRepository.addTotalUploadedAndAddTotalPending(uvmom.getId());
+							objectRepository.addTotalUploadedAddPendingSubtractRequired(object.getId());
+						} else {
+							userVendorMappingProjectMappingRepository.addTotalUploadedAndAddTotalPending(uvmpm.getId());
+							projectRepository.addTotalUploadedAddPendingSubtractRequired(project.getId());
+							userVendorMappingObjectMappingRepository.addTotalUploadedAndAddTotalPending(uvmom.getId());
+							objectRepository.addTotalUploadedAddPendingSubtractRequired(object.getId());
+						}
+	
+						return ResponseEntity.ok().body(true);
+					} else {
+						return ResponseEntity.ok().body(false);
+					}
+			} catch (Exception e) {
+				log.error(e.getMessage());
+				return ResponseEntity.ok().body(false);
+			}
 		}
+			return ResponseEntity.ok().body(false);
 	}
 
 

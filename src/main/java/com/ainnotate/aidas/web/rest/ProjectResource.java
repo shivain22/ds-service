@@ -312,6 +312,7 @@ public class ProjectResource {
 							csvData.add("QC Not Done Yet");
 							csvData.add("Pending");
 							csvData.add(" ");
+							csvData.add(" ");
 						} else {
 							for (QcResultDTO qcResultDTO : qcLevelStatus) {
 								csvData.add(qcResultDTO.getFirstName() + " " + qcResultDTO.getLastName());

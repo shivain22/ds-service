@@ -75,7 +75,7 @@ public final class AidasConstants {
 
     public static final Integer STATUS_ENABLED=1;
 
-    public static final Integer STATUS_DISABLED=1;
+    public static final Integer STATUS_DISABLED=0;
 
     public static final String DEFAULT_STORAGE_KEY_NAME="defaultStorage";
 
