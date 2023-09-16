@@ -420,6 +420,41 @@ public class ProjectResource {
 		for (VendorUserDTO vendorUserDTO : projectVendorMappingDTO.getVendors()) {
 			for (UsersOfVendor userDTO : vendorUserDTO.getUserDTOs()) {
 				if(userDTO.getStatus().equals(AidasConstants.STATUS_ENABLED)) {
+					Object dummyObject = objectRepository.getDummyObjectOfProject(projectVendorMappingDTO.getProjectId());
+					UserVendorMapping uvm = userVendorMappingRepository.getById(userDTO.getUserVendorMappingId());
+					if (uvm != null && dummyObject != null) {
+						UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository
+								.findAllByUserVendorMappingObject(userDTO.getUserVendorMappingId(), dummyObject.getId());
+						UserVendorMappingProjectMapping uvmpm = userVendorMappingProjectMappingRepository
+								.findByUserVendorMappingIdProjectId(userDTO.getUserVendorMappingId(),
+										projectVendorMappingDTO.getProjectId());
+						if (uvmpm == null && userDTO.getStatus().equals(AidasConstants.STATUS_ENABLED)) {
+							uvmpm = new UserVendorMappingProjectMapping();
+							uvmpm.setProject(project);
+							uvmpm.setUserVendorMapping(uvm);
+							if (project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)) {
+								uvmpm.setTotalRequired(project.getNumberOfObjects());
+								uvmpm.setTotalRequiredForGrouped(project.getNumberOfObjects());
+							} else {
+								uvmpm.setTotalRequired(project.getNumberOfUploadsRequired());
+							}
+							userVendorMappingProjectMappingRepository.save(uvmpm);
+						}else {
+							uvmpm.setStatus(userDTO.getStatus());
+							userVendorMappingProjectMappingRepository.save(uvmpm);
+						}
+						if (uvmom == null && userDTO.getStatus().equals(AidasConstants.STATUS_ENABLED)) {
+							uvmom = new UserVendorMappingObjectMapping();
+							uvmom.setUserVendorMapping(uvm);
+							uvmom.setObject(dummyObject);
+							uvmom.setStatus(userDTO.getStatus());
+							userVendorMappingObjectMappingRepository.save(uvmom);
+						}else {
+							uvmom.setStatus(userDTO.getStatus());
+							userVendorMappingObjectMappingRepository.save(uvmom);
+						}
+					}
+			}else if(userDTO.getStatus().equals(AidasConstants.STATUS_DISABLED)) {
 				Object dummyObject = objectRepository.getDummyObjectOfProject(projectVendorMappingDTO.getProjectId());
 				UserVendorMapping uvm = userVendorMappingRepository.getById(userDTO.getUserVendorMappingId());
 				if (uvm != null && dummyObject != null) {
@@ -428,30 +463,18 @@ public class ProjectResource {
 					UserVendorMappingProjectMapping uvmpm = userVendorMappingProjectMappingRepository
 							.findByUserVendorMappingIdProjectId(userDTO.getUserVendorMappingId(),
 									projectVendorMappingDTO.getProjectId());
-					if (uvmpm == null && userDTO.getStatus().equals(AidasConstants.STATUS_ENABLED)) {
-						uvmpm = new UserVendorMappingProjectMapping();
-						uvmpm.setProject(project);
-						uvmpm.setUserVendorMapping(uvm);
-						if (project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)) {
-							uvmpm.setTotalRequired(project.getNumberOfObjects());
-							uvmpm.setTotalRequiredForGrouped(project.getNumberOfObjects());
-						} else {
-							uvmpm.setTotalRequired(project.getNumberOfUploadsRequired());
-						}
+					if (uvmpm != null) {
+						uvmpm.setStatus(userDTO.getStatus());
 						userVendorMappingProjectMappingRepository.save(uvmpm);
 					}
-					if (uvmom == null && userDTO.getStatus().equals(AidasConstants.STATUS_ENABLED)) {
-						uvmom = new UserVendorMappingObjectMapping();
-						uvmom.setUserVendorMapping(uvm);
-						uvmom.setObject(dummyObject);
+					if (uvmom != null) {
 						uvmom.setStatus(userDTO.getStatus());
 						userVendorMappingObjectMappingRepository.save(uvmom);
 					}
 				}
 			}
-			}
+		  }
 		}
-		// userVendorMappingObjectMappingRepository.saveAll(uvmoms);
 		return ResponseEntity.ok().body("Successfully mapped vendors to project");
 	}
 

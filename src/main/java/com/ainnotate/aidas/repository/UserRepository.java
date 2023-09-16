@@ -94,7 +94,7 @@ public interface UserRepository extends JpaRepository<User, Long>,QuerydslPredic
     Page<User> findAllByDeletedIsFalseAndAidasOrganisation_OrAidasCustomer_AidasOrganisation(Pageable pageable, Organisation organisation, Organisation aidasCustomerOrganisation);
 
     
-    @Query(value = "select u.* from user u where u.parent_organisation_id=?1 and u.status=1 and deleted=0 \n"
+    @Query(value = "select a.* from (select u.* from user u where u.parent_organisation_id=?1 and u.status=1 and deleted=0 \n"
     		+ "union \n"
     		+ "select u.* from user u, user_organisation_mapping uom where uom.user_id=u.id and uom.organisation_id=?1 and u.status=1 and deleted=0 \n"
     		+ "union \n"
@@ -102,7 +102,7 @@ public interface UserRepository extends JpaRepository<User, Long>,QuerydslPredic
     		+ "union \n"
     		+ "select u.* from user u, user_vendor_mapping uvm,vendor_organisation_mapping vom, vendor v where uvm.user_id = u.id and uvm.vendor_id=v.id and vom.vendor_id=v.id and vom.organisation_id=?1 and u.status=1 and deleted=0 \n"
     		+ "union \n"
-    		+ "select u.* from user u, user_vendor_mapping uvm,vendor_customer_mapping vcm,customer c, vendor v where uvm.user_id = u.id and uvm.vendor_id=v.id and vcm.vendor_id=v.id and vcm.customer_id=c.id and c.organisation_id=?1 and u.status=1 and deleted=0 \n"
+    		+ "select u.* from user u, user_vendor_mapping uvm,vendor_customer_mapping vcm,customer c, vendor v where uvm.user_id = u.id and uvm.vendor_id=v.id and vcm.vendor_id=v.id and vcm.customer_id=c.id and c.organisation_id=?1 and u.status=1 and deleted=0)a order by a.id desc \n"
             ,
             countQuery = "select sum(count) from (\n"
             		+ "select count(*) as count from user u where u.parent_organisation_id=?1 and u.status=1 and deleted=0 \n"
@@ -134,9 +134,9 @@ public interface UserRepository extends JpaRepository<User, Long>,QuerydslPredic
         ,countQuery = "select count(*) from user u, user_vendor_mapping uvm where u.id=uvm.user_id and uvm.vendor_id=?1 and u.status=1 and deleted=0",nativeQuery = true)
     List<User> findAllByDeletedIsFalseAndAidasVendor( Vendor vendor);
 
-    @Query(value = "select * from user u where  u.status=1 and deleted=0 and u.id>?1 order by u.id desc"
-        ,countQuery = "select count(*) from user u where  u.status=1 and deleted=0 and u.id>?1",nativeQuery = true)
-    Page<User> findAllByIdGreaterThanAndDeletedIsFalse(Long id, Pageable page);
+    @Query(value = "select * from user u where  u.status=1 and deleted=0 and u.id>0 order by u.id desc"
+        ,countQuery = "select count(*) from user u where  u.status=1 and deleted=0 and u.id>0",nativeQuery = true)
+    Page<User> findAllByIdGreaterThanAndDeletedIsFalse(Pageable page);
 
     @Query(value = "select * from user u where 1=2",nativeQuery = true)
         Page<User> findNone(Pageable page);

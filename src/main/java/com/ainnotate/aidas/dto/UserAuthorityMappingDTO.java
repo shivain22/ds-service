@@ -36,4 +36,10 @@ public class UserAuthorityMappingDTO {
 	public void setName(String name) {
 		this.name = name;
 	}
+
+	@Override
+	public String toString() {
+		return "UserAuthorityMappingDTO [authorityId=" + authorityId + ", status=" + status + ", name=" + name + "]";
+	}
+	
 }

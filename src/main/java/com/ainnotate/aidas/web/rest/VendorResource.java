@@ -119,30 +119,36 @@ public class VendorResource {
 				p.setVendor(result);
 				appPropertyRepository.save(p);
 			}
-			VendorOrganisationMapping vom1 = vendorOrganisationMappingRepository.getByOrgIdAndVendorId(-1l, -1l);
-			if(vom1==null) {
-				vom1= new VendorOrganisationMapping();
-				vom1.setVendor(vendorRepository.getById(-1l));
-				vom1.setOrganisation(organisationRepository.getById(-1l));
-				vendorOrganisationMappingRepository.save(vom1);
+			if((vendor.getCustomerDtos()==null || (vendor.getCustomerDtos()!=null && vendor.getCustomerDtos().size()==0))
+					&& (vendor.getOrganisationDtos()==null || (vendor.getOrganisationDtos()!=null && vendor.getOrganisationDtos().size()==0))) {
+				VendorOrganisationMapping vom1 = vendorOrganisationMappingRepository.getByOrgIdAndVendorId(-1l, -1l);
+				if(vom1==null) {
+					vom1= new VendorOrganisationMapping();
+					vom1.setVendor(vendorRepository.getById(-1l));
+					vom1.setOrganisation(organisationRepository.getById(-1l));
+					vendorOrganisationMappingRepository.save(vom1);
+				}
+				VendorCustomerMapping vcm1 = vendorCustomerMappingRepository.getByCustomerAndVendor(-1l, -1l);
+				if(vcm1==null) {
+					vcm1 = new VendorCustomerMapping();
+					vcm1.setVendor(vendor);
+					vcm1.setCustomer(customerRepository.getById(-1l));
+					vendorCustomerMappingRepository.save(vcm1);
+				}
 			}
-			VendorOrganisationMapping vom = new VendorOrganisationMapping();
-			vom.setOrganisation(organisationRepository.getById(-1l));
-			vom.setVendor(result);
-			vendorOrganisationMappingRepository.save(vom);
 			
-			VendorCustomerMapping vcm1 = vendorCustomerMappingRepository.getByCustomerAndVendor(-1l, -1l);
-			if(vcm1==null) {
-				vcm1 = new VendorCustomerMapping();
-				vcm1.setVendor(vendor);
-				vcm1.setCustomer(customerRepository.getById(-1l));
-				vendorCustomerMappingRepository.save(vcm1);
-			}
+			VendorOrganisationMapping vom = new VendorOrganisationMapping();
+			/*vom.setOrganisation(organisationRepository.getById(-1l));
+			vom.setVendor(result);
+			vendorOrganisationMappingRepository.save(vom);*/
+			
+			
 			
 			VendorCustomerMapping vcm = new VendorCustomerMapping();
-			vcm.setVendor(vendor);
+			/*vcm.setVendor(vendor);
 			vcm.setCustomer(customerRepository.getById(-1l));
-			vendorCustomerMappingRepository.save(vcm);
+			vendorCustomerMappingRepository.save(vcm);*/
+			
 			if(vendor.getCustomerDtos()!=null) {
 				for(VendorCustomerMappingDTO vdto:vendor.getCustomerDtos()) {
 					Customer customer = customerRepository.getById(vdto.getCustomerId());
@@ -350,6 +356,26 @@ public class VendorResource {
 		
 		Page<Vendor> page = null;// vendorRepository.findAllByIdGreaterThan(0l, pageable);
 		if(user.getAuthority().getName().equals(AidasConstants.ADMIN)) {
+			/*Organisation o = organisationRepository.getById(-1l);
+			Customer c = customerRepository.getById(-1l);
+			List<Vendor> vendorList = vendorRepository.findAllByIdGreaterThanForDropDown(-1l);
+			for(Vendor v: vendorList) {
+				
+				VendorOrganisationMapping vom = vendorOrganisationMappingRepository.getByOrgIdAndVendorId(-1l,v.getId());
+				if(vom==null) {
+					vom = new VendorOrganisationMapping();
+					vom.setVendor(v);
+					vom.setOrganisation(o);
+					vendorOrganisationMappingRepository.save(vom);
+				}
+				VendorCustomerMapping vcm = vendorCustomerMappingRepository.getByCustomerAndVendor(-1l, v.getId());
+				if(vcm==null) {
+					vcm = new VendorCustomerMapping();
+					vcm.setVendor(v);
+					vcm.setCustomer(c);
+					vendorCustomerMappingRepository.save(vcm);
+				}
+			}*/
 			page = vendorRepository.findAllByIdGreaterThan(0l, pageable);
 		}else if(user.getAuthority().getName().equals(AidasConstants.ORG_ADMIN)) {
 			page = vendorRepository.findAllByOrganisation(user.getOrganisation().getId(), pageable);

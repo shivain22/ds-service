@@ -36,4 +36,8 @@ public class UserVendorMappingDTO {
     public void setStatus(Integer status) {
         this.status = status;
     }
+	@Override
+	public String toString() {
+		return "UserVendorMappingDTO [vendorId=" + vendorId + ", status=" + status + ", name=" + name + "]";
+	}
 }

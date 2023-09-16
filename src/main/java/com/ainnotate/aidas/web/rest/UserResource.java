@@ -919,6 +919,18 @@ public class UserResource {
 				                            uamuom.setStatus(oid.getStatus());
 			                            }
 			                            userAuthorityUserOrganisationMappingRepository.save(uamuom);
+		                        	}else if(uom!=null && oid.getStatus().equals(AidasConstants.STATUS_DISABLED)){
+		                        		UserAuthorityMappingUserOrganisationMapping uamuom = userAuthorityUserOrganisationMappingRepository.getByUomIdAndUamId(uom.getId(), uam.getId());
+			                            uom.setStatus(oid.getStatus());
+		                        		if(uamuom!=null) {
+			                            	uamuom.setStatus(oid.getStatus());
+			                            }else {
+			                            	uamuom = new UserAuthorityMappingUserOrganisationMapping();
+			                        		uamuom.setUserOrganisationMapping(uom);
+				                            uamuom.setUserAuthorityMapping(uam);
+				                            uamuom.setStatus(oid.getStatus());
+			                            }
+			                            userAuthorityUserOrganisationMappingRepository.save(uamuom);
 		                        	}
 		                        }
 		                    }
@@ -940,6 +952,18 @@ public class UserResource {
 			                            uamucm.setStatus(AidasConstants.STATUS_ENABLED);
 			                            userAuthorityUserCustomerMappingRepository.save(uamucm);
 		                        	}else if(ucm!=null && cid.getStatus().equals(AidasConstants.STATUS_ENABLED)){
+		                        		UserAuthorityMappingUserCustomerMapping uamucm = userAuthorityUserCustomerMappingRepository.getByUcmIdAndUamId(ucm.getId(), uam.getId());
+			                            ucm.setStatus(cid.getStatus());
+		                        		if(uamucm!=null) {
+			                            	uamucm.setStatus(cid.getStatus());
+			                            }else {
+			                            	uamucm = new UserAuthorityMappingUserCustomerMapping();
+				                            uamucm.setUserCustomerMapping(ucm);
+				                            uamucm.setUserAuthorityMapping(uam);
+				                            uamucm.setStatus(cid.getStatus());
+			                            }
+			                            userAuthorityUserCustomerMappingRepository.save(uamucm);
+		                        	}else if(ucm!=null && cid.getStatus().equals(AidasConstants.STATUS_DISABLED)){
 		                        		UserAuthorityMappingUserCustomerMapping uamucm = userAuthorityUserCustomerMappingRepository.getByUcmIdAndUamId(ucm.getId(), uam.getId());
 			                            ucm.setStatus(cid.getStatus());
 		                        		if(uamucm!=null) {
@@ -985,6 +1009,18 @@ public class UserResource {
 			                            	uamuvm.setStatus(vid.getStatus());
 			                            }
 			                            userAuthorityUserVendorMappingRepository.save(uamuvm);
+		                        	}else if(uvm!=null && vid.getStatus().equals(AidasConstants.STATUS_DISABLED)){
+		                        		UserAuthorityMappingUserVendorMapping uamuvm = userAuthorityUserVendorMappingRepository.getByUvmIdAndUamId(uvm.getId(), uam.getId());
+		                        		uvm.setStatus(vid.getStatus());
+			                            if(uamuvm!=null) {
+			                            	uamuvm.setStatus(vid.getStatus());
+			                            }else {
+			                            	uamuvm = new UserAuthorityMappingUserVendorMapping();
+			                            	uamuvm.setUserVendorMapping(uvm);
+			                            	uamuvm.setUserAuthorityMapping(uam);
+			                            	uamuvm.setStatus(vid.getStatus());
+			                            }
+			                            userAuthorityUserVendorMappingRepository.save(uamuvm);
 		                        	}
 		                         }
 		                     }
@@ -1017,6 +1053,18 @@ public class UserResource {
 			                            	uamuvm.setStatus(vid.getStatus());
 			                            }
 			                            userAuthorityUserVendorMappingRepository.save(uamuvm);
+		                        	}else if(uvm!=null && vid.getStatus().equals(AidasConstants.STATUS_DISABLED)){
+		                        		UserAuthorityMappingUserVendorMapping uamuvm = userAuthorityUserVendorMappingRepository.getByUvmIdAndUamId(uvm.getId(), uam.getId());
+			                            uvm.setStatus(vid.getStatus());
+		                        		if(uamuvm!=null) {
+			                            	uamuvm.setStatus(vid.getStatus());
+			                            }else {
+			                            	uamuvm = new UserAuthorityMappingUserVendorMapping();
+			                            	uamuvm.setUserVendorMapping(uvm);
+			                            	uamuvm.setUserAuthorityMapping(uam);
+			                            	uamuvm.setStatus(vid.getStatus());
+			                            }
+			                            userAuthorityUserVendorMappingRepository.save(uamuvm);
 		                        	}
 		                         }
 		                     }
@@ -1037,7 +1085,19 @@ public class UserResource {
 			                            uamuom.setUserAuthorityMapping(uam);
 			                            uamuom.setStatus(AidasConstants.STATUS_ENABLED);
 			                            userAuthorityUserOrganisationMappingRepository.save(uamuom);
-		                            }else {
+		                            }else if(uom!=null && oid.getStatus().equals(AidasConstants.STATUS_ENABLED)){
+		                        		UserAuthorityMappingUserOrganisationMapping uamuom = userAuthorityUserOrganisationMappingRepository.getByUomIdAndUamId(uom.getId(), uam.getId());
+			                            uom.setStatus(oid.getStatus());
+		                        		if(uamuom!=null) {
+			                            	uamuom.setStatus(oid.getStatus());
+			                            }else {
+			                            	uamuom = new UserAuthorityMappingUserOrganisationMapping();
+			                        		uamuom.setUserOrganisationMapping(uom);
+				                            uamuom.setUserAuthorityMapping(uam);
+				                            uamuom.setStatus(oid.getStatus());
+			                            }
+			                            userAuthorityUserOrganisationMappingRepository.save(uamuom);
+		                        	}else if(uom!=null && oid.getStatus().equals(AidasConstants.STATUS_DISABLED)){
 		                        		UserAuthorityMappingUserOrganisationMapping uamuom = userAuthorityUserOrganisationMappingRepository.getByUomIdAndUamId(uom.getId(), uam.getId());
 			                            uom.setStatus(oid.getStatus());
 		                        		if(uamuom!=null) {
@@ -1070,6 +1130,18 @@ public class UserResource {
 			                            uamuom.setStatus(AidasConstants.STATUS_ENABLED);
 			                            userAuthorityUserOrganisationMappingRepository.save(uamuom);
 		                        	}else if(uom!=null && oid.getStatus().equals(AidasConstants.STATUS_ENABLED)){
+		                        		UserAuthorityMappingUserOrganisationMapping uamuom = userAuthorityUserOrganisationMappingRepository.getByUomIdAndUamId(uom.getId(), uam.getId());
+			                            uom.setStatus(oid.getStatus());
+		                        		if(uamuom!=null) {
+			                            	uamuom.setStatus(oid.getStatus());
+			                            }else {
+			                            	uamuom = new UserAuthorityMappingUserOrganisationMapping();
+			                        		uamuom.setUserOrganisationMapping(uom);
+				                            uamuom.setUserAuthorityMapping(uam);
+				                            uamuom.setStatus(oid.getStatus());
+			                            }
+			                            userAuthorityUserOrganisationMappingRepository.save(uamuom);
+		                        	}else if(uom!=null && oid.getStatus().equals(AidasConstants.STATUS_DISABLED)){
 		                        		UserAuthorityMappingUserOrganisationMapping uamuom = userAuthorityUserOrganisationMappingRepository.getByUomIdAndUamId(uom.getId(), uam.getId());
 			                            uom.setStatus(oid.getStatus());
 		                        		if(uamuom!=null) {
@@ -1115,6 +1187,18 @@ public class UserResource {
 				                            uamucm.setStatus(cid.getStatus());
 			                            }
 			                            userAuthorityUserCustomerMappingRepository.save(uamucm);
+		                        	}else if(ucm!=null && cid.getStatus().equals(AidasConstants.STATUS_DISABLED)){
+		                        		UserAuthorityMappingUserCustomerMapping uamucm = userAuthorityUserCustomerMappingRepository.getByUcmIdAndUamId(ucm.getId(), uam.getId());
+			                            ucm.setStatus(cid.getStatus());
+		                        		if(uamucm!=null) {
+			                            	uamucm.setStatus(cid.getStatus());
+			                            }else {
+			                            	uamucm = new UserAuthorityMappingUserCustomerMapping();
+				                            uamucm.setUserCustomerMapping(ucm);
+				                            uamucm.setUserAuthorityMapping(uam);
+				                            uamucm.setStatus(cid.getStatus());
+			                            }
+			                            userAuthorityUserCustomerMappingRepository.save(uamucm);
 		                        	}
 		                        }
 		                    }
@@ -1136,6 +1220,18 @@ public class UserResource {
 			                            uamuvm.setStatus(AidasConstants.STATUS_ENABLED);
 			                            userAuthorityUserVendorMappingRepository.save(uamuvm);
 		                            }else if(uvm!=null && vid.getStatus().equals(AidasConstants.STATUS_ENABLED)){
+		                        		UserAuthorityMappingUserVendorMapping uamuvm = userAuthorityUserVendorMappingRepository.getByUvmIdAndUamId(uvm.getId(), uam.getId());
+			                            uvm.setStatus(vid.getStatus());
+		                        		if(uamuvm!=null) {
+			                            	uamuvm.setStatus(vid.getStatus());
+			                            }else {
+			                            	uamuvm = new UserAuthorityMappingUserVendorMapping();
+			                            	uamuvm.setUserVendorMapping(uvm);
+			                            	uamuvm.setUserAuthorityMapping(uam);
+			                            	uamuvm.setStatus(vid.getStatus());
+			                            }
+			                            userAuthorityUserVendorMappingRepository.save(uamuvm);
+		                        	}else if(uvm!=null && vid.getStatus().equals(AidasConstants.STATUS_DISABLED)){
 		                        		UserAuthorityMappingUserVendorMapping uamuvm = userAuthorityUserVendorMappingRepository.getByUvmIdAndUamId(uvm.getId(), uam.getId());
 			                            uvm.setStatus(vid.getStatus());
 		                        		if(uamuvm!=null) {
@@ -1264,9 +1360,9 @@ public class UserResource {
     public ResponseEntity<List<User>> getAllAidasUsers(Pageable pageable) {
         log.debug("REST request to get a page of AidasUsers");
         User loggedInUser = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-        Page<User> page = userRepository.findAll(pageable);
+        Page<User> page = null;//userRepository.findAll(pageable);
         if(loggedInUser.getAuthority().getName().equals(AidasConstants.ADMIN)){
-            page = userRepository.findAllByIdGreaterThanAndDeletedIsFalse(0l,pageable);
+            page = userRepository.findAllByIdGreaterThanAndDeletedIsFalse(pageable);
         }
         if(loggedInUser.getAuthority().getName().equals(AidasConstants.ORG_ADMIN) && loggedInUser.getOrganisation()!=null ){
             page = userRepository.findAllByParentOrganisationId(pageable,loggedInUser.getOrganisation().getId());
