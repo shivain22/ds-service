@@ -248,7 +248,7 @@ public class OrganisationResource {
 	@GetMapping("/aidas-organisations")
 	public ResponseEntity<List<Organisation>> getAllAidasOrganisations(Pageable pageable) {
 		log.debug("REST request to get a page of AidasOrganisations");
-		Page<Organisation> page = null;
+		Page<Organisation> page = organisationRepository.findNone(pageable);
 		User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
 		if (user.getAuthority().getName().equals(AidasConstants.ADMIN)) {
 			page = organisationRepository.findAllByIdGreaterThan(-1l, pageable);
@@ -259,8 +259,10 @@ public class OrganisationResource {
 				}
 			}
 			if (user.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN)) {
+				if(user.getCustomer()!=null) {
 					page = organisationRepository.findAllById(user.getCustomer().getOrganisation().getId(),
 							pageable);
+				}
 			}
 		}
 		HttpHeaders headers = PaginationUtil

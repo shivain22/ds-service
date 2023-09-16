@@ -540,8 +540,6 @@ public class UploadResource {
 
 		if(batchStatus!=null && batchStatus.size()>0) {
 			for(UploadSummaryForQCFinalize usfqcf:batchStatus) {
-				System.out.println(usfqcf.getProjectId()+"|"+usfqcf.getUvmpmId()+"|"+usfqcf.getObjectId()+""+usfqcf.getUvmomId()+"|"+usfqcf.getTotalUploaded()+"|"+usfqcf.getTotalApproved()+"|"+usfqcf.getTotalRejected()+"|"+usfqcf.getTotalPending()+"|"+usfqcf.getTotalShowToQc());
-
 				if(usfqcf.getTotalRejected()>0 && usfqcf.getTotalShowToQc()>0) {
 					if (qpm.getProject().getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)) {
 						userVendorMappingProjectMappingRepository.addTotalRejectedAndSubtractTotalPendingAddTotalRequiredForGrouped(usfqcf.getUvmpmId(),1l);

@@ -34,6 +34,9 @@ public interface OrganisationRepository extends JpaRepository<Organisation, Long
 
     @Query(value = "select * from organisation where is_sample_data=1 and name=?1", nativeQuery = true)
     Organisation findSampleOrganisationByName(String name);
+    
+    @Query(value = "select * from organisation where 1=2", nativeQuery = true)
+    Page<Organisation> findNone(Pageable page);
 
     @Query(value = "select * from organisation where id>?1 and status=1",countQuery = "select count(*) from organisation where id>?1 and status=1",nativeQuery = true)
     Page<Organisation> findAllByIdGreaterThan(Long id, Pageable page);

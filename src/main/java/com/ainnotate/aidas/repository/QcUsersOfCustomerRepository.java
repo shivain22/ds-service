@@ -27,8 +27,10 @@ public interface QcUsersOfCustomerRepository extends JpaRepository<QcUser, Strin
     		+ "select quoc.* from qc_user quoc,user_vendor_mapping uvm, vendor_organisation_mapping vom where quoc.project_id=?1 and vom.organisation_id=?2 and quoc.uvm_id=uvm.id and uvm.vendor_id=vom.vendor_id ", nativeQuery = true)
     List<QcUser> getQcUserOfOrg(Long projectId,Long organisationId);
 
-    @Query(value="select * from qc_user quoc where quoc.project_id=?1 and quoc.status=1"
-    		+ " ", nativeQuery = true)
+    @Query(value="select * from qc_user where project_id=?1 and status=1 union "
+    		+ "select * from qc_user where project_id=?1 and entity_id=2 and uom_id=-2 and uvm_id=-2\n"
+    		+ "and ucm_id in (select ucm.id from user_customer_mapping ucm, uam_ucm_mapping uum,user_authority_mapping uam where\n"
+    		+ "uum.ucm_id=ucm.id and uum.uam_id=uam.id and uam.authority_id=8 and ucm.customer_id=?2)", nativeQuery = true)
     List<QcUser> getQcUserOfCustomer(Long projectId,Long customerId);
 
     @Query(value="select * from qc_user quoc, user_vendor_mapping uvm where quoc.project_id=?1 and quoc.uvm_id=uvm.id and uvm.vendor_id=?2", nativeQuery = true)
