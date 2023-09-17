@@ -26,8 +26,7 @@ import com.ainnotate.aidas.dto.UserCustomerMappingDTO;
 @Audited
 
 @NamedNativeQuery(name = "Authority.getAllAuthorityForRoleAssignment",
-query=" select a.id as id, a.name as name, a.status as status from user_authority_mapping uam, authority a where uam.authority_id=a.id and uam.user_id=?1 union "
-		+ " select a.id as id, a.name as name, 0 as status from authority a where a.id not in (select uam.authority_id from user_authority_mapping uam where uam.user_id=?1 and uam.status=0) ",
+query=" select a.id as id, a.name as name, a.status as status from authority a where a.entity_id>=?1 ",
 		resultSetMapping = "Mapping.AuthorityDTO")
 
 @SqlResultSetMapping(
@@ -57,7 +56,18 @@ public class Authority extends AbstractAuditingEntity implements Serializable {
     @Column(length = 50)
     private String name;
     
-    private transient boolean lastLoggedInRole;
+    @Column(name="entity_id")
+    private Integer entityId;
+    
+    public Integer getEntityId() {
+		return entityId;
+	}
+
+	public void setEntityId(Integer entityId) {
+		this.entityId = entityId;
+	}
+
+	private transient boolean lastLoggedInRole;
 
     public boolean isLastLoggedInRole() {
 		return lastLoggedInRole;

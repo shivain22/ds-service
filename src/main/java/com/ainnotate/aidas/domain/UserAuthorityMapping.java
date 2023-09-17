@@ -39,7 +39,8 @@ query="select uam.id, a.name, uam.status \n"
 		+ "from\n"
 		+ "authority a \n"
 		+ "where\n"
-		+ "a.id \n"
+		+ "a.entity_id>=?2 \n"
+		+ "and a.id \n"
 		+ "not in \n"
 		+ "(select authority_id from user_authority_mapping uam where user_id=?1)",
 		resultSetMapping = "Mapping.AuthorityMappingDTO")

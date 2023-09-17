@@ -26,7 +26,7 @@ public interface AuthorityRepository extends JpaRepository<Authority, Long> {
     List<Authority> getAllAuthorities(List<String> authorities);
     
     @Query(nativeQuery = true)
-    List<AuthorityDTO>getAllAuthorityForRoleAssignment(Long currentAuthId);
+    List<AuthorityDTO>getAllAuthorityForRoleAssignment(Integer entityId);
     
     @Query(nativeQuery = true,value = "select * from authority a, user_authority_mapping uam where uam.authority_id=a.id and uam.id=?1")
     Authority getByUamId(Long uamId);

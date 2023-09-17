@@ -35,6 +35,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.PaginationUtil;
 import tech.jhipster.web.util.ResponseUtil;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -94,8 +95,16 @@ public class AuthorityResource {
     public ResponseEntity<List<AuthorityDTO>> getAllAidasAuthorities() {
         log.debug("REST request to get a list of AidasAuthorities");
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-        List<AuthorityDTO> aidasAuthorities = authorityRepository.getAllAuthorityForRoleAssignment(user.getAuthority().getId());
-        
+        List<AuthorityDTO> aidasAuthorities = new LinkedList<>();
+        if(user.getAuthority().getName().equals(AidasConstants.ADMIN)) {
+        	aidasAuthorities = authorityRepository.getAllAuthorityForRoleAssignment(-1);
+        }else if(user.getAuthority().getName().equals(AidasConstants.ORG_ADMIN)) {
+        	aidasAuthorities = authorityRepository.getAllAuthorityForRoleAssignment(1);
+        }else if(user.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN)) {
+        	aidasAuthorities = authorityRepository.getAllAuthorityForRoleAssignment(2);
+        }else if(user.getAuthority().getName().equals(AidasConstants.VENDOR_ADMIN)) {
+        	aidasAuthorities = authorityRepository.getAllAuthorityForRoleAssignment(3);
+        }
         return ResponseEntity.ok().body(aidasAuthorities);
     }
 
@@ -107,7 +116,7 @@ public class AuthorityResource {
     public ResponseEntity<List<Authority>> getMyAidasAuthorityies() {
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
         log.debug("REST request to get a list of AidasAuthorities of logged in user"+ user.getId());
-        Set<UserAuthorityMapping> userAuthorities = userAuthorityMappingRepository.findByUserId(user.getId());
+        List<UserAuthorityMapping> userAuthorities = userAuthorityMappingRepository.findByUserId(user.getId());
         List<Authority> myAuthorities   = userAuthorities.stream().map(UserAuthorityMapping::getAuthority).collect(Collectors.toList());
         /**for(UserAuthorityMapping uam:userAuthorities) {
         	if(uam.getAuthority().getName().equals(AidasConstants.ADMIN)) {

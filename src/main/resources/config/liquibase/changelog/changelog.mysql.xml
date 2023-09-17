@@ -63,6 +63,7 @@
             <column name="last_modified_by" type="VARCHAR(50)"/>
             <column name="last_modified_date" type="datetime"/>
             <column name="rating" type="INT"/>
+            <column name="entity_id" type="INT"/>
             <column name="is_sample_data" type="INT"/>
             <column defaultValueNumeric="1" name="status" type="BIGINT"/>
             <column name="name" type="VARCHAR(50)">
@@ -84,6 +85,7 @@
             <column name="last_modified_by" type="VARCHAR(50)"/>
             <column name="last_modified_date" type="datetime"/>
             <column name="rating" type="INT"/>
+            <column name="entity_id" type="INT"/>
             <column name="is_sample_data" type="INT"/>
             <column defaultValueNumeric="1" name="status" type="BIGINT"/>
             <column name="name" type="VARCHAR(50)"/>

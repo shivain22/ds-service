@@ -545,7 +545,7 @@ public class UploadResource {
 						userVendorMappingProjectMappingRepository.addTotalRejectedAndSubtractTotalPendingAddTotalRequiredForGrouped(usfqcf.getUvmpmId(),1l);
 						projectRepository.addTotalRejectedAndSubtractTotalPendingAddTotalRequiredForGrouped(usfqcf.getProjectId(),1l);
 					}else {
-						userVendorMappingProjectMappingRepository.addTotalRejectedAndSubtractTotalPendingAddTotalRequired(usfqcf.getProjectId(),usfqcf.getTotalRejected());
+						userVendorMappingProjectMappingRepository.addTotalRejectedAndSubtractTotalPendingAddTotalRequired(usfqcf.getUvmpmId(),usfqcf.getTotalRejected());
 						projectRepository.addTotalRejectedAndSubtractTotalPendingAddTotalRequired(usfqcf.getProjectId(),usfqcf.getTotalRejected());
 					}
 					userVendorMappingObjectMappingRepository.addTotalRejectedAndSubtractTotalPendingAddTotalRequired(usfqcf.getUvmomId(),usfqcf.getTotalRejected());

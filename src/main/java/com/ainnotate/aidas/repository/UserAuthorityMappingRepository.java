@@ -27,7 +27,7 @@ public interface UserAuthorityMappingRepository extends JpaRepository<UserAuthor
     
     
     @Query(value="select * from user_authority_mapping uam where  user_id=?1 and uam.status=1",nativeQuery = true)
-    Set<UserAuthorityMapping> findByUserId( Long userId);
+    List<UserAuthorityMapping> findByUserId( Long userId);
     
     @Query(value="select a.* from user_authority_mapping where  user_id=?1",nativeQuery = true)
     Set<Authority> findUserAuthoritiesByUserId( Long userId);
@@ -40,6 +40,6 @@ public interface UserAuthorityMappingRepository extends JpaRepository<UserAuthor
     void deleteAllSampleUserAuthorityMappings();
     
     @Query(nativeQuery = true)
-    List<UserAuthorityMappingDTO> getAllAuthoritiesOfUser(Long userId);
+    List<UserAuthorityMappingDTO> getAllAuthoritiesOfUser(Long userId, Integer entityId);
 
 }

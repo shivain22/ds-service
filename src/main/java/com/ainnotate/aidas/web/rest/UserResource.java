@@ -796,7 +796,9 @@ public class UserResource {
         user.setVendor(null);
         user.setCustomer(null);
         user.setOrganisation(null);
-        user.setAuthority(null);
+        if(!user.getAuthority().getName().equals(AidasConstants.ADMIN)) {
+        	user.setAuthority(null);
+        }
         userRepository.save(user);
         return ResponseEntity
             .created(new URI("/api/aidas-users/" + user.getId()))
@@ -1465,63 +1467,85 @@ public class UserResource {
     @GetMapping("/aidas-users/{id}")
     public ResponseEntity<User> getUser(@PathVariable Long id) {
         log.debug("REST request to get AidasUser : {}", id);
+        User loggedInUser = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
+        List<UserAuthorityMappingDTO> uams = new ArrayList();
         User user = userRepository.getById(id);
-        List<UserAuthorityMappingDTO> uams = userAuthorityMappingRepository.getAllAuthoritiesOfUser(user.getId());
+        if(loggedInUser.getAuthority()==null) {
+        	List<UserAuthorityMapping> authorities = userAuthorityMappingRepository.findByUserId(loggedInUser.getId());
+        	if(authorities!=null && authorities.size()>0) {
+        		loggedInUser.setAuthority(authorities.get(0).getAuthority());
+        	}
+        }
+        if(loggedInUser.getAuthority().getName().equals(AidasConstants.ADMIN)) {
+        	uams = userAuthorityMappingRepository.getAllAuthoritiesOfUser(user.getId(),-1);
+        }else if(loggedInUser.getAuthority().getName().equals(AidasConstants.ADMIN_QC_USER)) {
+        	uams = userAuthorityMappingRepository.getAllAuthoritiesOfUser(user.getId(),-1);
+        }
+        else if(loggedInUser.getAuthority().getName().equals(AidasConstants.ORG_ADMIN)) {
+        	uams = userAuthorityMappingRepository.getAllAuthoritiesOfUser(user.getId(),1);
+        }else if(loggedInUser.getAuthority().getName().equals(AidasConstants.ORG_QC_USER)) {
+        	uams = userAuthorityMappingRepository.getAllAuthoritiesOfUser(user.getId(),1);
+        }
+        else if(loggedInUser.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN)) {
+        	uams = userAuthorityMappingRepository.getAllAuthoritiesOfUser(user.getId(),2);
+        }else if(loggedInUser.getAuthority().getName().equals(AidasConstants.CUSTOMER_QC_USER)) {
+        	uams = userAuthorityMappingRepository.getAllAuthoritiesOfUser(user.getId(),2);
+        }
+        else if(loggedInUser.getAuthority().getName().equals(AidasConstants.VENDOR_ADMIN)) {
+        	uams = userAuthorityMappingRepository.getAllAuthoritiesOfUser(user.getId(),3);
+        }else if(loggedInUser.getAuthority().getName().equals(AidasConstants.VENDOR_USER)) {
+        	uams = userAuthorityMappingRepository.getAllAuthoritiesOfUser(user.getId(),3);
+        }else if(loggedInUser.getAuthority().getName().equals(AidasConstants.VENDOR_QC_USER)) {
+        	uams = userAuthorityMappingRepository.getAllAuthoritiesOfUser(user.getId(),3);
+        }
+        
+        
         user.setAuthorityDtos(uams);
 
         Long tmp = -1l;
         for(UserAuthorityMappingDTO uamdto:uams) {
         	UserAuthorityMapping uam =null;
-        	if(uamdto.getAuthorityId()>0)
-        	 uam = userAuthorityMappingRepository.getById(uamdto.getAuthorityId());
-        	 if(uam!=null && (uam.getAuthority().getName().equals(AidasConstants.ORG_ADMIN))) {
-	        	user.setAdminOrgDtos(organisationRepository.getAllOrganisationsWithUamId(user.getId(),uam.getAuthority().getId()));
-        	 }else if(uamdto.getName().equals(AidasConstants.ORG_ADMIN)) {
-        		user.setAdminOrgDtos(organisationRepository.getAllOrganisationsWithoutUamId(user.getId()));
-        	 }
-        	 if(uam!=null && (uam.getAuthority().getName().equals(AidasConstants.ORG_QC_USER))) {
- 	        	user.setQcOrgDtos(organisationRepository.getAllOrganisationsWithUamId(user.getId(),uam.getAuthority().getId()));
-         	 }else if(uamdto.getName().equals(AidasConstants.ORG_QC_USER)){
-         		user.setQcOrgDtos(organisationRepository.getAllOrganisationsWithoutUamId(user.getId()));
-         	 }
-
-
-        	 if(uam!=null && (uam.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN))) {
-	            user.setAdminCustomerDtos(customerRepository.getAllCustomersWithUamId(user.getId(),uam.getAuthority().getId()));
-        	 }else if(uamdto.getName().equals(AidasConstants.CUSTOMER_ADMIN)) {
-        		 user.setAdminCustomerDtos(customerRepository.getAllCustomersWithoutUamId(user.getId()));
-        	 }
-        	 if(uam!=null && (uam.getAuthority().getName().equals(AidasConstants.CUSTOMER_QC_USER))) {
- 	            user.setQcCustomerDtos(customerRepository.getAllCustomersWithUamId(user.getId(),uam.getAuthority().getId()));
-         	 }else if(uamdto.getName().equals(AidasConstants.CUSTOMER_QC_USER)){
-         		 user.setQcCustomerDtos(customerRepository.getAllCustomersWithoutUamId(user.getId()));
-         	 }
-
-        	 if(uam!=null && (uam.getAuthority().getName().equals(AidasConstants.VENDOR_ADMIN))) {
- 	            user.setAdminVendorDtos(vendorRepository.getAllVendorsWithUamId(user.getId(),uam.getAuthority().getId()));
-         	 }else if(uamdto.getName().equals(AidasConstants.VENDOR_ADMIN)) {
-         		 user.setAdminVendorDtos(vendorRepository.getAllVendorsWithoutUamId(user.getId()));
-         	 }
-         	 if(uam!=null && (uam.getAuthority().getName().equals(AidasConstants.VENDOR_QC_USER))) {
-  	            user.setQcVendorDtos(vendorRepository.getAllVendorsWithUamId(user.getId(),uam.getAuthority().getId()));
-          	 }else if(uamdto.getName().equals(AidasConstants.VENDOR_QC_USER)){
-          		 user.setQcVendorDtos(vendorRepository.getAllVendorsWithoutUamId(user.getId()));
-          	 }
-         	 if(uam!=null && (uam.getAuthority().getName().equals(AidasConstants.VENDOR_USER))) {
-  	            user.setUserVendorDtos(vendorRepository.getAllVendorsWithUamId(user.getId(),uam.getAuthority().getId()));
-          	 }else if(uamdto.getName().equals(AidasConstants.VENDOR_USER)){
-          		 user.setUserVendorDtos(vendorRepository.getAllVendorsWithoutUamId(user.getId()));
-          	 }
-	    		/*user.setAdminVendorDtos(vendorRepository.getAllVendorsWithUamId(uam.getId()));
-	    		user.setUserVendorDtos(vendorRepository.getAllVendorsWithUamId(uam.getId()));
-	    		user.setQcAdminDtos(organisationRepository.getAllOrganisationsWithUamId(uam.getId()));
-	    		user.setQcOrgDtos(organisationRepository.getAllOrganisationsWithUamId(uam.getId()));
-	    		user.setQcCustomerDtos(customerRepository.getAllCustomersWithUamId(uam.getId()));
-	    		user.setQcVendorDtos(vendorRepository.getAllVendorsWithUamId(uam.getId()));*/
-
-			if(uamdto.getAuthorityId().equals(-2l)) {
-				uamdto.setAuthorityId(tmp--);
-			}
+        	if(uamdto.getAuthorityId()>0) {
+	        	 uam = userAuthorityMappingRepository.getById(uamdto.getAuthorityId());
+	        	 if(uam!=null && (uam.getAuthority().getName().equals(AidasConstants.ORG_ADMIN))) {
+		        	user.setAdminOrgDtos(organisationRepository.getAllOrganisationsWithUamId(user.getId(),uam.getAuthority().getId()));
+	        	 }else if(uamdto.getName().equals(AidasConstants.ORG_ADMIN)) {
+	        		user.setAdminOrgDtos(organisationRepository.getAllOrganisationsWithoutUamId(user.getId()));
+	        	 }
+	        	 if(uam!=null && (uam.getAuthority().getName().equals(AidasConstants.ORG_QC_USER))) {
+	 	        	user.setQcOrgDtos(organisationRepository.getAllOrganisationsWithUamId(user.getId(),uam.getAuthority().getId()));
+	         	 }else if(uamdto.getName().equals(AidasConstants.ORG_QC_USER)){
+	         		user.setQcOrgDtos(organisationRepository.getAllOrganisationsWithoutUamId(user.getId()));
+	         	 }
+	        	 if(uam!=null && (uam.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN))) {
+		            user.setAdminCustomerDtos(customerRepository.getAllCustomersWithUamId(user.getId(),uam.getAuthority().getId()));
+	        	 }else if(uamdto.getName().equals(AidasConstants.CUSTOMER_ADMIN)) {
+	        		 user.setAdminCustomerDtos(customerRepository.getAllCustomersWithoutUamId(user.getId()));
+	        	 }
+	        	 if(uam!=null && (uam.getAuthority().getName().equals(AidasConstants.CUSTOMER_QC_USER))) {
+	 	            user.setQcCustomerDtos(customerRepository.getAllCustomersWithUamId(user.getId(),uam.getAuthority().getId()));
+	         	 }else if(uamdto.getName().equals(AidasConstants.CUSTOMER_QC_USER)){
+	         		 user.setQcCustomerDtos(customerRepository.getAllCustomersWithoutUamId(user.getId()));
+	         	 }
+	        	 if(uam!=null && (uam.getAuthority().getName().equals(AidasConstants.VENDOR_ADMIN))) {
+	 	            user.setAdminVendorDtos(vendorRepository.getAllVendorsWithUamId(user.getId(),uam.getAuthority().getId()));
+	         	 }else if(uamdto.getName().equals(AidasConstants.VENDOR_ADMIN)) {
+	         		 user.setAdminVendorDtos(vendorRepository.getAllVendorsWithoutUamId(user.getId()));
+	         	 }
+	         	 if(uam!=null && (uam.getAuthority().getName().equals(AidasConstants.VENDOR_QC_USER))) {
+	  	            user.setQcVendorDtos(vendorRepository.getAllVendorsWithUamId(user.getId(),uam.getAuthority().getId()));
+	          	 }else if(uamdto.getName().equals(AidasConstants.VENDOR_QC_USER)){
+	          		 user.setQcVendorDtos(vendorRepository.getAllVendorsWithoutUamId(user.getId()));
+	          	 }
+	         	 if(uam!=null && (uam.getAuthority().getName().equals(AidasConstants.VENDOR_USER))) {
+	  	            user.setUserVendorDtos(vendorRepository.getAllVendorsWithUamId(user.getId(),uam.getAuthority().getId()));
+	          	 }else if(uamdto.getName().equals(AidasConstants.VENDOR_USER)){
+	          		 user.setUserVendorDtos(vendorRepository.getAllVendorsWithoutUamId(user.getId()));
+	          	 }
+				if(uamdto.getAuthorityId().equals(-2l)) {
+					uamdto.setAuthorityId(tmp--);
+				}
+        	}
         }
 		return ResponseEntity.ok().body(user);
     }
