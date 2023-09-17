@@ -392,13 +392,22 @@ public interface UploadRepository extends JpaRepository<Upload, Long> {
     
     
     
-    @Query(value="select distinct uvmom.id  "
+    @Query(value="select uvmom.id  "
     		+ "from user_vendor_mapping_object_mapping uvmom,object o,upload u "
     		+ "where u.user_vendor_mapping_object_mapping_id=uvmom.id and "
     		+ "uvmom.object_id=o.id and "
     		+ "o.project_id=?1 and "
     		+ "o.is_dummy=0 and u.current_batch_number =0 and u.current_qc_level=?2 order by uvmom.id limit ?3",nativeQuery = true)
     List<Long> findAllUvmomsQcNotStarted(Long projectId,Integer qcLevel,Integer batchSize);
+    
+    @Query(value="select uvm_id,uvmom_id,min(last_modified_date) from (  select uvmom.user_vendor_mapping_id uvm_id,uvmom.id uvmom_id,max(u.last_modified_date) as last_modified_date "
+    		+ "from user_vendor_mapping_object_mapping uvmom,object o,upload u "
+    		+ "where u.user_vendor_mapping_object_mapping_id=uvmom.id and "
+    		+ "uvmom.object_id=o.id and "
+    		+ "o.project_id=?1 and "
+    		+ "o.is_dummy=0 and u.current_batch_number =0 and u.metadata_status=1 and (u.qc_status is null or u.qc_status=2)  and u.current_qc_level=?2 group by uvmom.id,u.last_modified_date order by uvmom.id,u.last_modified_date )a"
+    		+ " group by uvm_id,uvmom_id",nativeQuery = true)
+    List<Object[]> findAllUvmomsQcNotStartedGrouped(Long projectId,Integer qcLevel);
 
     @Query(value="select u.* from upload u, user_vendor_mapping_object_mapping uvmom, object o where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=o.id and o.project_id=?1 and  u.metadata_status=1 and u.current_qc_level=?2 and o.id=?4 and u.user_vendor_mapping_object_mapping_id=?5 order by uvmom.id, o.id limit ?3  ",nativeQuery = true)
     List<Upload> findTopByQcNotDoneYetForQcLevelGreaterThan1(Long projectId,Integer qcLevel, Long batchSize,Long objectId, Long uvmomId);

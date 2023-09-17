@@ -382,28 +382,68 @@ public class ObjectResource {
         Page<ObjectDTO> page = null;
         Project project = projectRepository.getById(projectId);
         UserVendorMapping uvm = userVendorMappingRepository.findByVendorIdAndUserId(user.getVendor().getId(),user.getId());
+        List<ObjectDTO> objList = new ArrayList();
         Integer numOfObjectsAlreadyAssigned = 0;
         if(project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)){
         	numOfObjectsAlreadyAssigned = objectRepository.getAllObjectsByVendorUserProjectWithProjectId(uvm.getId(),projectId,pageable.getPageSize(),0);
         	if(numOfObjectsAlreadyAssigned==0) {
         		//page = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdForGroupedDto(pageable,projectId,pageable.getPageSize());
-        		page = objectRepository.getNewObjectsDto(pageable,projectId,pageable.getPageSize());
+        		//page = objectRepository.getNewObjectsDto(pageable,projectId,pageable.getPageSize());
+        		objList = objectRepository.getNewObjectsDtoList(projectId,pageable.getPageSize());
+        		System.out.println("#############################################################"+objList.size());
+        		for(ObjectDTO o:objList){
+                    UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserVendorMappingObject(uvm.getId(),o.getId());
+                    Object object = objectRepository.getById(o.getId());
+                    if(uvmom==null){
+                        uvmom  = new UserVendorMappingObjectMapping();
+                        uvmom.setUserVendorMapping(uvm);
+                        uvmom.setStatus(AidasConstants.AUTO_CREATE_OBJECT_ENABLE);
+                        uvmom.setObject(object);
+                        userVendorMappingObjectMappingRepository.save(uvmom);
+                    }
+                    if(project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)){
+                    	object.setUserVendorMappingObjectMappingId(uvmom.getId());
+                    	object.setObjectAcquiredByUvmomId(uvmom.getId());
+    	                objectRepository.save(object);
+                    }
+                }
+        		page = objectRepository.getExistingForGrouped(pageable,uvm.getId(),projectId);
         	}else {
         		//page = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdForGroupedForNewRequest(pageable,uvm.getId(),projectId);
         		page = objectRepository.getExistingForGrouped(pageable,uvm.getId(),projectId);
         		HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
                 return ResponseEntity.ok().headers(headers).body(page.getContent());
         	}
-        	
         }else {
         	numOfObjectsAlreadyAssigned = objectRepository.getAllObjectsByVendorUserProjectWithProjectId(uvm.getId(),projectId,pageable.getPageSize(),pageable.getPageNumber());
         	if(numOfObjectsAlreadyAssigned==0) {
         		//page = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdForGroupedDto(pageable,projectId,pageable.getPageSize());
-        		page = objectRepository.getNewObjectsDto(pageable,projectId,pageable.getPageSize());
+        		//page = objectRepository.getNewObjectsDto(pageable,projectId,pageable.getPageSize());
+        		objList = objectRepository.getNewObjectsDtoList(projectId,pageable.getPageSize());
+        		for(ObjectDTO o:objList){
+                    UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserVendorMappingObject(uvm.getId(),o.getId());
+                    Object object = objectRepository.getById(o.getId());
+                    if(uvmom==null){
+                        uvmom  = new UserVendorMappingObjectMapping();
+                        uvmom.setUserVendorMapping(uvm);
+                        uvmom.setStatus(AidasConstants.AUTO_CREATE_OBJECT_ENABLE);
+                        uvmom.setObject(object);
+                        userVendorMappingObjectMappingRepository.save(uvmom);
+                    }
+                    if(project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)){
+                    	object.setUserVendorMappingObjectMappingId(uvmom.getId());
+                    	object.setObjectAcquiredByUvmomId(uvmom.getId());
+    	                objectRepository.save(object);
+                    }
+                }
+        		page = objectRepository.getExistingForNonGrouped(pageable,uvm.getId(),projectId);
         	}else {
         		//page = objectRepository.getAllObjectsByVendorUserProjectWithProjectIdForNonGroupedForNewRequest(pageable,uvm.getId(),projectId);
         		page = objectRepository.getExistingForNonGrouped(pageable,uvm.getId(),projectId);
+        		HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+                return ResponseEntity.ok().headers(headers).body(page.getContent());
         	}
+        	
         	for(ObjectDTO o:page.getContent()){
                 UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserVendorMappingObject(uvm.getId(),o.getId());
                 Object object = objectRepository.getById(o.getId());

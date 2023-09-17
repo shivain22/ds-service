@@ -537,7 +537,6 @@ public class UploadResource {
 			uploadQcProjectMappingBatchInfoRepository.updateUqpmbi(qcProjectMappingId,batchNumber,user.getLogin());
 		}
 		List<UploadSummaryForQCFinalize> batchStatus = uploadQcProjectMappingBatchInfoRepository.getUvmomObjectIdsOfBatch(qcProjectMappingId,batchNumber);
-
 		if(batchStatus!=null && batchStatus.size()>0) {
 			for(UploadSummaryForQCFinalize usfqcf:batchStatus) {
 				if(usfqcf.getTotalRejected()>0 && usfqcf.getTotalShowToQc()>0) {
@@ -1125,8 +1124,31 @@ public class UploadResource {
 			} else {
 				List<UploadDTOForQC> uploadIds = new ArrayList<>();
 				if (project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)) {
-					uvmomIds = uploadRepository.findAllUvmomsQcNotStarted(projectId, qpm.getQcLevel(),
-							pqlc.getQcLevelBatchSize());
+					List<java.lang.Object[]>tempUvmomIds = uploadRepository.findAllUvmomsQcNotStartedGrouped(projectId, qpm.getQcLevel());
+					
+					Map<Long,List<Long>> map = new HashMap<>();
+					for(java.lang.Object[]tempUvmomId:tempUvmomIds) {
+						if(map.get(Long.parseLong(tempUvmomId[0].toString()))!=null) {
+							map.get(Long.parseLong(tempUvmomId[0].toString())).add(Long.parseLong(tempUvmomId[1].toString()));
+						}else {
+							List<Long> uvmom= new ArrayList<>();
+							uvmom.add(Long.parseLong(tempUvmomId[1].toString()));
+							map.put(Long.parseLong(tempUvmomId[0].toString()),uvmom);
+						}
+					}
+					int i=0;
+					for(Map.Entry<Long,List<Long>> entry:map.entrySet()) {
+						if(i==0) {
+							List<Long> tmpList = entry.getValue();
+							if(tmpList.size()>pqlc.getQcLevelBatchSize()) {
+								uvmomIds = tmpList.subList(0,pqlc.getQcLevelBatchSize());
+							}else {
+								uvmomIds = tmpList;
+							}
+						}
+						i++;
+					}
+					//uvmomIds = uploadRepository.findAllUvmomsQcNotStarted(projectId, qpm.getQcLevel(),pqlc.getQcLevelBatchSize());
 					uploadIds = uploadRepository.findAllUploadIdsGroupedNew(uvmomIds);
 					approvedUploadsCount = uvmomIds.size();
 					numOfUploads = (pqlc.getQcLevelAcceptancePercentage().floatValue() / 100f) * approvedUploadsCount;
@@ -1134,7 +1156,31 @@ public class UploadResource {
 					numOfUploadsToBeShown = ceiledNumberOfuploads.intValue();
 					tobeShownUvmoms = uvmomIds.subList(0, numOfUploadsToBeShown);
 				} else {
-					uvmomIds = uploadRepository.findAllUvmomsQcNotStarted(projectId, qpm.getQcLevel(), 1);
+					List<java.lang.Object[]>tempUvmomIds = uploadRepository.findAllUvmomsQcNotStartedGrouped(projectId, qpm.getQcLevel());
+					
+					Map<Long,List<Long>> map = new HashMap<>();
+					for(java.lang.Object[]tempUvmomId:tempUvmomIds) {
+						if(map.get(Long.parseLong(tempUvmomId[0].toString()))!=null) {
+							map.get(Long.parseLong(tempUvmomId[0].toString())).add(Long.parseLong(tempUvmomId[1].toString()));
+						}else {
+							List<Long> uvmom= new ArrayList<>();
+							uvmom.add(Long.parseLong(tempUvmomId[1].toString()));
+							map.put(Long.parseLong(tempUvmomId[0].toString()),uvmom);
+						}
+					}
+					int i=0;
+					for(Map.Entry<Long,List<Long>> entry:map.entrySet()) {
+						if(i==0) {
+							List<Long> tmpList = entry.getValue();
+							if(tmpList.size()>pqlc.getQcLevelBatchSize()) {
+								uvmomIds = tmpList.subList(0,1);
+							}else {
+								uvmomIds = tmpList.subList(0,1);;
+							}
+						}
+						i++;
+					}
+					//uvmomIds = uploadRepository.findAllUvmomsQcNotStarted(projectId, qpm.getQcLevel(), 1);
 					uploadIds = uploadRepository.findAllUploadIdsNonGroupedNew(uvmomIds, pqlc.getQcLevelBatchSize());
 					approvedUploadsCount = uploadIds.size();
 					numOfUploads = (pqlc.getQcLevelAcceptancePercentage().floatValue() / 100f) * approvedUploadsCount;

@@ -51,7 +51,7 @@ public interface QcProjectMappingBatchMappingRepository extends JpaRepository<Qc
     		+ "and cbm.next_level_batch_number is  null \n"
     		+ "and cbm.previous_level_batch_number is null \n"
     		+ "and (cbm.batch_completion_status=1 or cbm.batch_completion_status=3) \n"
-    		+ "group by cbm.id",nativeQuery = true)
+    		+ "group by cbm.id order by cbm.id ",nativeQuery = true)
     List<Integer[]> getQcMixedBatches(Long projectId,Integer qcLevel);
     
     

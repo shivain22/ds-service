@@ -124,6 +124,10 @@ public interface ObjectRepository
 	@Query(nativeQuery = true)
 	Page<ObjectDTO> getNewObjectsDto(Pageable pageable, Long projectId,
 			Integer pageSize);
+	
+	@Query(nativeQuery = true)
+	List<ObjectDTO> getNewObjectsDtoList(Long projectId,
+			Integer pageSize);
 
 	/*
 	 * @Query(nativeQuery = true) Page<ObjectDTO>
