@@ -171,7 +171,7 @@ public interface ProjectRepository extends JpaRepository<Project, Long>,Querydsl
     @Modifying(flushAutomatically = true,clearAutomatically = true)
     @Query(value = "update project set total_uploaded_for_grouped=total_uploaded_for_grouped+1, "
     		+ "total_pending_for_grouped=total_pending_for_grouped+1, "
-    		+ "total_required_for_grouped=case when total_required_for_grouped>0 then total_required_for_grouped-1 else total_pending_for_grouped end "
+    		+ "total_required_for_grouped=total_required_for_grouped-1  "
     		+ "where id=?1",nativeQuery = true)
     void addTotalUploadedAddPendingSubtractRequiredForGrouped(Long projectId);
     
@@ -182,8 +182,13 @@ public interface ProjectRepository extends JpaRepository<Project, Long>,Querydsl
     
     @Modifying
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    @Query(value = "update project set total_rejected=total_rejected+?2,total_pending= total_pending-?2 ,total_required=total_required+?2 where id=?1",nativeQuery = true)
-    void addTotalRejectedAndSubtractTotalPendingAddTotalRequired(Long id,Integer numToAddSub);
+    @Query(value = "update project set total_rejected=?2,total_pending= ?2 ,total_required=?2 where id=?1",nativeQuery = true)
+    void addTotalRejectedAndSubtractTotalPendingAddTotalRequired(Long projectId,Integer numToAddSub);
+    
+    @Modifying
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Query(value = "update project set total_rejected=?2,total_pending= ?2 ,total_required=?2 where id=?1",nativeQuery = true)
+    void addTotalRejectedAndSubtractTotalPendingAddTotalRequiredForLevelGreaterThan1(Long id,Integer numToAddSub);
     
     @Modifying
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -231,6 +236,11 @@ public interface ProjectRepository extends JpaRepository<Project, Long>,Querydsl
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Query(value = "update project set total_approved=total_approved+?2, total_pending=total_pending-?2  where id=?1",nativeQuery = true)
     void addTotalApprovedSubtractTotalPending(Long id,Integer numToAddSub );
+    
+    @Modifying
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Query(value = "update project set total_approved=?2, total_pending=?3  where id=?1",nativeQuery = true)
+    void addTotalApprovedSubtractTotalPendingNonGrouped(Long id,Integer totalApproved, Integer totalPending );
     
     @Modifying
     @Transactional(propagation = Propagation.REQUIRES_NEW)

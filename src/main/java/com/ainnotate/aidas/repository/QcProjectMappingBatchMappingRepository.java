@@ -55,7 +55,7 @@ public interface QcProjectMappingBatchMappingRepository extends JpaRepository<Qc
     List<Integer[]> getQcMixedBatches(Long projectId,Integer qcLevel);
     
     
-    @Query(value="select ucbi.upload_id from upload_qpm_batch_info ucbi where batch_number = ?1",nativeQuery = true)
+    @Query(value="select ucbi.upload_id from upload_qpm_batch_info ucbi where batch_number = ?1 and ucbi.qc_status=1",nativeQuery = true)
     List<Long> getApprovedUploadIds(Integer batchNumber);
     
     @Query(value="select uvmom.id as uvmom_id "

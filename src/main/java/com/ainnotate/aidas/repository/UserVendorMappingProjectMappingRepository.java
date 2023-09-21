@@ -46,8 +46,13 @@ public interface UserVendorMappingProjectMappingRepository extends JpaRepository
     
     @Modifying
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    @Query(value = "update user_vendor_mapping_project_mapping set total_rejected=?2,total_pending= total_pending-?2 ,total_required=total_required+?2 where id=?1",nativeQuery = true)
-    void addTotalRejectedAndSubtractTotalPendingAddTotalRequired(Long id,Integer numToAddSub);
+    @Query(value = "update user_vendor_mapping_project_mapping set total_rejected=?2,total_pending= ?3 ,total_required=?2 where id=?1",nativeQuery = true)
+    void addTotalRejectedAndSubtractTotalPendingAddTotalRequired(Long id,Integer rejected,Integer pending);
+    
+    @Modifying
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Query(value = "update user_vendor_mapping_project_mapping set total_rejected=?2,total_pending= ?2 ,total_required=?2 where id=?1",nativeQuery = true)
+    void addTotalRejectedAndSubtractTotalPendingAddTotalRequiredForLevelGreaterThan1(Long id,Integer numToAddSub);
     
     
     @Modifying
@@ -63,8 +68,8 @@ public interface UserVendorMappingProjectMappingRepository extends JpaRepository
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Query(value = "update user_vendor_mapping_project_mapping "
     		+ "set total_rejected_for_grouped=total_rejected_for_grouped+1,"
-    		+ "total_pending_for_grouped= total_pending_for_grouped-?2 ,"
-    		+ "total_required_for_grouped=total_required_for_grouped+?2 where id=?1",nativeQuery = true)
+    		+ "total_pending_for_grouped= total_pending_for_grouped-1 ,"
+    		+ "total_required_for_grouped=total_required_for_grouped+1 where id=?1",nativeQuery = true)
     void addTotalRejectedAndSubtractTotalPendingAddTotalRequiredForGrouped(Long id,Long numToAddSub);
     
     
@@ -99,6 +104,11 @@ public interface UserVendorMappingProjectMappingRepository extends JpaRepository
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Query(value = "update user_vendor_mapping_project_mapping set total_approved=total_approved+?2, total_pending=total_pending-?2  where id=?1",nativeQuery = true)
     void addTotalApprovedSubtractTotalPending(Long id,Integer numToAddSub);
+    
+    @Modifying
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Query(value = "update user_vendor_mapping_project_mapping set total_approved=?2, total_pending=?3  where id=?1",nativeQuery = true)
+    void addTotalApprovedSubtractTotalPendingForNonGrouped(Long id,Integer totalApproved, Integer totalPending);
     
     @Modifying
     @Transactional(propagation = Propagation.REQUIRES_NEW)

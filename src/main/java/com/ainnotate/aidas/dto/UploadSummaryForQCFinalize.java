@@ -11,18 +11,49 @@ public class UploadSummaryForQCFinalize {
 	private Integer totalRejected;
 	private Integer totalPending;
 	private Integer totalShowToQc;
-	public UploadSummaryForQCFinalize(Long projectId, Long objectId, Long uvmpmId, Long uvmomId, Integer totalUploaded,
+	private Long uvmId;
+	public Long getUvmId() {
+		return uvmId;
+	}
+
+	public void setUvmId(Long uvmId) {
+		this.uvmId = uvmId;
+	}
+
+	public UploadSummaryForQCFinalize(Long projectId, Long objectId, Long uvmpmId, Long uvmomId,Long uvmId, Integer totalUploaded,
 			Integer totalApproved, Integer totalRejected, Integer totalPending, Integer totalShowToQc) {
 		super();
 		this.projectId = projectId;
 		this.objectId = objectId;
 		this.uvmpmId = uvmpmId;
 		this.uvmomId = uvmomId;
+		this.uvmId = uvmId;
 		this.totalUploaded = totalUploaded;
 		this.totalApproved = totalApproved;
 		this.totalRejected = totalRejected;
 		this.totalPending = totalPending;
 		this.totalShowToQc = totalShowToQc;
+	}
+	
+	public UploadSummaryForQCFinalize(Long uvmpmId, Long projectId,Integer totalUploaded,
+			Integer totalApproved, Integer totalRejected, Integer totalPending) {
+		super();
+		this.projectId = projectId;
+		this.uvmpmId = uvmpmId;
+		this.totalUploaded = totalUploaded;
+		this.totalApproved = totalApproved;
+		this.totalRejected = totalRejected;
+		this.totalPending = totalPending;
+	}
+	
+	public UploadSummaryForQCFinalize(Long projectId,Integer totalUploaded,
+			Integer totalApproved, Integer totalRejected, Integer totalPending) {
+		super();
+		this.projectId = projectId;
+		this.totalUploaded = totalUploaded;
+		this.totalApproved = totalApproved;
+		this.totalRejected = totalRejected;
+		this.totalPending = totalPending;
 	}
 	
 	public UploadSummaryForQCFinalize(Integer totalUploaded,

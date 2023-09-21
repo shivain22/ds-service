@@ -33,6 +33,10 @@ import java.util.List;
 public interface ObjectRepository
 		extends JpaRepository<Object, Long>, QuerydslPredicateExecutor<Object>, QuerydslBinderCustomizer<QObject> {
 
+	@Query(value="select * from object where id=?1 for update",nativeQuery = true)
+	Object getByIdForUpdate(Long objectId);
+	
+	
 	@Query(value = "select * from object o, project p, customer c where o.project_id=p.id and p.customer_id=c.id and c.organisation_id=?1 and o.status=1 and o.is_dummy=0", countQuery = "select count(*) from object o, project p, customer c where o.project_id=p.id and p.customer_id=c.id and c.organisation_id=? and o.status=1 and o.is_dummy=0", nativeQuery = true)
 	Page<Object> findAllByAidasProject_AidasCustomer_AidasOrganisation(Pageable pageable, Long organisationId);
 
@@ -384,7 +388,21 @@ public interface ObjectRepository
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
     @Query(value = "update object set total_rejected=total_rejected+?2,total_pending= total_pending-?2 ,total_required=total_required+?2 where id=?1",nativeQuery = true)
     void addTotalRejectedAndSubtractTotalPendingAddTotalRequired(Long id,Integer numToAddSub);
+	
+	@Modifying
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Query(value = "update object set total_rejected=?2,total_pending= ?3,total_required=?4  where id=?1 ",nativeQuery = true)
+    void addTotalRejectedAndSubtractTotalPendingAddTotalRequiredForNonGrouped(Long objectId,Integer totalRejected,Integer totalPending,Integer totalRequired);
+	
+	@Modifying
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Query(value = "update object set total_rejected=?2,total_pending= ?3,total_required=total_required+?2  where id=?1 ",nativeQuery = true)
+    void addTotalRejectedAndSubtractTotalPendingAddTotalRequiredForNonGroupedBeforeLastLevel(Long objectId,Integer totalRejected,Integer totalPending);
     
+	
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Query(value = "select count(*) from upload u, user_vendor_mapping_object_mapping uvmom where u.user_vendor_mapping_object_mapping_id=uvmom.id and uvmom.object_id=?1 and u.approval_status=0",nativeQuery = true)
+    Integer getTotalRejectedForObjectFromUploads(Long objectId);
 	
 	@Modifying
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -396,6 +414,11 @@ public interface ObjectRepository
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Query(value = "update object set total_approved=total_approved+?2, total_pending=total_pending-?2  where id=?1",nativeQuery = true)
     void addTotalApprovedSubtractTotalPending(Long id,Integer numToAddSub);
+    
+    @Modifying
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Query(value = "update object set total_approved=?2, total_pending=?3  where id=?1",nativeQuery = true)
+    void addTotalApprovedSubtractTotalPendingNonGrouped(Long id,Integer totalApproved, Integer totalPending);
     
     @Modifying
     @Transactional(propagation = Propagation.REQUIRES_NEW)

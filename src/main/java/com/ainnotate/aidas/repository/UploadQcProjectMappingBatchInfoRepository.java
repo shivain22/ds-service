@@ -232,12 +232,21 @@ public interface UploadQcProjectMappingBatchInfoRepository extends JpaRepository
     		+ " group by u.user_vendor_mapping_object_mapping_id,o.id,uvmpm.id, p.id",nativeQuery =  true)
     List<Long[]> getUvmomObjectIdsOfFinalLevelPendingAndNotShown(Long qcProjectMappingId,Long batchNumber);
     
-  
+    @Query(value="select count(*) from upload_qpm_batch_info uqbi where uqbi.qc_project_mapping_id=?1 and uqbi.batch_number = ?2 and qc_status=2 and show_to_qc=1",
+    		nativeQuery =  true)
+    Integer getQcStatusPendingWithShowToQcEnabled(Long qcProjectMappingId,Long batchNumber);
+    
     @Query(nativeQuery =  true)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     List<UploadSummaryForQCFinalize> getUvmomObjectIdsOfBatch(Long qcProjectMappingId,Long batchNumber);
     
+    @Query(nativeQuery =  true)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    List<UploadSummaryForQCFinalize> getUvmomObjectIdsOfBatchNonGrouped(Long projectId,Long uvmId);
     
+    @Query(nativeQuery =  true)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    List<UploadSummaryForQCFinalize> getUvmomObjectIdsOfBatchNonGroupedForProject(Long projectId);
     
     
     
@@ -248,6 +257,42 @@ public interface UploadQcProjectMappingBatchInfoRepository extends JpaRepository
     		+ "u.qc_end_date=now() where ucbi.upload_id=u.id and ucbi.batch_number=?2 "
     		+ "and ucbi.qc_project_mapping_id=?1 and ucbi.show_to_qc=0 and ucbi.qc_status=2",nativeQuery =  true)
     void updateUqpmbiUploadFinalLevel(Long qcProjectMappingId,Long batchNumber);
+    
+    @Modifying(clearAutomatically = true,flushAutomatically = true)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Query(value="update upload_qpm_batch_info ucbi, upload u "
+    		+ "set u.qc_status=0, u.approval_status=0, ucbi.last_modified_date=now(), ucbi.qc_status=0,"
+    		+ "u.qc_end_date=now() where ucbi.upload_id=u.id and ucbi.batch_number=?2 "
+    		+ "and ucbi.qc_project_mapping_id=?1 and ucbi.show_to_qc=0 and ucbi.qc_status=0",nativeQuery =  true)
+    void updateUqpmbiUploadFinalLevelWhenAllInBatchIsRejected(Long qcProjectMappingId,Long batchNumber);
+    
+    @Modifying(clearAutomatically = true,flushAutomatically = true)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Query(value="update upload_qpm_batch_info ucbi, upload u "
+    		+ "set u.qc_status=ucbi.qc_status, u.approval_status=0, ucbi.last_modified_date=now(), "
+    		+ "u.qc_end_date=now() where ucbi.upload_id=u.id and ucbi.batch_number=?2 "
+    		+ "and ucbi.qc_project_mapping_id=?1 and ucbi.show_to_qc=0 ",nativeQuery =  true)
+    void updateUqpmbiUploadFinalLevelWhenAllInBatchIsRejectedWithMixedApprovalForGrouped(Long qcProjectMappingId,Long batchNumber);
+    
+   
+    @Query(value="select\n"
+    		+ "u.user_vendor_mapping_object_mapping_id, \n"
+    		+ "count(*) as totalUploaded,\n"
+    		+ " sum(case when ucbi.qc_status=1 then 1 else 0 end) as totalApproved, \n"
+    		+ " sum(case when ucbi.qc_status=0 then 1 else 0 end) as totalRejected, \n"
+    		+ " sum(case when ucbi.qc_status=2 then 1 else 0 end) as totalPending\n"
+    		+ "from \n"
+    		+ "qc_project_mapping qpm,\n"
+    		+ "upload_qpm_batch_info ucbi,\n"
+    		+ "upload u \n"
+    		+ "where \n"
+    		+ "ucbi.upload_id=u.id\n"
+    		+ "and ucbi.batch_number =?1\n"
+    		+ "and ucbi.qc_project_mapping_id=qpm.id and qpm.project_id=?2\n"
+    		+ "group by u.user_vendor_mapping_object_mapping_id\n",
+    		nativeQuery = true
+    		)
+    List<Long[]> getBatchWiseReportForGroupedProjectGroupedByUvmomToGetRejectionCompleted(Long batchNumber,Long projectId);
     
     @Modifying
     @Transactional(propagation = Propagation.REQUIRES_NEW)
