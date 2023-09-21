@@ -1102,7 +1102,7 @@ public class UploadResource {
 					}
 				} else {
 					List<Long> approvedUploadIds = qcProjectMappingBatchMappingRepository.getApprovedUploadIds(mixedBatches.get(0)[0]);
-					numOfUploads = (pqlc.getQcLevelAcceptancePercentage().floatValue() / 100f) * approvedUploadsCount;
+					numOfUploads = (pqlc.getQcLevelAcceptancePercentage().floatValue() / 100f) * approvedUploadIds.size();
 					ceiledNumberOfuploads = Math.ceil(numOfUploads);
 					numOfUploadsToBeShown = ceiledNumberOfuploads.intValue();
 					if(numOfUploadsToBeShown==0) {
