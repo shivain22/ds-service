@@ -33,7 +33,7 @@ import java.util.List;
 public interface ObjectRepository
 		extends JpaRepository<Object, Long>, QuerydslPredicateExecutor<Object>, QuerydslBinderCustomizer<QObject> {
 
-	@Query(value="select * from object where id=?1 for update",nativeQuery = true)
+	@Query(value="select * from object where id=?1 ",nativeQuery = true)
 	Object getByIdForUpdate(Long objectId);
 	
 	
@@ -417,6 +417,17 @@ public interface ObjectRepository
     
     @Modifying
     @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Query(value = "update object set  total_required=number_of_uploads_required-?3,total_approved=?2,total_rejected=?3,total_pending=?4  where id=?1",nativeQuery = true)
+    void addTotalApprovedSubtractTotalPendingNew(Long id,Integer totalApproved,Integer totalRejected,Integer totalPending);
+    
+    
+    @Modifying
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Query(value = "update object set  total_approved=?2,total_pending=?3  where id=?1",nativeQuery = true)
+    void addTotalApprovedSubtractTotalPendingNewForApproved(Long id,Integer totalApproved,Integer totalPending);
+    
+    @Modifying
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Query(value = "update object set total_approved=?2, total_pending=?3  where id=?1",nativeQuery = true)
     void addTotalApprovedSubtractTotalPendingNonGrouped(Long id,Integer totalApproved, Integer totalPending);
     
@@ -433,5 +444,8 @@ public interface ObjectRepository
     
     @Query(value="select * from object where id=?1",nativeQuery = true)
     Object getObjectById(Long id);
+    
+    @Query(value="select number_of_uploads_required-(total_approved+total_pending) from object o where o.id=?1",nativeQuery = true)
+    Integer getMoreRequiredForUpload(Long objectId);
 	
 }

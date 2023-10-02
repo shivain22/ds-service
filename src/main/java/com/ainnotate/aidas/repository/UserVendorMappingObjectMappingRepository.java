@@ -25,6 +25,9 @@ public interface UserVendorMappingObjectMappingRepository extends JpaRepository<
     
     @Query(value = "select uvmom.* from user_vendor_mapping_object_mapping uvmom,user_vendor_mapping uvm where uvmom.user_vendor_mapping_id=uvm.id and uvm.user_id=?1 and object_id=?2 for update", nativeQuery = true)
     UserVendorMappingObjectMapping findByUserObjectForUpload(Long userId, Long objectId);
+    
+    @Query(value = "select uvmom.* from user_vendor_mapping_object_mapping uvmom where id=?1 for update", nativeQuery = true)
+    UserVendorMappingObjectMapping findByUserObjectForUpload(Long uvmomId);
 
     @Query(value = "select * from user_vendor_mapping_object_mapping uvmom,user_vendor_mapping uvm,object o where uvmom.object_id=o.id and uvmom.user_vendor_mapping_id=uvm.id and uvm.user_id<>?1 and object_id=?2 and uvmom.status=1 and o.project_id=?3", nativeQuery = true)
     List<UserVendorMappingObjectMapping> findByOtherUsersAndObject(Long userId, Long objectId,Long projectId);

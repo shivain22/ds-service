@@ -56,7 +56,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
         "p.project_description_link as project_description_link\n" +
         "from \n" +
         "project p, user_vendor_mapping_project_mapping uvmpm,user_vendor_mapping uvm, customer c " +
-        "where uvmpm.project_id=p.id and uvmpm.status=1 and p.status=1 and uvmpm.user_vendor_mapping_id=uvm.id and p.customer_id=c.id and uvm.user_id=?1 and p.pause_status=1 order by p.id desc",
+        "where uvmpm.project_id=p.id and uvmpm.status=1 and p.status=1 and uvmpm.user_vendor_mapping_id=uvm.id and p.customer_id=c.id and uvm.user_id=?1 and p.pause_status=1  order by p.id desc",
     resultSetMapping = "Mapping.ProjectDTO")
 
 

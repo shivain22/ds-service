@@ -25,7 +25,7 @@ public interface UserVendorMappingProjectMappingRepository extends JpaRepository
     @Query(value="select * from user_vendor_mapping_project_mapping uvmpm where uvmpm.user_vendor_mapping_id=?1 and uvmpm.project_id=?2",nativeQuery = true)
     UserVendorMappingProjectMapping findByUserVendorMappingIdProjectId(Long userVendorMappingId, Long projectId);
     
-    @Query(value="select * from user_vendor_mapping_project_mapping uvmpm where uvmpm.user_vendor_mapping_id=?1 and uvmpm.project_id=?2 for update",nativeQuery = true)
+    @Query(value="select * from user_vendor_mapping_project_mapping uvmpm where uvmpm.user_vendor_mapping_id=?1 and uvmpm.project_id=?2",nativeQuery = true)
     UserVendorMappingProjectMapping findByUserVendorMappingIdProjectIdForUpload(Long userVendorMappingId, Long projectId);
 
     @Query(value = "select uvmpm.* from user_vendor_mapping_project_mapping uvmpm where  uvmpm.project_id=?1",nativeQuery = true)
@@ -46,7 +46,7 @@ public interface UserVendorMappingProjectMappingRepository extends JpaRepository
     
     @Modifying
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    @Query(value = "update user_vendor_mapping_project_mapping set total_rejected=?2,total_pending= ?3 ,total_required=?2 where id=?1",nativeQuery = true)
+    @Query(value = "update user_vendor_mapping_project_mapping set total_rejected=?2,total_pending=total_pending+?3 ,total_required=?2 where id=?1",nativeQuery = true)
     void addTotalRejectedAndSubtractTotalPendingAddTotalRequired(Long id,Integer rejected,Integer pending);
     
     @Modifying

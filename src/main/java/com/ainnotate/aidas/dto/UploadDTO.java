@@ -27,8 +27,17 @@ public class UploadDTO {
     private Long userId;
     private Long objectId;
     private String name;
+    private Long userVendorMappingObjectMappingId;
 
-    public String getName() {
+    public Long getUserVendorMappingObjectMappingId() {
+		return userVendorMappingObjectMappingId;
+	}
+
+	public void setUserVendorMappingObjectMappingId(Long userVendorMappingObjectMappingId) {
+		this.userVendorMappingObjectMappingId = userVendorMappingObjectMappingId;
+	}
+
+	public String getName() {
         return name;
     }
 

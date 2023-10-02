@@ -56,6 +56,8 @@ public class UploadSummaryForQCFinalize {
 		this.totalPending = totalPending;
 	}
 	
+	
+	
 	public UploadSummaryForQCFinalize(Integer totalUploaded,
 			Integer totalApproved, Integer totalRejected, Integer totalPending) {
 		super();

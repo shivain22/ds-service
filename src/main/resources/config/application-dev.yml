@@ -63,6 +63,9 @@ spring:
         prepStmtCacheSize: 250
         prepStmtCacheSqlLimit: 2048
         useServerPrepStmts: true
+        maximum-pool-size: 100
+        minimumIdle: 100
+        maxLifetime: 1800000 
   jpa:
     properties:
       spring.jpa.properties.hibernate.dialect: org.hibernate.dialect.MySQL8Dialect

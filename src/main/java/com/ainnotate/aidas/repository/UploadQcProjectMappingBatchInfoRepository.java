@@ -249,6 +249,20 @@ public interface UploadQcProjectMappingBatchInfoRepository extends JpaRepository
     List<UploadSummaryForQCFinalize> getUvmomObjectIdsOfBatchNonGroupedForProject(Long projectId);
     
     
+    @Query(nativeQuery =  true)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    List<UploadSummaryForQCFinalize> getUvmpmObjectIdsOfBatchNonGroupedForProjectNew(Long projectId,Long uvmpmId);
+    
+    
+    
+    @Query(nativeQuery =  true)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    List<UploadSummaryForQCFinalize> getObjectIdsOfBatchNonGroupedForProject(Long objectId);
+    
+    @Query(nativeQuery =  true)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    List<UploadSummaryForQCFinalize> getUvmomObjectIdsOfBatchNonGroupedForProjectNew(Long objectId,Long uvmomId);
+    
     
     @Modifying(clearAutomatically = true,flushAutomatically = true)
     @Transactional(propagation = Propagation.REQUIRES_NEW)

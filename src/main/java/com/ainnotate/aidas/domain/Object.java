@@ -309,93 +309,107 @@ query = "select sum(a.count) as count  from \n" +
 
 @NamedNativeQuery(name="Object.getExistingForNonGroupedSearch",
 query = 
-	"select " +
-			"a.id," +
-		    "a.projectId,"+
-		    "a.userVendorMappingObjectMappingId,"+
-		    "a.parentObjectId,"+
-		    "a.numberOfUploadsRequired," +
-		    "a.numberOfBufferedUploadsRequired," +
-		    "a.totalRequired," +
-		    "a.totalUploaded, \n" +
-		    "a.totalApproved, \n" +
-		    "a.totalRejected, \n" +
-		    "a.totalPending,\n" +
-		    "a.bufferPercent,\n" +
-		    "a.name,\n" +
-		    "a.description,\n" +
-		    "a.imageType,\n" +
-		    "a.audioType,\n" +
-		    "a.videoType, \n" +
-		    "a.objectDescriptionLink \n"
-		    + " from " +
-		    
-    " ((select \n" +
-    "o.id," +
-    "o.project_id as projectId,"+
-    "uvmom.id as userVendorMappingObjectMappingId,"+
-    "o.parent_object_id parentObjectId,"+
-    "o.number_of_uploads_required as numberOfUploadsRequired," +
-    "o.number_of_buffered_uploads_required as numberOfBufferedUploadsRequired," +
-    "o.total_required as totalRequired," +
-    "uvmom.total_uploaded as totalUploaded, \n" +
-    "uvmom.total_approved as totalApproved, \n" +
-    "uvmom.total_rejected as totalRejected, \n" +
-    "uvmom.total_pending as totalPending,\n" +
-    "o.buffer_percent as bufferPercent," +
-    "o.name as name," +
-    "o.description as description," +
-    "o.image_type as imageType," +
-    "o.audio_type as audioType," +
-    "o.video_type as videoType, " +
-    "o.object_description_link as objectDescriptionLink " +
-    "from user_vendor_mapping_object_mapping uvmom  \n" +
-    "left join object o on o.id=uvmom.object_id   \n" +
-    "where uvmom.user_vendor_mapping_id=?1 "
-    + "and uvmom.status=1 \n"
-    + "and o.status=1 and o.is_dummy=0  \n"
-    + "and o.project_id=?2 \n"
-    + "order by o.id desc )\n" +
-    " union \n" +
-    " (select \n" +
-    "o.id," +
-    "-1 as userVendorMappingObjectMappingId,"+
-    "o.project_id as projectId,"+
-    "o.parent_object_id parentObjectId,"+
-    "o.number_of_uploads_required as numberOfUploadsRequired," +
-    "o.number_of_buffered_uploads_required as numberOfBufferedUploadsRequired," +
-    "o.total_required as totalRequired," +
-    "0 as totalUploaded, \n" +
-    "0 as totalApproved, \n" +
-    "0 as totalRejected, \n" +
-    "0 as totalPending,\n" +
-    "o.buffer_percent as bufferPercent," +
-    "o.name as name," +
-    "o.description as description," +
-    "o.image_type as imageType," +
-    "o.audio_type as audioType," +
-    "o.video_type as videoType, " +
-    "o.object_description_link as objectDescriptionLink " +
-    "from object o \n" +
-    "where o.status=1 \n"
-    + "and o.is_dummy=0  \n"
-    + "and o.project_id=?2 \n"
-    + "and o.id not in \n"
-    + "(select \n"
-    + "o.id \n"
-    + "from \n"
-    + "object o, \n"
-    + "user_vendor_mapping_object_mapping uvmom \n"
-    + "where uvmom.object_id=o.id \n"
-    + "and o.name like CONCAT('%',?3,'%')"
-    + "and uvmom.user_vendor_mapping_id=?1))) a order by a.id  \n"
+	"select \n"
+	+ "a.id,\n"
+	+ "a.projectId,\n"
+	+ "a.userVendorMappingObjectMappingId,\n"
+	+ "a.parentObjectId,\n"
+	+ "a.numberOfUploadsRequired,\n"
+	+ "a.numberOfBufferedUploadsRequired,\n"
+	+ "a.totalRequired,\n"
+	+ "a.totalUploaded, \n"
+	+ "a.totalApproved, \n"
+	+ "a.totalRejected, \n"
+	+ "a.totalPending,\n"
+	+ "a.bufferPercent,\n"
+	+ "a.name,\n"
+	+ "a.description,\n"
+	+ "a.imageType,\n"
+	+ "a.audioType,\n"
+	+ "a.videoType, \n"
+	+ "a.objectDescriptionLink \n"
+	+ " from  \n"
+	+ "(\n"
+	+ "(\n"
+	+ "select \n"
+	+ "o.id,\n"
+	+ "o.project_id as projectId,\n"
+	+ "uvmom.id as userVendorMappingObjectMappingId,\n"
+	+ "o.parent_object_id parentObjectId,\n"
+	+ "o.number_of_uploads_required as numberOfUploadsRequired,\n"
+	+ "o.number_of_buffered_uploads_required as numberOfBufferedUploadsRequired,\n"
+	+ "o.total_required as totalRequired,\n"
+	+ "uvmom.total_uploaded as totalUploaded, \n"
+	+ "uvmom.total_approved as totalApproved, \n"
+	+ "uvmom.total_rejected as totalRejected, \n"
+	+ "uvmom.total_pending as totalPending,\n"
+	+ "o.buffer_percent as bufferPercent,\n"
+	+ "o.name as name,\n"
+	+ "o.description as description,\n"
+	+ "o.image_type as imageType,\n"
+	+ "o.audio_type as audioType,\n"
+	+ "o.video_type as videoType, \n"
+	+ "o.object_description_link as objectDescriptionLink \n"
+	+ "from user_vendor_mapping_object_mapping uvmom,  \n"
+	+ "object o\n"
+	+ "where \n"
+	+ "o.id=uvmom.object_id   \n"
+	+ "and uvmom.user_vendor_mapping_id=?1 \n"
+	+ "and uvmom.status=1 \n"
+	+ "and o.status=1 and o.is_dummy=0  \n"
+	+ "and o.project_id=?2 \n"
+	+ "and o.name like CONCAT('%',?3,'%')\n"
+	+ "order by o.id desc \n"
+	+ ")\n"
+	+ "union \n"
+	+ "(\n"
+	+ "select \n"
+	+ "o.id,\n"
+	+ "o.project_id as projectId,\n"
+	+ "-1 as userVendorMappingObjectMappingId,\n"
+	+ "o.parent_object_id parentObjectId,\n"
+	+ "o.number_of_uploads_required as numberOfUploadsRequired,\n"
+	+ "o.number_of_buffered_uploads_required as numberOfBufferedUploadsRequired,\n"
+	+ "o.total_required as totalRequired,\n"
+	+ "0 as totalUploaded, \n"
+	+ "0 as totalApproved, \n"
+	+ "0 as totalRejected, \n"
+	+ "0 as totalPending,\n"
+	+ "o.buffer_percent as bufferPercent,\n"
+	+ "o.name as name,\n"
+	+ "o.description as description,\n"
+	+ "o.image_type as imageType,\n"
+	+ "o.audio_type as audioType,\n"
+	+ "o.video_type as videoType, \n"
+	+ "o.object_description_link as objectDescriptionLink \n"
+	+ "from object o \n"
+	+ "where o.status=1 \n"
+	+ "and o.is_dummy=0  \n"
+	+ "and o.project_id=?2 \n"
+	+ "and o.name like CONCAT('%',?3,'%')\n"
+	+ "and o.id not in \n"
+	+ "(\n"
+	+ "select \n"
+	+ "o.id\n"
+	+ "from user_vendor_mapping_object_mapping uvmom,  \n"
+	+ "object o\n"
+	+ "where \n"
+	+ "o.id=uvmom.object_id   \n"
+	+ "and uvmom.user_vendor_mapping_id=?1 \n"
+	+ "and uvmom.status=1 \n"
+	+ "and o.status=1 and o.is_dummy=0  \n"
+	+ "and o.project_id=?2 \n"
+	+ "and o.name like CONCAT('%',?3,'%')\n"
+	+ ")\n"
+	+ ")\n"
+	+ ") a order by a.id"
     ,resultSetMapping = "Mapping.ObjectDTOWithProjectId")
 
 
 
 @NamedNativeQuery(name="Object.getExistingForNonGroupedSearch.count",
 query = "select sum(a.count) as count  from \n" +
-        " ((select count(o.id) as count from object o where o.id not in (select o.id from object o, user_vendor_mapping_object_mapping uvmom where uvmom.object_id=o.id and uvmom.user_vendor_mapping_id=?1) ) union ("+
+        " ((select count(o.id) as count from object o where o.name like CONCAT('%',?3,'%') and o.id not in (select o.id from object o, user_vendor_mapping_object_mapping uvmom where uvmom.object_id=o.id and uvmom.user_vendor_mapping_id=?1) ) union ("+
 		" select count(o.id) as count  "+
 		"from user_vendor_mapping_object_mapping uvmom  \n" +
         "left join object o on o.id=uvmom.object_id   \n" +
@@ -598,7 +612,7 @@ query = "select \n" +
     "o.video_type as videoType, " +
     "o.object_description_link as objectDescriptionLink " +
     "from object o \n" +
-    "where o.status=1 and o.is_dummy=0 and o.project_id=?1 and o.object_acquired_by_uvmom_id is  null order by o.id desc limit ?2 for update "
+    "where o.status=1 and o.is_dummy=0 and o.project_id=?1 and o.object_acquired_by_uvmom_id is  null order by o.id desc limit ?2 "
 ,resultSetMapping = "Mapping.ObjectDTOWithProjectId")
 
 

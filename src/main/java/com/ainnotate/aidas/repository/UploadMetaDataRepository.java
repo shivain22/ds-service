@@ -20,6 +20,12 @@ public interface UploadMetaDataRepository extends JpaRepository<UploadMetaData, 
     @Query(value = "select * from upload_meta_data where is_sample_data=1 order by id asc",nativeQuery = true)
     List<UploadMetaData> getAllSampleUploadMetadata();
 
+    @Query(value = "select * from upload_meta_data umd, project_property pp,property p where umd.upload_id=?1 and umd.project_property_id=pp.id and pp.property_id=p.id and p.name in (?2)   ",nativeQuery = true)
+    List<UploadMetaData> getAllUploadMetaDatasProjectProperty(Long uploadId, List<String> keys);
+    
+    @Query(value = "select * from upload_meta_data umd, object_property op,property p where umd.upload_id=?1 and umd.object_property_id=op.id and op.property_id=p.id and p.name in (?2)   ",nativeQuery = true)
+    List<UploadMetaData> getAllUploadMetaDatasObjectProperty(Long uploadId, List<String> keys);
+    
     @Modifying
     @Query(value = "delete from upload_meta_data where is_sample_data=1 order by id desc",nativeQuery = true)
     void deleteAllSampleUploadMetadata();

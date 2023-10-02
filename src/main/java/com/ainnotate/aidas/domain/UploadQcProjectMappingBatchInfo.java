@@ -116,7 +116,7 @@ import com.ainnotate.aidas.dto.UploadSummaryForQCFinalize;
 
 
 @SqlResultSetMappings(value={
-	    
+
 	    @SqlResultSetMapping(
 	        name = "Mapping.UploadSummaryForQCFinalize",
 	        classes = @ConstructorResult(targetClass = UploadSummaryForQCFinalize.class,
@@ -153,7 +153,17 @@ import com.ainnotate.aidas.dto.UploadSummaryForQCFinalize;
 		                @ColumnResult(name = "totalRejected",type = Integer.class),
 		                @ColumnResult(name = "totalPending",type = Integer.class)
 		            })),
-	    
+	    @SqlResultSetMapping(
+		        name = "Mapping.UploadSummaryForQCFinalizeNonGroupedForProjectNew",
+		        classes = @ConstructorResult(targetClass = UploadSummaryForQCFinalize.class,
+		            columns = {
+		                @ColumnResult(name = "uvmpmId",type = Long.class),
+		                @ColumnResult(name = "totalUploaded",type = Integer.class),
+		                @ColumnResult(name = "totalApproved",type = Integer.class),
+		                @ColumnResult(name = "totalRejected",type = Integer.class),
+		                @ColumnResult(name = "totalPending",type = Integer.class)
+		            })),
+
 	    @SqlResultSetMapping(name = "Mapping.QcResultDTO",
 	    classes = @ConstructorResult(targetClass = QcResultDTO.class,
 	        columns = {
@@ -201,6 +211,7 @@ query="select "
 		+ " and uvmpm.user_vendor_mapping_id=uvm.id \n"
 		+ " and uvmpm.project_id=p.id \n"
 		+ " and ucbi.batch_number=?2 \n"
+        + " and uvmom.user_vendor_mapping_id=uvmpm.user_vendor_mapping_id \n"
 		+ " and ucbi.qc_project_mapping_id=?1 \n"
 		+ " group by u.user_vendor_mapping_object_mapping_id,o.id,uvmpm.id, p.id"
     ,resultSetMapping = "Mapping.UploadSummaryForQCFinalize")
@@ -230,7 +241,7 @@ query="SELECT \n"
 
 @NamedNativeQuery(name="UploadQcProjectMappingBatchInfo.getUvmomObjectIdsOfBatchNonGroupedForProject",
 query="SELECT \n"
-		+ "uvmpm.project_id as projectId,\n"
+		+ "o.project_id as projectId,\n"
 		+ "count(*) as totalUploaded, \n"
 		+ "sum(case when u.approval_status=1 then 1 else 0 end) as totalApproved, \n"
 		+ "sum(case when u.approval_status=0 then 1 else 0 end) as totalRejected, \n"
@@ -238,15 +249,59 @@ query="SELECT \n"
 		+ "FROM \n"
 		+ "upload u, \n"
 		+ "user_vendor_mapping_object_mapping uvmom, \n"
-		+ "object o ,\n"
-		+ "user_vendor_mapping_project_mapping uvmpm\n"
+		+ "object o \n"
 		+ "where u.user_vendor_mapping_object_mapping_id=uvmom.id \n"
-		+ "and uvmpm.project_id=o.project_id\n"
-		+ "and uvmpm.user_vendor_mapping_id = uvmom.user_vendor_mapping_id\n"
 		+ "and uvmom.object_id=o.id \n"
 		+ "and o.project_id=?1\n"
-		+ "group by o.project_id"
     ,resultSetMapping = "Mapping.UploadSummaryForQCFinalizeNonGroupedForProject")
+
+@NamedNativeQuery(name="UploadQcProjectMappingBatchInfo.getUvmpmObjectIdsOfBatchNonGroupedForProjectNew",
+query="SELECT \n"
+		+ "uvmpm.id as uvmpmId,\n"
+		+ "count(*) as totalUploaded, \n"
+		+ "sum(case when u.approval_status=1 then 1 else 0 end) as totalApproved, \n"
+		+ "sum(case when u.approval_status=0 then 1 else 0 end) as totalRejected, \n"
+		+ "sum(case when u.approval_status=2 then 1 else 0 end) as totalPending\n"
+		+ "FROM \n"
+		+ "upload u, \n"
+		+ "user_vendor_mapping_object_mapping uvmom, \n"
+		+ "user_vendor_mapping_project_mapping uvmpm, \n"
+		+ "object o \n"
+		+ "where u.user_vendor_mapping_object_mapping_id=uvmom.id \n"
+		+ "and uvmom.user_vendor_mapping_id=uvmpm.user_vendor_mapping_id \n"
+		+ "and o.project_id=uvmpm.project_id \n"
+		+ "and uvmom.object_id=o.id \n"
+		+ "and uvmpm.id=?2 \n"
+		+ "and o.project_id=?1\n"
+    ,resultSetMapping = "Mapping.UploadSummaryForQCFinalizeNonGroupedForProjectNew")
+
+
+@NamedNativeQuery(name="UploadQcProjectMappingBatchInfo.getObjectIdsOfBatchNonGroupedForProject",
+query="SELECT \n"
+		+ "count(*) as totalUploaded, \n"
+		+ "sum(case when u.approval_status=1 then 1 else 0 end) as totalApproved, \n"
+		+ "sum(case when u.approval_status=0 then 1 else 0 end) as totalRejected, \n"
+		+ "sum(case when u.approval_status=2 then 1 else 0 end) as totalPending\n"
+		+ "FROM \n"
+		+ "upload u, \n"
+		+ "user_vendor_mapping_object_mapping uvmom \n"
+		+ "where u.user_vendor_mapping_object_mapping_id=uvmom.id \n"
+		+ "and uvmom.object_id=?1 \n"
+    ,resultSetMapping = "Mapping.BatchInfoMapping")
+
+@NamedNativeQuery(name="UploadQcProjectMappingBatchInfo.getUvmomObjectIdsOfBatchNonGroupedForProjectNew",
+query="SELECT \n"
+		+ "count(*) as totalUploaded, \n"
+		+ "sum(case when u.approval_status=1 then 1 else 0 end) as totalApproved, \n"
+		+ "sum(case when u.approval_status=0 then 1 else 0 end) as totalRejected, \n"
+		+ "sum(case when u.approval_status=2 then 1 else 0 end) as totalPending\n"
+		+ "FROM \n"
+		+ "upload u, \n"
+		+ "user_vendor_mapping_object_mapping uvmom \n"
+		+ "where u.user_vendor_mapping_object_mapping_id=uvmom.id \n"
+		+ "and uvmom.object_id=?1 and uvmom.id=?2\n"
+    ,resultSetMapping = "Mapping.BatchInfoMapping")
+
 
 @NamedNativeQuery(name="UploadQcProjectMappingBatchInfo.countUploadsByqcProjectMappingAndBatchNumberForFinalize",
 query="select count(ucbi.id) as totalUploaded,\n"
@@ -301,7 +356,7 @@ public class UploadQcProjectMappingBatchInfo extends AbstractAuditingEntity impl
         this.showToQc = showToQc;
     }
 
-   
+
     public Integer getQcSeenStatus() {
 		return qcSeenStatus;
 	}

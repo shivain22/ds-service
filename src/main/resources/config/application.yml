@@ -96,6 +96,8 @@ management:
         request:
           autotime:
             enabled: true
+      exposure:
+        include: metrics
 
 spring:
   autoconfigure:
@@ -176,7 +178,11 @@ spring:
             client-id: internal
             client-secret: internal
             scope: openid,profile,email
-
+  logging:
+     level:
+       org.hibernate: ERROR
+       com.netflix.discovery: ERROR
+       org.hibernate.orm: ERROR
 
 server:
   servlet:
