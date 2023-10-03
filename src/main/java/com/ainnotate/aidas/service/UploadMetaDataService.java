@@ -49,8 +49,8 @@ public class UploadMetaDataService implements Runnable{
 			for (Map.Entry<String, String> entry : uploadDto.getUploadMetadata().entrySet()) {
 				uploadMetaDataKeys.add(entry.getKey());
 			}
-			List<UploadMetaData> metadatas = uploadMetaDataRepository.getAllUploadMetaDatasProjectProperty(u.getId(),uploadMetaDataKeys); 
-			metadatas.addAll(uploadMetaDataRepository.getAllUploadMetaDatasObjectProperty(u.getId(),uploadMetaDataKeys)); 
+			List<UploadMetaData> metadatas = uploadMetaDataRepository.getAllUploadMetaDatasProjectProperty(uploadId,uploadMetaDataKeys); 
+			metadatas.addAll(uploadMetaDataRepository.getAllUploadMetaDatasObjectProperty(uploadId,uploadMetaDataKeys)); 
 			for(UploadMetaData umd:metadatas) {
 				if(umd.getProjectProperty()!=null) {
 					umd.setValue(uploadDto.getUploadMetadata().get(umd.getProjectProperty().getProperty().getName()));
@@ -59,7 +59,6 @@ public class UploadMetaDataService implements Runnable{
 					umd.setValue(uploadDto.getUploadMetadata().get(umd.getObjectProperty().getProperty().getName()));
 				}
 			}
-			
 			uploadMetaDataRepository.saveAll(metadatas);
 		}
 	}

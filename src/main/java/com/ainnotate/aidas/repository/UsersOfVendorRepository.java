@@ -1,6 +1,8 @@
 package com.ainnotate.aidas.repository;
 
 import com.ainnotate.aidas.domain.UsersOfVendor;
+import com.ainnotate.aidas.dto.UsersOfVendorDTO;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -18,6 +20,8 @@ public interface UsersOfVendorRepository extends JpaRepository<UsersOfVendor, St
 
     @Query(value="select *  from vendor_user_project_level_status where project_id=?1", nativeQuery = true)
     List<UsersOfVendor> getUserOfVendor(Long projectId);
+    
+    
     
     @Query(value="select *  from vendor_user_project_level_status vupls where vupls.project_id=?1 and "
     		+ "vupls.vendor_id in "

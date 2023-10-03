@@ -9,6 +9,7 @@ import com.ainnotate.aidas.domain.Vendor;
 import com.ainnotate.aidas.domain.VendorCustomerMapping;
 import com.ainnotate.aidas.dto.UserCustomerMappingDTO;
 import com.ainnotate.aidas.dto.UserVendorMappingDTO;
+import com.ainnotate.aidas.dto.UsersOfVendorDTO;
 import com.ainnotate.aidas.dto.VendorCustomerMappingDTO;
 import com.ainnotate.aidas.dto.VendorOrganisationMappingDTO;
 import com.querydsl.core.types.dsl.StringExpression;
@@ -37,6 +38,18 @@ public interface VendorRepository extends JpaRepository<Vendor, Long>,QuerydslPr
 
     @Query(value = "select * from vendor where name=?1 and is_sample_data=1",nativeQuery = true)
     Vendor findSampleVendorByName(String name);
+    
+    @Query(nativeQuery = true)
+    List<UsersOfVendorDTO> getUsersOfVendorForAdmin(Long projectId);
+    
+    @Query(nativeQuery = true)
+    List<UsersOfVendorDTO> getUsersOfVendorForOrganisastion(Long projectId,Long organisationId);
+    
+    @Query(nativeQuery = true)
+    List<UsersOfVendorDTO> getUsersOfVendorForCustomer(Long projectId,Long customerId);
+    
+    @Query(nativeQuery = true)
+    List<UsersOfVendorDTO> getUsersOfVendorForVendor(Long projectId,Long vendorId);
 
     @Query(value = "select * from vendor where id>0 and status=1",countQuery = "select count(*) from vendor where id>0 and status=1", nativeQuery = true)
     Page<Vendor> findAllByIdGreaterThan(Long id, Pageable page);

@@ -441,7 +441,7 @@ query = "select \n" +
     "o.object_description_link as objectDescriptionLink " +
     "from user_vendor_mapping_object_mapping uvmom  \n" +
     "left join object o on o.id=uvmom.object_id   \n" +
-    "where uvmom.user_vendor_mapping_id=?1 and uvmom.status=1 and o.status=1 and o.is_dummy=0  and o.project_id=?2 order by o.id  "
+    "where uvmom.user_vendor_mapping_id=?1 and uvmom.status=1 and o.status=1 and o.is_dummy=0 and o.object_acquired_by_uvmom_id=uvmom.id  and o.project_id=?2 order by o.id  "
     ,resultSetMapping = "Mapping.ObjectDTOWithProjectId")
 
 @NamedNativeQuery(name="Object.getExistingForGrouped.count",
@@ -612,7 +612,7 @@ query = "select \n" +
     "o.video_type as videoType, " +
     "o.object_description_link as objectDescriptionLink " +
     "from object o \n" +
-    "where o.status=1 and o.is_dummy=0 and o.project_id=?1 and o.object_acquired_by_uvmom_id is  null order by o.id desc limit ?2 "
+    "where o.status=1 and o.is_dummy=0 and o.project_id=?1 and o.object_acquired_by_uvmom_id is  null and o.id>-1 order by o.id desc limit ?2 "
 ,resultSetMapping = "Mapping.ObjectDTOWithProjectId")
 
 

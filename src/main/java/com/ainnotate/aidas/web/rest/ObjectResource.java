@@ -394,15 +394,13 @@ public class ObjectResource {
                     if(uvmom==null){
                         uvmom  = new UserVendorMappingObjectMapping();
                         uvmom.setUserVendorMapping(uvm);
-                        uvmom.setStatus(AidasConstants.AUTO_CREATE_OBJECT_ENABLE);
+                        uvmom.setStatus(AidasConstants.STATUS_ENABLED);
                         uvmom.setObject(object);
                         userVendorMappingObjectMappingRepository.save(uvmom);
                     }
-                    if(project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)){
-                    	object.setUserVendorMappingObjectMappingId(uvmom.getId());
-                    	object.setObjectAcquiredByUvmomId(uvmom.getId());
-    	                objectRepository.save(object);
-                    }
+                    object.setUserVendorMappingObjectMappingId(uvmom.getId());
+                    object.setObjectAcquiredByUvmomId(uvmom.getId());
+    	            objectRepository.save(object);
                 }
         		page = objectRepository.getExistingForGrouped(pageable,uvm.getId(),projectId);
         	}else {
@@ -418,7 +416,7 @@ public class ObjectResource {
                     if(uvmom==null){
                         uvmom  = new UserVendorMappingObjectMapping();
                         uvmom.setUserVendorMapping(uvm);
-                        uvmom.setStatus(AidasConstants.AUTO_CREATE_OBJECT_ENABLE);
+                        uvmom.setStatus(AidasConstants.STATUS_ENABLED);
                         uvmom.setObject(object);
                         userVendorMappingObjectMappingRepository.save(uvmom);
                     }
@@ -433,7 +431,7 @@ public class ObjectResource {
         		page = objectRepository.getExistingForNonGrouped(pageable,uvm.getId(),projectId);
         	}
         }
-        for(ObjectDTO o:page.getContent()){
+        /*for(ObjectDTO o:page.getContent()){
             UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserVendorMappingObject(uvm.getId(),o.getId());
             Object object = objectRepository.getById(o.getId());
             if(uvmom==null){
@@ -448,7 +446,7 @@ public class ObjectResource {
             	object.setObjectAcquiredByUvmomId(uvmom.getId());
                 objectRepository.save(object);
             }
-        }
+        }*/
     	HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }

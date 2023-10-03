@@ -417,64 +417,43 @@ public class ProjectResource {
 		}
 		List<UserVendorMappingObjectMapping> uvmoms = new ArrayList<>();
 		Project project = projectRepository.getById(projectVendorMappingDTO.getProjectId());
-		for (VendorUserDTO vendorUserDTO : projectVendorMappingDTO.getVendors()) {
-			for (UsersOfVendor userDTO : vendorUserDTO.getUserDTOs()) {
-				if(userDTO.getStatus().equals(AidasConstants.STATUS_ENABLED)) {
-					Object dummyObject = objectRepository.getDummyObjectOfProject(projectVendorMappingDTO.getProjectId());
-					UserVendorMapping uvm = userVendorMappingRepository.getById(userDTO.getUserVendorMappingId());
-					if (uvm != null && dummyObject != null) {
-						UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository
-								.findAllByUserVendorMappingObject(userDTO.getUserVendorMappingId(), dummyObject.getId());
-						UserVendorMappingProjectMapping uvmpm = userVendorMappingProjectMappingRepository
-								.findByUserVendorMappingIdProjectId(userDTO.getUserVendorMappingId(),
-										projectVendorMappingDTO.getProjectId());
-						if (uvmpm == null && userDTO.getStatus().equals(AidasConstants.STATUS_ENABLED)) {
-							uvmpm = new UserVendorMappingProjectMapping();
-							uvmpm.setProject(project);
-							uvmpm.setUserVendorMapping(uvm);
-							if (project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)) {
-								uvmpm.setTotalRequired(project.getNumberOfObjects());
-								uvmpm.setTotalRequiredForGrouped(project.getNumberOfObjects());
-							} else {
-								uvmpm.setTotalRequired(project.getNumberOfUploadsRequired());
-							}
-							userVendorMappingProjectMappingRepository.save(uvmpm);
-						}else {
-							uvmpm.setStatus(userDTO.getStatus());
-							userVendorMappingProjectMappingRepository.save(uvmpm);
-						}
-						if (uvmom == null && userDTO.getStatus().equals(AidasConstants.STATUS_ENABLED)) {
-							uvmom = new UserVendorMappingObjectMapping();
-							uvmom.setUserVendorMapping(uvm);
-							uvmom.setObject(dummyObject);
-							uvmom.setStatus(userDTO.getStatus());
-							userVendorMappingObjectMappingRepository.save(uvmom);
-						}else {
-							uvmom.setStatus(userDTO.getStatus());
-							userVendorMappingObjectMappingRepository.save(uvmom);
-						}
-					}
-			}else if(userDTO.getStatus().equals(AidasConstants.STATUS_DISABLED)) {
-				Object dummyObject = objectRepository.getDummyObjectOfProject(projectVendorMappingDTO.getProjectId());
-				UserVendorMapping uvm = userVendorMappingRepository.getById(userDTO.getUserVendorMappingId());
-				if (uvm != null && dummyObject != null) {
-					UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository
-							.findAllByUserVendorMappingObject(userDTO.getUserVendorMappingId(), dummyObject.getId());
-					UserVendorMappingProjectMapping uvmpm = userVendorMappingProjectMappingRepository
-							.findByUserVendorMappingIdProjectId(userDTO.getUserVendorMappingId(),
-									projectVendorMappingDTO.getProjectId());
-					if (uvmpm != null) {
-						uvmpm.setStatus(userDTO.getStatus());
-						userVendorMappingProjectMappingRepository.save(uvmpm);
-					}
-					if (uvmom != null) {
-						uvmom.setStatus(userDTO.getStatus());
-						userVendorMappingObjectMappingRepository.save(uvmom);
-					}
-				}
-			}
-		  }
-		}
+		Object dummyObject = objectRepository.getDummyObjectOfProject(projectVendorMappingDTO.getProjectId());
+		List<UsersOfVendorDTO> firstTimersEnabled = projectVendorMappingDTO.getVendors().stream()
+		        .flatMap(v -> v.getUserDTOs().stream())
+		        .filter(u->u.getStatus().equals(AidasConstants.STATUS_ENABLED) && u.getUserVendorMappingProjectMappingId().equals(-1l))
+		        .collect(Collectors.toList());
+		
+		List<Long> longTimersEnabled = projectVendorMappingDTO.getVendors().stream()
+		        .flatMap(v -> v.getUserDTOs().stream())
+		        .filter(u->u.getStatus().equals(AidasConstants.STATUS_ENABLED) && !u.getUserVendorMappingProjectMappingId().equals(-1l)).map(UsersOfVendorDTO::getUserVendorMappingProjectMappingId)
+		        .collect(Collectors.toList());
+		
+		List<Long> longTimersDisabled = projectVendorMappingDTO.getVendors().stream()
+		        .flatMap(v -> v.getUserDTOs().stream())
+		        .filter(u->u.getStatus().equals(AidasConstants.STATUS_DISABLED) && !u.getUserVendorMappingProjectMappingId().equals(-1l)).map(UsersOfVendorDTO::getUserVendorMappingProjectMappingId)
+		        .collect(Collectors.toList());
+		
+		List<UserVendorMappingProjectMapping> ltEnabled = userVendorMappingProjectMappingRepository.findAllUvmpms(longTimersEnabled);
+		List<UserVendorMappingProjectMapping> ltDisabled = userVendorMappingProjectMappingRepository.findAllUvmpms(longTimersDisabled);
+		ltEnabled.forEach(uvmpm->uvmpm.setStatus(AidasConstants.STATUS_ENABLED));
+		ltDisabled.forEach(uvmpm->uvmpm.setStatus(AidasConstants.STATUS_DISABLED));
+		userVendorMappingProjectMappingRepository.saveAll(ltEnabled);
+		userVendorMappingProjectMappingRepository.saveAll(ltDisabled);
+		List<UserVendorMappingProjectMapping> uvmpms = new ArrayList<>();
+		firstTimersEnabled.forEach(userdto->{
+			UserVendorMapping uvm = new UserVendorMapping();
+			uvm.setId(userdto.getUserVendorMappingId());
+			UserVendorMappingProjectMapping uvmpm = new UserVendorMappingProjectMapping();
+			uvmpm.setUserVendorMapping(uvm);
+			uvmpm.setProject(project);
+			uvmpms.add(uvmpm);
+			UserVendorMappingObjectMapping uvmom = new UserVendorMappingObjectMapping();
+			uvmom.setUserVendorMapping(uvm);
+			uvmom.setObject(dummyObject);
+			uvmoms.add(uvmom);
+		});
+		userVendorMappingProjectMappingRepository.saveAll(uvmpms);
+		userVendorMappingObjectMappingRepository.saveAll(uvmoms);
 		return ResponseEntity.ok().body("Successfully mapped vendors to project");
 	}
 
@@ -503,7 +482,7 @@ public class ProjectResource {
 		List<Long> userVendorMappingIds = new ArrayList<>();
 		Map<Long, Integer> userVendorMappingStatusMap = new HashMap<>();
 		for (VendorUserDTO vendorUserDTO : projectVendorMappingDTO.getVendors()) {
-			for (UsersOfVendor userDTO : vendorUserDTO.getUserDTOs()) {
+			for (UsersOfVendorDTO userDTO : vendorUserDTO.getUserDTOs()) {
 				userVendorMappingIds.add(userDTO.getUserVendorMappingId());
 				userVendorMappingStatusMap.put(userDTO.getUserVendorMappingId(), userDTO.getStatus());
 			}

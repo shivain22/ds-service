@@ -10,9 +10,10 @@ public class VendorUserDTO {
 
     private Long vendorId;
     private String name;
-    private List<UsersOfVendor> userDTOs=new ArrayList<>();
+    private List<UsersOfVendorDTO> userDTOs=new ArrayList<>();
+    
 
-    public VendorUserDTO(Long vendorId, String name, List<UsersOfVendor> userDTOs) {
+	public VendorUserDTO(Long vendorId, String name, List<UsersOfVendorDTO> userDTOs) {
         this.vendorId = vendorId;
         this.name = name;
         this.userDTOs = userDTOs;
@@ -59,11 +60,13 @@ public class VendorUserDTO {
         this.name = name;
     }
 
-    public List<UsersOfVendor> getUserDTOs() {
-        return userDTOs;
-    }
+	public List<UsersOfVendorDTO> getUserDTOs() {
+		return userDTOs;
+	}
 
-    public void setUserDTOs(List<UsersOfVendor> userDTOs) {
-        this.userDTOs = userDTOs;
-    }
+	public void setUserDTOs(List<UsersOfVendorDTO> userDTOs) {
+		this.userDTOs = userDTOs;
+	}
+
+    
 }

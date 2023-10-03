@@ -3,6 +3,7 @@ package com.ainnotate.aidas.web.rest;
 import com.ainnotate.aidas.constants.AidasConstants;
 import com.ainnotate.aidas.domain.*;
 import com.ainnotate.aidas.dto.UserVendorMappingDTO;
+import com.ainnotate.aidas.dto.UsersOfVendorDTO;
 import com.ainnotate.aidas.dto.VendorCustomerMappingDTO;
 import com.ainnotate.aidas.dto.VendorOrganisationMappingDTO;
 import com.ainnotate.aidas.dto.VendorUserDTO;
@@ -321,17 +322,17 @@ public class VendorResource {
 		log.debug("REST request to get a page of AidasVendors");
 		User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
 		List<VendorUserDTO> vendorUserDtos = new ArrayList<>();
-		List<UsersOfVendor> vendorUsers = null;// userOfVendorRepository.getUserOfVendor(projectId);
+		List<UsersOfVendorDTO> vendorUsers = null;// userOfVendorRepository.getUserOfVendor(projectId);
 		if(user.getAuthority().getName().equals(AidasConstants.ADMIN)) {
-			vendorUsers = userOfVendorRepository.getUserOfVendor(projectId);
+			vendorUsers = vendorRepository.getUsersOfVendorForAdmin(projectId);
 		}else if(user.getAuthority().getName().equals(AidasConstants.ORG_ADMIN)) {
-			vendorUsers = userOfVendorRepository.getUserOfVendorForOrganisation(projectId,user.getOrganisation().getId());
+			vendorUsers = vendorRepository.getUsersOfVendorForOrganisastion(projectId,user.getOrganisation().getId());
 		}else if(user.getAuthority().getName().equals(AidasConstants.CUSTOMER_ADMIN)) {
-			vendorUsers = userOfVendorRepository.getUserOfVendorCustomer(projectId, user.getCustomer().getId());
+			vendorUsers = vendorRepository.getUsersOfVendorForCustomer(projectId, user.getCustomer().getId());
 		}else if(user.getAuthority().getName().equals(AidasConstants.VENDOR_ADMIN)) {
-			vendorUsers = userOfVendorRepository.getUserOfVendorForVendor(projectId, user.getVendor().getId());
+			vendorUsers = vendorRepository.getUsersOfVendorForVendor(projectId, user.getVendor().getId());
 		}
-		Map<VendorUserDTO, List<UsersOfVendor>> userPerVendor = vendorUsers.stream()
+		Map<VendorUserDTO, List<UsersOfVendorDTO>> userPerVendor = vendorUsers.stream()
 				.collect(Collectors.groupingBy(item -> {
 					return new VendorUserDTO(item.getVendorId(), item.getVendorName());
 				}));

@@ -27,7 +27,11 @@ public interface UserVendorMappingProjectMappingRepository extends JpaRepository
     
     @Query(value="select * from user_vendor_mapping_project_mapping uvmpm where uvmpm.user_vendor_mapping_id=?1 and uvmpm.project_id=?2",nativeQuery = true)
     UserVendorMappingProjectMapping findByUserVendorMappingIdProjectIdForUpload(Long userVendorMappingId, Long projectId);
+    
+    @Query(value="select * from user_vendor_mapping_project_mapping uvmpm where uvmpm.id in (?1)",nativeQuery = true)
+    List<UserVendorMappingProjectMapping> findAllUvmpms(List<Long> userVendorMappingIds);
 
+    
     @Query(value = "select uvmpm.* from user_vendor_mapping_project_mapping uvmpm where  uvmpm.project_id=?1",nativeQuery = true)
     List<UserVendorMappingProjectMapping> getAllUserVendorMappingProjectMappingByProjectId(Long projectId);
     
@@ -129,6 +133,10 @@ public interface UserVendorMappingProjectMappingRepository extends JpaRepository
     @Modifying
     @Query(value = "update user_vendor_mapping_project_mapping set total_required=total_required-1 where id=?1",nativeQuery = true)
     void subTotalRequired(Long id);
+    
+    @Modifying
+    @Query(value = "insert into user_vendor_mapping_project_mapping(user_vendor_mapping_id,project_id,total_required,total_uploaded,total_pending,total_approved,total_rejected,total_required_for_grouped,total_uploaded_for_grouped,total_pending_for_grouped,total_approved_for_grouped,total_rejected_for_grouped) values(?1,?2,0,0,0,0,0,0,0,0,0,0)",nativeQuery = true)
+    void insertNewUvmpm(Long uvmId, Long projectId);
 
 
 }
