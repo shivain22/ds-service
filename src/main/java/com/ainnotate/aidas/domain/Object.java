@@ -591,7 +591,33 @@ query = "select \n" +
     "where o.status=1 and o.is_dummy=0 and o.project_id=?1 and o.object_acquired_by_uvmom_id is  null order by o.id desc "
 ,resultSetMapping = "Mapping.ObjectDTOWithProjectId")
 
-@NamedNativeQuery(name="Object.getNewObjectsDtoList",
+@NamedNativeQuery(name="Object.getNewObjectsDtoListForGrouped",
+query = "select \n" +
+    "o.id," +
+    "-1 as userVendorMappingObjectMappingId,"+
+    "o.project_id as projectId,"+
+    "o.parent_object_id parentObjectId,"+
+    "o.number_of_uploads_required as numberOfUploadsRequired," +
+    "o.number_of_buffered_uploads_required as numberOfBufferedUploadsRequired," +
+    "o.total_required as totalRequired," +
+    "0 as totalUploaded, \n" +
+    "0 as totalApproved, \n" +
+    "0 as totalRejected, \n" +
+    "0 as totalPending,\n" +
+    "o.buffer_percent as bufferPercent," +
+    "o.name as name," +
+    "o.description as description," +
+    "o.image_type as imageType," +
+    "o.audio_type as audioType," +
+    "o.video_type as videoType, " +
+    "o.object_description_link as objectDescriptionLink " +
+    "from object o \n" +
+    "where o.status=1 and o.is_dummy=0 and o.project_id=?1 and o.object_acquired_by_uvmom_id is  null and o.id>-1 order by o.id desc limit ?2 for update"
+,resultSetMapping = "Mapping.ObjectDTOWithProjectId")
+
+
+
+@NamedNativeQuery(name="Object.getNewObjectsDtoListForNonGrouped",
 query = "select \n" +
     "o.id," +
     "-1 as userVendorMappingObjectMappingId,"+
@@ -614,7 +640,6 @@ query = "select \n" +
     "from object o \n" +
     "where o.status=1 and o.is_dummy=0 and o.project_id=?1 and o.object_acquired_by_uvmom_id is  null and o.id>-1 order by o.id desc limit ?2 "
 ,resultSetMapping = "Mapping.ObjectDTOWithProjectId")
-
 
 @NamedNativeQuery(name="Object.getNewObjectsDto.count",
 query = "select ?2 as count  \n" +
@@ -645,7 +670,7 @@ query = "select \n" +
     "o.video_type as videoType, " +
     "o.object_description_link as objectDescriptionLink " +
     "from object o \n" +
-    "where o.status=1 and o.is_dummy=0 and o.project_id=?1 and o.object_acquired_by_uvmom_id is null order by o.id desc"
+    "where o.status=1 and o.is_dummy=0 and o.project_id=?1 and o.object_acquired_by_uvmom_id is null order by o.id desc for update"
 ,resultSetMapping = "Mapping.ObjectDTOWithProjectId")
 
 @NamedNativeQuery(name="Object.getFreshObjects.count",

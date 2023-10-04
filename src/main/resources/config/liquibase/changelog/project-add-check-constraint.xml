@@ -67,7 +67,7 @@ when projectType=0 then
 when projectType=1 then
    case
 		when totalUploadedForGrouped=numOfUploadsRequiredForGrouped then
-			update project set total_required_for_grouped=total_required_for_grouped-1, total_uploaded_for_grouped=total_uploaded_for_grouped+1 where id=projectId;
+			update project set total_required_for_grouped=total_required_for_grouped-1, total_uploaded_for_grouped=total_uploaded_for_grouped+1,total_pending_for_grouped=total_pending_for_grouped+1 where id=projectId;
 			update user_vendor_mapping_project_mapping set total_uploaded_for_grouped=total_uploaded_for_grouped+1, total_pending_for_grouped=total_pending_for_grouped+1 where id=uvmpmId;
 		else begin end;
      end case; 

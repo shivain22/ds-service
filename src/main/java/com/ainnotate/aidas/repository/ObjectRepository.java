@@ -130,7 +130,11 @@ public interface ObjectRepository
 			Integer pageSize);
 	
 	@Query(nativeQuery = true)
-	List<ObjectDTO> getNewObjectsDtoList(Long projectId,
+	List<ObjectDTO> getNewObjectsDtoListForGrouped(Long projectId,
+			Integer pageSize);
+	
+	@Query(nativeQuery = true)
+	List<ObjectDTO> getNewObjectsDtoListForNonGrouped(Long projectId,
 			Integer pageSize);
 
 	/*
@@ -442,10 +446,17 @@ public interface ObjectRepository
     @Query(value = "update object set total_required=total_required-1 where id=?1",nativeQuery = true)
     void subTotalRequired(Long id);
     
+    @Modifying
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Query(value = "update object set object_acquired_by_uvmom_id=?1 where id=?2",nativeQuery = true)
+    void updateUvmomAcquiredBy(Long uvmomId,Long objectId);
+    
     @Query(value="select * from object where id=?1",nativeQuery = true)
     Object getObjectById(Long id);
     
     @Query(value="select number_of_uploads_required-(total_approved+total_pending) from object o where o.id=?1",nativeQuery = true)
     Integer getMoreRequiredForUpload(Long objectId);
+    
+    
 	
 }

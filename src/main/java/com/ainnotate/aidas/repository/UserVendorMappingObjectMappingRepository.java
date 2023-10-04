@@ -110,6 +110,11 @@ public interface UserVendorMappingObjectMappingRepository extends JpaRepository<
     @Query(value = "update user_vendor_mapping_object_mapping set total_required=total_required-1 where id=?1",nativeQuery = true)
     void subTotalRequired(Long id);
     
+    @Modifying
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Query(value = "insert into user_vendor_mapping_object_mapping(user_vendor_mapping_id,object_id) values(?1,?2)",nativeQuery = true)
+    void insertNewUvmom(Long uvmId, Long objectId);
+    
     @Query(value = "",nativeQuery = true)
     List<UserVendorMappingObjectMapping> getUserVendorMappingObjectMappingByObjectId(Long objectId);
 

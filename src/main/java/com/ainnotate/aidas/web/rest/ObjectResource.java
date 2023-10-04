@@ -380,14 +380,14 @@ public class ObjectResource {
         	throw new BadRequestAlertException("Vendor is not mapped", ENTITY_NAME, "vendoridnotexists");
         }
         Page<ObjectDTO> page = null;
-        Project project = projectRepository.getById(projectId);
+        Project project = projectRepository.findById(projectId).get();
         UserVendorMapping uvm = userVendorMappingRepository.findByVendorIdAndUserId(user.getVendor().getId(),user.getId());
         List<ObjectDTO> objList = new ArrayList();
         Integer numOfObjectsAlreadyAssigned = 0;
         if(project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS)){
         	numOfObjectsAlreadyAssigned = objectRepository.getAllObjectsByVendorUserProjectWithProjectId(uvm.getId(),projectId,pageable.getPageSize(),0);
         	if(numOfObjectsAlreadyAssigned==0) {
-        		objList = objectRepository.getNewObjectsDtoList(projectId,pageable.getPageSize());
+        		objList = objectRepository.getNewObjectsDtoListForGrouped(projectId,pageable.getPageSize());
         		for(ObjectDTO o:objList){
                     UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserVendorMappingObject(uvm.getId(),o.getId());
                     Object object = objectRepository.getById(o.getId());
@@ -409,14 +409,16 @@ public class ObjectResource {
         }else {
         	numOfObjectsAlreadyAssigned = objectRepository.getAllObjectsByVendorUserProjectWithProjectId(uvm.getId(),projectId,pageable.getPageSize(),pageable.getPageNumber());
         	if(numOfObjectsAlreadyAssigned==0) {
-        		objList = objectRepository.getNewObjectsDtoList(projectId,pageable.getPageSize());
+        		objList = objectRepository.getNewObjectsDtoListForNonGrouped(projectId,pageable.getPageSize());
         		for(ObjectDTO o:objList){
                     UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserVendorMappingObject(uvm.getId(),o.getId());
-                    Object object = objectRepository.getById(o.getId());
+                    Object object = new Object();
+                    object.setId(o.getId());
                     if(uvmom==null){
                         uvmom  = new UserVendorMappingObjectMapping();
                         uvmom.setUserVendorMapping(uvm);
                         uvmom.setStatus(AidasConstants.STATUS_ENABLED);
+                        
                         uvmom.setObject(object);
                         userVendorMappingObjectMappingRepository.save(uvmom);
                     }
