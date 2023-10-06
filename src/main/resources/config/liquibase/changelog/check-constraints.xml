@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.5.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+    <changeSet author="shiva (generated)" id="1657539087462-6">
+        <sql>
+        	ALTER TABLE object ADD CHECK (total_required>=0);
+			ALTER TABLE object ADD CHECK (total_uploaded>=0);
+			ALTER TABLE object ADD CHECK (total_pending>=0);
+			ALTER TABLE object ADD CHECK (total_approved>=0);
+			ALTER TABLE object ADD CHECK (total_rejected>=0);
+			
+			ALTER TABLE project ADD CHECK (total_required>=0);
+			ALTER TABLE project ADD CHECK (total_uploaded>=0);
+			ALTER TABLE project ADD CHECK (total_pending>=0);
+			ALTER TABLE project ADD CHECK (total_approved>=0);
+			ALTER TABLE project ADD CHECK (total_rejected>=0);
+			
+			ALTER TABLE project ADD CHECK (total_required_for_grouped>=0);
+			ALTER TABLE project ADD CHECK (total_uploaded_for_grouped>=0);
+			ALTER TABLE project ADD CHECK (total_pending_for_grouped>=0);
+			ALTER TABLE project ADD CHECK (total_approved_for_grouped>=0);
+			ALTER TABLE project ADD CHECK (total_rejected_for_grouped>=0);
+			
+			ALTER TABLE user_vendor_mapping_project_mapping ADD CHECK (total_required>=0);
+			ALTER TABLE user_vendor_mapping_project_mapping ADD CHECK (total_uploaded>=0);
+			ALTER TABLE user_vendor_mapping_project_mapping ADD CHECK (total_pending>=0);
+			ALTER TABLE user_vendor_mapping_project_mapping ADD CHECK (total_approved>=0);
+			ALTER TABLE user_vendor_mapping_project_mapping ADD CHECK (total_rejected>=0);
+			
+			ALTER TABLE user_vendor_mapping_project_mapping ADD CHECK (total_required_for_grouped>=0);
+			ALTER TABLE user_vendor_mapping_project_mapping ADD CHECK (total_uploaded_for_grouped>=0);
+			ALTER TABLE user_vendor_mapping_project_mapping ADD CHECK (total_pending_for_grouped>=0);
+			ALTER TABLE user_vendor_mapping_project_mapping ADD CHECK (total_approved_for_grouped>=0);
+			ALTER TABLE user_vendor_mapping_project_mapping ADD CHECK (total_rejected_for_grouped>=0);
+			
+			ALTER TABLE user_vendor_mapping_object_mapping ADD CHECK (total_required>=0);
+			ALTER TABLE user_vendor_mapping_object_mapping ADD CHECK (total_uploaded>=0);
+			ALTER TABLE user_vendor_mapping_object_mapping ADD CHECK (total_pending>=0);
+			ALTER TABLE user_vendor_mapping_object_mapping ADD CHECK (total_approved>=0);
+			ALTER TABLE user_vendor_mapping_object_mapping ADD CHECK (total_rejected>=0);
+			
+        </sql>
+    </changeSet>
+</databaseChangeLog>

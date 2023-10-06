@@ -1427,7 +1427,7 @@ public class UserResource {
         projectQcDTO.setCustomerId(project.getCustomer().getId());
         projectQcDTO.setName(project.getCustomer().getName());
         projectQcDTO.setQcUsers1(new ArrayList<>());
-        List<QcUser> userDTOs = qcUsersOfCustomerRepository.getQcUserOfCustomer(projectId,project.getCustomer().getId());
+        List<QcUser> userDTOs = new ArrayList<>();//qcUsersOfCustomerRepository.getQcUserOfCustomer(projectId,project.getCustomer().getId());
         if(loggedInUser.getAuthority().getName().equals(AidasConstants.ADMIN)){
             userDTOs = qcUsersOfCustomerRepository.getQcUserOfAdmin(projectId,project.getCustomer().getId());
         }

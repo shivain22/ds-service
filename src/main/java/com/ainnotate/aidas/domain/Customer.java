@@ -26,8 +26,8 @@ query="select distinct c.id, c.name, uum.status \n"
 		+ "from\n"
 		+ "customer  c,  user_customer_mapping ucm,uam_ucm_mapping uum, user_authority_mapping uam \n"
 		+ "where\n"
-		+ "uum.ucm_id=ucm.id and ucm.customer_id=c.id and c.id>-1\n"
-		+ "and ucm.user_id=?1 and uum.uam_id=uam.id and uam.authority_id=?2 \n"
+		+ "uum.ucm_id=ucm.id and ucm.customer_id=c.id \n"
+		+ "and ucm.user_id=?1 and uum.uam_id=uam.id and uam.authority_id=?2 and uum.status=1 and ucm.status=1 and c.status=1\n"
 		+ "union\n"
 		+ "select c.id, c.name, 0 as status\n"
 		+ "from\n"
@@ -40,7 +40,7 @@ query="select distinct c.id, c.name, uum.status \n"
 		+ "customer  c,  user_customer_mapping ucm,uam_ucm_mapping uum ,user_authority_mapping uam \n"
 		+ "where\n"
 		+ "uum.ucm_id=ucm.id and ucm.customer_id=c.id\n"
-		+ "and ucm.user_id=?1 and c.id>-1 and uum.uam_id=uam.id and uam.authority_id=?2 )",
+		+ "and ucm.user_id=?1 and c.id>-1 and uum.uam_id=uam.id and uam.authority_id=?2 and uum.status=1 and uam.status=1 and ucm.status=1 and c.status=1 ) and c.status=1",
 		resultSetMapping = "Mapping.AuthorityCustomerMappingDTO")
 
 @NamedNativeQuery(name = "Customer.getAllCustomersWithoutUamId",
@@ -53,7 +53,7 @@ query="select c.id, c.name, uum.status \n"
 		+ "customer  c, uam_ucm_mapping uum, user_customer_mapping ucm,user_authority_mapping uam \n"
 		+ "where\n"
 		+ "uum.ucm_id=ucm.id \n"
-		+ "and uum.uam_id=uam.id and uam.authority_id=?1 \n"
+		+ "and uum.uam_id=uam.id and uam.authority_id=?1 and uum.status=1 and ucm.status=1 and uam.status=1 and c.status=1 \n"
 		+ "union\n"
 		+ "select c.id, c.name, 0 as status\n"
 		+ "from\n"
@@ -61,7 +61,7 @@ query="select c.id, c.name, uum.status \n"
 		+ "where\n"
 		+ "c.id \n"
 		+ "not in \n"
-		+ "(select ucm.customer_id from uam_ucm_mapping uum,user_customer_mapping ucm,user_authority_mapping uam where uum.ucm_id=ucm.id and uum.uam_id=uam.id and uam.authority_id=?1)",
+		+ "(select ucm.customer_id from uam_ucm_mapping uum,user_customer_mapping ucm,user_authority_mapping uam where uum.ucm_id=ucm.id and uum.uam_id=uam.id and uam.authority_id=?1 and uum.status=1 and uam.status=1 and ucm.status=1 and c.status=1 ) and c.status=1",
 		
 		resultSetMapping = "Mapping.AuthorityCustomerMappingDTO")
 
@@ -72,7 +72,7 @@ query="select c.id, c.name, uum.status \n"
 		+ "customer  c, uam_ucm_mapping uum, user_customer_mapping ucm,user_authority_mapping uam \n"
 		+ "where\n"
 		+ "uum.ucm_id=ucm.id \n"
-		+ "and uum.uam_id=uam.id and uam.authority_id=?1 \n"
+		+ "and uum.uam_id=uam.id and uam.authority_id=?1 and uum.status=1 and ucm.status=1 and uam.status=1 and c.status=1 \n"
 		+ "union\n"
 		+ "select c.id, c.name, 0 as status\n"
 		+ "from\n"
@@ -80,7 +80,7 @@ query="select c.id, c.name, uum.status \n"
 		+ "where\n"
 		+ "c.id \n"
 		+ "not in \n"
-		+ "(select ucm.customer_id from uam_ucm_mapping uum,user_customer_mapping ucm,user_authority_mapping uam where uum.ucm_id=ucm.id and uum.uam_id=uam.id and uam.authority_id=?1)",
+		+ "(select ucm.customer_id from uam_ucm_mapping uum,user_customer_mapping ucm,user_authority_mapping uam where uum.ucm_id=ucm.id and uum.uam_id=uam.id and uam.authority_id=?1 and uum.status=1 and ucm.status=1 and uam.status=1 and c.status=1) and c.status=1",
 		resultSetMapping = "Mapping.AuthorityCustomerMappingDTO")
 
 @SqlResultSetMapping(

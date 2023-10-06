@@ -50,7 +50,7 @@ query="select \n"
 		+ "uvmpm.user_vendor_mapping_id=uvm.id \n"
 		+ "and uvm.user_id=u.id \n"
 		+ "and uvm.vendor_id=v.id\n"
-		+ "and uvmpm.project_id=?1\n"
+		+ "and uvmpm.project_id=?1 and uvm.status=1 and uvmpm.status=1 and u.status=1 and v.status=1 \n"
 		+ "union\n"
 		+ "select \n"
 		+ "u.first_name as firstName,\n"
@@ -68,8 +68,8 @@ query="select \n"
 		+ "vendor v\n"
 		+ "where \n"
 		+ "uvm.user_id=u.id\n"
-		+ "and uvm.vendor_id=v.id\n"
-		+ "and uvm.id not in (select user_vendor_mapping_id from user_vendor_mapping_project_mapping uvmpm where uvmpm.project_id=?1)",
+		+ "and uvm.vendor_id=v.id and uvm.status=1 and u.status=1 and v.status=1 \n"
+		+ "and uvm.id not in (select user_vendor_mapping_id from user_vendor_mapping_project_mapping uvmpm where uvmpm.project_id=?1 and uvmpm.status=1)",
 		resultSetMapping = "Mapping.UsersOfVendorDTO")
 
 
@@ -93,9 +93,9 @@ query="select \n"
 		+ "uvmpm.user_vendor_mapping_id=uvm.id \n"
 		+ "and uvm.user_id=u.id \n"
 		+ "and uvm.vendor_id=v.id\n"
-		+ "and uvmpm.project_id=?1\n"
+		+ "and uvmpm.project_id=?1 and uvmpm.status=1 and uvm.status=1 and u.status=1 and v.status=1 \n"
 		+ "and v.id in \n"
-		+ "(select vendor_id from vendor_organisation_mapping vom where vom.organisation_id=?2\n"
+		+ "(select vendor_id from vendor_organisation_mapping vom where vom.organisation_id=?2 and vom.status=1 \n"
 		+ "union\n"
 		+ "select vendor_id from vendor_organisation_mapping vom where vom.organisation_id=-1)\n"
 		+ "union\n"
@@ -114,13 +114,13 @@ query="select \n"
 		+ "user_vendor_mapping uvm,\n"
 		+ "vendor v\n"
 		+ "where \n"
-		+ "uvm.user_id=u.id\n"
+		+ "uvm.user_id=u.id and uvm.status=1 and u.status=1 and v.status=1 \n"
 		+ "and uvm.vendor_id=v.id\n"
 		+ "and v.id in \n"
-		+ "(select vendor_id from vendor_organisation_mapping vom where vom.organisation_id=?2\n"
+		+ "(select vendor_id from vendor_organisation_mapping vom where vom.organisation_id=?2 and vom.status=1 \n"
 		+ "union\n"
-		+ "select vendor_id from vendor_organisation_mapping vom where vom.organisation_id=-1)\n"
-		+ "and uvm.id not in (select user_vendor_mapping_id from user_vendor_mapping_project_mapping uvmpm where uvmpm.project_id=?1)\n"
+		+ "select vendor_id from vendor_organisation_mapping vom where vom.organisation_id=-1 and vom.status=1)\n"
+		+ "and uvm.id not in (select user_vendor_mapping_id from user_vendor_mapping_project_mapping uvmpm where uvmpm.project_id=?1 and uvmpm.status=1 )\n"
 		+ "\n"
 		+ "",
 		resultSetMapping = "Mapping.UsersOfVendorDTO")
@@ -146,12 +146,12 @@ query="select \n"
 		+ "uvmpm.user_vendor_mapping_id=uvm.id \n"
 		+ "and uvm.user_id=u.id \n"
 		+ "and uvm.vendor_id=v.id\n"
-		+ "and uvmpm.project_id=?1\n"
+		+ "and uvmpm.project_id=?1 and uvmpm.status=1 and uvm.status=1 and v.status=1 and u.status=1 \n"
 		+ "and v.id in \n"
-		+ "(select vendor_id from vendor_customer_mapping vcm where vcm.customer_id=?2 \n"
-		+ "union select vendor_id from vendor_organisation_mapping vom, customer c where vom.organisation_id=c.organisation_id and c.id=?2\n"
-		+ "union select vendor_id from vendor_customer_mapping vcm where vcm.customer_id=-1\n"
-		+ "union select vendor_id from vendor_organisation_mapping vom where vom.organisation_id=-1)\n"
+		+ "(select vendor_id from vendor_customer_mapping vcm where vcm.customer_id=?2 and vcm.status=1 \n"
+		+ "union select vendor_id from vendor_organisation_mapping vom, customer c where vom.organisation_id=c.organisation_id and c.id=?2 and vom.status=1 and c.status=1\n"
+		+ "union select vendor_id from vendor_customer_mapping vcm where vcm.customer_id=-1 and vcm.status=1\n"
+		+ "union select vendor_id from vendor_organisation_mapping vom where vom.organisation_id=-1 and vom.status=1)\n"
 		+ "union\n"
 		+ "select \n"
 		+ "u.first_name as firstName,\n"
@@ -169,13 +169,13 @@ query="select \n"
 		+ "vendor v\n"
 		+ "where \n"
 		+ "uvm.user_id=u.id\n"
-		+ "and uvm.vendor_id=v.id\n"
+		+ "and uvm.vendor_id=v.id u.status=1 and uvm.status=1 and v.status=1 \n"
 		+ "and v.id in \n"
-		+ "(select vendor_id from vendor_customer_mapping vcm where vcm.customer_id=?2 \n"
-		+ "union select vendor_id from vendor_organisation_mapping vom, customer c where vom.organisation_id=c.organisation_id and c.id=?2\n"
-		+ "union select vendor_id from vendor_customer_mapping vcm where vcm.customer_id=-1\n"
-		+ "union select vendor_id from vendor_organisation_mapping vom where vom.organisation_id=-1)\n"
-		+ "and uvm.id not in (select user_vendor_mapping_id from user_vendor_mapping_project_mapping uvmpm where uvmpm.project_id=?1)",
+		+ "(select vendor_id from vendor_customer_mapping vcm where vcm.customer_id=?2 and vcm.status=1\n"
+		+ "union select vendor_id from vendor_organisation_mapping vom, customer c where vom.organisation_id=c.organisation_id and c.id=?2 and vom.status=1 and c.status=1\n"
+		+ "union select vendor_id from vendor_customer_mapping vcm where vcm.customer_id=-1 and vcm.status=1 \n"
+		+ "union select vendor_id from vendor_organisation_mapping vom where vom.organisation_id=-1 and vom.status=1)\n"
+		+ "and uvm.id not in (select user_vendor_mapping_id from user_vendor_mapping_project_mapping uvmpm where uvmpm.project_id=?1 and uvmpm.status=1)",
 		resultSetMapping = "Mapping.UsersOfVendorDTO")
 
 
@@ -200,7 +200,7 @@ query="select \n"
 		+ "and uvm.user_id=u.id \n"
 		+ "and uvm.vendor_id=v.id\n"
 		+ "and uvmpm.project_id=?1\n"
-		+ "and v.id =?2\n"
+		+ "and v.id =?2 and uvm.status=1 and u.status=1 and v.status=1 and uvmpm.status=1 \n"
 		+ "union\n"
 		+ "select \n"
 		+ "u.first_name as firstName,\n"
@@ -217,10 +217,10 @@ query="select \n"
 		+ "user_vendor_mapping uvm,\n"
 		+ "vendor v\n"
 		+ "where \n"
-		+ "uvm.user_id=u.id\n"
+		+ "uvm.user_id=u.id and uvm.status=1 and u.status=1 and v.status=1 \n"
 		+ "and uvm.vendor_id=v.id\n"
 		+ "and v.id =?2\n"
-		+ "and uvm.id not in (select user_vendor_mapping_id from user_vendor_mapping_project_mapping uvmpm where uvmpm.project_id=?1)",
+		+ "and uvm.id not in (select user_vendor_mapping_id from user_vendor_mapping_project_mapping uvmpm where uvmpm.project_id=?1 and uvmpm.status=1)",
 		resultSetMapping = "Mapping.UsersOfVendorDTO")
 
 
@@ -231,7 +231,7 @@ query="select distinct v.id, v.name, uum.status \n"
 		+ "vendor  v,  user_vendor_mapping uvm,uam_uvm_mapping uum, user_authority_mapping uam \n"
 		+ "where\n"
 		+ "uum.uvm_id=uvm.id and uvm.vendor_id=v.id and v.id>-1\n"
-		+ "and uvm.user_id=?1 and uum.uam_id=uam.id and uam.authority_id=?2 \n"
+		+ "and uvm.user_id=?1 and uum.uam_id=uam.id and uam.authority_id=?2 and uum.status=1 and uvm.status=1 and uam.status=1 and v.status=1 \n"
 		+ "union\n"
 		+ "select v.id, v.name, 0 as status\n"
 		+ "from\n"
@@ -243,8 +243,8 @@ query="select distinct v.id, v.name, uum.status \n"
 		+ "from\n"
 		+ "vendor  v,  user_vendor_mapping uvm,uam_uvm_mapping uum ,user_authority_mapping uam \n"
 		+ "where\n"
-		+ "uum.uvm_id=uvm.id and uvm.vendor_id=v.id and uum.uam_id=uam.id and uam.authority_id=?2\n"
-		+ "and uvm.user_id=?1)",
+		+ "uum.uvm_id=uvm.id and uvm.vendor_id=v.id and uum.uam_id=uam.id and uam.authority_id=?2 and uum.status=1 and uvm.status=1 and uam.status=1 and v.status=1 \n"
+		+ "and uvm.user_id=?1) and v.status=1",
 		resultSetMapping = "Mapping.AuthorityVendorMappingDTO")
 
 @NamedNativeQuery(name = "Vendor.getAllVendorsWithoutUamId",
@@ -254,7 +254,7 @@ query="select v.id as id, v.name as name, 0 as status from vendor v where v.id>0
 @NamedNativeQuery(name = "Vendor.getAllVendorsOfOrganisation",
 query="select  v.id, v.name, v.status \n"
 		+ "from\n"
-		+ "vendor  v,vendor_organisation_mapping vom where vom.vendor_id=v.id and vom.organisation_id=?1",
+		+ "vendor  v,vendor_organisation_mapping vom where vom.vendor_id=v.id and vom.organisation_id=?1 and vom.status=1 and v.status=1",
 		resultSetMapping = "Mapping.AuthorityVendorMappingDTO")
 
 

@@ -30,7 +30,7 @@ query="select distinct o.id, o.name, uum.status \n"
 		+ "organisation  o,  user_organisation_mapping uom,uam_uom_mapping uum, user_authority_mapping uam\n"
 		+ "where\n"
 		+ "uum.uom_id=uom.id and uom.organisation_id=o.id\n"
-		+ "and uom.user_id=?1 and uum.uam_id=uam.id and uam.authority_id=?2 and o.id>-1\n"
+		+ "and uom.user_id=?1 and uum.uam_id=uam.id and uam.authority_id=?2 and o.id>-1 and o.status=1\n"
 		+ "union\n"
 		+ "select o.id, o.name, 0 as status\n"
 		+ "from\n"
@@ -43,7 +43,7 @@ query="select distinct o.id, o.name, uum.status \n"
 		+ "organisation o,  user_organisation_mapping uom,uam_uom_mapping uum,user_authority_mapping uam \n"
 		+ "where\n"
 		+ "uum.uom_id=uom.id and uom.organisation_id=o.id\n"
-		+ "and uom.user_id=?1 and uum.uam_id=uam.id and uam.authority_id=?2)",
+		+ "and uom.user_id=?1 and uum.uam_id=uam.id and uam.authority_id=?2 and o.status=1) and o.status=1",
 		resultSetMapping = "Mapping.AuthorityOrganisationMappingDTO")
 
 @NamedNativeQuery(name = "Organisation.getAllOrganisationsWithoutUamId",
@@ -57,7 +57,7 @@ query="select distinct o.id, o.name, uum.status \n"
 		+ "organisation  o,  user_organisation_mapping uom,uam_uom_mapping uum\n"
 		+ "where\n"
 		+ "uum.uom_id=uom.id and uom.organisation_id=o.id\n"
-		+ "and uum.uam_id=?1 and o.id>-1 and o.id=?2\n"
+		+ "and uum.uam_id=?1 and o.id>-1 and o.id=?2 and uom.status=1 and uum.status=1 \n"
 		+ "union\n"
 		+ "select o.id, o.name, 0 as status\n"
 		+ "from\n"
@@ -70,7 +70,7 @@ query="select distinct o.id, o.name, uum.status \n"
 		+ "organisation o,  user_organisation_mapping uom,uam_uom_mapping uum\n"
 		+ "where\n"
 		+ "uum.uom_id=uom.id and uom.organisation_id=o.id\n"
-		+ "and uum.uam_id=?1 and o.id=?2 and o.id>-1)",
+		+ "and uum.uam_id=?1 and o.id=?2 and o.id>-1 and uum.status=1 and uom.status=1) and o.status=1",
 		resultSetMapping = "Mapping.AuthorityOrganisationMappingDTO")
 
 

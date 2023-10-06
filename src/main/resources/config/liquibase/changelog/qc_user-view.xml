@@ -26,7 +26,8 @@ p.customer_id as customer_id,
 uum.id as uum_id, 
 uom.id as uom_id, 
 -2 as ucm_id, 
--2 as uvm_id 
+-2 as uvm_id,
+u.status as user_status 
 from 
 user u, 
 user_organisation_mapping uom,
@@ -60,7 +61,8 @@ qpm.entity_id as entity_id,
 uum.id as uum_id, 
 uom.id as uom_id, 
 -2 as ucm_id, 
--2 as uvm_id 
+-2 as uvm_id ,
+u.status as user_status 
 from 
 user u, 
 user_organisation_mapping uom,
@@ -94,7 +96,8 @@ p.customer_id as customer_id,
 uum.id as uum_id, 
 uom.id as uom_id, 
 -2 as ucm_id, 
--2 as uvm_id 
+-2 as uvm_id ,
+u.status as user_status 
 from 
 user u, 
 user_organisation_mapping uom,
@@ -128,7 +131,8 @@ qpm.entity_id as entity_id,
 uum.id as uum_id, 
 uom.id as uom_id, 
 -2 as ucm_id, 
--2 as uvm_id 
+-2 as uvm_id ,
+u.status as user_status 
 from 
 user u, 
 user_organisation_mapping uom,
@@ -162,7 +166,8 @@ p.customer_id as customer_id,
 uum.id as uum_id, 
 -2 as uom_id, 
 ucm.id as ucm_id, 
--2 as uvm_id 
+-2 as uvm_id ,
+u.status as user_status 
 from 
 user u, 
 user_customer_mapping ucm,
@@ -196,7 +201,8 @@ qpm.entity_id as entity_id,
 uum.id as uum_id, 
 -2 as uom_id, 
 ucm.id as ucm_id, 
--2 as uvm_id 
+-2 as uvm_id ,
+u.status as user_status 
 from 
 user u, 
 user_customer_mapping ucm,
@@ -230,7 +236,8 @@ p.customer_id as customer_id,
 uum.id as uum_id, 
 -2 as uom_id, 
 -2 as ucm_id, 
-uvm.id as uvm_id 
+uvm.id as uvm_id ,
+u.status as user_status 
 from 
 user u, 
 user_vendor_mapping uvm,
@@ -264,7 +271,8 @@ qpm.entity_id as entity_id,
 uum.id as uum_id, 
 -2 as uom_id, 
 -2 as ucm_id, 
-uvm.id as uvm_id 
+uvm.id as uvm_id ,
+u.status as user_status 
 from 
 user u, 
 user_vendor_mapping uvm,
