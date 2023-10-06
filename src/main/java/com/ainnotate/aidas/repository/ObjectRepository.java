@@ -143,8 +143,7 @@ public interface ObjectRepository
 	 * pageable, Long projectId, Integer pageSize, Long userVendorMappingId);
 	 */
 	@Query(nativeQuery = true)
-	Page<ObjectDTO> getFreshObjects(Pageable pageable, Long projectId,
-			Integer pageSize, Long userVendorMappingId);
+	List<ObjectDTO> getFreshObjects(Long projectId,Integer pageSize);
 
 	/*
 	 * @Query(nativeQuery = true) Page<ObjectDTO>

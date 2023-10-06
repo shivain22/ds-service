@@ -670,7 +670,7 @@ query = "select \n" +
     "o.video_type as videoType, " +
     "o.object_description_link as objectDescriptionLink " +
     "from object o \n" +
-    "where o.status=1 and o.is_dummy=0 and o.project_id=?1 and o.object_acquired_by_uvmom_id is null order by o.id desc for update"
+    "where o.status=1 and o.is_dummy=0 and o.project_id=?1 and o.object_acquired_by_uvmom_id is null order by o.id desc  limit ?2 for update"
 ,resultSetMapping = "Mapping.ObjectDTOWithProjectId")
 
 @NamedNativeQuery(name="Object.getFreshObjects.count",

@@ -243,7 +243,6 @@ public class UploadResource {
 					uploadDTO.setName(upload.get(0)[1].toString());
 					uploadDTO.setObjectKey(upload.get(0)[2].toString());
 					udtoMap.put(umd.getUploadId(), uploadDTO);
-					System.out.println("test");
 				}
 				if (umd.getProjectProperty() != null && umd.getProjectProperty()
 						&& umd.getProjectPropertyId() != null) {
@@ -295,12 +294,10 @@ public class UploadResource {
 			}
 			for (Upload u : successUploads) {
 				u = uploadRepository.getUploadQcDoneByIsNull(u.getId());
-				System.out.println("u--------" + u.getId() + "-------" + u.getUserVendorMappingObjectMapping().getId());
 				uploadRepository.updateMetadataStatus(u.getId(), AidasConstants.AIDAS_UPLOAD_METADATA_COMPLETED);
 				uploadRepository.updateUvmomQcStatus(u.getUserVendorMappingObjectMapping().getId());
 				uploadRepository.updateObjectQcStatus(u.getUserVendorMappingObjectMapping().getObject().getId());
-				uploadRepository
-						.updateProjectQcStatus(u.getUserVendorMappingObjectMapping().getObject().getProject().getId());
+				uploadRepository.updateProjectQcStatus(u.getUserVendorMappingObjectMapping().getObject().getProject().getId());
 			}
 		}
 		return ResponseEntity.ok().body(uploadMetadataDTOS1);
@@ -1377,7 +1374,7 @@ public class UploadResource {
 					List<java.lang.Object[]> tempUvmomIds = uploadRepository.findAllUvmomsQcNotStartedGrouped(projectId,
 							qpm.getQcLevel());
 
-					Map<Long, List<Long>> map = new HashMap<>();
+					Map<Long, List<Long>> map = new LinkedHashMap<>();
 					for (java.lang.Object[] tempUvmomId : tempUvmomIds) {
 						if (map.get(Long.parseLong(tempUvmomId[0].toString())) != null) {
 							map.get(Long.parseLong(tempUvmomId[0].toString()))

@@ -336,7 +336,10 @@ public class ProjectResource {
 									for (UploadRejectReasonMapping urrm : upload.getUploadRejectMappings()) {
 										rejectReasons += urrm.getUploadRejectReason().getReason() + ",";
 									}
-									csvData.add(rejectReasons.substring(0, rejectReasons.length() - 1));
+									if(rejectReasons!=null && rejectReasons.trim().length()>0 && rejectReasons.endsWith(",")) {
+										rejectReasons = rejectReasons.substring(0, rejectReasons.length() - 1);
+									}
+									csvData.add(rejectReasons);
 								} else {
 									csvData.add(" ");
 								}
@@ -1030,9 +1033,9 @@ public class ProjectResource {
 	 */
 
 	@GetMapping("/aidas-projects/{id}")
-	public ResponseEntity<Project> getProject(@PathVariable Long id) {
+	public ResponseEntity<GetProjectDTO> getProject(@PathVariable("id") Long id) {
 		log.debug("REST request to get AidasProject : {}", id);
-		Project project = projectRepository.getById(id);
+		GetProjectDTO project = projectRepository.getProjectById(id);
 		project.setProjectProperties(projectPropertyRepository.findAllByAidasProjectIdGreaterThanForDropDown(id));
 		return ResponseEntity.ok().body(project);
 	}

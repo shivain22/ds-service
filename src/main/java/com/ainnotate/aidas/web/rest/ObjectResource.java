@@ -32,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
@@ -517,7 +518,9 @@ public class ObjectResource {
         UserVendorMapping uvm = userVendorMappingRepository.findByVendorIdAndUserId(user.getVendor().getId(),user.getId());
         List<UserVendorMappingObjectMapping> uvmoms = new LinkedList<>();
         List<Object> objects = new LinkedList<>();
-            page = objectRepository.getFreshObjects(pageable,projectId,pageable.getPageSize(),uvm.getId());
+            List<ObjectDTO> objs = objectRepository.getFreshObjects(projectId,pageable.getPageSize());
+            PageRequest pageRequest = PageRequest.of(0, pageable.getPageSize());
+        	page = new PageImpl<>(objs,pageRequest,objs.size());
             for(ObjectDTO o:page.getContent()){
                 UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository.findByUserVendorMappingObject(uvm.getId(),o.getId());
                 Object object = objectRepository.getById(o.getId());

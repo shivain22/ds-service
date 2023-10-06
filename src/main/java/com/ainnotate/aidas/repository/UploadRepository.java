@@ -400,12 +400,13 @@ public interface UploadRepository extends JpaRepository<Upload, Long> {
     		+ "o.is_dummy=0 and u.current_batch_number =0 and u.current_qc_level=?2 order by uvmom.id limit ?3",nativeQuery = true)
     List<Long> findAllUvmomsQcNotStarted(Long projectId,Integer qcLevel,Integer batchSize);
     
-    @Query(value="select uvm_id,uvmom_id,min(last_modified_date) from (  select uvmom.user_vendor_mapping_id uvm_id,uvmom.id uvmom_id,max(u.last_modified_date) as last_modified_date "
+    @Query(value="select uvm_id,uvmom_id,min(last_modified_date) from (  select uvmom.user_vendor_mapping_id uvm_id,uvmom.id uvmom_id,min(u.last_modified_date) as last_modified_date "
     		+ "from user_vendor_mapping_object_mapping uvmom,object o,upload u "
     		+ "where u.user_vendor_mapping_object_mapping_id=uvmom.id and "
     		+ "uvmom.object_id=o.id and "
     		+ "o.project_id=?1 and "
-    		+ "o.is_dummy=0 and u.current_batch_number =0 and u.metadata_status=1 and (u.qc_status is null or u.qc_status=2)  and u.current_qc_level=?2 group by uvmom.id,u.last_modified_date order by uvmom.id,u.last_modified_date )a"
+    		+ "o.is_dummy=0 and u.current_batch_number =0 and u.metadata_status=1 and (u.qc_status is null or u.qc_status=2)  and u.current_qc_level=?2 group by uvmom.id,u.last_modified_date "
+    		+ " order by u.last_modified_date,uvmom.id )a"
     		+ " group by uvm_id,uvmom_id",nativeQuery = true)
     List<Object[]> findAllUvmomsQcNotStartedGrouped(Long projectId,Integer qcLevel);
 
@@ -456,7 +457,7 @@ public interface UploadRepository extends JpaRepository<Upload, Long> {
     void deleteAllSampleUploads();
 
     @Modifying
-    @Query(value = "update upload set metadata_status=?2 where id=?1",nativeQuery = true)
+    @Query(value = "update upload set metadata_status=?2,last_modified_date=now() where id=?1",nativeQuery = true)
     void updateMetadataStatus(Long id,Integer status);
     
     @Modifying

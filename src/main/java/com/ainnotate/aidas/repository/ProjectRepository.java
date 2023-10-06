@@ -1,6 +1,7 @@
 package com.ainnotate.aidas.repository;
 
 import com.ainnotate.aidas.domain.*;
+import com.ainnotate.aidas.dto.GetProjectDTO;
 import com.ainnotate.aidas.dto.IUploadDetail;
 import com.ainnotate.aidas.dto.ProjectDTO;
 import com.querydsl.core.types.dsl.StringExpression;
@@ -286,4 +287,7 @@ public interface ProjectRepository extends JpaRepository<Project, Long>,Querydsl
     }
     @Query(value="select * from project p where id=?1 for share",nativeQuery = true)
     Project getByIdForUpdate(Long projectId);
+    
+    @Query(nativeQuery = true)
+    GetProjectDTO getProjectById(Long projectId);
 }

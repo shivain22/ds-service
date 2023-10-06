@@ -1,6 +1,7 @@
 package com.ainnotate.aidas.domain;
 
 import com.ainnotate.aidas.constants.AidasConstants;
+import com.ainnotate.aidas.dto.GetProjectDTO;
 import com.ainnotate.aidas.dto.ProjectDTO;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.io.Serializable;
@@ -58,6 +59,42 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
         "project p, user_vendor_mapping_project_mapping uvmpm,user_vendor_mapping uvm, customer c " +
         "where uvmpm.project_id=p.id and uvmpm.status=1 and p.status=1 and uvmpm.user_vendor_mapping_id=uvm.id and p.customer_id=c.id and uvm.user_id=?1 and p.pause_status=1  order by p.id desc",
     resultSetMapping = "Mapping.ProjectDTO")
+
+
+@NamedNativeQuery(name = "Project.getProjectById",
+query = "select  \n" +
+    "p.id as id,  \n" +
+    "case when p.auto_create_objects=1 then p.total_required_for_grouped else p.total_required end as totalRequired," +
+    "case when p.auto_create_objects=1 then p.total_uploaded_for_grouped else p.total_uploaded end as totalUploaded, \n" +
+    "case when p.auto_create_objects=1 then p.total_approved_for_grouped else p.total_approved end as totalApproved , \n" +
+    "case when p.auto_create_objects=1 then p.total_rejected_for_grouped else p.total_rejected end as totalRejected, \n" +
+    "case when p.auto_create_objects=1 then p.total_pending_for_grouped else p.total_pending end as totalPending,\n" +
+    "p.status ,\n" +
+    "p.audio_type ,\n" +
+    "p.auto_create_objects ,\n" +
+    "p.buffer_percent ,\n" +
+    "p.description ,\n" +
+    "p.external_dataset_status ,\n" +
+    "p.image_type ,\n" +
+    "p.name ,\n" +
+    "p.number_of_objects ,\n" +
+    "p.number_of_uploads_required ,\n" +
+    "p.object_prefix ,\n" +
+    "p.object_suffix ,\n" +
+    "p.project_type ,\n" +
+    "p.qc_levels ,\n" +
+    "p.rework_status ,\n" +
+    "p.video_type,\n" +
+    "p.pause_status,\n" +
+    "p.consent_form_status,\n" +
+    "p.bypass_metadata,\n" +
+    "c.name as customer_name,\n" +
+    "p.consent_form_link as consent_form_link,\n" +
+    "p.project_description_link as project_description_link\n" +
+    "from \n" +
+    "project p,customer c " +
+    "where  p.status=1 and  p.customer_id=c.id and p.id=?1",
+resultSetMapping = "Mapping.GetProjectDTO")
 
 
 @NamedNativeQuery(name = "Project.findProjectWithUploadCountByUserSearch",
@@ -192,6 +229,39 @@ resultSetMapping = "Mapping.ProjectDTO")
                 @ColumnResult(name = "project_description_link",type = String.class),
                 
             })),
+    @SqlResultSetMapping(name = "Mapping.GetProjectDTO",
+    classes = @ConstructorResult(targetClass = GetProjectDTO.class,
+        columns = {
+            @ColumnResult(name = "id",type = Long.class),
+            @ColumnResult(name = "totalRequired",type = Integer.class),
+            @ColumnResult(name = "totalUploaded",type = Integer.class),
+            @ColumnResult(name = "totalApproved",type = Integer.class),
+            @ColumnResult(name = "totalRejected",type = Integer.class),
+            @ColumnResult(name = "totalPending",type = Integer.class),
+            @ColumnResult(name = "status",type = Integer.class),
+            @ColumnResult(name = "audio_type",type = String.class),
+            @ColumnResult(name = "auto_create_objects",type = Integer.class),
+            @ColumnResult(name = "buffer_percent",type = Integer.class),
+            @ColumnResult(name = "description",type = String.class),
+            @ColumnResult(name = "external_dataset_status",type = Integer.class),
+            @ColumnResult(name = "image_type",type = String.class),
+            @ColumnResult(name = "name",type = String.class),
+            @ColumnResult(name = "number_of_objects",type = Integer.class),
+            @ColumnResult(name = "number_of_uploads_required",type = Integer.class),
+            @ColumnResult(name = "object_prefix",type = String.class),
+            @ColumnResult(name = "object_suffix",type = String.class),
+            @ColumnResult(name = "project_type",type = String.class),
+            @ColumnResult(name = "qc_levels",type = Integer.class),
+            @ColumnResult(name = "rework_status",type = Integer.class),
+            @ColumnResult(name = "video_type",type = String.class),
+            @ColumnResult(name = "pause_status",type = Integer.class),
+            @ColumnResult(name = "consent_form_status",type = Integer.class),
+            @ColumnResult(name = "bypass_metadata",type = Integer.class),
+            @ColumnResult(name = "customer_name",type = String.class),
+            @ColumnResult(name = "consent_form_link",type = String.class),
+            @ColumnResult(name = "project_description_link",type = String.class),
+            
+        })),
     @SqlResultSetMapping(name = "Mapping.ProjectDTOForDropDown",
         classes = @ConstructorResult(targetClass = ProjectDTO.class,
             columns = {

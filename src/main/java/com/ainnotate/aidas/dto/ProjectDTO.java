@@ -113,6 +113,7 @@ public class ProjectDTO extends AbstractAuditingEntity implements Serializable {
 	private String projectDescriptionLink;
     private String customerName;
 
+    
     public String getCustomerName() {
 		return customerName;
 	}
@@ -290,6 +291,8 @@ public class ProjectDTO extends AbstractAuditingEntity implements Serializable {
     public void setProjectProperties(Map<String,String> projectProperties) {
         this.projectProperties = projectProperties;
     }
+    
+    
 
     public Long getId() {
         return id;
