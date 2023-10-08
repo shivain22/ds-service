@@ -420,7 +420,7 @@ public interface ObjectRepository
     
     @Modifying
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    @Query(value = "update object set  total_required=number_of_uploads_required-?3,total_approved=?2,total_rejected=?3,total_pending=?4  where id=?1",nativeQuery = true)
+    @Query(value = "update object set  total_required=(number_of_uploads_required-(?2+?4)),total_approved=?2,total_rejected=?3,total_pending=?4  where id=?1",nativeQuery = true)
     void addTotalApprovedSubtractTotalPendingNew(Long id,Integer totalApproved,Integer totalRejected,Integer totalPending);
     
     

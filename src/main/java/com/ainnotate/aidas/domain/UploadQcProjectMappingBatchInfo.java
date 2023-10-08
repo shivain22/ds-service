@@ -245,7 +245,7 @@ query="SELECT \n"
 		+ "count(*) as totalUploaded, \n"
 		+ "sum(case when u.approval_status=1 then 1 else 0 end) as totalApproved, \n"
 		+ "sum(case when u.approval_status=0 then 1 else 0 end) as totalRejected, \n"
-		+ "sum(case when u.approval_status=2 then 1 else 0 end) as totalPending\n"
+		+ "sum(case when u.approval_status=2 then 1 else 0 end) as totalPending \n"
 		+ "FROM \n"
 		+ "upload u, \n"
 		+ "user_vendor_mapping_object_mapping uvmom, \n"
@@ -286,7 +286,7 @@ query="SELECT \n"
 		+ "upload u, \n"
 		+ "user_vendor_mapping_object_mapping uvmom \n"
 		+ "where u.user_vendor_mapping_object_mapping_id=uvmom.id \n"
-		+ "and uvmom.object_id=?1 \n"
+		+ "and uvmom.object_id=?1 group by uvmom.object_id \n"
     ,resultSetMapping = "Mapping.BatchInfoMapping")
 
 @NamedNativeQuery(name="UploadQcProjectMappingBatchInfo.getUvmomObjectIdsOfBatchNonGroupedForProjectNew",

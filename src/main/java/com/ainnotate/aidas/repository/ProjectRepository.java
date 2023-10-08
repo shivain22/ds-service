@@ -245,14 +245,14 @@ public interface ProjectRepository extends JpaRepository<Project, Long>,Querydsl
 
     @Modifying
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    @Query(value = "update project set total_approved=?2,total_rejected=?3,total_pending=?4, total_required=(number_of_uploads_required-?3)  where id=?1",nativeQuery = true)
+    @Query(value = "update project set total_approved=?2,total_rejected=?3,total_pending=?4, total_required=(number_of_uploads_required-(?2+?4))  where id=?1",nativeQuery = true)
     void addTotalApprovedSubtractTotalPendingNonGrouped(Long id,Integer totalApproved, Integer totalRejected,Integer totalPending );
 
 
     @Modifying
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    @Query(value = "update project set total_approved=?2,total_pending=?2  where id=?1",nativeQuery = true)
-    void addTotalApprovedSubtractTotalPendingNonGroupedApproved(Long id,Integer totalApproved, Integer totalPending );
+    @Query(value = "update project set total_approved=?2,total_pending=?3,total_rejected=?4  where id=?1",nativeQuery = true)
+    void addTotalApprovedSubtractTotalPendingNonGroupedApproved(Long id,Integer totalApproved, Integer totalPending,Integer totalRejected );
 
     @Modifying
     @Transactional(propagation = Propagation.REQUIRES_NEW)
