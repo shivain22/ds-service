@@ -129,8 +129,8 @@ public class UploadResource {
 	@Autowired
 	private UserVendorMappingRepository userVendorMappingRepository;
 
-	@Autowired
-	UploadMetaDataService uploadMetaDataService;
+	/*@Autowired
+	UploadMetaDataService uploadMetaDataService;*/
 
 	public UploadResource(UploadRepository uploadRepository, UploadSearchRepository aidasUploadSearchRepository) {
 		this.uploadRepository = uploadRepository;
