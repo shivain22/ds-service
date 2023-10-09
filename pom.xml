@@ -7,7 +7,7 @@
 
     <groupId>com.ainnotate.aidas</groupId>
     <artifactId>ainnotateservice</artifactId>
-    <version>1.3.0</version>
+    <version>1.4.0</version>
     <packaging>jar</packaging>
     <name>Ainnotateservice</name>
     <description>Description for ainnotateservice</description>
