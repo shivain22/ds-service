@@ -1672,8 +1672,7 @@ public class UserResource {
         passwordCred.setValue(myUser.getPassword());
         org.keycloak.admin.client.resource.UserResource userResource = usersRessource.get(userId);
         userResource.resetPassword(passwordCred);
-        //userResource.sendVerifyEmail();
-        
+        userResource.sendVerifyEmail();
             for(UserAuthorityMappingDTO aa:myUser.getAuthorityDtos()){
                 RoleRepresentation rr = realmResource.roles().get(aa.getName()).toRepresentation();
                 userResource.roles().realmLevel().add(Arrays.asList(rr));
@@ -1706,7 +1705,6 @@ public class UserResource {
         RealmResource realmResource = keycloak.realm(keycloakConfig.getClientRealm());
         UsersResource usersRessource = realmResource.users();
         //user.setEnabled(true);
-
         user.setEmailVerified(false);
         Response response = usersRessource.create(user);
         String userId = CreatedResponseUtil.getCreatedId(response);
