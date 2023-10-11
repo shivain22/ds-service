@@ -129,8 +129,9 @@ public class UploadResource {
 	@Autowired
 	private UserVendorMappingRepository userVendorMappingRepository;
 
-	/*@Autowired
-	UploadMetaDataService uploadMetaDataService;*/
+	/*
+	 * @Autowired UploadMetaDataService uploadMetaDataService;
+	 */
 
 	public UploadResource(UploadRepository uploadRepository, UploadSearchRepository aidasUploadSearchRepository) {
 		this.uploadRepository = uploadRepository;
@@ -297,7 +298,8 @@ public class UploadResource {
 				uploadRepository.updateMetadataStatus(u.getId(), AidasConstants.AIDAS_UPLOAD_METADATA_COMPLETED);
 				uploadRepository.updateUvmomQcStatus(u.getUserVendorMappingObjectMapping().getId());
 				uploadRepository.updateObjectQcStatus(u.getUserVendorMappingObjectMapping().getObject().getId());
-				uploadRepository.updateProjectQcStatus(u.getUserVendorMappingObjectMapping().getObject().getProject().getId());
+				uploadRepository
+						.updateProjectQcStatus(u.getUserVendorMappingObjectMapping().getObject().getProject().getId());
 			}
 		}
 		return ResponseEntity.ok().body(uploadMetadataDTOS1);
@@ -323,165 +325,161 @@ public class UploadResource {
 	public ResponseEntity<Boolean> createAidasUploadFromDto(@RequestBody UploadDTO uploadDto)
 			throws URISyntaxException {
 		Object object = objectRepository.getByIdForUpdate(uploadDto.getObjectId());
-		if (object.getTotalRequired() > 0) {
 
-			UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository
-					.getById(uploadDto.getUserVendorMappingObjectMappingId());
-			UserVendorMappingProjectMapping uvmpm = userVendorMappingProjectMappingRepository
-					.findByUserVendorMappingIdProjectIdForUpload(uvmom.getUserVendorMapping().getId(),
-							uvmom.getObject().getProject().getId());
-			Upload upload = uploadRepository.getUploadByFileNameUvmomId(uvmom.getId(), uploadDto.getObjectKey());
+		UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository
+				.getById(uploadDto.getUserVendorMappingObjectMappingId());
+		UserVendorMappingProjectMapping uvmpm = userVendorMappingProjectMappingRepository
+				.findByUserVendorMappingIdProjectIdForUpload(uvmom.getUserVendorMapping().getId(),
+						uvmom.getObject().getProject().getId());
+		Upload upload = uploadRepository.getUploadByFileNameUvmomId(uvmom.getId(), uploadDto.getObjectKey());
+		if (uploadDto.getConsentFormUrl() != null && uploadDto.getConsentFormUrl().trim().length() > 0) {
+			try {
+				uvmom.setConsentFormUrl(uploadDto.getConsentFormUrl());
+				String tempFolder = System.getProperty("java.io.tmpdir");
+
+				String accessKey = AESCBCPKCS5Padding.decrypt(projectPropertyRepository
+						.findByProjectPropertyByPropertyName(uvmom.getObject().getProject().getId(), "accessKey")
+						.getValue().getBytes(), AidasConstants.KEY, AidasConstants.IV_STR);
+				String accessSecret = AESCBCPKCS5Padding.decrypt(projectPropertyRepository
+						.findByProjectPropertyByPropertyName(uvmom.getObject().getProject().getId(), "accessSecret")
+						.getValue().getBytes(), AidasConstants.KEY, AidasConstants.IV_STR);
+				String region = AESCBCPKCS5Padding.decrypt(projectPropertyRepository
+						.findByProjectPropertyByPropertyName(uvmom.getObject().getProject().getId(), "region")
+						.getValue().getBytes(), AidasConstants.KEY, AidasConstants.IV_STR);
+				String bucketName = AESCBCPKCS5Padding.decrypt(projectPropertyRepository
+						.findByProjectPropertyByPropertyName(uvmom.getObject().getProject().getId(), "bucketName")
+						.getValue().getBytes(), AidasConstants.KEY, AidasConstants.IV_STR);
+
+				Path dest = Paths.get(tempFolder + "/" + bucketName + "/" + uploadDto.getConsentFormUrl());
+				if (Files.exists(dest)) {
+					Files.delete(dest);
+				}
+				Files.createDirectories(dest.getParent());
+				PipedOutputStream os = new PipedOutputStream();
+				PipedInputStream is = new PipedInputStream(os);
+				AwsBasicCredentials awsCreds = AwsBasicCredentials.create(accessKey, accessSecret);
+				S3Client s3client = S3Client.builder().region(Region.of(region))
+						.credentialsProvider(StaticCredentialsProvider.create(awsCreds)).build();
+				GetObjectRequest getObjectRequest = GetObjectRequest.builder().bucket(bucketName)
+						.key(uploadDto.getConsentFormUrl()).build();
+
+				s3client.getObject(getObjectRequest, ResponseTransformer.toFile(dest));
+				ObjectMapper objectMapper = new ObjectMapper();
+				Map<String, String> consentFormFields = objectMapper.readValue(Files.readAllBytes(dest), Map.class);
+
+				for (Map.Entry<String, String> entry : consentFormFields.entrySet()) {
+					if (!entry.getKey().equals("signature") && !entry.getKey().equals("isChecked")) {
+						Property property = propertyRepository.getByNameAndUserIdAndCategory(entry.getKey(),
+								object.getProject().getCustomer().getId(), object.getProject().getCategory().getId());
+						if (property == null || property.getId() == null) {
+							property = new Property();
+							property.setName(entry.getKey());
+							property.setCustomer(object.getProject().getCustomer());
+							property.setPropertyType(AidasConstants.AIDAS_SYSTEM_PROPERTY);
+							property.setValue("");
+							property.setAddToMetadata(AidasConstants.STATUS_ENABLED);
+							property.setShowToVendorUser(AidasConstants.STATUS_DISABLED);
+							property.setCategory(object.getProject().getCategory());
+							property.setDefaultProp(AidasConstants.STATUS_DISABLED);
+							property.setDescription(entry.getKey());
+							property.setPassedFromApp(AidasConstants.STATUS_ENABLED);
+							property.setOptional(AidasConstants.AIDAS_PROPERTY_REQUIRED);
+							propertyRepository.save(property);
+						}
+						ProjectProperty projectProperty = projectPropertyRepository
+								.findByProjectPropertyByPropertyName(object.getProject().getId(), entry.getKey());
+						if (projectProperty == null || property.getId() == null) {
+							projectProperty = new ProjectProperty();
+							projectProperty.setProject(object.getProject());
+							projectProperty.setStatus(AidasConstants.STATUS_ENABLED);
+							projectProperty.setAddToMetadata(AidasConstants.STATUS_ENABLED);
+							projectProperty.setDefaultProp(AidasConstants.STATUS_DISABLED);
+							projectProperty.setOptional(AidasConstants.AIDAS_PROPERTY_REQUIRED);
+							projectProperty.setValue("");
+							projectProperty.setProperty(property);
+							projectPropertyRepository.save(projectProperty);
+						}
+						List<Upload> uploads = uploadRepository.getUploadByUvmomId(uvmom.getId());
+						for (Upload u : uploads) {
+							UploadMetaData umd = uploadMetaDataRepository
+									.getUploadMetaDataByProjectPropertyId(u.getId(), projectProperty.getId());
+							if (umd == null) {
+								umd = new UploadMetaData();
+								umd.setProjectProperty(projectProperty);
+								if(entry.getValue()!=null) {
+									umd.setValue(entry.getValue().toString());
+								}else {
+									umd.setValue("");
+								}
+								umd.setUpload(u);
+
+							} else {
+								if(entry.getValue()!=null) {
+									umd.setValue(entry.getValue().toString());
+								}else {
+									umd.setValue("");
+								}
+							}
+							uploadMetaDataRepository.save(umd);
+						}
+					}
+				}
+				userVendorMappingObjectMappingRepository.save(uvmom);
+				return ResponseEntity.ok().body(true);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		if (object.getTotalRequired() > 0) {
 			if (upload != null) {
 				throw new BadRequestAlertException(
 						"Upload with object key " + upload.getObjectKey() + " exists.  duplicate entry", ENTITY_NAME,
 						"idexists");
 			}
-			if (uploadDto.getConsentFormUrl() != null && uploadDto.getConsentFormUrl().trim().length() > 0) {
-				try {
-					uvmom.setConsentFormUrl(uploadDto.getConsentFormUrl());
-					String tempFolder = System.getProperty("java.io.tmpdir");
-
-					String accessKey = AESCBCPKCS5Padding.decrypt(projectPropertyRepository
-							.findByProjectPropertyByPropertyName(uvmom.getObject().getProject().getId(), "accessKey")
-							.getValue().getBytes(), AidasConstants.KEY, AidasConstants.IV_STR);
-					String accessSecret = AESCBCPKCS5Padding.decrypt(projectPropertyRepository
-							.findByProjectPropertyByPropertyName(uvmom.getObject().getProject().getId(), "accessSecret")
-							.getValue().getBytes(), AidasConstants.KEY, AidasConstants.IV_STR);
-					String region = AESCBCPKCS5Padding.decrypt(projectPropertyRepository
-							.findByProjectPropertyByPropertyName(uvmom.getObject().getProject().getId(), "region")
-							.getValue().getBytes(), AidasConstants.KEY, AidasConstants.IV_STR);
-					String bucketName = AESCBCPKCS5Padding.decrypt(projectPropertyRepository
-							.findByProjectPropertyByPropertyName(uvmom.getObject().getProject().getId(), "bucketName")
-							.getValue().getBytes(), AidasConstants.KEY, AidasConstants.IV_STR);
-
-					Path dest = Paths.get(tempFolder + "/" + bucketName + "/" + uploadDto.getConsentFormUrl());
-					if (Files.exists(dest)) {
-						Files.delete(dest);
-					}
-					Files.createDirectories(dest.getParent());
-					PipedOutputStream os = new PipedOutputStream();
-					PipedInputStream is = new PipedInputStream(os);
-					AwsBasicCredentials awsCreds = AwsBasicCredentials.create(accessKey, accessSecret);
-					S3Client s3client = S3Client.builder().region(Region.of(region))
-							.credentialsProvider(StaticCredentialsProvider.create(awsCreds)).build();
-					GetObjectRequest getObjectRequest = GetObjectRequest.builder().bucket(bucketName)
-							.key(uploadDto.getConsentFormUrl()).build();
-
-					s3client.getObject(getObjectRequest, ResponseTransformer.toFile(dest));
-					ObjectMapper objectMapper = new ObjectMapper();
-					Map<String, String> consentFormFields = objectMapper.readValue(Files.readAllBytes(dest), Map.class);
-
-					for (Map.Entry<String, String> entry : consentFormFields.entrySet()) {
-						if (!entry.getKey().equals("signature") && !entry.getKey().equals("isChecked")) {
-							Property property = propertyRepository.getByNameAndUserIdAndCategory(entry.getKey(),
-									object.getProject().getCustomer().getId(),
-									object.getProject().getCategory().getId());
-							if (property == null || property.getId() == null) {
-								property = new Property();
-								property.setName(entry.getKey());
-								property.setCustomer(object.getProject().getCustomer());
-								property.setPropertyType(AidasConstants.AIDAS_SYSTEM_PROPERTY);
-								property.setValue("");
-								property.setAddToMetadata(AidasConstants.STATUS_ENABLED);
-								property.setShowToVendorUser(AidasConstants.STATUS_DISABLED);
-								property.setCategory(object.getProject().getCategory());
-								property.setDefaultProp(AidasConstants.STATUS_DISABLED);
-								property.setDescription(entry.getKey());
-								property.setPassedFromApp(AidasConstants.STATUS_ENABLED);
-								property.setOptional(AidasConstants.AIDAS_PROPERTY_REQUIRED);
-								propertyRepository.save(property);
-							}
-							ProjectProperty projectProperty = projectPropertyRepository
-									.findByProjectPropertyByPropertyName(object.getProject().getId(), entry.getKey());
-							if (projectProperty == null || property.getId() == null) {
-								projectProperty = new ProjectProperty();
-								projectProperty.setProject(object.getProject());
-								projectProperty.setStatus(AidasConstants.STATUS_ENABLED);
-								projectProperty.setAddToMetadata(AidasConstants.STATUS_ENABLED);
-								projectProperty.setDefaultProp(AidasConstants.STATUS_DISABLED);
-								projectProperty.setOptional(AidasConstants.AIDAS_PROPERTY_REQUIRED);
-								projectProperty.setValue("");
-								projectProperty.setProperty(property);
-								projectPropertyRepository.save(projectProperty);
-							}
-							List<Upload> uploads = uploadRepository.getUploadByUvmomId(uvmom.getId());
-							for (Upload u : uploads) {
-								UploadMetaData umd = uploadMetaDataRepository
-										.getUploadMetaDataByProjectPropertyId(u.getId(), projectProperty.getId());
-								if (umd == null) {
-									umd = new UploadMetaData();
-									umd.setProjectProperty(projectProperty);
-									umd.setValue(entry.getValue().toString());
-									umd.setUpload(u);
-
-								} else {
-									umd.setValue(entry.getValue().toString());
-								}
-								uploadMetaDataRepository.save(umd);
-							}
-						}
-					}
-					userVendorMappingObjectMappingRepository.save(uvmom);
-					return ResponseEntity.ok().body(true);
-				} catch (Exception e) {
-					e.printStackTrace();
+			try {
+				upload = new Upload();
+				upload.setUserVendorMappingObjectMapping(uvmom);
+				upload.setDateUploaded(Instant.now());
+				upload.setName(uploadDto.getObjectKey());
+				upload.setUploadUrl(uploadDto.getUploadUrl());
+				upload.setUploadEtag(uploadDto.getEtag());
+				upload.setObjectKey(uploadDto.getObjectKey());
+				upload.setCurrentQcLevel(1);
+				upload.setApprovalStatus(AidasConstants.AIDAS_UPLOAD_PENDING);
+				upload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
+				upload.setMetadataStatus(AidasConstants.AIDAS_UPLOAD_METADATA_REQUIRED);
+				upload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
+				upload.setCurrentBatchNumber(0);
+				upload = uploadRepository.save(upload);
+				List<String> uploadMetaDataKeys = new ArrayList<>();
+				for (Map.Entry<String, String> entry : uploadDto.getUploadMetadata().entrySet()) {
+					uploadMetaDataKeys.add(entry.getKey());
 				}
-			} else {
-				try {
-					upload = new Upload();
-					upload.setUserVendorMappingObjectMapping(uvmom);
-					upload.setDateUploaded(Instant.now());
-					upload.setName(uploadDto.getObjectKey());
-					upload.setUploadUrl(uploadDto.getUploadUrl());
-					upload.setUploadEtag(uploadDto.getEtag());
-					upload.setObjectKey(uploadDto.getObjectKey());
-					upload.setCurrentQcLevel(1);
-					upload.setApprovalStatus(AidasConstants.AIDAS_UPLOAD_PENDING);
-					upload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
-					upload.setMetadataStatus(AidasConstants.AIDAS_UPLOAD_METADATA_REQUIRED);
-					upload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
-					upload.setCurrentBatchNumber(0);
-					upload = uploadRepository.save(upload);
-
-					/*
-					 * uploadMetaDataService.setObject(object);
-					 * uploadMetaDataService.setUploadId(upload.getId());
-					 * uploadMetaDataService.setUploadDto(uploadDto);
-					 * taskExecutor.execute(uploadMetaDataService);
-					 * uploadMetaDataService.runAsync();
-					 */
-
-					List<String> uploadMetaDataKeys = new ArrayList<>();
-					for (Map.Entry<String, String> entry : uploadDto.getUploadMetadata().entrySet()) {
-						uploadMetaDataKeys.add(entry.getKey());
+				List<UploadMetaData> metadatas = uploadMetaDataRepository
+						.getAllUploadMetaDatasProjectProperty(upload.getId(), uploadMetaDataKeys);
+				metadatas.addAll(uploadMetaDataRepository.getAllUploadMetaDatasObjectProperty(upload.getId(),
+						uploadMetaDataKeys));
+				for (UploadMetaData umd : metadatas) {
+					if (umd.getProjectProperty() != null) {
+						umd.setValue(
+								uploadDto.getUploadMetadata().get(umd.getProjectProperty().getProperty().getName()));
 					}
-					List<UploadMetaData> metadatas = uploadMetaDataRepository
-							.getAllUploadMetaDatasProjectProperty(upload.getId(), uploadMetaDataKeys);
-					metadatas.addAll(uploadMetaDataRepository.getAllUploadMetaDatasObjectProperty(upload.getId(),
-							uploadMetaDataKeys));
-					for (UploadMetaData umd : metadatas) {
-						if (umd.getProjectProperty() != null) {
-							umd.setValue(uploadDto.getUploadMetadata()
-									.get(umd.getProjectProperty().getProperty().getName()));
-						}
-						if (umd.getObjectProperty() != null) {
-							umd.setValue(
-									uploadDto.getUploadMetadata().get(umd.getObjectProperty().getProperty().getName()));
-						}
+					if (umd.getObjectProperty() != null) {
+						umd.setValue(
+								uploadDto.getUploadMetadata().get(umd.getObjectProperty().getProperty().getName()));
 					}
-
-					uploadMetaDataRepository.saveAll(metadatas);
-					return ResponseEntity.ok().body(true);
-				} catch (Exception e) {
-					System.out.println(uploadDto.getObjectId() + "===" + uploadDto.getUserVendorMappingObjectMappingId()
-							+ e.getMessage());
-					return ResponseEntity.ok().body(false);
 				}
+				uploadMetaDataRepository.saveAll(metadatas);
+				return ResponseEntity.ok().body(true);
+			} catch (Exception e) {
+				System.out.println(uploadDto.getObjectId() + "===" + uploadDto.getUserVendorMappingObjectMappingId()
+						+ e.getMessage());
+				return ResponseEntity.ok().body(false);
 			}
+
 		} else {
 			return ResponseEntity.ok().body(false);
 		}
-		return ResponseEntity.ok().body(false);
 	}
 
 	/**
@@ -575,22 +573,40 @@ public class UploadResource {
 							objectRepository.addTotalRejectedAndSubtractTotalPendingAddTotalRequired(
 									usfqcf.getObjectId(), usfqcf.getTotalRejected());
 						} else {
-								List<UploadSummaryForQCFinalize> batchStatus1 = uploadQcProjectMappingBatchInfoRepository.getUvmomObjectIdsOfBatchNonGrouped(usfqcf.getProjectId(), usfqcf.getUvmId());
-								if (batchStatus1 != null && batchStatus1.size() > 0) {
-									userVendorMappingProjectMappingRepository.addTotalRejectedAndSubtractTotalPendingAddTotalRequired(batchStatus1.get(0).getUvmpmId(),batchStatus1.get(0).getTotalRejected(),batchStatus1.get(0).getTotalPending());
-									List<UploadSummaryForQCFinalize> batchStatus2 = uploadQcProjectMappingBatchInfoRepository.getUvmomObjectIdsOfBatchNonGroupedForProject(usfqcf.getProjectId());
-									if (batchStatus2 != null && batchStatus2.size() > 0) {
-										projectRepository.addTotalApprovedSubtractTotalPendingNonGrouped(batchStatus2.get(0).getProjectId(),batchStatus2.get(0).getTotalApproved(),batchStatus2.get(0).getTotalRejected(),batchStatus2.get(0).getTotalPending());
-										List<UploadSummaryForQCFinalize> batchStatus4= uploadQcProjectMappingBatchInfoRepository.getUvmomObjectIdsOfBatchNonGroupedForProjectNew(usfqcf.getObjectId(), usfqcf.getUvmomId());
-										if(batchStatus4!=null && batchStatus4.size()>0) {
-											userVendorMappingObjectMappingRepository.addTotalRejectedAndSubtractTotalPendingAddTotalRequiredNonGrouped(usfqcf.getUvmomId(), batchStatus4.get(0).getTotalRejected(),batchStatus4.get(0).getTotalPending());
-										}
-										List<UploadSummaryForQCFinalize> batchStatus3 = uploadQcProjectMappingBatchInfoRepository.getObjectIdsOfBatchNonGroupedForProject(usfqcf.getObjectId());
-										if (batchStatus3 != null && batchStatus3.size() > 0) {
-											objectRepository.addTotalApprovedSubtractTotalPendingNew(usfqcf.getObjectId(),batchStatus3.get(0).getTotalApproved(),batchStatus3.get(0).getTotalRejected(),batchStatus3.get(0).getTotalPending());
-										}
+							List<UploadSummaryForQCFinalize> batchStatus1 = uploadQcProjectMappingBatchInfoRepository
+									.getUvmomObjectIdsOfBatchNonGrouped(usfqcf.getProjectId(), usfqcf.getUvmId());
+							if (batchStatus1 != null && batchStatus1.size() > 0) {
+								userVendorMappingProjectMappingRepository
+										.addTotalRejectedAndSubtractTotalPendingAddTotalRequired(
+												batchStatus1.get(0).getUvmpmId(),
+												batchStatus1.get(0).getTotalRejected(),
+												batchStatus1.get(0).getTotalPending());
+								List<UploadSummaryForQCFinalize> batchStatus2 = uploadQcProjectMappingBatchInfoRepository
+										.getUvmomObjectIdsOfBatchNonGroupedForProject(usfqcf.getProjectId());
+								if (batchStatus2 != null && batchStatus2.size() > 0) {
+									projectRepository.addTotalApprovedSubtractTotalPendingNonGrouped(
+											batchStatus2.get(0).getProjectId(), batchStatus2.get(0).getTotalApproved(),
+											batchStatus2.get(0).getTotalRejected(),
+											batchStatus2.get(0).getTotalPending());
+									List<UploadSummaryForQCFinalize> batchStatus4 = uploadQcProjectMappingBatchInfoRepository
+											.getUvmomObjectIdsOfBatchNonGroupedForProjectNew(usfqcf.getObjectId(),
+													usfqcf.getUvmomId());
+									if (batchStatus4 != null && batchStatus4.size() > 0) {
+										userVendorMappingObjectMappingRepository
+												.addTotalRejectedAndSubtractTotalPendingAddTotalRequiredNonGrouped(
+														usfqcf.getUvmomId(), batchStatus4.get(0).getTotalRejected(),
+														batchStatus4.get(0).getTotalPending());
+									}
+									List<UploadSummaryForQCFinalize> batchStatus3 = uploadQcProjectMappingBatchInfoRepository
+											.getObjectIdsOfBatchNonGroupedForProject(usfqcf.getObjectId());
+									if (batchStatus3 != null && batchStatus3.size() > 0) {
+										objectRepository.addTotalApprovedSubtractTotalPendingNew(usfqcf.getObjectId(),
+												batchStatus3.get(0).getTotalApproved(),
+												batchStatus3.get(0).getTotalRejected(),
+												batchStatus3.get(0).getTotalPending());
 									}
 								}
+							}
 						}
 					}
 					if (qpm.getProject().getQcLevels().equals(qpm.getQcLevel())) {
@@ -606,18 +622,36 @@ public class UploadResource {
 										1);
 							}
 						} else {
-							List<UploadSummaryForQCFinalize> batchStatus1 = uploadQcProjectMappingBatchInfoRepository.getUvmpmObjectIdsOfBatchNonGroupedForProjectNew(usfqcf.getProjectId(),usfqcf.getUvmpmId());
+							List<UploadSummaryForQCFinalize> batchStatus1 = uploadQcProjectMappingBatchInfoRepository
+									.getUvmpmObjectIdsOfBatchNonGroupedForProjectNew(usfqcf.getProjectId(),
+											usfqcf.getUvmpmId());
 							if (batchStatus1 != null && batchStatus1.size() > 0) {
-								userVendorMappingProjectMappingRepository.addTotalApprovedSubtractTotalPendingForNonGrouped(batchStatus1.get(0).getProjectId(),batchStatus1.get(0).getTotalApproved(),batchStatus1.get(0).getTotalPending());
-								List<UploadSummaryForQCFinalize> batchStatus2 = uploadQcProjectMappingBatchInfoRepository.getUvmomObjectIdsOfBatchNonGroupedForProject(batchStatus.get(0).getProjectId());
+								userVendorMappingProjectMappingRepository
+										.addTotalApprovedSubtractTotalPendingForNonGrouped(
+												batchStatus1.get(0).getProjectId(),
+												batchStatus1.get(0).getTotalApproved(),
+												batchStatus1.get(0).getTotalPending());
+								List<UploadSummaryForQCFinalize> batchStatus2 = uploadQcProjectMappingBatchInfoRepository
+										.getUvmomObjectIdsOfBatchNonGroupedForProject(
+												batchStatus.get(0).getProjectId());
 								if (batchStatus2 != null && batchStatus2.size() > 0) {
-									projectRepository.addTotalApprovedSubtractTotalPendingNonGrouped(batchStatus2.get(0).getProjectId(), batchStatus2.get(0).getTotalApproved(),batchStatus2.get(0).getTotalRejected(),batchStatus2.get(0).getTotalPending());
-									List<UploadSummaryForQCFinalize> batchStatus3 = uploadQcProjectMappingBatchInfoRepository.getObjectIdsOfBatchNonGroupedForProject(usfqcf.getObjectId());
+									projectRepository.addTotalApprovedSubtractTotalPendingNonGrouped(
+											batchStatus2.get(0).getProjectId(), batchStatus2.get(0).getTotalApproved(),
+											batchStatus2.get(0).getTotalRejected(),
+											batchStatus2.get(0).getTotalPending());
+									List<UploadSummaryForQCFinalize> batchStatus3 = uploadQcProjectMappingBatchInfoRepository
+											.getObjectIdsOfBatchNonGroupedForProject(usfqcf.getObjectId());
 									if (batchStatus3 != null && batchStatus3.size() > 0) {
-										objectRepository.addTotalApprovedSubtractTotalPendingNewForApproved(usfqcf.getObjectId(), batchStatus3.get(0).getTotalApproved(),batchStatus3.get(0).getTotalPending());
+										objectRepository.addTotalApprovedSubtractTotalPendingNewForApproved(
+												usfqcf.getObjectId(), batchStatus3.get(0).getTotalApproved(),
+												batchStatus3.get(0).getTotalPending());
 									}
-									List<UploadSummaryForQCFinalize> batchStatus4 = uploadQcProjectMappingBatchInfoRepository.getUvmomObjectIdsOfBatchNonGroupedForProjectNew(usfqcf.getObjectId(),usfqcf.getUvmomId());
-									userVendorMappingObjectMappingRepository.addTotalApprovedSubtractTotalPending(usfqcf.getUvmomId(), batchStatus4.get(0).getTotalApproved(),batchStatus4.get(0).getTotalPending());
+									List<UploadSummaryForQCFinalize> batchStatus4 = uploadQcProjectMappingBatchInfoRepository
+											.getUvmomObjectIdsOfBatchNonGroupedForProjectNew(usfqcf.getObjectId(),
+													usfqcf.getUvmomId());
+									userVendorMappingObjectMappingRepository.addTotalApprovedSubtractTotalPending(
+											usfqcf.getUvmomId(), batchStatus4.get(0).getTotalApproved(),
+											batchStatus4.get(0).getTotalPending());
 								}
 							}
 						}
