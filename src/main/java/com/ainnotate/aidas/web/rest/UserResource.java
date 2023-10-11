@@ -129,6 +129,9 @@ public class UserResource {
     private UserAuthorityMappingRepository userAuthorityMappingRepository;
 
     @Autowired
+    private UserAuthorityMappingUserVendorMappingRepository userAuthorityMappingUserVendorMappingRepository;
+    
+    @Autowired
     private UserVendorMappingObjectMappingRepository userVendorMappingObjectMappingRepository;
 
     @Autowired
@@ -534,21 +537,25 @@ public class UserResource {
         user.setVendor(defaultVendor);
         User result = userRepository.save(user);
         Object defaultObject = objectRepository.getById(-1l);
-        UserVendorMappingObjectMapping auao = new UserVendorMappingObjectMapping();
-        UserVendorMapping auavm = new UserVendorMapping();
-        auavm.setUser(result);
-        auavm.setVendor(defaultVendor);
-        auavm = userVendorMappingRepository.save(auavm);
-        auao.setUserVendorMapping(auavm);
-        auao.setObject(defaultObject);
+        UserVendorMappingObjectMapping uvmom = new UserVendorMappingObjectMapping();
+        UserVendorMapping uvm = new UserVendorMapping();
+        uvm.setUser(result);
+        uvm.setVendor(defaultVendor);
+        uvm = userVendorMappingRepository.save(uvm);
+        uvmom.setUserVendorMapping(uvm);
+        uvmom.setObject(defaultObject);
 
         UserAuthorityMapping uam = new UserAuthorityMapping();
         uam.setUser(result);
         Authority authority = authorityRepository.getById(5l);
         uam.setAuthority(authority);
         userAuthorityMappingRepository.save(uam);
-
-        userVendorMappingObjectMappingRepository.save(auao);
+        
+        UserAuthorityMappingUserVendorMapping uamuvm = new UserAuthorityMappingUserVendorMapping();
+        uamuvm.setUserAuthorityMapping(uam);
+        uamuvm.setUserVendorMapping(uvm);
+        userAuthorityMappingUserVendorMappingRepository.save(uamuvm);
+        userVendorMappingObjectMappingRepository.save(uvmom);
         updateUserToKeyCloak(result);
         return ResponseEntity
             .created(new URI("/api/aidas-users/" + result.getId()))
