@@ -44,16 +44,16 @@ public class OrgCustVendReqResource {
     private final Logger log = LoggerFactory.getLogger(OrgCustVendReqResource.class);
 
     private static final String ENTITY_NAME = "orgCustVendReq";
-    
+
     @Value("${jhipster.clientApp.name}")
 	private String applicationName;
-    
+
     @Autowired
     private OrgCustVendReqRepository orgCustVendReqRepository;
 
     @Autowired
     private AppPropertyRepository appPropertyRepository;
-    
+
     @PostMapping("/aidas-org-cust-vend-req")
 	public ResponseEntity<OrgCustVendReq> createAidasVendor(@RequestBody OrgCustVendReq orgCustVendReq) throws URISyntaxException {
 		log.debug("REST request to save AidasVendor : {}", orgCustVendReq);
@@ -77,6 +77,7 @@ public class OrgCustVendReqResource {
 					+ "First Name: "+result.getFirstName()+" <br/>"
 							+ "Last Name:"+result.getLastName()+" <br/>"
 									+ "Company: "+result.getCompanyName()+"<br/>"
+                                        + "Email: "+result.getEmail()+"<br/>"
 											+ "Message:"+result.getMessage()+"<br/>"
 													+ "Aidas ID:  "+result.getId());
 			sendMail(mail);
@@ -88,16 +89,16 @@ public class OrgCustVendReqResource {
 			throw new BadRequestAlertException(e.getMessage(), ENTITY_NAME, "idexists");
 		}
 	}
-    
-    
+
+
     private void sendMail(Mail mail) throws IOException {
-		
+
 		 AppProperty app  = appPropertyRepository.getAppProperty(-1l,"fromEmail");
         String fromEmail = app.getValue();
         app = appPropertyRepository.getAppProperty(-1l,"emailToken");
         String emailToken = app.getValue();
-        
-        
+
+
        String postUrl = "https://api.zeptomail.in/v1.1/email";
        BufferedReader br = null;
        HttpURLConnection conn = null;

@@ -87,7 +87,7 @@ spring:
     client-id: admin-cli
     client-secret:
     user-name: admin
-    password: admin
+    password: HaiData!@#
     client-realm: aidac
   mail:
     host: smtp.gmail.com

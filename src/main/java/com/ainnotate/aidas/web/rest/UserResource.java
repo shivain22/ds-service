@@ -978,7 +978,7 @@ public class UserResource {
 			                            }
 			                            userAuthorityUserCustomerMappingRepository.save(uamucm);
 		                        	}else {
-		                        		
+
 		                        	}
 		                        }
 		                    }
@@ -1498,8 +1498,8 @@ public class UserResource {
         }else if(loggedInUser.getAuthority().getName().equals(AidasConstants.VENDOR_QC_USER)) {
         	uams = userAuthorityMappingRepository.getAllAuthoritiesOfUser(user.getId(),3);
         }
-        
-        
+
+
         user.setAuthorityDtos(uams);
 
         Long tmp = -1l;
@@ -1756,7 +1756,13 @@ public class UserResource {
         passwordCred.setType(CredentialRepresentation.PASSWORD);
         passwordCred.setValue(myUser.getPassword());
         userResource.resetPassword(passwordCred);
-        userResource.roles().realmLevel().add(myUser.getAuthorityDtos().stream().map(authority -> {return realmResource.roles().get(authority.getName()).toRepresentation();}).collect(Collectors.toList()));
+        if(myUser.getAuthorityDtos()!=null) {
+            userResource.roles().realmLevel().add(myUser.getAuthorityDtos().stream().map(authority -> {
+                return realmResource.roles().get(authority.getName()).toRepresentation();
+            }).collect(Collectors.toList()));
+        }else{
+            //userResource.roles().realmLevel().add;
+        }
     }
 
     private boolean changePassword(User myUser,String password){
