@@ -1108,8 +1108,7 @@ public class UploadResource {
 						StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, accessSecret)))
 				.region(Region.of(region)).build();
 
-		if (notCompletedBatches != null && notCompletedBatches.size() > 0
-				&& (!notCompletedBatches.get(0).getPending().equals(notCompletedBatches.get(0).getRejected()))) {
+		if (notCompletedBatches != null && notCompletedBatches.size() > 0) {
 			uploadsDTOForQc = uploadRepository.getUploadDTOForQCPendingInBatch(notCompletedBatches.get(0).getQbmId(),
 					qpmbm.getCurrentPageNumber(), pqlc.getQcLevelBatchSize() * project.getNumberOfUploadsRequired());
 
