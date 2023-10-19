@@ -430,56 +430,59 @@ public class UploadResource {
 				e.printStackTrace();
 			}
 		}
-		if (object.getTotalRequired() > 0) {
-			if (upload != null) {
-				throw new BadRequestAlertException(
-						"Upload with object key " + upload.getObjectKey() + " exists.  duplicate entry", ENTITY_NAME,
-						"idexists");
-			}
-			try {
-				upload = new Upload();
-				upload.setUserVendorMappingObjectMapping(uvmom);
-				upload.setDateUploaded(Instant.now());
-				upload.setName(uploadDto.getObjectKey());
-				upload.setUploadUrl(uploadDto.getUploadUrl());
-				upload.setUploadEtag(uploadDto.getEtag());
-				upload.setObjectKey(uploadDto.getObjectKey());
-				upload.setCurrentQcLevel(1);
-				upload.setApprovalStatus(AidasConstants.AIDAS_UPLOAD_PENDING);
-				upload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
-				upload.setMetadataStatus(AidasConstants.AIDAS_UPLOAD_METADATA_REQUIRED);
-				upload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
-				upload.setCurrentBatchNumber(0);
-				upload = uploadRepository.save(upload);
-				List<String> uploadMetaDataKeys = new ArrayList<>();
-				for (Map.Entry<String, String> entry : uploadDto.getUploadMetadata().entrySet()) {
-					uploadMetaDataKeys.add(entry.getKey());
-				}
-				List<UploadMetaData> metadatas = uploadMetaDataRepository
-						.getAllUploadMetaDatasProjectProperty(upload.getId(), uploadMetaDataKeys);
-				metadatas.addAll(uploadMetaDataRepository.getAllUploadMetaDatasObjectProperty(upload.getId(),
-						uploadMetaDataKeys));
-				for (UploadMetaData umd : metadatas) {
-					if (umd.getProjectProperty() != null) {
-						umd.setValue(
-								uploadDto.getUploadMetadata().get(umd.getProjectProperty().getProperty().getName()));
-					}
-					if (umd.getObjectProperty() != null) {
-						umd.setValue(
-								uploadDto.getUploadMetadata().get(umd.getObjectProperty().getProperty().getName()));
-					}
-				}
-				uploadMetaDataRepository.saveAll(metadatas);
-				return ResponseEntity.ok().body(true);
-			} catch (Exception e) {
-				System.out.println(uploadDto.getObjectId() + "===" + uploadDto.getUserVendorMappingObjectMappingId()
-						+ e.getMessage());
-				return ResponseEntity.ok().body(false);
-			}
+        else {
+            if (object.getTotalRequired() > 0) {
+                if (upload != null) {
+                    throw new BadRequestAlertException(
+                        "Upload with object key " + upload.getObjectKey() + " exists.  duplicate entry", ENTITY_NAME,
+                        "idexists");
+                }
+                try {
+                    upload = new Upload();
+                    upload.setUserVendorMappingObjectMapping(uvmom);
+                    upload.setDateUploaded(Instant.now());
+                    upload.setName(uploadDto.getObjectKey());
+                    upload.setUploadUrl(uploadDto.getUploadUrl());
+                    upload.setUploadEtag(uploadDto.getEtag());
+                    upload.setObjectKey(uploadDto.getObjectKey());
+                    upload.setCurrentQcLevel(1);
+                    upload.setApprovalStatus(AidasConstants.AIDAS_UPLOAD_PENDING);
+                    upload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
+                    upload.setMetadataStatus(AidasConstants.AIDAS_UPLOAD_METADATA_REQUIRED);
+                    upload.setQcStatus(AidasConstants.AIDAS_UPLOAD_QC_PENDING);
+                    upload.setCurrentBatchNumber(0);
+                    upload = uploadRepository.save(upload);
+                    List<String> uploadMetaDataKeys = new ArrayList<>();
+                    for (Map.Entry<String, String> entry : uploadDto.getUploadMetadata().entrySet()) {
+                        uploadMetaDataKeys.add(entry.getKey());
+                    }
+                    List<UploadMetaData> metadatas = uploadMetaDataRepository
+                        .getAllUploadMetaDatasProjectProperty(upload.getId(), uploadMetaDataKeys);
+                    metadatas.addAll(uploadMetaDataRepository.getAllUploadMetaDatasObjectProperty(upload.getId(),
+                        uploadMetaDataKeys));
+                    for (UploadMetaData umd : metadatas) {
+                        if (umd.getProjectProperty() != null) {
+                            umd.setValue(
+                                uploadDto.getUploadMetadata().get(umd.getProjectProperty().getProperty().getName()));
+                        }
+                        if (umd.getObjectProperty() != null) {
+                            umd.setValue(
+                                uploadDto.getUploadMetadata().get(umd.getObjectProperty().getProperty().getName()));
+                        }
+                    }
+                    uploadMetaDataRepository.saveAll(metadatas);
+                    return ResponseEntity.ok().body(true);
+                } catch (Exception e) {
+                    System.out.println(uploadDto.getObjectId() + "===" + uploadDto.getUserVendorMappingObjectMappingId()
+                        + e.getMessage());
+                    return ResponseEntity.ok().body(false);
+                }
 
-		} else {
-			return ResponseEntity.ok().body(false);
-		}
+            } else {
+                return ResponseEntity.ok().body(false);
+            }
+        }
+        return ResponseEntity.ok().body(false);
 	}
 
 	/**
