@@ -102,7 +102,7 @@ public class ObjectResource {
 
     @Autowired
     DownloadUploadS3 downloadUploadS3;
-    
+
     public ObjectResource(ObjectRepository objectRepository, ObjectSearchRepository aidasObjectSearchRepository) {
         this.objectRepository = objectRepository;
         this.aidasObjectSearchRepository = aidasObjectSearchRepository;
@@ -172,8 +172,8 @@ public class ObjectResource {
         	throw new BadRequestAlertException(e.getMessage(), ENTITY_NAME, "idexists");
         }
     }
-    
-    
+
+
     /**
      * {@code POST  /aidas-objects} : Create a new object.
      *
@@ -241,7 +241,7 @@ public class ObjectResource {
         }
     }
 
-    
+
     /**
      * {@code POST  /aidas-objects} : Create a new object.
      *
@@ -254,7 +254,7 @@ public class ObjectResource {
     public ResponseEntity<Object> updateAidasObject(@PathVariable(value = "id", required = false) final Long id,@Valid @RequestBody Object object) throws URISyntaxException {
         log.debug("REST request to save AidasObject : {}", object);
         User user = userRepository.findByLogin(SecurityUtils.getCurrentUserLogin().get()).get();
-        
+
         if(user.getAuthority().getName().equals(AidasConstants.ORG_ADMIN) && user.getOrganisation()!=null ){
             Optional<Customer> customer = customerRepository.findById(object.getProject().getCustomer().getId());
             if(customer.isPresent()){
@@ -301,7 +301,7 @@ public class ObjectResource {
         	object1.setObjectDescriptionLink(object.getObjectDescriptionLink());
         	//object1.setTotalRequired((object.getNumberOfUploadsRequired()-object1.getNumberOfUploadsRequired())-object1.getTotalRequired());
         	Object result = objectRepository.save(object1);
-        	
+
         return ResponseEntity
             .created(new URI("/api/aidas-objects/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
@@ -355,7 +355,7 @@ public class ObjectResource {
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
             .body(result);
     }
-   
+
     /**
      * {@code GET  /aidas-objects} : get all the aidasObjects.
      *
@@ -407,9 +407,9 @@ public class ObjectResource {
         		user.getAuthority().getName().equals(AidasConstants.CUSTOMER_QC_USER) ||
         		user.getAuthority().getName().equals(AidasConstants.ORG_QC_USER) ||
         		user.getAuthority().getName().equals(AidasConstants.VENDOR_QC_USER )) {
-        	
+
         	objects = objectRepository.getAllObjectDTOsOfProjectForMetadataForOtherThanVendorUser(projectId);
-        	
+
         }else if(user.getAuthority().getName().equals(AidasConstants.VENDOR_USER)) {
 	        List<Vendor> vendors = vendorRepository.getVendors(user.getId(), AidasConstants.VENDOR_USER_ID);
 	        if(vendors!=null && vendors.size()>0) {
@@ -421,10 +421,10 @@ public class ObjectResource {
 	        UserVendorMapping uvm = userVendorMappingRepository.findByVendorIdAndUserId(user.getVendor().getId(),user.getId());
 	        objects =objectRepository.getAllObjectDTOsOfProjectForMetadata(projectId,uvm.getId());
         }
-        
+
         return ResponseEntity.ok().body(objects);
     }
-    
+
     @GetMapping("/aidas-projects/{id}/aidas-objects")
     public ResponseEntity<List<Object>> getAllAidasObjectsOfProject(Pageable pageable, @PathVariable(value = "id", required = false) final Long projectId) {
         log.debug("REST request to get a page of AidasObjects");
@@ -433,7 +433,7 @@ public class ObjectResource {
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
-    
+
     @GetMapping("/aidas-projects/{id}/aidas-objects/details")
     public ResponseEntity<List<ObjectDTO>> getAllAidasObjectsOfProjectForVendorUser(Pageable pageable, @PathVariable(value = "id", required = false) final Long projectId) {
         log.debug("REST request to get a page of AidasObjects");
@@ -487,7 +487,7 @@ public class ObjectResource {
                         uvmom  = new UserVendorMappingObjectMapping();
                         uvmom.setUserVendorMapping(uvm);
                         uvmom.setStatus(AidasConstants.STATUS_ENABLED);
-                        
+
                         uvmom.setObject(object);
                         userVendorMappingObjectMappingRepository.save(uvmom);
                     }
@@ -521,11 +521,11 @@ public class ObjectResource {
     	HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
-    
-    
-    
-    
-    
+
+
+
+
+
     @GetMapping("/aidas-projects/{id}/aidas-objects/details/search")
     public ResponseEntity<List<ObjectDTO>> searchAllAidasObjectsOfProjectForVendorUser(Pageable pageable, @PathVariable(value = "id", required = false) final Long projectId,
     		@RequestParam(value = "search", required = false) final String search) {
@@ -545,7 +545,7 @@ public class ObjectResource {
         		page = objectRepository.getExistingForGroupedSearch(pageable,uvm.getId(),projectId,search);
         		HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
                 return ResponseEntity.ok().headers(headers).body(page.getContent());
-        	
+
         }else {
         		page = objectRepository.getExistingForNonGroupedSearch(pageable,uvm.getId(),projectId,search);
         	for(ObjectDTO o:page.getContent()){
@@ -568,9 +568,9 @@ public class ObjectResource {
             return ResponseEntity.ok().headers(headers).body(page.getContent());
         }
     }
-    
-    
-    
+
+
+
     private void setProps(List<ObjectDTO> objectDTOs) {
     	for(ObjectDTO o:objectDTOs) {
     		o.setObjectProperties(objectPropertyRepository.findAllByObjectId(o.getId()));
@@ -602,11 +602,12 @@ public class ObjectResource {
                 object.setUserVendorMappingObjectMappingId(uvmom.getId());
                 object.setObjectAcquiredByUvmomId(uvmom.getId());
                 objects.add(object);
+                o.setUserVendorMappingObjectMappingId(uvmom.getId());
                 uvmoms.add(uvmom);
             }
             objectRepository.saveAll(objects);
             userVendorMappingObjectMappingRepository.saveAll(uvmoms);
-            
+
 			/*
 			 * if(project.getAutoCreateObjects().equals(AidasConstants.AUTO_CREATE_OBJECTS))
 			 * { page =
@@ -654,7 +655,7 @@ public class ObjectResource {
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
-    
+
     /**
      * {@code DELETE  /aidas-objects/:id} : delete the "id" object.
      *
@@ -675,7 +676,7 @@ public class ObjectResource {
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
             .build();
     }
-    
+
     /**
      * {@code GET  /download/:id/:status} : download objects with the "id" object and provided status.  User "all" for download both.
      *

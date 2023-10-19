@@ -11,8 +11,10 @@ import com.ainnotate.aidas.service.AESCBCPKCS5Padding;
 import com.ainnotate.aidas.service.DownloadUploadS3;
 import com.ainnotate.aidas.service.UploadMetaDataService;
 import com.ainnotate.aidas.web.rest.errors.BadRequestAlertException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import com.fasterxml.jackson.databind.ObjectWriter;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
@@ -324,7 +326,14 @@ public class UploadResource {
 	@PostMapping("/aidas-uploads/dto")
 	public ResponseEntity<Boolean> createAidasUploadFromDto(@RequestBody UploadDTO uploadDto)
 			throws URISyntaxException {
-		Object object = objectRepository.getByIdForUpdate(uploadDto.getObjectId());
+        ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+        try {
+            String json = ow.writeValueAsString(uploadDto);
+            System.out.println(json);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        Object object = objectRepository.getByIdForUpdate(uploadDto.getObjectId());
 
 		UserVendorMappingObjectMapping uvmom = userVendorMappingObjectMappingRepository
 				.getById(uploadDto.getUserVendorMappingObjectMappingId());
